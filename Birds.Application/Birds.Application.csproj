@@ -7,16 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Mediator\IQuery\**" />
-    <EmbeddedResource Remove="Mediator\IQuery\**" />
-    <None Remove="Mediator\IQuery\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Commands\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="15.0.1" />
+    <PackageReference Include="MediatR" Version="13.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
   </ItemGroup>
 
