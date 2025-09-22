@@ -6,4 +6,22 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Mediator\IQuery\**" />
+    <EmbeddedResource Remove="Mediator\IQuery\**" />
+    <None Remove="Mediator\IQuery\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Commands\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Birds.Domain\Birds.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
