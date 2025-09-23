@@ -1,28 +1,29 @@
 ﻿using Birds.UI.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+using MediatR;
 
 namespace Birds.UI.ViewModels
 {
-    public partial class MainViewModel(INavigationService navigation) : ObservableObject
+    public partial class MainViewModel : ObservableObject
     {
-        private readonly INavigationService _navigation = navigation;
+        private readonly INavigationService _navigation;
+        private readonly BirdListViewModel birdVM;
+        private readonly AddBirdViewModel addBirdVM;
 
         [ObservableProperty]
-        private object? current;
+        private ObservableObject? current;
 
-        [RelayCommand]
-        private void ShowAddBird()
+        public MainViewModel(INavigationService navigation, IMediator mediator)
         {
-            _navigation.NavigateTo(new AddBirdViewModel());
-            Current = _navigation.Current;
+            _navigation = navigation;
+
+            birdVM = new();
+            addBirdVM = new(mediator);
+
+            _navigation.AddCreator(typeof(BirdListViewModel), () => birdVM);
+            _navigation.AddCreator(typeof(AddBirdViewModel), () => addBirdVM);
         }
 
-        [RelayCommand]
-        private void ShowBirds()
-        {
-            _navigation.NavigateTo(new BirdListViewModel());
-            Current = _navigation.Current;
-        }
+        public INavigationService Navigation => _navigation;
     }
 }

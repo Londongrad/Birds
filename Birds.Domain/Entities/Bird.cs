@@ -6,17 +6,14 @@ namespace Birds.Domain.Entities
     public class Bird : EntityBase
     {
         #region [ Properties ]
-
         public BirdsName Name { get; private set; }
         public string? Description { get; private set; }
         public DateOnly Arrival { get; private set; }
         public DateOnly? Departure { get; private set; }
         public bool IsAlive { get; private set; }
-
-        #endregion [ Properties ]
+        #endregion
 
         #region [ Ctors ]
-
         private Bird() { }
         public Bird(Guid id, BirdsName name, string? description, DateOnly arrival, bool isAlive = true)
             : base(id)
@@ -30,11 +27,9 @@ namespace Birds.Domain.Entities
             Arrival = arrival;
             IsAlive = isAlive;
         }
-
-        #endregion [ Ctors ]
+        #endregion
 
         #region [ Methods ]
-
         public void SetDeparture(DateOnly departure)
         {
             GuardHelper.AgainstInvalidDate(departure, nameof(departure));
@@ -64,7 +59,6 @@ namespace Birds.Domain.Entities
             Description = description;
             UpdateTimestamp();
         }
-
-        #endregion [ Methods ]
+        #endregion
     }
 }

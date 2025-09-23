@@ -8,11 +8,30 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="wwwroot\Images\bird.ico" />
+    <None Remove="wwwroot\Images\ex.png" />
+    <None Remove="wwwroot\Images\file_basket_red.png" />
+    <None Remove="wwwroot\Images\ok.png" />
+    <None Remove="wwwroot\Images\shutdown.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="wwwroot\Images\ok.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Birds.Application\Birds.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="wwwroot\Images\bird.ico" />
+    <Resource Include="wwwroot\Images\ex.png" />
+    <Resource Include="wwwroot\Images\file_basket_red.png" />
+    <Resource Include="wwwroot\Images\shutdown.png" />
   </ItemGroup>
 
 </Project>

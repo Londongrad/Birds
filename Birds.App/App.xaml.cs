@@ -1,5 +1,8 @@
-﻿using Birds.Infrastructure;
-using Birds.Application;
+﻿using Birds.Application;
+using Birds.Infrastructure;
+using Birds.UI.Services;
+using Birds.UI.ViewModels;
+using Birds.UI.Views.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Windows;
@@ -24,16 +27,19 @@ namespace Birds.App
                     var connectionString = "Data Source=birds.db";
                     services.AddInfrastructure(connectionString);
 
-                    // UI/ViewModels
-                    //services.AddSingleton<MainWindow>();
-                    //services.AddSingleton<MainViewModel>();
+                    services.AddSingleton<MainWindow>();
+                    services.AddSingleton<MainViewModel>();
+                    services.AddTransient<AddBirdViewModel>();
+                    services.AddTransient<BirdListViewModel>();
+                    services.AddSingleton<INavigationService, NavigationService>();
                 })
                 .Build();
 
             _host.Start();
 
-            //var mainWindow = _host.Services.GetRequiredService<MainWindow>();
-            //mainWindow.Show();
+            var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+            mainWindow.DataContext = _host.Services.GetRequiredService<MainViewModel>();
+            mainWindow.Show();
         }
 
         protected override async void OnExit(ExitEventArgs e)

@@ -1,5 +1,4 @@
-﻿using Birds.Domain.Enums;
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace Birds.Application.Commands.CreateBird
 {
@@ -7,11 +6,6 @@ namespace Birds.Application.Commands.CreateBird
     {
         public CreateBirdCommandValidator()
         {
-            RuleFor(x => x.Name)
-                .NotEmpty().WithMessage("Name is required")
-                .Must(name => Enum.TryParse<BirdsName>(name, true, out _))
-                .WithMessage("Invalid bird name");
-
             RuleFor(x => x.Arrival)
                 .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow))
                 .WithMessage("Arrival date cannot be in the future")

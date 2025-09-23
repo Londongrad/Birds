@@ -1,1 +1,1 @@
-Из сторонних библиотек: FluentValidation, Mediatr, AutoMapper.
+Из сторонних библиотек: FluentValidation, MediatR, AutoMapper, CommunityToolkit.Mvvm.
