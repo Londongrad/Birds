@@ -50,12 +50,12 @@ namespace Birds.Domain.Entities
             UpdateTimestamp();
         }
 
-        public void MarkAsDead()
+        public void UpdateStatus(bool isAlive)
         {
-            if (Departure is null)
+            if (Departure is null && isAlive == false)
                 throw new ArgumentException("Departure date must be set before marking the bird as dead.");
 
-            IsAlive = false;
+            IsAlive = isAlive;
             UpdateTimestamp();
         }
 
