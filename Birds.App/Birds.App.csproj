@@ -8,4 +8,13 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Birds.Infrastructure\Birds.Infrastructure.csproj" />
+    <ProjectReference Include="..\Birds.UI\Birds.UI.csproj" />
+  </ItemGroup>
+
 </Project>
