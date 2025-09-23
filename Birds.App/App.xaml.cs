@@ -13,7 +13,7 @@ namespace Birds.App
     {
         private IHost? _host;
 
-        protected override void OnStartup(StartupEventArgs e)
+        protected async override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
@@ -35,11 +35,13 @@ namespace Birds.App
                 })
                 .Build();
 
-            _host.Start();
+            await _host.StartAsync();
 
             var mainWindow = _host.Services.GetRequiredService<MainWindow>();
             mainWindow.DataContext = _host.Services.GetRequiredService<MainViewModel>();
-            mainWindow.Show();
+
+            MainWindow = mainWindow;
+            MainWindow.Show();
         }
 
         protected override async void OnExit(ExitEventArgs e)

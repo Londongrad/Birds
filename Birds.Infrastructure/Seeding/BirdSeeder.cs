@@ -9,53 +9,81 @@ namespace Birds.Infrastructure.Seeding
     public class BirdSeeder(IServiceProvider services) : IHostedService
     {
         private readonly IServiceProvider _services = services;
+        private Task? _seedingTask;
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public Task StartAsync(CancellationToken cancellationToken)
         {
-            using var scope = _services.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<BirdDbContext>();
-
-            if (!context.Birds.Any())
+            // Запускаем сидинг в фоне
+            _seedingTask = Task.Run(async () =>
             {
-                var birds = new List<Bird>();
-                var now = DateOnly.FromDateTime(DateTime.UtcNow);
-                var random = new Random();
+                using var scope = _services.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<BirdDbContext>();
 
-                // Счётчики для каждого вида
-                var counters = Enum.GetValues<BirdsName>()
-                    .ToDictionary(x => x, _ => 0);
+                context.Database.EnsureDeleted();
+                context.Database.EnsureCreated();
 
-                for (int i = 0; i < 1_000_000; i++)
+                if (!context.Birds.Any())
                 {
-                    var birdName = (BirdsName)random.Next(1, 8);
-                    var arrival = now.AddDays(-random.Next(0, 365 * 3));
-                    var isAlive = random.Next(0, 2) == 1;
+                    var now = DateOnly.FromDateTime(DateTime.UtcNow);
+                    var random = new Random();
+                    var counters = Enum.GetValues<BirdsName>()
+                        .ToDictionary(x => x, _ => 0);
 
-                    counters[birdName]++;
-                    var number = counters[birdName];
+                    const int total = 100;
+                    const int batchSize = 10;
+                    var birds = new List<Bird>(batchSize);
 
-                    var bird = new Bird(
-                        Guid.NewGuid(),
-                        birdName,
-                        $"{birdName} #{number}",
-                        arrival,
-                        isAlive
-                    );
-
-                    if (!isAlive)
+                    for (int i = 0; i < total; i++)
                     {
-                        var departure = arrival.AddDays(random.Next(0, (now.DayNumber - arrival.DayNumber) + 1));
-                        bird.SetDeparture(departure);
+                        var birdName = (BirdsName)random.Next(1, 8);
+                        var arrival = now.AddDays(-random.Next(0, 365 * 3));
+                        var isAlive = random.Next(0, 2) == 1;
+
+                        counters[birdName]++;
+                        var number = counters[birdName];
+
+                        var bird = new Bird(
+                            Guid.NewGuid(),
+                            birdName,
+                            $"{birdName} #{number}",
+                            arrival,
+                            isAlive
+                        );
+
+                        if (!isAlive)
+                        {
+                            var departure = arrival.AddDays(random.Next(0, (now.DayNumber - arrival.DayNumber) + 1));
+                            bird.SetDeparture(departure);
+                        }
+
+                        birds.Add(bird);
+
+                        // Когда накопился батч — сохраняем
+                        if (birds.Count >= batchSize)
+                        {
+                            await context.Birds.AddRangeAsync(birds, cancellationToken);
+                            await context.SaveChangesAsync(cancellationToken);
+                            birds.Clear();
+                        }
                     }
 
-                    birds.Add(bird);
+                    // Последний хвостик
+                    if (birds.Count > 0)
+                    {
+                        await context.Birds.AddRangeAsync(birds, cancellationToken);
+                        await context.SaveChangesAsync(cancellationToken);
+                    }
                 }
+            }, cancellationToken);
 
-                await context.Birds.AddRangeAsync(birds, cancellationToken);
-                await context.SaveChangesAsync(cancellationToken);
-            }
+            // Возвращаем сразу, чтобы окно WPF показалось
+            return Task.CompletedTask;
         }
 
-        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        public async Task StopAsync(CancellationToken cancellationToken)
+        {
+            if (_seedingTask is not null)
+                await _seedingTask;
+        }
     }
 }

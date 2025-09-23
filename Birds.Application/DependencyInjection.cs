@@ -1,4 +1,5 @@
-﻿using Birds.Application.Behaviors;
+﻿using AutoMapper;
+using Birds.Application.Behaviors;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,8 @@ namespace Birds.Application
             // Behaviors
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+
+            services.AddAutoMapper(cfg => { }, Assembly.GetExecutingAssembly());
 
             return services;
         }

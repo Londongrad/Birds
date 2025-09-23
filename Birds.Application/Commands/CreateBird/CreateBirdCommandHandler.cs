@@ -10,9 +10,7 @@ namespace Birds.Application.Commands.CreateBird
     {
         public async Task<Guid> Handle(CreateBirdCommand request, CancellationToken cancellationToken)
         {
-            var bird = new { request.Name, request.Description, request.Arrival };
-
-            var id = await repository.AddAsync(mapper.Map<Bird>(bird), cancellationToken);
+            var id = await repository.AddAsync(mapper.Map<Bird>(request), cancellationToken);
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
 

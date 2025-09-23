@@ -1,6 +1,4 @@
-﻿using Birds.Domain.Enums;
-
-namespace Birds.Domain.Common
+﻿namespace Birds.Domain.Common
 {
     public static class GuardHelper
     {

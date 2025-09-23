@@ -10,6 +10,8 @@ namespace Birds.UI.ViewModels
     {
         private readonly IMediator _mediator = mediator;
 
+        public static Array BirdNames => Enum.GetValues(typeof(BirdsName));
+
         [ObservableProperty] private BirdsName selectedBirdName;
         [ObservableProperty] private string? description;
         [ObservableProperty] private DateOnly arrival = DateOnly.FromDateTime(DateTime.UtcNow);
