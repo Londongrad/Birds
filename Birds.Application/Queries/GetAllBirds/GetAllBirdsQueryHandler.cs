@@ -3,7 +3,7 @@ using Birds.Application.DTOs;
 using Birds.Application.Interfaces;
 using MediatR;
 
-namespace Birds.Application.Queries
+namespace Birds.Application.Queries.GetAllBirds
 {
     public class GetAllBirdsQueryHandler(IBirdRepository repository, IMapper mapper)
         : IRequestHandler<GetAllBirdsQuery, IReadOnlyList<BirdDTO>>

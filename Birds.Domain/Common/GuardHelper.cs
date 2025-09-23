@@ -1,4 +1,6 @@
-﻿namespace Birds.Domain.Common
+﻿using Birds.Domain.Enums;
+
+namespace Birds.Domain.Common
 {
     public static class GuardHelper
     {
@@ -47,6 +49,13 @@
         public static void AgainstInvalidEnum<TEnum>(TEnum value, string argumentName) where TEnum : struct, Enum
         {
             if (!Enum.IsDefined(value))
+                throw new ArgumentException($"{argumentName} has invalid value: {value}", argumentName);
+
+        }
+
+        public static void AgainstInvalidStringToEnum<TEnum>(string value, string argumentName) where TEnum : struct, Enum
+        {
+            if (!Enum.TryParse<TEnum>(value, true, out _))
                 throw new ArgumentException($"{argumentName} has invalid value: {value}", argumentName);
         }
 
