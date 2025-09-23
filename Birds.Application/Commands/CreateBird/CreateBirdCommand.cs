@@ -1,7 +1,10 @@
-﻿using Birds.Application.DTOs;
-using MediatR;
+﻿using MediatR;
 
 namespace Birds.Application.Commands.CreateBird
 {
-    public record CreateBirdCommand(CreateBirdDTO Dto) : IRequest<Guid>;
+    public record CreateBirdCommand(
+        string Name,
+        string? Description,
+        DateOnly Arrival
+    ) : IRequest<Guid>;
 }

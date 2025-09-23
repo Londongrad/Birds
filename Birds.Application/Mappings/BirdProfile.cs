@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Birds.Application.Commands.CreateBird;
 using Birds.Application.DTOs;
 using Birds.Domain.Entities;
 using Birds.Domain.Enums;
@@ -12,14 +13,14 @@ namespace Birds.Application.Mappings
             CreateMap<Bird, BirdDTO>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name.ToString()));
 
-            CreateMap<CreateBirdDTO, Bird>()
-            .ConstructUsing(dto => new Bird(
-                Guid.NewGuid(),
-                Enum.Parse<BirdsName>(dto.Name, true),
-                dto.Description,
-                dto.Arrival,
-                true
-            ));
+            CreateMap<CreateBirdCommand, Bird>()
+                .ConstructUsing(cmd => new Bird(
+                    Guid.NewGuid(),
+                    Enum.Parse<BirdsName>(cmd.Name, true), // Безопасно, т.к. валидируется в CreateBirdCommandValidator
+                    cmd.Description,
+                    cmd.Arrival,
+                    true
+                ));
         }
     }
 }
