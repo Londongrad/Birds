@@ -21,6 +21,16 @@ namespace Birds.Application.Mappings
                     cmd.Arrival,
                     true
                 ));
+
+            CreateMap<CreateBirdCommand, BirdDTO>()
+                .ConstructUsing(cmd => new BirdDTO(
+                    Guid.NewGuid(),
+                    cmd.Name.ToString(),
+                    cmd.Description,
+                    cmd.Arrival,
+                    null,
+                    true
+                ));
         }
     }
 }

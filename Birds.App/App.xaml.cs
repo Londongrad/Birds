@@ -1,6 +1,6 @@
 ﻿using Birds.Application;
 using Birds.Infrastructure;
-using Birds.UI.Services;
+using Birds.UI;
 using Birds.UI.ViewModels;
 using Birds.UI.Views.Windows;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,11 +27,9 @@ namespace Birds.App
                     var connectionString = "Data Source=birds.db";
                     services.AddInfrastructure(connectionString);
 
-                    services.AddSingleton<MainWindow>();
-                    services.AddSingleton<MainViewModel>();
-                    services.AddTransient<AddBirdViewModel>();
-                    services.AddTransient<BirdListViewModel>();
-                    services.AddSingleton<INavigationService, NavigationService>();
+                    services.AddUI();
+
+
                 })
                 .Build();
 

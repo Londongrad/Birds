@@ -1,13 +1,15 @@
 ﻿using Birds.Application.DTOs;
+using Birds.Application.Notifications;
 using Birds.Application.Queries.GetAllBirds;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace Birds.UI.ViewModels
 {
-    public partial class BirdListViewModel : ObservableObject
+    public partial class BirdListViewModel : ObservableObject, INotificationHandler<BirdCreatedNotification>
     {
         private readonly IMediator _mediator;
 
@@ -22,9 +24,16 @@ namespace Birds.UI.ViewModels
         [RelayCommand]
         private async Task LoadAsync()
         {
+            Birds.Clear();
             var result = await _mediator.Send(new GetAllBirdsQuery());
+            foreach (var bird in result)
+                Birds.Add(bird);
+        }
 
-            Birds = new ObservableCollection<BirdDTO>(result);
+        public Task Handle(BirdCreatedNotification notification, CancellationToken cancellationToken)
+        {
+            Birds.Add(notification.Bird);
+            return Task.CompletedTask;
         }
     }
 }

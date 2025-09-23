@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Birds.Application.Behaviors;
+﻿using Birds.Application.Behaviors;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,9 +10,6 @@ namespace Birds.Application
     {
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
-            services.AddMediatR(cfg =>
-                cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
-
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
             // Behaviors

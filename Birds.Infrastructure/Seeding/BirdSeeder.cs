@@ -19,7 +19,7 @@ namespace Birds.Infrastructure.Seeding
                 using var scope = _services.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<BirdDbContext>();
 
-                context.Database.EnsureDeleted();
+                //context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
 
                 if (!context.Birds.Any())
