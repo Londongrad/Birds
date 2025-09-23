@@ -1,16 +1,16 @@
-﻿using Birds.UI.Common;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System.Windows.Input;
 
 namespace Birds.UI.Services
 {
     public interface INavigationService
     {
-        ViewModelBase? Current { get; }
+        ObservableObject? Current { get; }
 
-        void NavigateTo(ViewModelBase viewModel);
+        void NavigateTo(ObservableObject viewModel);
 
         void NavigateToType(Type type);
-        void AddCreator(Type type, Func<ViewModelBase> creator);
+        void AddCreator(Type type, Func<ObservableObject> creator);
 
         ICommand NavigateToCommand { get; }
         ICommand NavigateToTypeCommand { get; }

@@ -1,17 +1,18 @@
-﻿using Birds.UI.Common;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using System.Windows.Input;
 
 namespace Birds.UI.Services
 {
-    public class NavigationService : ViewModelBase, INavigationService
+    public class NavigationService : ObservableObject, INavigationService
     {
-        private readonly Dictionary<Type, Func<ViewModelBase>> _typeCreators = new();
+        private readonly Dictionary<Type, Func<ObservableObject>> _creators = new();
 
-        private ViewModelBase? _current;
-        public ViewModelBase? Current
+        private ObservableObject? _current;
+        public ObservableObject? Current
         {
             get => _current;
-            protected set => SetProperty(ref _current, value);
+            private set => SetProperty(ref _current, value);
         }
 
         public ICommand NavigateToCommand { get; }
@@ -19,11 +20,12 @@ namespace Birds.UI.Services
 
         public NavigationService()
         {
-            NavigateToCommand = new RelayCommand(vm =>
+            NavigateToCommand = new RelayCommand<object>(vm =>
             {
-                if (vm is ViewModelBase target)
+                if (vm is ObservableObject target)
                     NavigateTo(target);
             });
+
             NavigateToTypeCommand = new RelayCommand<Type>(t =>
             {
                 if (t != null)
@@ -31,26 +33,22 @@ namespace Birds.UI.Services
             });
         }
 
-        public void NavigateTo(ViewModelBase viewModel) => Current = viewModel;
+        public void NavigateTo(ObservableObject viewModel)
+        {
+            Current = viewModel;
+        }
 
         public void NavigateToType(Type type)
         {
-            if (_typeCreators.TryGetValue(type, out var creator))
-            {
+            if (_creators.TryGetValue(type, out var creator))
                 Current = creator();
-            }
             else
-            {
                 Current = null;
-            }
         }
 
-        public void AddCreator(Type type, Func<ViewModelBase> creator)
+        public void AddCreator(Type type, Func<ObservableObject> creator)
         {
-            ArgumentNullException.ThrowIfNull(type);
-            ArgumentNullException.ThrowIfNull(creator);
-
-            _typeCreators[type] = creator;
+            _creators[type] = creator ?? throw new ArgumentNullException(nameof(creator));
         }
     }
 }
