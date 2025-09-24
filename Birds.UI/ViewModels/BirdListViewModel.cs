@@ -1,17 +1,18 @@
 ﻿using Birds.Application.DTOs;
 using Birds.Application.Notifications;
 using Birds.Application.Queries.GetAllBirds;
+using Birds.Domain.Enums;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 
 namespace Birds.UI.ViewModels
 {
     public partial class BirdListViewModel : ObservableObject, INotificationHandler<BirdCreatedNotification>
     {
         private readonly IMediator _mediator;
+        public static Array BirdNames => Enum.GetValues(typeof(BirdsName));
 
         public BirdListViewModel(IMediator mediator)
         {

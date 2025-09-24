@@ -8,11 +8,33 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <StackPanel Margin="20">
-        <ComboBox ItemsSource="{Binding BirdNames}"
-                  SelectedItem="{Binding SelectedBirdName}"
-                  IsEditable="False" />
-        <TextBox Text="{Binding Description}"/>
-        <DatePicker SelectedDate="{Binding Arrival}" />
-        <Button Content="Сохранить" Command="{Binding SaveCommand}" />
+        <StackPanel>
+            <TextBlock Style="{DynamicResource TextBlockOnAddStyle}"
+                       Text="Bird's type" />
+
+            <ComboBox ItemsSource="{Binding BirdNames}"
+                      SelectedValue="{Binding SelectedBirdName}"
+                      IsEditable="False">
+            </ComboBox>
+
+            <TextBlock Style="{DynamicResource TextBlockOnAddStyle}"
+                       Text="Description" />
+
+            <TextBox Style="{DynamicResource TextBoxOnAddStyle}"
+                     Text="{Binding Description}" />
+
+
+            <TextBlock Style="{DynamicResource TextBlockOnAddStyle}"
+                       Text="Arrival" />
+
+            <TextBox Style="{DynamicResource TextBoxOnAddStyle}"
+                     Text="{Binding Arrival, 
+                            ConverterCulture=ru-ru}" />
+
+            <Button Content="Save the bird"
+                    Command="{Binding SaveCommand}"
+                    CommandParameter="{Binding}"
+                    Style="{StaticResource AddBirdButton}" />
+        </StackPanel>
     </StackPanel>
 </UserControl>

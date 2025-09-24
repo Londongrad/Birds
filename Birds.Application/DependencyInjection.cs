@@ -1,4 +1,5 @@
 ﻿using Birds.Application.Behaviors;
+using Birds.Application.Commands.CreateBird;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,11 @@ namespace Birds.Application
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
 
             services.AddAutoMapper(cfg => { }, Assembly.GetExecutingAssembly());
+
+            services.AddMediatR(cfg =>
+            {
+                cfg.RegisterServicesFromAssembly(typeof(CreateBirdCommandHandler).Assembly);
+            });
 
             return services;
         }

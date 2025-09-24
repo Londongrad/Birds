@@ -1,5 +1,4 @@
-﻿using Birds.Application.Commands.CreateBird;
-using Birds.Application.Notifications;
+﻿using Birds.Application.Notifications;
 using Birds.UI.Services;
 using Birds.UI.ViewModels;
 using Birds.UI.Views.Windows;
@@ -20,11 +19,6 @@ namespace Birds.UI
 
             services.AddSingleton<INotificationHandler<BirdCreatedNotification>>(sp =>
                 sp.GetRequiredService<BirdListViewModel>());
-
-            services.AddMediatR(cfg =>
-            {
-                cfg.RegisterServicesFromAssembly(typeof(CreateBirdCommandHandler).Assembly);
-            });
 
             return services;
         }

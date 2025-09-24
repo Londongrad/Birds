@@ -6,9 +6,12 @@
         xmlns:vm="clr-namespace:Birds.UI.ViewModels" 
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
         mc:Ignorable="d"
-        Title="MainWindow" 
-        Height="450" 
-        Width="800">
+        MinHeight="600"
+        Width="1400"
+        MinWidth="1000"
+        Background="Transparent"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        WindowStartupLocation="CenterScreen">
     <Border Background="#272544">
         <Grid>
             <Grid.ColumnDefinitions>

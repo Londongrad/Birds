@@ -16,6 +16,7 @@
 
         protected EntityBase(Guid id)
         {
+            CreatedAt = UpdatedAt = DateTime.UtcNow;
             Id = id;
         }
         #endregion

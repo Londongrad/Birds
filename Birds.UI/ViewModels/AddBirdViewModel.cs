@@ -14,7 +14,7 @@ namespace Birds.UI.ViewModels
 
         [ObservableProperty] private BirdsName selectedBirdName;
         [ObservableProperty] private string? description;
-        [ObservableProperty] private DateTime arrival = DateTime.UtcNow;
+        [ObservableProperty] private DateOnly arrival = DateOnly.FromDateTime(DateTime.Now);
 
         [RelayCommand]
         private async Task SaveAsync()
@@ -22,7 +22,7 @@ namespace Birds.UI.ViewModels
             var command = new CreateBirdCommand(
                 SelectedBirdName,
                 Description,
-                DateOnly.FromDateTime(Arrival)
+                Arrival
             );
 
             await _mediator.Send(command);

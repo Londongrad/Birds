@@ -16,6 +16,8 @@ namespace Birds.UI.ViewModels
         {
             _navigation = navigation;
 
+            _navigation.NavigateTo(addBirdVM);
+
             _navigation.AddCreator(typeof(BirdListViewModel), () => birdVM);
             _navigation.AddCreator(typeof(AddBirdViewModel), () => addBirdVM);
         }

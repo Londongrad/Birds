@@ -15,10 +15,7 @@ namespace Birds.Application.Behaviors
         {
             _logger.LogInformation("Handling {RequestType}", typeof(TRequest).Name);
 
-            // RequestHandlerDelegate<TResponse> уже замкнут на CancellationToken при вызове. Перенаправлять его не надо.
-#pragma warning disable CA2016 // Перенаправьте параметр "CancellationToken" в методы
             var response = await next();
-#pragma warning restore CA2016 // Перенаправьте параметр "CancellationToken" в методы
 
             _logger.LogInformation("Handled {RequestType}", typeof(TRequest).Name);
 
