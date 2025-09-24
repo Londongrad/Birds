@@ -11,8 +11,8 @@ namespace Birds.UI.ViewModels
         private ObservableObject? current;
 
         public MainViewModel(INavigationService navigation,
-            BirdListViewModel birdVM,
-            AddBirdViewModel addBirdVM)
+                             BirdListViewModel birdVM,
+                             AddBirdViewModel addBirdVM)
         {
             _navigation = navigation;
 

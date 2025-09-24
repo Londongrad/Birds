@@ -1,7 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.DependencyInjection;
-using System.Windows.Input;
 
 namespace Birds.UI.Services
 {
@@ -16,35 +14,41 @@ namespace Birds.UI.Services
             private set => SetProperty(ref _current, value);
         }
 
-        public ICommand NavigateToCommand { get; }
-        public ICommand NavigateToTypeCommand { get; }
+        public IAsyncRelayCommand<object?> NavigateToCommand { get; }
+        public IAsyncRelayCommand<Type?> NavigateToTypeCommand { get; }
 
         public NavigationService()
         {
-            NavigateToCommand = new RelayCommand<object>(vm =>
-            {
-                if (vm is ObservableObject target)
-                    NavigateTo(target);
-            });
-
-            NavigateToTypeCommand = new RelayCommand<Type>(t =>
-            {
-                if (t != null)
-                    NavigateToType(t);
-            });
+            NavigateToCommand = new AsyncRelayCommand<object?>(NavigateTo);
+            NavigateToTypeCommand = new AsyncRelayCommand<Type?>(NavigateToType);
         }
 
-        public void NavigateTo(ObservableObject viewModel)
+        public async Task NavigateTo(object? vm)
+        {
+            if (vm is ObservableObject target)
+                await NavigateToInternal(target);
+        }
+
+        public async Task NavigateToType(Type? type)
+        {
+            if (type == null)
+                return;
+
+            if (_creators.TryGetValue(type, out var creator))
+            {
+                var vm = creator();
+                await NavigateToInternal(vm);
+            }
+        }
+
+        public async Task NavigateToInternal(ObservableObject viewModel)
         {
             Current = viewModel;
-        }
 
-        public void NavigateToType(Type type)
-        {
-            if (_creators.TryGetValue(type, out var creator))
-                Current = creator();
-            else
-                Current = null;
+            if (viewModel is IAsyncNavigatedTo asyncVm)
+            {
+                await asyncVm.OnNavigatedToAsync();
+            }
         }
 
         public void AddCreator(Type type, Func<ObservableObject> creator)

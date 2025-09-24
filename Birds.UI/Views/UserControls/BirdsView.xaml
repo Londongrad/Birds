@@ -78,7 +78,7 @@
                             <TextBlock Style="{DynamicResource TextBlockOnBirdsStyle}"
                                    Text="{Binding Departure, ConverterCulture=ru-ru}" />
 
-                            <StackPanel Margin="0 0 10 0">
+                            <!--<StackPanel Margin="0 0 10 0">
                                 <StackPanel.Style>
                                     <Style TargetType="StackPanel">
                                         <Style.Triggers>
@@ -91,7 +91,7 @@
                                     </Style>
                                 </StackPanel.Style>
 
-                                <!--<Button Style="{DynamicResource DeleteButtonStyle}" 
+                                --><!--<Button Style="{DynamicResource DeleteButtonStyle}" 
                                     Content="Удалить"
                                     Command="{Binding DeleteBirdCommand, 
                                                       Mode=OneWay, 
@@ -102,9 +102,9 @@
                                 <TextBox Style="{DynamicResource TextBoxBirdsStyle}"
                                      Text="{Binding Departure,
                                                     ConverterCulture=ru-ru,
-                                                    Source={StaticResource mainVM}}" />-->
+                                                    Source={StaticResource mainVM}}" />--><!--
 
-                            </StackPanel>
+                            </StackPanel>-->
                             <!--<Button Style="{DynamicResource DeleteButtonStyle}" 
                                 Command="{Binding RemoveBirdCommand, 
                                                   Mode=OneWay, 
