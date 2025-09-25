@@ -29,6 +29,12 @@ namespace Birds.Infrastructure.Persistence.Configurations
             builder.Property(b => b.IsAlive)
                 .IsRequired()
                 .HasDefaultValue(true);
+
+            builder.Property(b => b.CreatedAt)
+                .HasDefaultValue(DateTime.UtcNow);
+
+            builder.Property(b => b.UpdatedAt)
+                .HasDefaultValue(DateTime.UtcNow);
         }
     }
 }

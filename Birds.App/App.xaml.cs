@@ -20,16 +20,12 @@ namespace Birds.App
             _host = Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    // Application слой
                     services.AddApplication();
 
-                    // Infrastructure слой (с подключением к SQLite)
                     var connectionString = "Data Source=birds.db";
                     services.AddInfrastructure(connectionString);
 
                     services.AddUI();
-
-
                 })
                 .Build();
 

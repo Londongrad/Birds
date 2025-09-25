@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Birds.Application\Birds.Application.csproj" />
+    <ProjectReference Include="..\Birds.Infrastructure\Birds.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

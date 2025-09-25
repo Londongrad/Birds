@@ -6,43 +6,81 @@ using Birds.UI.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MediatR;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
+using System.ComponentModel;
+using System.Windows.Data;
 
 namespace Birds.UI.ViewModels
 {
-    public partial class BirdListViewModel : ObservableObject, 
+    public partial class BirdListViewModel : ObservableObject,
                                              INotificationHandler<BirdCreatedNotification>,
                                              IAsyncNavigatedTo
     {
-        private readonly IMediator _mediator;
-        private bool _isLoaded;
-        public static Array BirdNames => Enum.GetValues(typeof(BirdsName));
-
         public BirdListViewModel(IMediator mediator)
         {
             _mediator = mediator;
+
+            BirdsView = CollectionViewSource.GetDefaultView(Birds);
         }
 
-        [ObservableProperty]
-        private ObservableCollection<BirdDTO> birds = new();
+        #region [ Fields ]
 
+        private readonly IMediator _mediator;
+        private bool _isLoaded; // Флаг: выполнена ли начальная загрузка (чтобы не грузить повторно)
+        private int _isLoading; // Флаг: выполняется ли загрузка в данный момент (0 = нет, 1 = да)
+
+        #endregion [ Fields ]
+
+        #region [ Properties ]
+
+        public ObservableCollection<BirdDTO> Birds { get; } = new();
+        public static Array BirdNames => Enum.GetValues(typeof(BirdsName));
+        public ICollectionView BirdsView { get; }
+
+        #endregion [ Properties ]
+
+        #region [ Methods ]
+
+        /// <summary>
+        /// Загружает всех птиц из БД.
+        /// Используется защита от параллельных вызовов (Interlocked).
+        /// </summary>
         private async Task LoadAsync()
         {
-            Debug.WriteLine("Loading birds...");
-            Birds.Clear();
-            var result = await _mediator.Send(new GetAllBirdsQuery());
-            foreach (var bird in result)
-                Birds.Add(bird);
+            // Interlocked предотвращает гонку условий при одновременных вызовах
+            if (Interlocked.Exchange(ref _isLoading, 1) == 1) return;
+            try
+            {
+                Birds.Clear();
+                var result = await _mediator.Send(new GetAllBirdsQuery());
 
-            _isLoaded = true;
+                // DeferRefresh уменьшает количество обновлений UI при массовой загрузке
+                using (BirdsView.DeferRefresh())
+                {
+                    foreach (var bird in result)
+                        Birds.Add(bird);
+                }
+
+                _isLoaded = true;
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _isLoading, 0);
+            }
         }
 
         public Task Handle(BirdCreatedNotification notification, CancellationToken cancellationToken)
         {
-            Birds.Add(notification.Bird);
+            var d = System.Windows.Application.Current.Dispatcher;
+            if (d.CheckAccess())
+                Birds.Add(notification.Bird); // Уже на UI-потоке — добавляем напрямую
+            else
+                d.BeginInvoke(() => Birds.Add(notification.Bird)); // Переключаемся на UI-поток
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Вызывает загрузку только один раз при первом переходе на эту ViewModel.
+        /// </summary>
         public async Task OnNavigatedToAsync()
         {
             if (!_isLoaded)
@@ -50,5 +88,13 @@ namespace Birds.UI.ViewModels
                 await LoadAsync();
             }
         }
+
+        #endregion [ Methods ]
+
+        #region [ Commands ]
+
+
+
+        #endregion [ Commands ]
     }
 }
