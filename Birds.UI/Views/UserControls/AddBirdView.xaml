@@ -46,9 +46,7 @@
                                       ValidatesOnNotifyDataErrors=True,
                                       UpdateSourceTrigger=PropertyChanged}" />
 
-            <Button Content="Save the bird"
-                    Command="{Binding SaveCommand}"
-                    Style="{StaticResource AddBirdButton}" />
+            <Button Content="Save the bird" Command="{Binding SaveCommand}" Style="{StaticResource AddBirdButton}" />
         </StackPanel>
     </Border>
 </UserControl>

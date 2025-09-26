@@ -73,8 +73,9 @@ namespace Birds.UI.ViewModels
 
             var min = new DateOnly(2020, 1, 1);
             var max = DateOnly.FromDateTime(DateTime.Today);
+
             if (d < min || d > max)
-                return new ValidationResult($"Дата должна быть в диапазоне {min:yyyy-MM-dd} – {max:yyyy-MM-dd}");
+                return new ValidationResult($"Дата должна быть в диапазоне {min:dd-MM-yyyy} – {max:dd-MM-yyyy}");
 
             return ValidationResult.Success;
         }

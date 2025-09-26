@@ -1,81 +1,70 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- 1) Пустой шаблон: отключает любую красную рамку у контейнеров -->
     <ControlTemplate x:Key="NoErrorTemplate">
         <AdornedElementPlaceholder />
     </ControlTemplate>
 
-    <!-- 2) Шаблон для полей: подсветка + текст ошибки под контролом -->
+    <!-- Validation.xaml -->
     <ControlTemplate x:Key="FieldErrorTemplate">
-        <StackPanel>
-            <AdornedElementPlaceholder />
-            <TextBlock Margin="4,2,0,0"
-                       Foreground="Red"
-                       FontSize="12"
-                       Text="{Binding [0].ErrorContent}" />
-        </StackPanel>
+        <DockPanel LastChildFill="True">
+            <!-- сам контрол -->
+            <AdornedElementPlaceholder x:Name="adorner" DockPanel.Dock="Left" />
+
+            <!-- ошибки справа -->
+            <ItemsControl x:Name="errors" DockPanel.Dock="Right" Margin="8,0,0,0" VerticalAlignment="Center" ItemsSource="{Binding ElementName=adorner,
+                                            Path=AdornedElement.(Validation.Errors)}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Foreground="Red" FontSize="14" TextWrapping="Wrap" Text="{Binding ErrorContent}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </DockPanel>
+
+        <!-- скрываем блок, когда ошибок нет -->
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding ElementName=adorner,
+                                       Path=AdornedElement.(Validation.HasError)}" Value="False">
+                <Setter TargetName="errors" Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+        </ControlTemplate.Triggers>
     </ControlTemplate>
 
-    <!-- Гасим подсветку у ВСЕХ контейнеров -->
+    <!-- Подключаем пустой ErrorTemplate глобально, чтобы убрать красную обводку всего контрола -->
     <Style TargetType="Panel">
-        <Setter Property="Validation.ErrorTemplate"
-                Value="{StaticResource NoErrorTemplate}" />
+        <Setter Property="Validation.ErrorTemplate" Value="{StaticResource NoErrorTemplate}" />
     </Style>
 
     <Style TargetType="Border">
-        <Setter Property="Validation.ErrorTemplate"
-                Value="{StaticResource NoErrorTemplate}" />
+        <Setter Property="Validation.ErrorTemplate" Value="{StaticResource NoErrorTemplate}" />
     </Style>
 
-    <!-- Важное: контейнеры, которые являются Control -->
     <Style TargetType="UserControl">
-        <Setter Property="Validation.ErrorTemplate"
-                Value="{StaticResource NoErrorTemplate}" />
+        <Setter Property="Validation.ErrorTemplate" Value="{StaticResource NoErrorTemplate}" />
     </Style>
 
     <Style TargetType="Window">
-        <Setter Property="Validation.ErrorTemplate"
-                Value="{StaticResource NoErrorTemplate}" />
+        <Setter Property="Validation.ErrorTemplate" Value="{StaticResource NoErrorTemplate}" />
     </Style>
 
     <Style TargetType="ContentControl">
-        <Setter Property="Validation.ErrorTemplate"
-                Value="{StaticResource NoErrorTemplate}" />
+        <Setter Property="Validation.ErrorTemplate" Value="{StaticResource NoErrorTemplate}" />
     </Style>
 
     <Style TargetType="ContentPresenter">
-        <Setter Property="Validation.ErrorTemplate"
-                Value="{StaticResource NoErrorTemplate}" />
+        <Setter Property="Validation.ErrorTemplate" Value="{StaticResource NoErrorTemplate}" />
     </Style>
 
-    <!-- Включаем красивую подсветку для инпутов (если нет своих стилей, они подхватятся) -->
     <Style TargetType="TextBox">
-        <Setter Property="Validation.ErrorTemplate"
-                Value="{StaticResource FieldErrorTemplate}" />
-        <Style.Triggers>
-            <Trigger Property="Validation.HasError"
-                     Value="True">
-                <Setter Property="BorderBrush"
-                        Value="Red" />
-                <Setter Property="BorderThickness"
-                        Value="2" />
-            </Trigger>
-        </Style.Triggers>
+        <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource NoErrorTemplate}" />
     </Style>
+
+    <!--<Style TargetType="ComboBox">
+        <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource NoErrorTemplate}" />
+    </Style>-->
 
     <Style TargetType="DatePicker">
-        <Setter Property="Validation.ErrorTemplate"
-                Value="{StaticResource FieldErrorTemplate}" />
-        <Style.Triggers>
-            <Trigger Property="Validation.HasError"
-                     Value="True">
-                <Setter Property="BorderBrush"
-                        Value="Red" />
-                <Setter Property="BorderThickness"
-                        Value="2" />
-            </Trigger>
-        </Style.Triggers>
+        <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource NoErrorTemplate}" />
     </Style>
-
 </ResourceDictionary>
