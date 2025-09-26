@@ -74,7 +74,7 @@
                       Offset="1.0" />
     </LinearGradientBrush>
     <SolidColorBrush x:Key="ComboBox.MouseOver.Border"
-                     Color="Black"/>
+                     Color="Black" />
     <SolidColorBrush x:Key="ComboBox.MouseOver.Glyph"
                      Color="Transparent" />
     <SolidColorBrush x:Key="ComboBox.MouseOver.Editable.Background"
@@ -314,6 +314,7 @@
             </Setter.Value>
         </Setter>
     </Style>
+    
     <ControlTemplate x:Key="ComboBoxEditableTemplate"
                      TargetType="{x:Type ComboBox}">
         <Grid x:Name="templateRoot"
@@ -427,6 +428,7 @@
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
+    
     <ControlTemplate x:Key="ComboBoxTemplate"
                      TargetType="{x:Type ComboBox}">
         <Grid x:Name="templateRoot"
@@ -530,7 +532,10 @@
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
+    
     <Style TargetType="{x:Type ComboBox}">
+        <Setter Property="Validation.ErrorTemplate"
+                Value="{StaticResource FieldErrorTemplate}" />
         <Setter Property="FocusVisualStyle"
                 Value="{StaticResource FocusVisual}" />
         <Setter Property="Background"
@@ -555,14 +560,23 @@
                 Value="False" />
         <Setter Property="Template"
                 Value="{StaticResource ComboBoxTemplate}" />
-        <Setter Property="Height" Value="40" />
-        <Setter Property="Width" Value="150" />
-        <Setter Property="Foreground" Value="AliceBlue" />
-        <Setter Property="HorizontalAlignment" Value="Center" />
-        <Setter Property="HorizontalContentAlignment" Value="Center" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="FontSize" Value="20" />
-        <Setter Property="Margin" Value="0 0 0 0" />
+        <Setter Property="Height"
+                Value="40" />
+        <Setter Property="Width"
+                Value="150" />
+        <Setter Property="Foreground"
+                Value="AliceBlue" />
+        <Setter Property="HorizontalAlignment"
+                Value="Center" />
+        <Setter Property="HorizontalContentAlignment"
+                Value="Center" />
+        <Setter Property="VerticalContentAlignment"
+                Value="Center" />
+        <Setter Property="FontSize"
+                Value="20" />
+        <Setter Property="Margin"
+                Value="0 0 0 0" />
+
         <Style.Triggers>
             <Trigger Property="IsEditable"
                      Value="true">
@@ -573,6 +587,15 @@
                 <Setter Property="Template"
                         Value="{StaticResource ComboBoxEditableTemplate}" />
             </Trigger>
+
+            <Trigger Property="Validation.HasError"
+                     Value="True">
+                <Setter Property="BorderBrush"
+                        Value="Red" />
+                <Setter Property="BorderThickness"
+                        Value="2" />
+            </Trigger>
+            
         </Style.Triggers>
     </Style>
 </ResourceDictionary>

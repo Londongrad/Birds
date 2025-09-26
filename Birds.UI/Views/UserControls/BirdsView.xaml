@@ -1,18 +1,19 @@
 ﻿<UserControl x:Class="Birds.UI.Views.UserControls.BirdsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:vm="clr-namespace:Birds.UI.ViewModels" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vm="clr-namespace:Birds.UI.ViewModels"
              xmlns:rep="clr-namespace:Birds.UI.Views.Extensions"
              xmlns:app="clr-namespace:Birds.Application.DTOs;assembly=Birds.Application"
              d:DataContext="{d:DesignInstance Type=vm:BirdListViewModel}"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             mc:Ignorable="d"
+             d:DesignHeight="450"
+             d:DesignWidth="800">
 
     <ScrollViewer VerticalScrollBarVisibility="Visible"
-              HorizontalScrollBarVisibility="Hidden"
-              Focusable="False">
+                  HorizontalScrollBarVisibility="Hidden"
+                  Focusable="False">
 
         <StackPanel>
 
@@ -20,11 +21,11 @@
                 <TextBlock Text="{Binding BirdsView.Count, 
                                           StringFormat=Всего птиц: {0},
                                           Mode=OneTime}"
-                       Margin="0 0 0 20"
-                       Foreground="White"
-                       FontSize="24"
-                       VerticalAlignment="Center"
-                       HorizontalAlignment="Center" />
+                           Margin="0 0 0 20"
+                           Foreground="White"
+                           FontSize="24"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center" />
 
                 <!--<ComboBox />-->
 
@@ -38,7 +39,7 @@
 
             <ItemsControl ItemsSource="{Binding BirdsView}"
                           Margin="0 0 0 0">
-                
+
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="{x:Type vm:BirdViewModel}">
                         <StackPanel Orientation="Horizontal"
@@ -63,13 +64,13 @@
                             </TextBlock>
 
                             <TextBlock Style="{DynamicResource TextBlockOnBirdsStyle}"
-                                   Text="{Binding Arrival, ConverterCulture=ru-ru}" />
+                                       Text="{Binding Arrival, ConverterCulture=ru-ru}" />
 
                             <TextBlock Style="{DynamicResource TextBlockOnBirdsStyle}"
-                                   Text="⚊" />
+                                       Text="⚊" />
 
                             <TextBlock Style="{DynamicResource TextBlockOnBirdsStyle}"
-                                   Text="{Binding Departure, ConverterCulture=ru-ru}" />
+                                       Text="{Binding Departure, ConverterCulture=ru-ru}" />
 
                             <!--<StackPanel Margin="0 0 10 0">
                                 <StackPanel.Style>
@@ -84,7 +85,8 @@
                                     </Style>
                                 </StackPanel.Style>
 
-                                --><!--<Button Style="{DynamicResource DeleteButtonStyle}" 
+                                -->
+                            <!--<Button Style="{DynamicResource DeleteButtonStyle}" 
                                     Content="Удалить"
                                     Command="{Binding DeleteBirdCommand, 
                                                       Mode=OneWay, 
@@ -95,7 +97,8 @@
                                 <TextBox Style="{DynamicResource TextBoxBirdsStyle}"
                                      Text="{Binding Departure,
                                                     ConverterCulture=ru-ru,
-                                                    Source={StaticResource mainVM}}" />--><!--
+                                                    Source={StaticResource mainVM}}" />-->
+                            <!--
 
                             </StackPanel>-->
                             <!--<Button Style="{DynamicResource DeleteButtonStyle}" 

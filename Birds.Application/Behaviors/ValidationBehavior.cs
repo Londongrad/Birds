@@ -27,9 +27,7 @@ namespace Birds.Application.Behaviors
                     throw new ValidationException(failures);
             }
 
-#pragma warning disable CA2016 // Перенаправьте параметр "CancellationToken" в методы
             return await next();
-#pragma warning restore CA2016 // Перенаправьте параметр "CancellationToken" в методы
         }
     }
 }

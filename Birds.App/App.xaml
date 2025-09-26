@@ -18,9 +18,11 @@
                 <ResourceDictionary Source="pack://application:,,,/Birds.UI;component/wwwroot/Themes/TextBoxBirdsTheme.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/Birds.UI;component/wwwroot/Themes/ScrollViewerTheme.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/Birds.UI;component/wwwroot/Themes/DatePickerOnAddTheme.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/Birds.UI;component/wwwroot/Themes/ValidationStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <conv:DateOnlyToDateTimeConverter x:Key="DateOnlyConverter"/>
+            <conv:InverseBoolConverter x:Key="BoolConverter"/>
 
             <DataTemplate DataType="{x:Type vm:AddBirdViewModel}">
                 <v:AddBirdView />
