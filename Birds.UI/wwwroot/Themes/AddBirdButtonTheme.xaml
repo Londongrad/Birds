@@ -59,6 +59,15 @@
                             <Setter Property="ToolTipService.ShowOnDisabled" Value="True" />
                             <Setter Property="ToolTip" Value="The bound value is null or empty" />
                         </Trigger>
+                        <Trigger Property="IsMouseOver" Value="true">
+                            <Setter Property="Background" TargetName="border" Value="{StaticResource Button.MouseOver.Background}" />
+                            <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource Button.MouseOver.Border}" />
+                            <Setter Property="Effect" TargetName="border">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="AliceBlue" BlurRadius="15" ShadowDepth="0" Opacity="0.5"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

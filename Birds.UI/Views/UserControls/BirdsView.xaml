@@ -3,11 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:viewmodels="clr-namespace:Birds.UI.ViewModels" 
-             xmlns:enums="clr-namespace:Birds.Domain.Enums;assembly=Birds.Domain"
-             xmlns:domain="clr-namespace:Birds.Domain.Entities;assembly=Birds.Domain"
+             xmlns:vm="clr-namespace:Birds.UI.ViewModels" 
              xmlns:rep="clr-namespace:Birds.UI.Views.Extensions"
-             d:DataContext="{d:DesignInstance Type=viewmodels:BirdListViewModel}"
+             xmlns:app="clr-namespace:Birds.Application.DTOs;assembly=Birds.Application"
+             d:DataContext="{d:DesignInstance Type=vm:BirdListViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 
@@ -19,7 +18,8 @@
 
             <StackPanel>
                 <TextBlock Text="{Binding BirdsView.Count, 
-                                          StringFormat=Всего птиц: {0}}"
+                                          StringFormat=Всего птиц: {0},
+                                          Mode=OneTime}"
                        Margin="0 0 0 20"
                        Foreground="White"
                        FontSize="24"
@@ -38,21 +38,9 @@
 
             <ItemsControl ItemsSource="{Binding BirdsView}"
                           Margin="0 0 0 0">
-                <d:ItemsControl.ItemsSource>
-                    <x:Array Type="{x:Type domain:Bird}">
-                        <rep:Bird Name="{x:Static enums:BirdsName.Воробей}" 
-                                  IsAlive="False" />
-                        <rep:Bird Name="{x:Static enums:BirdsName.Амадин}"    
-                                  IsAlive="True"  
-                                  Description="Умная птица" />
-                        <rep:Bird Name="{x:Static enums:BirdsName.Большак}"    
-                                  IsAlive="True"  />
-                        <rep:Bird Name="{x:Static enums:BirdsName.Гайка}"   
-                                  IsAlive="True"  />
-                    </x:Array>
-                </d:ItemsControl.ItemsSource>
+                
                 <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="{x:Type rep:Bird}">
+                    <DataTemplate DataType="{x:Type vm:BirdViewModel}">
                         <StackPanel Orientation="Horizontal"
                                     Margin="40 10 30 30">
 
