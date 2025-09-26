@@ -53,12 +53,12 @@ namespace Birds.UI.ViewModels
                 Birds.Clear();
                 var result = await _mediator.Send(new GetAllBirdsQuery());
 
-                // DeferRefresh уменьшает количество обновлений UI при массовой загрузке
-                using (BirdsView.DeferRefresh())
-                {
+                //// DeferRefresh уменьшает количество обновлений UI при массовой загрузке
+                //using (BirdsView.DeferRefresh())
+                //{
                     foreach (var bird in result)
                         Birds.Add(bird);
-                }
+                //}
 
                 _isLoaded = true;
             }
