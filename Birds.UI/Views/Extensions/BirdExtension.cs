@@ -1,30 +1,36 @@
-﻿using Birds.Domain.Entities;
-using Birds.Domain.Enums;
+﻿using Birds.Application.DTOs;
+using System.Globalization;
 using System.Windows.Markup;
 
 namespace Birds.UI.Views.Extensions
 {
-    [MarkupExtensionReturnType(typeof(Bird))]
+    [MarkupExtensionReturnType(typeof(BirdDTO))]
     public class BirdExtension : MarkupExtension
     {
-        public Guid? Id { get; set; }
-        public BirdsName Name { get; set; }
+        public string Name { get; set; } = "Птица";
         public string? Description { get; set; }
-        public DateOnly? Arrival { get; set; }
-        public DateOnly? Departure { get; set; }
+        public string? Arrival { get; set; }
+        public string? Departure { get; set; }
         public bool IsAlive { get; set; }
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
-            var id = Id ?? Guid.NewGuid();
-            var arrival = Arrival ?? DateOnly.FromDateTime(DateTime.Today);
+            var arrival = string.IsNullOrWhiteSpace(Arrival)
+                ? DateOnly.FromDateTime(DateTime.Today)
+                : DateOnly.Parse(Arrival, CultureInfo.InvariantCulture);
 
-            var bird = new Bird(id, Name, Description, arrival, IsAlive);
+            DateOnly? departure = string.IsNullOrWhiteSpace(Departure)
+                ? null
+                : DateOnly.Parse(Departure!, CultureInfo.InvariantCulture);
 
-            if (Departure.HasValue)
-                bird.SetDeparture(Departure.Value);
-
-            return bird;
+            return new BirdDTO(
+                Guid.NewGuid(),
+                Name,
+                Description,
+                arrival,
+                departure,
+                IsAlive
+            );
         }
     }
 }
