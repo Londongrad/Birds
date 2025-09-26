@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:Birds.App" 
              xmlns:vm="clr-namespace:Birds.UI.ViewModels;assembly=Birds.UI"
-             xmlns:v="clr-namespace:Birds.UI.Views.UserControls;assembly=Birds.UI">
+             xmlns:v="clr-namespace:Birds.UI.Views.UserControls;assembly=Birds.UI" 
+             xmlns:conv="clr-namespace:Birds.UI.Converters;assembly=Birds.UI">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -16,7 +17,10 @@
                 <ResourceDictionary Source="pack://application:,,,/Birds.UI;component/wwwroot/Themes/DeleteButtonTheme.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/Birds.UI;component/wwwroot/Themes/TextBoxBirdsTheme.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/Birds.UI;component/wwwroot/Themes/ScrollViewerTheme.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Birds.UI;component/wwwroot/Themes/DatePickerOnAddTheme.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <conv:DateOnlyToDateTimeConverter x:Key="DateOnlyConverter"/>
 
             <DataTemplate DataType="{x:Type vm:AddBirdViewModel}">
                 <v:AddBirdView />
