@@ -8,14 +8,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="wwwroot\Images\add.png" />
     <None Remove="wwwroot\Images\bird.ico" />
     <None Remove="wwwroot\Images\ex.png" />
     <None Remove="wwwroot\Images\file_basket_red.png" />
+    <None Remove="wwwroot\Images\list.png" />
     <None Remove="wwwroot\Images\ok.png" />
     <None Remove="wwwroot\Images\shutdown.png" />
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="wwwroot\Images\add.png" />
+    <Resource Include="wwwroot\Images\list.png" />
     <Resource Include="wwwroot\Images\ok.png" />
   </ItemGroup>
 

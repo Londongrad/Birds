@@ -1,124 +1,108 @@
-﻿<UserControl x:Class="Birds.UI.Views.UserControls.BirdsView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:vm="clr-namespace:Birds.UI.ViewModels"
-             xmlns:rep="clr-namespace:Birds.UI.Views.Extensions"
-             xmlns:app="clr-namespace:Birds.Application.DTOs;assembly=Birds.Application"
-             d:DataContext="{d:DesignInstance Type=vm:BirdListViewModel}"
-             mc:Ignorable="d"
-             d:DesignHeight="450"
-             d:DesignWidth="800">
+﻿<UserControl
+    x:Class="Birds.UI.Views.UserControls.BirdsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:app="clr-namespace:Birds.Application.DTOs;assembly=Birds.Application"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:rep="clr-namespace:Birds.UI.Views.Extensions"
+    xmlns:vm="clr-namespace:Birds.UI.ViewModels"
+    d:DataContext="{d:DesignInstance Type=vm:BirdListViewModel}"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
 
-    <ScrollViewer VerticalScrollBarVisibility="Visible"
-                  HorizontalScrollBarVisibility="Hidden"
-                  Focusable="False">
+    <Border
+        Margin="20"
+        Padding="20"
+        Background="#252535"
+        CornerRadius="20">
 
-        <StackPanel>
+        <DockPanel>
 
-            <StackPanel>
-                <TextBlock Text="{Binding BirdsView.Count, 
-                                          StringFormat=Всего птиц: {0},
-                                          Mode=OneTime}"
-                           Margin="0 0 0 20"
-                           Foreground="White"
-                           FontSize="24"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center" />
+            <TextBlock
+                Margin="0 0 0 20"
+                DockPanel.Dock="Top"
+                FontSize="24"
+                Text="{Binding BirdsView.Count,
+                               StringFormat=Всего птиц: {0},
+                               Mode=OneWay}" />
 
-                <!--<ComboBox />-->
+            <ListBox ItemsSource="{Binding BirdsView}">
 
-                <!--<Button    Content="Show only"
-                       Command="{Binding ShowOnlyCommand,
-                                         Mode=OneWay, 
-                                         Source={StaticResource mainVM}}"
-                       Style="{StaticResource AddBirdButton}" />-->
-
-            </StackPanel>
-
-            <ItemsControl ItemsSource="{Binding BirdsView}"
-                          Margin="0 0 0 0">
-
-                <ItemsControl.ItemTemplate>
+                <ListBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type vm:BirdViewModel}">
-                        <StackPanel Orientation="Horizontal"
-                                    Margin="40 10 30 30">
 
-                            <TextBlock Style="{DynamicResource TextBlockOnBirdsStyle}"
-                                       Text="{Binding Name}" />
+                        <Border
+                            Margin="0 5 20 5"
+                            Padding="10"
+                            HorizontalAlignment="Stretch"
+                            Background="#2D2D3D"
+                            CornerRadius="10">
 
-                            <TextBlock Text="{Binding Description}">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock"
-                                           BasedOn="{StaticResource TextBlockOnBirdsStyle}">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Description}"
-                                                         Value="">
-                                                <Setter Property="Visibility"
-                                                        Value="Collapsed" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
+                            <Grid HorizontalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*" />
+                                    <!--  Левая часть  -->
+                                    <ColumnDefinition Width="2*" />
+                                    <!--  Центр  -->
+                                    <ColumnDefinition Width="Auto" />
+                                    <!--  Справа кнопки  -->
+                                </Grid.ColumnDefinitions>
 
-                            <TextBlock Style="{DynamicResource TextBlockOnBirdsStyle}"
-                                       Text="{Binding Arrival, ConverterCulture=ru-ru}" />
+                                <!--  Название / описание  -->
+                                <StackPanel
+                                    Grid.Column="0"
+                                    Margin="5"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Orientation="Vertical">
+                                    <TextBlock
+                                        HorizontalAlignment="Left"
+                                        FontSize="16"
+                                        FontWeight="Bold"
+                                        Text="{Binding Name}" />
+                                    <TextBlock
+                                        Margin="0 2 20 2"
+                                        HorizontalAlignment="Left"
+                                        FontSize="14"
+                                        Foreground="#BBB"
+                                        Text="{Binding Description}" />
+                                </StackPanel>
 
-                            <TextBlock Style="{DynamicResource TextBlockOnBirdsStyle}"
-                                       Text="⚊" />
+                                <!--  Даты  -->
+                                <StackPanel
+                                    Grid.Column="1"
+                                    Margin="5"
+                                    Orientation="Horizontal">
+                                    <TextBlock
+                                        Margin="0 0 5 0"
+                                        Text="{Binding Arrival,
+                                                       StringFormat={}{0:dd.MM.yyyy},
+                                                       ConverterCulture=ru-ru}" />
+                                    <TextBlock
+                                        Margin="0 0 5 0"
+                                        Text="—" />
+                                    <TextBlock Text="{Binding Departure, StringFormat={}{0:dd.MM.yyyy}, ConverterCulture=ru-ru}" />
 
-                            <TextBlock Style="{DynamicResource TextBlockOnBirdsStyle}"
-                                       Text="{Binding Departure, ConverterCulture=ru-ru}" />
-
-                            <!--<StackPanel Margin="0 0 10 0">
-                                <StackPanel.Style>
-                                    <Style TargetType="StackPanel">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsActive}"
-                                                         Value="False">
-                                                <Setter Property="Visibility"
-                                                        Value="Collapsed" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </StackPanel.Style>
-
-                                -->
-                            <!--<Button Style="{DynamicResource DeleteButtonStyle}" 
-                                    Content="Удалить"
-                                    Command="{Binding DeleteBirdCommand, 
-                                                      Mode=OneWay, 
-                                                      Source={StaticResource mainVM}}"
-                                    CommandParameter="{Binding}">
-                                </Button>
-
-                                <TextBox Style="{DynamicResource TextBoxBirdsStyle}"
-                                     Text="{Binding Departure,
-                                                    ConverterCulture=ru-ru,
-                                                    Source={StaticResource mainVM}}" />-->
-                            <!--
-
-                            </StackPanel>-->
-                            <!--<Button Style="{DynamicResource DeleteButtonStyle}" 
-                                Command="{Binding RemoveBirdCommand, 
-                                                  Mode=OneWay, 
-                                                  Source={StaticResource mainVM}}"
-                                CommandParameter="{Binding}"
-                                Height="{Binding ActualWidth,
-                                                 Mode=OneWay,
-                                                 RelativeSource={RelativeSource Self}}">
-                                <Image VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"
-                                   Source="/wwwroot/Images/file_basket_red.png"
-                                   Width="30" />
-                            </Button>-->
-
-                        </StackPanel>
+                                </StackPanel>
+                                <!--  Кнопки действий  -->
+                                <StackPanel Grid.Column="2">
+                                    <Button
+                                        Content="★"
+                                        ToolTip="Избранное" />
+                                    <Button
+                                        Content="✎"
+                                        ToolTip="Редактировать" />
+                                    <Button
+                                        Content="🗑"
+                                        ToolTip="Удалить" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
                     </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </StackPanel>
-    </ScrollViewer>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+    </Border>
 </UserControl>

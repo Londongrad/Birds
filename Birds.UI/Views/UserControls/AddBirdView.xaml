@@ -1,52 +1,62 @@
-﻿<UserControl x:Class="Birds.UI.Views.UserControls.AddBirdView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:viewmodels="clr-namespace:Birds.UI.ViewModels"
-             xmlns:local="clr-namespace:Birds.UI.Converters"
-             d:DataContext="{d:DesignInstance Type=viewmodels:AddBirdViewModel}"
-             mc:Ignorable="d"
-             d:DesignHeight="500"
-             d:DesignWidth="400">
+﻿<UserControl
+    x:Class="Birds.UI.Views.UserControls.AddBirdView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Birds.UI.Converters"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="clr-namespace:Birds.UI.ViewModels"
+    d:DataContext="{d:DesignInstance Type=viewmodels:AddBirdViewModel}"
+    d:DesignHeight="500"
+    d:DesignWidth="400"
+    mc:Ignorable="d">
 
-    <Border Background="#252535"
-            CornerRadius="20"
-            Padding="20"
-            Margin="20">
+    <Border
+        Margin="20"
+        Padding="20"
+        Background="#252535"
+        CornerRadius="20">
         <StackPanel Margin="20">
-            <TextBlock Style="{DynamicResource TextBlockOnAddStyle}"
-                       Text="Bird's type" />
+            <TextBlock
+                Style="{DynamicResource TextBlockOnAddStyle}"
+                Text="Bird's type" />
 
-            <ComboBox ItemsSource="{Binding BirdNames}"
-                      SelectedItem="{Binding SelectedBirdName, 
-                                             Mode=TwoWay,
-                                             ValidatesOnNotifyDataErrors=True,
-                                             UpdateSourceTrigger=PropertyChanged}"
-                      IsEditable="False">
-            </ComboBox>
+            <ComboBox
+                IsEditable="False"
+                ItemsSource="{Binding BirdNames}"
+                SelectedItem="{Binding SelectedBirdName,
+                                       Mode=TwoWay,
+                                       ValidatesOnNotifyDataErrors=True,
+                                       UpdateSourceTrigger=PropertyChanged}" />
 
-            <TextBlock Style="{DynamicResource TextBlockOnAddStyle}"
-                       Text="Description" />
+            <TextBlock
+                Style="{DynamicResource TextBlockOnAddStyle}"
+                Text="Description" />
 
-            <TextBox Style="{DynamicResource TextBoxOnAddStyle}"
-                     Text="{Binding Description, 
-                                    Mode=TwoWay,
-                                    ValidatesOnNotifyDataErrors=True,
-                                    UpdateSourceTrigger=PropertyChanged}" />
+            <TextBox
+                Style="{DynamicResource TextBoxOnAddStyle}"
+                Text="{Binding Description,
+                               Mode=TwoWay,
+                               ValidatesOnNotifyDataErrors=True,
+                               UpdateSourceTrigger=PropertyChanged}" />
 
 
-            <TextBlock Style="{DynamicResource TextBlockOnAddStyle}"
-                       Text="Arrival" />
+            <TextBlock
+                Style="{DynamicResource TextBlockOnAddStyle}"
+                Text="Arrival" />
 
-            <DatePicker Style="{DynamicResource DatePickerOnAddStyle}"
-                        SelectedDate="{Binding Arrival,
-                                      Mode=TwoWay,
-                                      Converter={StaticResource DateOnlyConverter},
-                                      ValidatesOnNotifyDataErrors=True,
-                                      UpdateSourceTrigger=PropertyChanged}" />
+            <DatePicker
+                SelectedDate="{Binding Arrival,
+                                       Mode=TwoWay,
+                                       Converter={StaticResource DateOnlyConverter},
+                                       ValidatesOnNotifyDataErrors=True,
+                                       UpdateSourceTrigger=PropertyChanged}"
+                Style="{DynamicResource DatePickerOnAddStyle}" />
 
-            <Button Content="Save the bird" Command="{Binding SaveCommand}" Style="{StaticResource AddBirdButton}" />
+            <Button
+                Command="{Binding SaveCommand}"
+                Content="Save the bird"
+                Style="{StaticResource AddBirdButton}" />
         </StackPanel>
     </Border>
 </UserControl>
