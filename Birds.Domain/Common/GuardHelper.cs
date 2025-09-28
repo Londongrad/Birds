@@ -48,7 +48,6 @@
         {
             if (!Enum.IsDefined(value))
                 throw new ArgumentException($"{argumentName} has invalid value: {value}", argumentName);
-
         }
 
         public static void AgainstInvalidStringToEnum<TEnum>(string value, string argumentName) where TEnum : struct, Enum

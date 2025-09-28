@@ -503,7 +503,6 @@
                 <Setter Property="BorderBrush" Value="Red" />
                 <Setter Property="BorderThickness" Value="2" />
             </Trigger>
-
         </Style.Triggers>
     </Style>
 </ResourceDictionary>

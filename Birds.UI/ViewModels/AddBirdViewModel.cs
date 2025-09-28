@@ -81,13 +81,13 @@ namespace Birds.UI.ViewModels
         }
 
         // Автоматическая проверка при изменении свойств
-        partial void OnSelectedBirdNameChanged(BirdsName? value)
+        private partial void OnSelectedBirdNameChanged(BirdsName? value)
             => ValidateProperty(value, nameof(SelectedBirdName));
 
-        partial void OnDescriptionChanged(string? value)
+        private partial void OnDescriptionChanged(string? value)
             => ValidateProperty(value, nameof(Description));
 
-        partial void OnArrivalChanged(DateOnly value)
+        private partial void OnArrivalChanged(DateOnly value)
             => ValidateProperty(value, nameof(Arrival));
 
         #endregion [ Validation ]

@@ -8,8 +8,8 @@ using MediatR;
 namespace Birds.Application.Commands.CreateBird
 {
     public class CreateBirdCommandHandler(
-        IBirdRepository repository, 
-        IUnitOfWork unitOfWork, 
+        IBirdRepository repository,
+        IUnitOfWork unitOfWork,
         IMapper mapper,
         IMediator mediator)
         : IRequestHandler<CreateBirdCommand, Guid>

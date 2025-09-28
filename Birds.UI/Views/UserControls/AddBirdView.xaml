@@ -40,7 +40,6 @@
                                ValidatesOnNotifyDataErrors=True,
                                UpdateSourceTrigger=PropertyChanged}" />
 
-
             <TextBlock
                 Style="{DynamicResource TextBlockOnAddStyle}"
                 Text="Arrival" />

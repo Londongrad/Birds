@@ -33,7 +33,6 @@
             <DataTemplate DataType="{x:Type vm:BirdListViewModel}">
                 <v:BirdsView />
             </DataTemplate>
-
         </ResourceDictionary>
     </Application.Resources>
 </Application>

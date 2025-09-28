@@ -8,6 +8,7 @@ namespace Birds.UI.Services
         private readonly Dictionary<Type, Func<ObservableObject>> _creators = new();
 
         private ObservableObject? _current;
+
         public ObservableObject? Current
         {
             get => _current;

@@ -56,8 +56,8 @@ namespace Birds.UI.ViewModels
                 //// DeferRefresh уменьшает количество обновлений UI при массовой загрузке
                 //using (BirdsView.DeferRefresh())
                 //{
-                    foreach (var bird in result)
-                        Birds.Add(bird);
+                foreach (var bird in result)
+                    Birds.Add(bird);
                 //}
 
                 _isLoaded = true;
@@ -90,11 +90,5 @@ namespace Birds.UI.ViewModels
         }
 
         #endregion [ Methods ]
-
-        #region [ Commands ]
-
-
-
-        #endregion [ Commands ]
     }
 }

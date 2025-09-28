@@ -13,7 +13,7 @@ namespace Birds.App
     {
         private IHost? _host;
 
-        protected async override void OnStartup(StartupEventArgs e)
+        protected override async void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
@@ -46,5 +46,4 @@ namespace Birds.App
             base.OnExit(e);
         }
     }
-
 }

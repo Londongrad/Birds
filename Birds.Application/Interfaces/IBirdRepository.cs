@@ -1,5 +1,5 @@
-﻿using Birds.Domain.Entities;
-using Birds.Application.Exceptions;
+﻿using Birds.Application.Exceptions;
+using Birds.Domain.Entities;
 
 namespace Birds.Application.Interfaces
 {
@@ -17,21 +17,21 @@ namespace Birds.Application.Interfaces
 
         /// <summary>Добавляет новую птицу в контекст отслеживания.</summary>
         /// <remarks>
-        /// Метод <b>не выполняет сохранение в базе данных</b>. 
+        /// Метод <b>не выполняет сохранение в базе данных</b>.
         /// Для фиксации изменений необходимо вызвать <see cref="IUnitOfWork.SaveChangesAsync"/>.
         /// </remarks>
         Task<Guid> AddAsync(Bird bird, CancellationToken cancellationToken = default);
 
         /// <summary>Обновляет существующую птицу в контексте отслеживания.</summary>
         /// <remarks>
-        /// Метод <b>не выполняет сохранение в базе данных</b>. 
+        /// Метод <b>не выполняет сохранение в базе данных</b>.
         /// Для фиксации изменений необходимо вызвать <see cref="IUnitOfWork.SaveChangesAsync"/>.
         /// </remarks>
         void Update(Bird bird);
 
         /// <summary>Удаляет птицу из контекста отслеживания.</summary>
         /// <remarks>
-        /// Метод <b>не выполняет сохранение в базе данных</b>. 
+        /// Метод <b>не выполняет сохранение в базе данных</b>.
         /// Для фиксации изменений необходимо вызвать <see cref="IUnitOfWork.SaveChangesAsync"/>.
         /// </remarks>
         void Remove(Bird bird);
