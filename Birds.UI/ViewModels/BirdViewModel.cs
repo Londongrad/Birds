@@ -1,12 +1,14 @@
 ﻿using Birds.Application.Commands.DeleteBird;
+using Birds.Application.Commands.UpdateBird;
 using Birds.Application.DTOs;
+using Birds.Domain.Enums;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
 
 namespace Birds.UI.ViewModels
 {
-    public partial class BirdViewModel : ObservableObject
+    public partial class BirdViewModel : ObservableValidator
     {
         private readonly IMediator _mediator;
 
@@ -14,34 +16,88 @@ namespace Birds.UI.ViewModels
         {
             Dto = dto;
             _mediator = mediator;
-            _isAlive = dto.IsAlive;
+            Name = dto.Name;
+            Description = dto.Description;
+            Arrival = dto.Arrival;
+            Departure = dto.Departure;
+            isAlive = dto.IsAlive;
         }
 
-        public BirdDTO Dto { get; }
+        #region [ Properties ]
 
+        public BirdDTO Dto { get; }
         public Guid Id => Dto.Id;
 
-        public string Name => Dto.Name;
-        public string? Description => Dto.Description;
-        public DateOnly Arrival => Dto.Arrival;
-        public DateOnly? Departure => Dto.Departure;
+        #endregion [ Properties ]
+
+        #region [ ObservableProperties ]
 
         [ObservableProperty]
-        private bool _isAlive;
+        private string name;
 
-        // Пример derived-свойства
-        //public int Age => (DateTime.Today - Dto.Arrival).Days;
+        [ObservableProperty]
+        private string? description;
+
+        [ObservableProperty]
+        private DateOnly arrival;
+
+        [ObservableProperty]
+        private DateOnly? departure;
+
+        [ObservableProperty]
+        private bool isAlive;
+
+        [ObservableProperty]
+        private bool isConfirmingDelete;
+
+        [ObservableProperty]
+        private bool isEditing;
+
+        #endregion [ ObservableProperties ]
+
+        #region [ Commands ]
+
+        #region [ Commands/Delete ]
 
         [RelayCommand]
         private async Task DeleteAsync()
         {
             await _mediator.Send(new DeleteBirdCommand(Id));
+            IsConfirmingDelete = false;
         }
 
         [RelayCommand]
-        private void ToggleAlive()
+        private void ToggleAlive() => IsAlive = !IsAlive;
+
+        [RelayCommand]
+        private void AskDelete() => IsConfirmingDelete = true;
+
+        [RelayCommand]
+        private void CancelDelete() => IsConfirmingDelete = false;
+
+        #endregion [ Commands/Delete ]
+
+        #region [ Commands/Edit ]
+
+        [RelayCommand]
+        private void Edit() => IsEditing = true;
+
+        [RelayCommand]
+        private void CancelEdit()
         {
-            IsAlive = !IsAlive;
+            // тут можно откатить изменения, если хранить копию DTO
+            IsEditing = false;
         }
+
+        [RelayCommand]
+        private async Task SaveAsync()
+        {
+            await _mediator.Send(new UpdateBirdCommand(Id, BirdsName.Амадин, Description, Arrival, Departure, IsAlive));
+            IsEditing = false;
+        }
+
+        #endregion [ Commands/Edit ]
+
+        #endregion [ Commands ]
     }
 }

@@ -25,7 +25,7 @@ namespace Birds.Application.Mappings
             CreateMap<CreateBirdCommand, BirdDTO>()
                 .ConstructUsing(cmd => new BirdDTO(
                     Guid.NewGuid(),
-                    cmd.Name.ToString(),
+                    cmd.Name.ToDisplayName(),
                     cmd.Description,
                     cmd.Arrival,
                     null,

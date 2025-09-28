@@ -20,6 +20,9 @@ namespace Birds.UI
             services.AddSingleton<INotificationHandler<BirdCreatedNotification>>(sp =>
                 sp.GetRequiredService<BirdListViewModel>());
 
+            services.AddSingleton<INotificationHandler<BirdDeletedNotification>>(sp =>
+                sp.GetRequiredService<BirdListViewModel>());
+
             return services;
         }
     }

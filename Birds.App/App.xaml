@@ -9,23 +9,29 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/Birds.UI;component/wwwroot/Themes/GlobalSettings.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/Birds.UI;component/wwwroot/Themes/MenuButtonTheme.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/Birds.UI;component/wwwroot/Themes/AddBirdButtonTheme.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/Birds.UI;component/wwwroot/Themes/ComboboxTheme.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/Birds.UI;component/wwwroot/Themes/TextBlockOnAddTheme.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/Birds.UI;component/wwwroot/Themes/TextBoxOnAddTheme.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/Birds.UI;component/wwwroot/Themes/TextBlockOnBirdsTheme.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/Birds.UI;component/wwwroot/Themes/DeleteButtonTheme.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/Birds.UI;component/wwwroot/Themes/TextBoxBirdsTheme.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/Birds.UI;component/wwwroot/Themes/ScrollViewerTheme.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/Birds.UI;component/wwwroot/Themes/DatePickerOnAddTheme.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/Birds.UI;component/wwwroot/Themes/ValidationStyles.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/GlobalSettings.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/MenuButtonTheme.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/AddBirdButtonTheme.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/ComboboxTheme.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/TextBlockOnAddTheme.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/TextBoxOnAddTheme.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/TextBlockOnBirdsTheme.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/DeleteButtonTheme.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/TextBoxBirdsTheme.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/ScrollViewerTheme.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/DatePickerOnAddTheme.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/ValidationStyles.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/ActionButtons.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/ComboBoxSortFilter.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
+            <!-- Конвертеры -->
             <conv:DateOnlyToDateTimeConverter x:Key="DateOnlyConverter" />
             <conv:InverseBoolConverter x:Key="BoolConverter" />
+            <conv:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
+            <!--View models <-> Views-->
             <DataTemplate DataType="{x:Type vm:AddBirdViewModel}">
                 <v:AddBirdView />
             </DataTemplate>

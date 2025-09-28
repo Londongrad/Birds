@@ -2,6 +2,7 @@
     x:Class="Birds.UI.Views.UserControls.BirdsView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:Birds.UI.ViewModels"
@@ -18,13 +19,25 @@
 
         <DockPanel>
 
-            <TextBlock
-                Margin="0,0,0,20"
+            <!-- Количество птиц -->
+            <StackPanel
                 DockPanel.Dock="Top"
-                FontSize="24"
-                Text="{Binding BirdsView.Count,
-                               StringFormat=Всего птиц: {0},
-                               Mode=OneWay}" />
+                Orientation="Horizontal">
+                <TextBlock
+                    Margin="0,0,0,20"
+                    DockPanel.Dock="Top"
+                    FontSize="24"
+                    Text="{Binding BirdsView.Count,
+                                   StringFormat=Всего птиц: {0},
+                                   Mode=OneWay}" />
+                <ComboBox
+                    DisplayMemberPath="Display"
+                    ItemsSource="{Binding Filters}"
+                    SelectedItem="{Binding SelectedFilter,
+                                           Mode=TwoWay}"
+                    Style="{StaticResource FilterComboBoxStyle}" />
+            </StackPanel>
+
 
             <ListBox ItemsSource="{Binding BirdsView}">
 
@@ -41,14 +54,11 @@
                             <Grid HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="2*" />
-                                    <!--  Левая часть  -->
                                     <ColumnDefinition Width="2*" />
-                                    <!--  Центр  -->
                                     <ColumnDefinition Width="Auto" />
-                                    <!--  Справа кнопки  -->
                                 </Grid.ColumnDefinitions>
 
-                                <!--  Название / описание  -->
+                                <!-- Название / описание -->
                                 <StackPanel
                                     Grid.Column="0"
                                     Margin="5"
@@ -68,7 +78,7 @@
                                         Text="{Binding Description}" />
                                 </StackPanel>
 
-                                <!--  Даты  -->
+                                <!-- Даты -->
                                 <StackPanel
                                     Grid.Column="1"
                                     Margin="5"
@@ -83,18 +93,30 @@
                                         Text="—" />
                                     <TextBlock Text="{Binding Departure, StringFormat={}{0:dd.MM.yyyy}, ConverterCulture=ru-ru}" />
                                 </StackPanel>
-                                <!--  Кнопки действий  -->
-                                <StackPanel Grid.Column="2">
-                                    <Button
-                                        Content="★"
-                                        ToolTip="Избранное" />
-                                    <Button
-                                        Content="✎"
-                                        ToolTip="Редактировать" />
-                                    <Button
-                                        Content="🗑"
-                                        ToolTip="Удалить" />
-                                </StackPanel>
+
+                                <ContentControl
+                                    Grid.Column="2"
+                                    Content="{Binding}">
+                                    <ContentControl.Style>
+                                        <Style TargetType="ContentControl">
+                                            <Style.Triggers>
+                                                <!-- шаблон для обычных кнопок -->
+                                                <DataTrigger
+                                                    Binding="{Binding IsConfirmingDelete}"
+                                                    Value="False">
+                                                    <Setter Property="ContentTemplate" Value="{StaticResource NormalButtonsTemplate}" />
+                                                </DataTrigger>
+
+                                                <!-- шаблон для подтверждения -->
+                                                <DataTrigger
+                                                    Binding="{Binding IsConfirmingDelete}"
+                                                    Value="True">
+                                                    <Setter Property="ContentTemplate" Value="{StaticResource ConfirmButtonsTemplate}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ContentControl.Style>
+                                </ContentControl>
                             </Grid>
                         </Border>
                     </DataTemplate>
