@@ -2,20 +2,20 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!--  1) Пустой шаблон: отключает любую красную рамку у контейнеров  -->
+    <!-- 1) Пустой шаблон: отключает любую красную рамку у контейнеров -->
     <ControlTemplate x:Key="NoErrorTemplate">
         <AdornedElementPlaceholder />
     </ControlTemplate>
 
-    <!--  Validation.xaml  -->
+    <!-- Validation.xaml -->
     <ControlTemplate x:Key="FieldErrorTemplate">
         <DockPanel LastChildFill="True">
-            <!--  сам контрол  -->
+            <!-- сам контрол -->
             <AdornedElementPlaceholder
                 x:Name="adorner"
                 DockPanel.Dock="Left" />
 
-            <!--  ошибки справа  -->
+            <!-- ошибки справа -->
             <ItemsControl
                 x:Name="errors"
                 Margin="8,0,0,0"
@@ -36,7 +36,7 @@
             </ItemsControl>
         </DockPanel>
 
-        <!--  скрываем блок, когда ошибок нет  -->
+        <!-- скрываем блок, когда ошибок нет -->
         <ControlTemplate.Triggers>
             <DataTrigger
                 Binding="{Binding ElementName=adorner,
@@ -47,7 +47,7 @@
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
-    <!--  Подключаем пустой ErrorTemplate глобально, чтобы убрать красную обводку всего контрола  -->
+    <!-- Подключаем пустой ErrorTemplate глобально, чтобы убрать красную обводку всего контрола -->
     <Style TargetType="Panel">
         <Setter Property="Validation.ErrorTemplate" Value="{StaticResource NoErrorTemplate}" />
     </Style>

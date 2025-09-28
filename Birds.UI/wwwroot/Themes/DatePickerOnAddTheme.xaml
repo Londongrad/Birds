@@ -2,7 +2,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!--  Цвета  -->
+    <!-- Цвета -->
     <SolidColorBrush
         x:Key="DarkBackgroundBrush"
         Color="#222238" />
@@ -19,7 +19,7 @@
         x:Key="HoverBrush"
         Color="#444466" />
 
-    <!--  Текстбокс внутри DatePicker  -->
+    <!-- Текстбокс внутри DatePicker -->
     <Style
         x:Key="DarkDatePickerTextBoxStyle"
         TargetType="DatePickerTextBox">
@@ -44,7 +44,7 @@
         </Setter>
     </Style>
 
-    <!--  CalendarItem  -->
+    <!-- CalendarItem -->
     <Style
         x:Key="DarkCalendarItemStyle"
         TargetType="CalendarItem">
@@ -54,7 +54,7 @@
         <Setter Property="BorderThickness" Value="1" />
     </Style>
 
-    <!--  Calendar  -->
+    <!-- Calendar -->
     <Style
         x:Key="DarkCalendarStyle"
         TargetType="Calendar">
@@ -68,11 +68,11 @@
         <Setter Property="FirstDayOfWeek" Value="Monday" />
     </Style>
 
-    <!--  DatePicker  -->
+    <!-- DatePicker -->
     <Style
         x:Key="DatePickerOnAddStyle"
         TargetType="{x:Type DatePicker}">
-        <!--  Важно, чтобы шаблон привязывался через динамическую привязку  -->
+        <!-- Важно, чтобы шаблон привязывался через динамическую привязку -->
         <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource FieldErrorTemplate}" />
 
         <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
@@ -99,7 +99,7 @@
                                 <ColumnDefinition Width="40" />
                             </Grid.ColumnDefinitions>
 
-                            <!--  Поле даты  -->
+                            <!-- Поле даты -->
                             <DatePickerTextBox
                                 x:Name="PART_TextBox"
                                 Grid.Column="0"
@@ -107,7 +107,7 @@
                                 IsReadOnly="True"
                                 Style="{StaticResource DarkDatePickerTextBoxStyle}" />
 
-                            <!--  Кнопка календаря  -->
+                            <!-- Кнопка календаря -->
                             <Button
                                 x:Name="PART_Button"
                                 Grid.Column="1"
@@ -121,7 +121,7 @@
                                 FontSize="16"
                                 Foreground="{StaticResource AccentBrush}" />
 
-                            <!--  Popup  -->
+                            <!-- Popup -->
                             <Popup
                                 x:Name="PART_Popup"
                                 AllowsTransparency="True"
@@ -140,7 +140,7 @@
                                         x:Name="PART_Calendar"
                                         Style="{StaticResource DarkCalendarStyle}">
                                         <Calendar.Resources>
-                                            <!--  DayButton  -->
+                                            <!-- DayButton -->
                                             <Style TargetType="{x:Type CalendarDayButton}">
                                                 <Setter Property="Foreground" Value="{StaticResource DarkForegroundBrush}" />
                                                 <Setter Property="Background" Value="{StaticResource DarkBackgroundBrush}" />
@@ -189,7 +189,7 @@
                         </Grid>
                     </Border>
 
-                    <!--  Подсветка  -->
+                    <!-- Подсветка -->
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsKeyboardFocusWithin" Value="True">
                             <Setter TargetName="Outer" Property="BorderBrush" Value="#FF569DE5" />

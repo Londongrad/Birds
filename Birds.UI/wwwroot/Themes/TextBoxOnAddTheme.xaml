@@ -14,7 +14,7 @@
     <Style
         x:Key="TextBoxOnAddStyle"
         TargetType="{x:Type TextBox}">
-        <!--  Важно, чтобы шаблон привязывался через динамическую привязку  -->
+        <!-- Важно, чтобы шаблон привязывался через динамическую привязку -->
         <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource FieldErrorTemplate}" />
 
         <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />

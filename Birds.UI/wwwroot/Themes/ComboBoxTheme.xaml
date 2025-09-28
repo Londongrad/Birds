@@ -468,7 +468,7 @@
 
     <Style TargetType="{x:Type ComboBox}">
 
-        <!--  Важно, чтобы шаблон привязывался через динамическую привязку  -->
+        <!-- Важно, чтобы шаблон привязывался через динамическую привязку -->
         <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource FieldErrorTemplate}" />
 
         <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}" />
