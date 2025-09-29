@@ -18,7 +18,7 @@
         CornerRadius="20">
         <StackPanel Margin="20">
             <TextBlock
-                Style="{DynamicResource TextBlockOnAddStyle}"
+                Style="{StaticResource TextBlockOnAddStyle}"
                 Text="Bird's type" />
 
             <ComboBox
@@ -27,30 +27,32 @@
                 SelectedItem="{Binding SelectedBirdName,
                                        Mode=TwoWay,
                                        ValidatesOnNotifyDataErrors=True,
-                                       UpdateSourceTrigger=PropertyChanged}" />
+                                       UpdateSourceTrigger=PropertyChanged}"
+                Style="{StaticResource ComboBox}" />
 
             <TextBlock
-                Style="{DynamicResource TextBlockOnAddStyle}"
+                Style="{StaticResource TextBlockOnAddStyle}"
                 Text="Description" />
 
             <TextBox
-                Style="{DynamicResource TextBoxOnAddStyle}"
+                Style="{StaticResource TextBoxOnAddStyle}"
                 Text="{Binding Description,
                                Mode=TwoWay,
                                ValidatesOnNotifyDataErrors=True,
                                UpdateSourceTrigger=PropertyChanged}" />
 
             <TextBlock
-                Style="{DynamicResource TextBlockOnAddStyle}"
+                Style="{StaticResource TextBlockOnAddStyle}"
                 Text="Arrival" />
 
             <DatePicker
+                CalendarStyle="{DynamicResource DarkCalendarStyle}"
                 SelectedDate="{Binding Arrival,
                                        Mode=TwoWay,
                                        Converter={StaticResource DateOnlyConverter},
                                        ValidatesOnNotifyDataErrors=True,
                                        UpdateSourceTrigger=PropertyChanged}"
-                Style="{DynamicResource DatePickerOnAddStyle}" />
+                Style="{StaticResource DatePickerOnAddStyle}" />
 
             <Button
                 Command="{Binding SaveCommand}"

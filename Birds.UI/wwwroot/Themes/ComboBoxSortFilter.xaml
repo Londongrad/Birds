@@ -3,32 +3,93 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Style
         x:Key="FilterComboBoxStyle"
-        BasedOn="{StaticResource {x:Type ComboBox}}"
+        BasedOn="{StaticResource ComboBox}"
         TargetType="ComboBox">
         <Setter Property="Width" Value="220" />
         <Setter Property="Margin" Value="20,0,0,0" />
         <Setter Property="Padding" Value="5" />
-        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontSize" Value="16" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Background" Value="#2d2d48" />
+        <Setter Property="Foreground" Value="White" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBox">
                     <Grid>
-                        <!-- Текст + кнопка -->
+                        <!-- Фон и рамка -->
+                        <Border
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="#555"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                            <ContentPresenter
+                                Margin="5,0,25,0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Content="{TemplateBinding SelectionBoxItem}"
+                                TextElement.Foreground="{TemplateBinding Foreground}" />
+                        </Border>
+
+                        <!-- Кнопка-лупа -->
                         <ToggleButton
                             x:Name="ToggleButton"
-                            Grid.Column="2"
+                            Grid.Column="1"
+                            Width="30"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Stretch"
                             ClickMode="Press"
-                            Focusable="false"
+                            Focusable="False"
                             IsChecked="{Binding IsDropDownOpen,
                                                 Mode=TwoWay,
-                                                RelativeSource={RelativeSource TemplatedParent}}" />
-                        <ContentPresenter
-                            Margin="5,3,23,3"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
-                            Content="{TemplateBinding SelectionBoxItem}" />
+                                                RelativeSource={RelativeSource TemplatedParent}}">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border
+                                        x:Name="Border"
+                                        Background="#3A3A55"
+                                        BorderBrush="#555"
+                                        BorderThickness="1"
+                                        CornerRadius="0,4,4,0">
+                                        <Grid>
+                                            <!-- Лупа -->
+                                            <Ellipse
+                                                Width="12"
+                                                Height="12"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Stroke="White"
+                                                StrokeThickness="2" />
+                                            <Rectangle
+                                                Width="6"
+                                                Height="2"
+                                                Margin="8,8,0,0"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Fill="White"
+                                                RenderTransformOrigin="0.5,0.5">
+                                                <Rectangle.RenderTransform>
+                                                    <RotateTransform Angle="45" />
+                                                </Rectangle.RenderTransform>
+                                            </Rectangle>
+                                        </Grid>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Border" Property="Background" Value="#4C4C70" />
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="Border" Property="Background" Value="#5A5A88" />
+                                        </Trigger>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Setter TargetName="Border" Property="Background" Value="#666699" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+
                         <!-- Popup -->
                         <Popup
                             x:Name="PART_Popup"
@@ -37,10 +98,10 @@
                             IsOpen="{TemplateBinding IsDropDownOpen}"
                             Placement="Right"
                             PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
-                            PopupAnimation="Slide">
+                            PopupAnimation="Fade">
                             <Border
-                                Background="#333"
-                                BorderBrush="Gray"
+                                Background="#222238"
+                                BorderBrush="#555"
                                 BorderThickness="1"
                                 CornerRadius="4">
                                 <ScrollViewer>

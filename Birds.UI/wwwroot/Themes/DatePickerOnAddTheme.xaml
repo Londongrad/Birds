@@ -75,8 +75,8 @@
         <!-- Важно, чтобы шаблон привязывался через динамическую привязку -->
         <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource FieldErrorTemplate}" />
 
-        <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
-        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource DarkBackgroundBrush}" />
+        <Setter Property="Background" Value="{StaticResource DarkBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
         <Setter Property="FontSize" Value="18" />
         <Setter Property="HorizontalAlignment" Value="Center" />
@@ -89,7 +89,7 @@
                 <ControlTemplate TargetType="DatePicker">
                     <Border
                         x:Name="Outer"
-                        Background="Transparent"
+                        Background="{StaticResource DarkBackgroundBrush}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="1"
                         CornerRadius="4">
@@ -140,10 +140,10 @@
                                         x:Name="PART_Calendar"
                                         Style="{StaticResource DarkCalendarStyle}">
                                         <Calendar.Resources>
-                                            <!-- DayButton -->
+                                            <!-- Дни -->
                                             <Style TargetType="{x:Type CalendarDayButton}">
-                                                <Setter Property="Foreground" Value="{StaticResource DarkForegroundBrush}" />
-                                                <Setter Property="Background" Value="{StaticResource DarkBackgroundBrush}" />
+                                                <Setter Property="Foreground" Value="White" />
+                                                <Setter Property="Background" Value="Black" />
                                                 <Setter Property="BorderBrush" Value="Transparent" />
                                                 <Setter Property="BorderThickness" Value="0" />
                                                 <Setter Property="FontSize" Value="16" />
@@ -166,16 +166,50 @@
                                                                     <Setter Property="Foreground" Value="#7FFFFFFF" />
                                                                 </Trigger>
                                                                 <Trigger Property="IsToday" Value="True">
-                                                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                                                                    <Setter TargetName="Bd" Property="BorderBrush" Value="White" />
                                                                     <Setter TargetName="Bd" Property="BorderThickness" Value="2" />
                                                                 </Trigger>
                                                                 <Trigger Property="IsSelected" Value="True">
-                                                                    <Setter TargetName="Bd" Property="Background" Value="{StaticResource SelectedBrush}" />
+                                                                    <Setter TargetName="Bd" Property="Background" Value="#3A8DFF" />
                                                                     <Setter Property="Foreground" Value="White" />
                                                                     <Setter Property="FontWeight" Value="Bold" />
                                                                 </Trigger>
                                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                                    <Setter TargetName="Bd" Property="Background" Value="{StaticResource HoverBrush}" />
+                                                                    <Setter TargetName="Bd" Property="Background" Value="#444466" />
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+
+                                            <!-- Кнопки навигации (месяц/год/стрелки) -->
+                                            <Style TargetType="{x:Type CalendarButton}">
+                                                <Setter Property="Foreground" Value="White" />
+                                                <Setter Property="Background" Value="Black" />
+                                                <Setter Property="BorderBrush" Value="Transparent" />
+                                                <Setter Property="BorderThickness" Value="0" />
+                                                <Setter Property="FontSize" Value="16" />
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="CalendarButton">
+                                                            <Border
+                                                                Padding="4"
+                                                                Background="{TemplateBinding Background}"
+                                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                                CornerRadius="3">
+                                                                <ContentPresenter
+                                                                    HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Center" />
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter Property="Background" Value="#444466" />
+                                                                </Trigger>
+                                                                <Trigger Property="IsPressed" Value="True">
+                                                                    <Setter Property="Background" Value="#3A8DFF" />
+                                                                    <Setter Property="Foreground" Value="White" />
                                                                 </Trigger>
                                                             </ControlTemplate.Triggers>
                                                         </ControlTemplate>
