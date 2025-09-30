@@ -1,4 +1,4 @@
-﻿using Birds.UI.Services;
+﻿using Birds.UI.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Birds.UI.ViewModels

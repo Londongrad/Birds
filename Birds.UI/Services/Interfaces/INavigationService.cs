@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace Birds.UI.Services
+namespace Birds.UI.Services.Interfaces
 {
     public interface INavigationService
     {

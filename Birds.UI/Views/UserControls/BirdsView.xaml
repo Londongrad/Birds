@@ -21,7 +21,7 @@
 
             <!-- Количество птиц -->
             <StackPanel
-                Margin="0 0 0 10"
+                Margin="0,0,0,10"
                 DockPanel.Dock="Top"
                 Orientation="Horizontal">
                 <TextBlock

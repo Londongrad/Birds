@@ -1,9 +1,8 @@
-﻿using Birds.Application.DTOs;
-using Birds.Application.Notifications;
+﻿using Birds.Application.Notifications;
 using Birds.Application.Queries.GetAllBirds;
 using Birds.Domain.Enums;
 using Birds.UI.Enums;
-using Birds.UI.Services;
+using Birds.UI.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MediatR;
 using System.Collections.ObjectModel;

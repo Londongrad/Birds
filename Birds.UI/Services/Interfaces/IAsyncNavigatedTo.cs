@@ -1,4 +1,4 @@
-﻿namespace Birds.UI.Services
+﻿namespace Birds.UI.Services.Interfaces
 {
     /// <summary>
     /// Определяет контракт для моделей представления (ViewModel),
