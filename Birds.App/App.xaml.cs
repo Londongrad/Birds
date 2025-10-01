@@ -1,6 +1,7 @@
 ﻿using Birds.Application;
 using Birds.Infrastructure;
 using Birds.UI;
+using Birds.UI.Services.Navigation;
 using Birds.UI.ViewModels;
 using Birds.UI.Views.Windows;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,11 +32,14 @@ namespace Birds.App
 
             await _host.StartAsync();
 
-            var mainWindow = _host.Services.GetRequiredService<MainWindow>();
-            mainWindow.DataContext = _host.Services.GetRequiredService<MainViewModel>();
+            var nav = _host.Services.GetRequiredService<INavigationService>();
 
-            MainWindow = mainWindow;
-            MainWindow.Show();
+            // Регистрируем, как открывать MainWindow
+            nav.AddWindow<MainViewModel>(() => new MainWindow());
+
+            // Стартуем приложение с главного окна
+            var mainVm = _host.Services.GetRequiredService<MainViewModel>();
+            await nav.OpenWindow(mainVm);
         }
 
         protected override async void OnExit(ExitEventArgs e)
