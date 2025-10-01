@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
@@ -18,9 +18,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="wwwroot\Images\add.png" />
-    <Resource Include="wwwroot\Images\list.png" />
-    <Resource Include="wwwroot\Images\ok.png" />
+    <Resource Include="wwwroot\Images\add.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="wwwroot\Images\list.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="wwwroot\Images\ok.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>
@@ -32,10 +38,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="wwwroot\Images\bird.ico" />
-    <Resource Include="wwwroot\Images\ex.png" />
-    <Resource Include="wwwroot\Images\file_basket_red.png" />
-    <Resource Include="wwwroot\Images\shutdown.png" />
+    <Resource Include="wwwroot\Images\bird.ico">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="wwwroot\Images\ex.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="wwwroot\Images\file_basket_red.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="wwwroot\Images\shutdown.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
 </Project>

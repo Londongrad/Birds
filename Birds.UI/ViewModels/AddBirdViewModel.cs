@@ -1,5 +1,6 @@
 ﻿using Birds.Application.Commands.CreateBird;
 using Birds.Domain.Enums;
+using Birds.UI.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
@@ -9,9 +10,10 @@ namespace Birds.UI.ViewModels
 {
     public partial class AddBirdViewModel : ObservableValidator
     {
-        public AddBirdViewModel(IMediator mediator)
+        public AddBirdViewModel(IMediator mediator, INotificationService notification)
         {
             _mediator = mediator;
+            _notification = notification;
 
             // При любом изменении ошибок обновляем доступность кнопки
             ErrorsChanged += (_, __) => SaveCommand.NotifyCanExecuteChanged();
@@ -23,6 +25,7 @@ namespace Birds.UI.ViewModels
         #region [ Fields ]
 
         private readonly IMediator _mediator;
+        private readonly INotificationService _notification;
 
         #endregion [ Fields ]
 
@@ -59,6 +62,8 @@ namespace Birds.UI.ViewModels
             );
 
             await _mediator.Send(command);
+            _notification.ShowSuccess("Bird added successfully!");
+            Description = string.Empty;
         }
 
         #endregion [ Commands ]

@@ -1,5 +1,6 @@
 ﻿using Birds.Application.Notifications;
 using Birds.UI.Services;
+using Birds.UI.Services.Interfaces;
 using Birds.UI.ViewModels;
 using Birds.UI.Views.Windows;
 using MediatR;
@@ -16,6 +17,7 @@ namespace Birds.UI
             services.AddSingleton<AddBirdViewModel>();
             services.AddSingleton<MainViewModel>();
             services.AddSingleton<INavigationService, NavigationService>();
+            services.AddSingleton<INotificationService, NotificationService>();
 
             services.AddSingleton<INotificationHandler<BirdCreatedNotification>>(sp =>
                 sp.GetRequiredService<BirdListViewModel>());
