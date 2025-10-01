@@ -1,6 +1,6 @@
 ﻿using Birds.Application.Notifications;
-using Birds.UI.Services;
-using Birds.UI.Services.Interfaces;
+using Birds.UI.Services.Navigation;
+using Birds.UI.Services.Notification;
 using Birds.UI.ViewModels;
 using Birds.UI.Views.Windows;
 using MediatR;
@@ -24,6 +24,9 @@ namespace Birds.UI
 
             services.AddSingleton<INotificationHandler<BirdDeletedNotification>>(sp =>
                 sp.GetRequiredService<BirdListViewModel>());
+
+            services.AddSingleton<INotificationHandler<NavigatedEvent>>(sp =>
+                (NotificationService)sp.GetRequiredService<INotificationService>());
 
             return services;
         }

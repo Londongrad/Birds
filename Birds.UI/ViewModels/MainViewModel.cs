@@ -1,4 +1,4 @@
-﻿using Birds.UI.Services.Interfaces;
+﻿using Birds.UI.Services.Navigation;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Birds.UI.ViewModels
@@ -18,8 +18,8 @@ namespace Birds.UI.ViewModels
 
             _navigation.NavigateTo(addBirdVM);
 
-            _navigation.AddCreator(typeof(BirdListViewModel), () => birdVM);
-            _navigation.AddCreator(typeof(AddBirdViewModel), () => addBirdVM);
+            _navigation.AddCreator<BirdListViewModel>(() => birdVM);
+            _navigation.AddCreator<AddBirdViewModel>(() => addBirdVM);
         }
 
         public INavigationService Navigation => _navigation;

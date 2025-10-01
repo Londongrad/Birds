@@ -1,6 +1,6 @@
 ﻿using Birds.Application.Commands.CreateBird;
 using Birds.Domain.Enums;
-using Birds.UI.Services.Interfaces;
+using Birds.UI.Services.Notification;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;

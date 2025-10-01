@@ -2,7 +2,7 @@
 using Birds.Application.Queries.GetAllBirds;
 using Birds.Domain.Enums;
 using Birds.UI.Enums;
-using Birds.UI.Services.Interfaces;
+using Birds.UI.Services.Navigation;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MediatR;
 using System.Collections.ObjectModel;
