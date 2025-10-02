@@ -38,90 +38,112 @@
                     Style="{StaticResource FilterComboBoxStyle}" />
             </StackPanel>
 
+            <ScrollViewer
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding BirdsView}">
 
-            <ListBox ItemsSource="{Binding BirdsView}">
+                    <!-- Растягиваем контейнер каждого элемента под ширину вьюпорта -->
+                    <ItemsControl.ItemContainerStyle>
+                        <Style TargetType="ContentPresenter">
+                            <Setter Property="HorizontalAlignment"
+                                    Value="Stretch" />
+                            <Setter Property="Width"
+                                    Value="{Binding RelativeSource={RelativeSource AncestorType=ScrollContentPresenter},
+                                        Path=ActualWidth}" />
+                        </Style>
+                    </ItemsControl.ItemContainerStyle>
 
-                <ListBox.ItemTemplate>
-                    <DataTemplate DataType="{x:Type vm:BirdViewModel}">
+                    <!-- Панель раскладки (можно VirtualizingStackPanel) -->
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel />
+                            <!-- вертикальный список -->
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
 
-                        <Border
-                            Margin="0,5,20,5"
-                            Padding="10"
-                            HorizontalAlignment="Stretch"
-                            Background="#2D2D3D"
-                            CornerRadius="10">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:BirdViewModel}">
 
-                            <Grid HorizontalAlignment="Stretch">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="2*" />
-                                    <ColumnDefinition Width="2*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
+                            <Border
+                                Margin="0,5,20,5"
+                                Padding="10"
+                                HorizontalAlignment="Stretch"
+                                Background="#2D2D3D"
+                                CornerRadius="10">
 
-                                <!-- Название / описание -->
-                                <StackPanel
-                                    Grid.Column="0"
-                                    Margin="5"
-                                    HorizontalAlignment="Left"
-                                    VerticalAlignment="Center"
-                                    Orientation="Vertical">
-                                    <TextBlock
+                                <Grid HorizontalAlignment="Stretch">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*" />
+                                        <ColumnDefinition Width="2*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Название / описание -->
+                                    <StackPanel
+                                        Grid.Column="0"
+                                        Margin="5"
                                         HorizontalAlignment="Left"
-                                        FontSize="16"
-                                        FontWeight="Bold"
-                                        Text="{Binding Name}" />
-                                    <TextBlock
-                                        Margin="0,2,20,2"
-                                        HorizontalAlignment="Left"
-                                        FontSize="14"
-                                        Foreground="#BBB"
-                                        Text="{Binding Description}" />
-                                </StackPanel>
+                                        VerticalAlignment="Center"
+                                        Orientation="Vertical">
+                                        <TextBlock
+                                            HorizontalAlignment="Left"
+                                            FontSize="16"
+                                            FontWeight="Bold"
+                                            Text="{Binding Name}" />
+                                        <TextBlock
+                                            Margin="0,2,20,2"
+                                            HorizontalAlignment="Left"
+                                            FontSize="14"
+                                            Foreground="#BBB"
+                                            Text="{Binding Description}" />
+                                    </StackPanel>
 
-                                <!-- Даты -->
-                                <StackPanel
-                                    Grid.Column="1"
-                                    Margin="5"
-                                    Orientation="Horizontal">
-                                    <TextBlock
-                                        Margin="0,0,5,0"
-                                        Text="{Binding Arrival,
-                                                       StringFormat={}{0:dd.MM.yyyy},
-                                                       ConverterCulture=ru-ru}" />
-                                    <TextBlock
-                                        Margin="0,0,5,0"
-                                        Text="—" />
-                                    <TextBlock Text="{Binding Departure, StringFormat={}{0:dd.MM.yyyy}, ConverterCulture=ru-ru}" />
-                                </StackPanel>
+                                    <!-- Даты -->
+                                    <StackPanel
+                                        Grid.Column="1"
+                                        Margin="5"
+                                        Orientation="Horizontal">
+                                        <TextBlock
+                                            Margin="0,0,5,0"
+                                            Text="{Binding Arrival,
+                                                           StringFormat={}{0:dd.MM.yyyy},
+                                                           ConverterCulture=ru-ru}" />
+                                        <TextBlock
+                                            Margin="0,0,5,0"
+                                            Text="—" />
+                                        <TextBlock Text="{Binding Departure, StringFormat={}{0:dd.MM.yyyy}, ConverterCulture=ru-ru}" />
+                                    </StackPanel>
 
-                                <ContentControl
-                                    Grid.Column="2"
-                                    Content="{Binding}">
-                                    <ContentControl.Style>
-                                        <Style TargetType="ContentControl">
-                                            <Style.Triggers>
-                                                <!-- шаблон для обычных кнопок -->
-                                                <DataTrigger
-                                                    Binding="{Binding IsConfirmingDelete}"
-                                                    Value="False">
-                                                    <Setter Property="ContentTemplate" Value="{StaticResource NormalButtonsTemplate}" />
-                                                </DataTrigger>
+                                    <ContentControl
+                                        Grid.Column="2"
+                                        Content="{Binding}">
+                                        <ContentControl.Style>
+                                            <Style TargetType="ContentControl">
+                                                <Style.Triggers>
+                                                    <!-- шаблон для обычных кнопок -->
+                                                    <DataTrigger
+                                                        Binding="{Binding IsConfirmingDelete}"
+                                                        Value="False">
+                                                        <Setter Property="ContentTemplate" Value="{StaticResource NormalButtonsTemplate}" />
+                                                    </DataTrigger>
 
-                                                <!-- шаблон для подтверждения -->
-                                                <DataTrigger
-                                                    Binding="{Binding IsConfirmingDelete}"
-                                                    Value="True">
-                                                    <Setter Property="ContentTemplate" Value="{StaticResource ConfirmButtonsTemplate}" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </ContentControl.Style>
-                                </ContentControl>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+                                                    <!-- шаблон для подтверждения -->
+                                                    <DataTrigger
+                                                        Binding="{Binding IsConfirmingDelete}"
+                                                        Value="True">
+                                                        <Setter Property="ContentTemplate" Value="{StaticResource ConfirmButtonsTemplate}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ContentControl.Style>
+                                    </ContentControl>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
         </DockPanel>
     </Border>
 </UserControl>

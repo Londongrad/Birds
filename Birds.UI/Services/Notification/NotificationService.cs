@@ -14,7 +14,7 @@ namespace Birds.UI.Services.Notification
         /// После вызова уведомления будут позиционироваться относительно этого окна.
         /// </summary>
         /// <param name="window">Окно, к которому нужно привязаться.</param>
-        public void AttachWindow(Window window)
+        private void AttachWindow(Window window)
         {
             _parent = window ?? throw new ArgumentNullException(nameof(window));
         }

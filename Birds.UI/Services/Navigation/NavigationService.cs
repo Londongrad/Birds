@@ -87,7 +87,7 @@ namespace Birds.UI.Services.Navigation
         public void AddWindow<TViewModel>(Func<Window> windowFactory)
             where TViewModel : ObservableObject
         {
-            _windowCreators[typeof(TViewModel)] = windowFactory;
+            _windowCreators[typeof(TViewModel)] = windowFactory ?? throw new ArgumentNullException(nameof(windowFactory));
         }
 
         #endregion [ Methods ]

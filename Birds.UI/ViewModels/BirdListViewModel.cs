@@ -3,6 +3,7 @@ using Birds.Application.Queries.GetAllBirds;
 using Birds.Domain.Enums;
 using Birds.UI.Enums;
 using Birds.UI.Services.Navigation;
+using Birds.UI.Services.Notification;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MediatR;
 using System.Collections.ObjectModel;
@@ -16,10 +17,10 @@ namespace Birds.UI.ViewModels
                                              INotificationHandler<BirdDeletedNotification>,
                                              IAsyncNavigatedTo
     {
-        public BirdListViewModel(IMediator mediator)
+        public BirdListViewModel(IMediator mediator, INotificationService notification)
         {
             _mediator = mediator;
-
+            _notification = notification;
             BirdsView = CollectionViewSource.GetDefaultView(Birds);
             BirdsView.Filter = FilterBirds;
 
@@ -29,6 +30,7 @@ namespace Birds.UI.ViewModels
         #region [ Fields ]
 
         private readonly IMediator _mediator;
+        private readonly INotificationService _notification;
         private bool _isLoaded; // Флаг: выполнена ли начальная загрузка (чтобы не грузить повторно)
         private int _isLoading; // Флаг: выполняется ли загрузка в данный момент (0 = нет, 1 = да)
 
@@ -142,7 +144,7 @@ namespace Birds.UI.ViewModels
 
         /// <summary>
         /// Создание птицы и добавление в коллекцию.
-        /// На случай вызова из любого потока, переключаемся на UI-поток
+        /// На случай вызова не из UI потока, переключаемся на него
         /// </summary>
         public Task Handle(BirdCreatedNotification notification, CancellationToken cancellationToken)
         {
@@ -170,6 +172,8 @@ namespace Birds.UI.ViewModels
                     if (vm != null) Birds.Remove(vm);
                 });
             }
+            _notification.ShowSuccess("Bird was successfully removed");
+
             return Task.CompletedTask;
         }
 
