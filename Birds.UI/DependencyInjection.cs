@@ -2,8 +2,8 @@
 using Birds.UI.Services.Factories.BirdViewModelFactory;
 using Birds.UI.Services.Navigation;
 using Birds.UI.Services.Notification;
+using Birds.UI.Services.Stores.BirdStore;
 using Birds.UI.ViewModels;
-using Birds.UI.Views.Windows;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,14 +13,20 @@ namespace Birds.UI
     {
         public static IServiceCollection AddUI(this IServiceCollection services)
         {
-            services.AddSingleton<MainWindow>();
+            // ViewModels
             services.AddSingleton<BirdListViewModel>();
             services.AddSingleton<AddBirdViewModel>();
             services.AddSingleton<MainViewModel>();
+            services.AddSingleton<BirdStatisticsViewModel>();
+
+            // Services
             services.AddSingleton<INavigationService, NavigationService>();
             services.AddSingleton<INotificationService, NotificationService>();
-            services.AddTransient<IBirdViewModelFactory, BirdViewModelFactory>();
+            services.AddSingleton<IBirdViewModelFactory, BirdViewModelFactory>();
+            services.AddSingleton<IBirdStore, BirdStore>();
+            services.AddHostedService<BirdStoreInitializer>();
 
+            // MediatR Handlers
             services.AddSingleton<INotificationHandler<BirdCreatedNotification>>(sp =>
                 sp.GetRequiredService<BirdListViewModel>());
 

@@ -1,10 +1,9 @@
 ﻿using Birds.Application.DTOs;
 using Birds.Application.Notifications;
-using Birds.Application.Queries.GetAllBirds;
 using Birds.Domain.Enums;
 using Birds.UI.Enums;
-using Birds.UI.Services.Navigation;
 using Birds.UI.Services.Notification;
+using Birds.UI.Services.Stores.BirdStore;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MediatR;
 using System.Collections.ObjectModel;
@@ -15,32 +14,36 @@ namespace Birds.UI.ViewModels
 {
     public partial class BirdListViewModel : ObservableObject,
                                              INotificationHandler<BirdCreatedNotification>,
-                                             INotificationHandler<BirdDeletedNotification>,
-                                             IAsyncNavigatedTo
+                                             INotificationHandler<BirdDeletedNotification>
     {
-        public BirdListViewModel(IMediator mediator, INotificationService notification)
+        public BirdListViewModel(
+            IMediator mediator,
+            INotificationService notification,
+            IBirdStore birdStore)
         {
             _mediator = mediator;
             _notification = notification;
 
+            // Получаем ссылку на коллекцию птиц из BirdStore
+            Birds = birdStore.Birds;
+
+            // ICollectionView с фильтром для UI
             BirdsView = CollectionViewSource.GetDefaultView(Birds);
+            SelectedFilter = Filters.First();
             BirdsView.Filter = FilterBirds;
 
-            SelectedFilter = Filters.First();
         }
 
         #region [ Fields ]
 
         private readonly IMediator _mediator;
         private readonly INotificationService _notification;
-        private bool _isLoaded; // Флаг: выполнена ли начальная загрузка (чтобы не грузить повторно)
-        private int _isLoading; // Флаг: выполняется ли загрузка в данный момент (0 = нет, 1 = да)
 
         #endregion [ Fields ]
 
         #region [ Properties ]
 
-        public ObservableCollection<BirdDTO> Birds { get; } = new();
+        public ObservableCollection<BirdDTO> Birds { get; }
         public static Array BirdNames => Enum.GetValues(typeof(BirdsName));
         public ICollectionView BirdsView { get; }
         public List<FilterOption> Filters { get; } =
@@ -67,41 +70,6 @@ namespace Birds.UI.ViewModels
         #endregion [ ObservableProperties ]
 
         #region [ Methods ]
-
-        /// <summary>
-        /// Загружает всех птиц из БД.
-        /// Используется защита от параллельных вызовов (Interlocked).
-        /// </summary>
-        private async Task LoadAsync()
-        {
-            // Interlocked предотвращает гонку условий при одновременных вызовах
-            if (Interlocked.Exchange(ref _isLoading, 1) == 1) return;
-            try
-            {
-                Birds.Clear();
-                var result = await _mediator.Send(new GetAllBirdsQuery());
-
-                foreach (var bird in result)
-                    Birds.Add(bird);
-
-                _isLoaded = true;
-            }
-            finally
-            {
-                Interlocked.Exchange(ref _isLoading, 0);
-            }
-        }
-
-        /// <summary>
-        /// Вызывает загрузку только один раз при первом переходе на эту ViewModel.
-        /// </summary>
-        public async Task OnNavigatedToAsync()
-        {
-            if (!_isLoaded)
-            {
-                await LoadAsync();
-            }
-        }
 
         /// <summary>
         /// Событие изменения фильтра. Обновляет представление. Вызывается из Mvvm.Toolkit
