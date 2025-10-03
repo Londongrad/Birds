@@ -1,4 +1,5 @@
-﻿using Birds.Application.Notifications;
+﻿using Birds.Application.DTOs;
+using Birds.Application.Notifications;
 using Birds.Application.Queries.GetAllBirds;
 using Birds.Domain.Enums;
 using Birds.UI.Enums;
@@ -21,6 +22,7 @@ namespace Birds.UI.ViewModels
         {
             _mediator = mediator;
             _notification = notification;
+
             BirdsView = CollectionViewSource.GetDefaultView(Birds);
             BirdsView.Filter = FilterBirds;
 
@@ -38,7 +40,7 @@ namespace Birds.UI.ViewModels
 
         #region [ Properties ]
 
-        public ObservableCollection<BirdViewModel> Birds { get; } = new();
+        public ObservableCollection<BirdDTO> Birds { get; } = new();
         public static Array BirdNames => Enum.GetValues(typeof(BirdsName));
         public ICollectionView BirdsView { get; }
         public List<FilterOption> Filters { get; } =
@@ -79,12 +81,8 @@ namespace Birds.UI.ViewModels
                 Birds.Clear();
                 var result = await _mediator.Send(new GetAllBirdsQuery());
 
-                //// DeferRefresh уменьшает количество обновлений UI при массовой загрузке
-                //using (BirdsView.DeferRefresh())
-                //{
                 foreach (var bird in result)
-                    Birds.Add(new BirdViewModel(bird, _mediator));
-                //}
+                    Birds.Add(bird);
 
                 _isLoaded = true;
             }
@@ -119,7 +117,7 @@ namespace Birds.UI.ViewModels
         /// </summary>
         public bool FilterBirds(object obj)
         {
-            if (obj is not BirdViewModel bird) return false;
+            if (obj is not BirdDTO bird) return false;
 
             return SelectedFilter.Filter switch
             {
@@ -143,19 +141,23 @@ namespace Birds.UI.ViewModels
         #region [ Handlers ]
 
         /// <summary>
-        /// Создание птицы и добавление в коллекцию.
-        /// На случай вызова не из UI потока, переключаемся на него
+        /// Добавление созданной птицы в коллекцию по уведомлению.
+        /// На случай вызова не из UI потока, переключаемся на него.
         /// </summary>
         public Task Handle(BirdCreatedNotification notification, CancellationToken cancellationToken)
         {
             var d = System.Windows.Application.Current.Dispatcher;
             if (d.CheckAccess())
-                Birds.Add(new BirdViewModel(notification.Bird, _mediator)); // Уже на UI-потоке — добавляем напрямую
+                Birds.Add(notification.Bird); // Уже на UI-потоке — добавляем напрямую
             else
-                d.BeginInvoke(() => Birds.Add(new BirdViewModel(notification.Bird, _mediator))); // Переключаемся на UI-поток
+                d.BeginInvoke(() => Birds.Add(notification.Bird)); // Переключаемся на UI-поток
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Удаление птицы из коллекции по уведомлению.
+        /// На случай вызова не из UI потока, переключаемся на него.
+        /// </summary>
         public Task Handle(BirdDeletedNotification notification, CancellationToken cancellationToken)
         {
             var d = System.Windows.Application.Current.Dispatcher;

@@ -1,0 +1,93 @@
+﻿<UserControl
+    x:Class="Birds.UI.Views.UserControls.BirdItemControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Birds.UI.Views.UserControls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="clr-namespace:Birds.UI.ViewModels"
+    d:DataContext="{d:DesignInstance Type=viewmodels:BirdViewModel}"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <Border
+        Margin="0,5,20,5"
+        Padding="10"
+        HorizontalAlignment="Stretch"
+        Background="#2D2D3D"
+        CornerRadius="10">
+
+        <!-- Один-единственный Grid для всего -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*" />
+                <!-- Название + описание -->
+                <ColumnDefinition Width="2*" />
+                <!-- Даты -->
+                <ColumnDefinition Width="Auto" />
+                <!-- Кнопки -->
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <!-- Название -->
+                <RowDefinition Height="Auto" />
+                <!-- Описание -->
+            </Grid.RowDefinitions>
+
+            <!-- Название -->
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="0"
+                HorizontalAlignment="Left"
+                FontSize="24"
+                FontWeight="Bold"
+                Text="{Binding Name}" />
+
+            <!-- Описание -->
+            <TextBlock
+                Grid.Row="1"
+                Grid.Column="0"
+                Margin="0,2,0,0"
+                HorizontalAlignment="Left"
+                FontSize="14"
+                Foreground="#BBB"
+                Text="{Binding Description}" />
+
+            <!-- Даты -->
+            <StackPanel
+                Grid.Row="0"
+                Grid.RowSpan="2"
+                Grid.Column="1"
+                Margin="5,0,0,0"
+                VerticalAlignment="Center"
+                Orientation="Horizontal">
+                <TextBlock
+                    Margin="0,0,5,0"
+                    Text="{Binding Arrival,
+                                   StringFormat={}{0:dd.MM.yyyy}}" />
+                <TextBlock
+                    Margin="0,0,5,0"
+                    Text="—" />
+                <TextBlock Text="{Binding Departure, StringFormat={}{0:dd.MM.yyyy}}" />
+            </StackPanel>
+
+            <!-- Кнопки -->
+            <Grid
+                Grid.Row="0"
+                Grid.RowSpan="2"
+                Grid.Column="2"
+                VerticalAlignment="Center">
+                <ContentPresenter
+                    Content="{Binding}"
+                    ContentTemplate="{StaticResource NormalButtonsTemplate}"
+                    Visibility="{Binding IsConfirmingDelete,
+                                         Converter={StaticResource InverseBoolToVisibilityConverter}}" />
+                <ContentPresenter
+                    Content="{Binding}"
+                    ContentTemplate="{StaticResource ConfirmButtonsTemplate}"
+                    Visibility="{Binding IsConfirmingDelete,
+                                         Converter={StaticResource BoolToVisibilityConverter}}" />
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>
