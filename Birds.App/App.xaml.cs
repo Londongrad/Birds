@@ -6,8 +6,10 @@ using Birds.UI.Services.Factories.BirdViewModelFactory;
 using Birds.UI.Services.Navigation;
 using Birds.UI.ViewModels;
 using Birds.UI.Views.Windows;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Configuration;
 using System.Windows;
 
 namespace Birds.App
@@ -25,7 +27,9 @@ namespace Birds.App
                 {
                     services.AddApplication();
 
-                    var connectionString = "Data Source=birds.db";
+                    var connectionString = context.Configuration.GetConnectionString("DefaultConnection")
+                        ?? throw new ConfigurationErrorsException("Не найдена строка подключения 'DefaultConnection' в appsettings.json");
+
                     services.AddInfrastructure(connectionString);
 
                     services.AddUI();
