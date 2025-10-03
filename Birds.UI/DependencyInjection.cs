@@ -1,4 +1,5 @@
 ﻿using Birds.Application.Notifications;
+using Birds.UI.Services.Factories.BirdViewModelFactory;
 using Birds.UI.Services.Navigation;
 using Birds.UI.Services.Notification;
 using Birds.UI.ViewModels;
@@ -18,6 +19,7 @@ namespace Birds.UI
             services.AddSingleton<MainViewModel>();
             services.AddSingleton<INavigationService, NavigationService>();
             services.AddSingleton<INotificationService, NotificationService>();
+            services.AddTransient<IBirdViewModelFactory, BirdViewModelFactory>();
 
             services.AddSingleton<INotificationHandler<BirdCreatedNotification>>(sp =>
                 sp.GetRequiredService<BirdListViewModel>());

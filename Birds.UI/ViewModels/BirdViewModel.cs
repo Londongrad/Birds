@@ -5,6 +5,7 @@ using Birds.Domain.Enums;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
+using System.Diagnostics;
 
 namespace Birds.UI.ViewModels
 {
@@ -14,6 +15,7 @@ namespace Birds.UI.ViewModels
 
         public BirdViewModel(BirdDTO dto, IMediator mediator)
         {
+            Debug.WriteLine($"Item with id = {dto.Id} was created.");
             Dto = dto;
             _mediator = mediator;
             Name = dto.Name;

@@ -1,6 +1,8 @@
 ﻿using Birds.Application;
 using Birds.Infrastructure;
 using Birds.UI;
+using Birds.UI.Converters;
+using Birds.UI.Services.Factories.BirdViewModelFactory;
 using Birds.UI.Services.Navigation;
 using Birds.UI.ViewModels;
 using Birds.UI.Views.Windows;
@@ -31,6 +33,12 @@ namespace Birds.App
                 .Build();
 
             await _host.StartAsync();
+
+            // регистрируем конвертер с фабрикой в ResourceDictionary
+            Resources.Add("BirdVmConverter", new BirdVmConverter
+            {
+                Factory = _host.Services.GetRequiredService<IBirdViewModelFactory>()
+            });
 
             var nav = _host.Services.GetRequiredService<INavigationService>();
 
