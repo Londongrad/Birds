@@ -26,6 +26,7 @@ namespace Birds.UI.Services.Notification
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc/>
         public void Show(string message, NotificationOptions? options)
         {
             if (_parent == null)
@@ -44,15 +45,19 @@ namespace Birds.UI.Services.Notification
             toast.Show();
         }
 
+        /// <inheritdoc/>
         public void ShowError(string message) =>
             Show(message, new NotificationOptions(NotificationType.Error, TimeSpan.FromSeconds(2)));
 
+        /// <inheritdoc/>
         public void ShowInfo(string message) =>
             Show(message, new NotificationOptions(NotificationType.Info, TimeSpan.FromSeconds(2)));
 
+        /// <inheritdoc/>
         public void ShowSuccess(string message) =>
             Show(message, new NotificationOptions(NotificationType.Success, TimeSpan.FromSeconds(2)));
 
+        /// <inheritdoc/>
         public void ShowWarning(string message) =>
             Show(message, new NotificationOptions(NotificationType.Warning, TimeSpan.FromSeconds(2)));
     }
