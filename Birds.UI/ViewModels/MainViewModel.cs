@@ -1,5 +1,6 @@
 ﻿using Birds.UI.Services.Navigation;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.Configuration;
 
 namespace Birds.UI.ViewModels
 {
@@ -11,15 +12,17 @@ namespace Birds.UI.ViewModels
         private ObservableObject? current;
 
         public MainViewModel(INavigationService navigation,
-                             BirdListViewModel birdVM,
-                             AddBirdViewModel addBirdVM)
+                             BirdListViewModel birdsVM,
+                             AddBirdViewModel addBirdVM,
+                             BirdStatisticsViewModel birdStatistics)
         {
             _navigation = navigation;
 
             _navigation.NavigateTo(addBirdVM);
 
-            _navigation.AddCreator<BirdListViewModel>(() => birdVM);
+            _navigation.AddCreator<BirdListViewModel>(() => birdsVM);
             _navigation.AddCreator<AddBirdViewModel>(() => addBirdVM);
+            _navigation.AddCreator<BirdStatisticsViewModel>(() => birdStatistics);
         }
 
         public INavigationService Navigation => _navigation;

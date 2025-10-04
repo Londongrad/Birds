@@ -1,0 +1,221 @@
+﻿<UserControl
+    x:Class="Birds.UI.Views.UserControls.BirdStatisticsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="clr-namespace:Birds.UI.ViewModels"
+    d:DataContext="{d:DesignInstance Type=viewmodels:BirdStatisticsViewModel}"
+    d:DesignHeight="600"
+    d:DesignWidth="980"
+    mc:Ignorable="d">
+
+    <!-- Dark background + page padding -->
+    <Border Style="{StaticResource ViewsBorder}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Title + filter line -->
+            <StackPanel
+                Grid.Row="0"
+                Margin="0,0,0,16">
+                <TextBlock
+                    Style="{StaticResource TextBlockStats}"
+                    Text="Статистика по птицам" />
+
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    Orientation="Horizontal">
+                    <TextBlock
+                        Style="{StaticResource TextBlockStats}"
+                        Text="Год:" />
+                    <ComboBox
+                        Margin="8,0,8,0"
+                        ItemsSource="{Binding AvailableYears}"
+                        SelectedItem="{Binding SelectedYear,
+                                               Mode=TwoWay,
+                                               UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource ComboBoxYears}" />
+                    <Button
+                        Command="{Binding ClearYearFilterCommand}"
+                        Content="Все года"
+                        Style="{StaticResource StatsBirdButton}" />
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Content area -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="3*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- LEFT: metric cards -->
+                <StackPanel>
+                    <Border Style="{StaticResource MetricCardBorder}">
+                        <TextBlock
+                            FontSize="18"
+                            FontWeight="Bold"
+                            Foreground="White"
+                            Text="{Binding TotalBirds,
+                                           StringFormat=Всего поймано: {0}}" />
+                    </Border>
+
+                    <Border Style="{StaticResource MetricCardBorder}">
+                        <TextBlock
+                            FontSize="16"
+                            Foreground="#7CE38B"
+                            Text="{Binding ReleasedCount,
+                                           StringFormat=Отпущено: {0}}" />
+                    </Border>
+
+                    <Border Style="{StaticResource MetricCardBorder}">
+                        <TextBlock
+                            FontSize="16"
+                            Foreground="#8ECDF5"
+                            Text="{Binding KillCount,
+                                           StringFormat=Уничтожено: {0}}" />
+                    </Border>
+                </StackPanel>
+
+                <!-- RIGHT: tabs with lists + SCROLL -->
+                <ScrollViewer
+                    Grid.Column="1"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+                    <TabControl
+                        Background="Transparent"
+                        BorderBrush="Transparent">
+                        <TabControl.Resources>
+                            <!-- Dark tab style -->
+                            <Style TargetType="TabItem">
+                                <Setter Property="Foreground" Value="#D7DAE0" />
+                                <Setter Property="Background" Value="#2B2B3B" />
+                                <Setter Property="BorderBrush" Value="#3D3D50" />
+                                <Setter Property="BorderThickness" Value="1" />
+                                <Setter Property="Margin" Value="4,0,4,8" />
+                                <Setter Property="Padding" Value="10,6" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="TabItem">
+                                            <Border
+                                                Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="8">
+                                                <ContentPresenter
+                                                    Margin="6,2"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    ContentSource="Header" />
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="#3B3B55" />
+                                        <Setter Property="FontWeight" Value="Bold" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TabControl.Resources>
+
+                        <!-- Species -->
+                        <TabItem Header="По видам">
+                            <ItemsControl
+                                Margin="0,8,0,0"
+                                ItemsSource="{Binding SpeciesStats}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border
+                                            Margin="0,0,0,6"
+                                            Padding="10"
+                                            Background="#333344"
+                                            CornerRadius="8">
+                                            <DockPanel LastChildFill="False">
+                                                <TextBlock
+                                                    DockPanel.Dock="Left"
+                                                    FontSize="14"
+                                                    Foreground="White"
+                                                    Text="{Binding Label}" />
+                                                <TextBlock
+                                                    DockPanel.Dock="Right"
+                                                    FontSize="14"
+                                                    Foreground="#C0C3C8"
+                                                    Text="{Binding Count}" />
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </TabItem>
+
+                        <!-- By year -->
+                        <TabItem Header="По годам">
+                            <ItemsControl
+                                Margin="0,8,0,0"
+                                ItemsSource="{Binding YearStats}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border
+                                            Margin="0,0,0,6"
+                                            Padding="10"
+                                            Background="#333344"
+                                            CornerRadius="8">
+                                            <DockPanel LastChildFill="False">
+                                                <TextBlock
+                                                    DockPanel.Dock="Left"
+                                                    FontSize="14"
+                                                    Foreground="White"
+                                                    Text="{Binding Label}" />
+                                                <TextBlock
+                                                    DockPanel.Dock="Right"
+                                                    FontSize="14"
+                                                    Foreground="#C0C3C8"
+                                                    Text="{Binding Count}" />
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </TabItem>
+
+                        <!-- By month -->
+                        <TabItem Header="По месяцам">
+                            <ItemsControl
+                                Margin="0,8,0,0"
+                                ItemsSource="{Binding MonthStats}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border
+                                            Margin="0,0,0,6"
+                                            Padding="10"
+                                            Background="#333344"
+                                            CornerRadius="8">
+                                            <DockPanel LastChildFill="False">
+                                                <TextBlock
+                                                    DockPanel.Dock="Left"
+                                                    FontSize="14"
+                                                    Foreground="White"
+                                                    Text="{Binding Label}" />
+                                                <TextBlock
+                                                    DockPanel.Dock="Right"
+                                                    FontSize="14"
+                                                    Foreground="#C0C3C8"
+                                                    Text="{Binding Count}" />
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </TabItem>
+                    </TabControl>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

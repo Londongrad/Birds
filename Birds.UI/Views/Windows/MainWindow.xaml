@@ -54,8 +54,18 @@
                 </RadioButton>
 
                 <RadioButton
-                    Content="Import"
-                    Style="{StaticResource MenuButtonTheme}" />
+                    Command="{Binding Path=Navigation.NavigateToTypeCommand,
+                                      Mode=OneWay}"
+                    CommandParameter="{x:Type vm:BirdStatisticsViewModel}"
+                    Style="{StaticResource MenuButtonTheme}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Stats" />
+                        <Image
+                            Width="20"
+                            Margin="4,2,4,0"
+                            Source="/Birds.UI;component/wwwroot/Images/chart.png" />
+                    </StackPanel>
+                </RadioButton>
             </StackPanel>
 
             <ContentControl
