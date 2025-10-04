@@ -11,14 +11,10 @@
     d:DesignWidth="400"
     mc:Ignorable="d">
 
-    <Border
-        Margin="20"
-        Padding="20"
-        Background="#252535"
-        CornerRadius="20">
+    <Border Style="{StaticResource ViewsBorder}">
         <StackPanel Margin="20">
             <TextBlock
-                Style="{StaticResource TextBlockOnAddStyle}"
+                Style="{StaticResource TextBlockAdd}"
                 Text="Bird's type" />
 
             <ComboBox
@@ -31,18 +27,18 @@
                 Style="{StaticResource ComboBox}" />
 
             <TextBlock
-                Style="{StaticResource TextBlockOnAddStyle}"
+                Style="{StaticResource TextBlockAdd}"
                 Text="Description" />
 
             <TextBox
-                Style="{StaticResource TextBoxOnAddStyle}"
+                Style="{StaticResource TextBoxAdd}"
                 Text="{Binding Description,
                                Mode=TwoWay,
                                ValidatesOnNotifyDataErrors=True,
                                UpdateSourceTrigger=PropertyChanged}" />
 
             <TextBlock
-                Style="{StaticResource TextBlockOnAddStyle}"
+                Style="{StaticResource TextBlockAdd}"
                 Text="Arrival" />
 
             <DatePicker
@@ -52,7 +48,7 @@
                                        Converter={StaticResource DateOnlyConverter},
                                        ValidatesOnNotifyDataErrors=True,
                                        UpdateSourceTrigger=PropertyChanged}"
-                Style="{StaticResource DatePickerOnAddStyle}" />
+                Style="{StaticResource DatePickerAdd}" />
 
             <Button
                 Command="{Binding SaveCommand}"

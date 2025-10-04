@@ -12,24 +12,29 @@
 
                 <!-- Global Themes -->
                 <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/GlobalThemes/GlobalSettings.xaml" />
-                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/GlobalThemes/ComboboxTheme.xaml" />
-                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/GlobalThemes/ScrollViewerTheme.xaml" />
-                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/GlobalThemes/ValidationStyles.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/GlobalThemes/Combobox.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/GlobalThemes/ScrollViewer.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/GlobalThemes/Validation.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/GlobalThemes/ViewsBorder.xaml" />
 
                 <!-- Bird List View -->
                 <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdListView/ActionButtons.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdListView/ComboBoxSortFilter.xaml" />
 
                 <!-- Add Bird View -->
-                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/AddBirdView/AddBirdButtonTheme.xaml" />
-                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/AddBirdView/ComboBoxSortFilter.xaml" />
-                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/AddBirdView/DatePickerOnAddTheme.xaml" />
-                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/AddBirdView/TextBlockOnAddTheme.xaml" />
-                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/AddBirdView/TextBoxOnAddTheme.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/AddBirdView/AddBirdButton.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/AddBirdView/DatePicker.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/AddBirdView/TextBlock.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/AddBirdView/TextBox.xaml" />
 
                 <!-- Bird Statistics View -->
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdStatisticsView/TextBlock.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdStatisticsView/StatsBirdButton.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdStatisticsView/ComboBoxYears.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdStatisticsView/MetricCardBorder.xaml" />
 
                 <!-- Main Window View -->
-                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/MainWindowThemes/MenuButtonTheme.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/MainWindowThemes/MenuButtons.xaml" />
 
                 <!-- Unused themes -->
                 <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/TextBlockOnBirdsTheme.xaml" />

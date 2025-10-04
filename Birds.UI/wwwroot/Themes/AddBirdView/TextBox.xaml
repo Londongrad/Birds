@@ -12,7 +12,7 @@
         x:Key="TextBox.Focus.Border"
         Color="#FF569DE5" />
     <Style
-        x:Key="TextBoxOnAddStyle"
+        x:Key="TextBoxAdd"
         TargetType="{x:Type TextBox}">
         <!-- Важно, чтобы шаблон привязывался через динамическую привязку -->
         <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource FieldErrorTemplate}" />

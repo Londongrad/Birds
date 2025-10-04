@@ -70,7 +70,7 @@
 
     <!-- DatePicker -->
     <Style
-        x:Key="DatePickerOnAddStyle"
+        x:Key="DatePickerAdd"
         TargetType="{x:Type DatePicker}">
         <!-- Важно, чтобы шаблон привязывался через динамическую привязку -->
         <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource FieldErrorTemplate}" />

@@ -54,8 +54,4 @@
     </Resource>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\Themes\BirdStatisticsView\" />
-  </ItemGroup>
-
 </Project>
