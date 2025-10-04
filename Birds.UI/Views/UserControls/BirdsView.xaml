@@ -35,11 +35,9 @@
                     Style="{StaticResource FilterComboBoxStyle}" />
             </StackPanel>
 
-            <!-- Список птиц -->
+            <!-- Список птиц ( Ленивое создание ViewModels + виртуализация контейнеров ) -->
             <ListBox
-                ItemsSource="{Binding BirdsView}"
-                VirtualizingStackPanel.IsVirtualizing="True"
-                VirtualizingStackPanel.VirtualizationMode="Recycling">
+                ItemsSource="{Binding BirdsView}">
 
                 <ListBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type dto:BirdDTO}">

@@ -116,7 +116,7 @@
                                 CornerRadius="4">
                                 <ScrollViewer>
                                     <ItemsPresenter
-                                        Margin="0 5 0 5"
+                                        Margin="0,5,0,5"
                                         KeyboardNavigation.DirectionalNavigation="Contained" />
                                 </ScrollViewer>
                             </Border>

@@ -8,7 +8,7 @@
         TargetType="Button">
         <Setter Property="Width" Value="36" />
         <Setter Property="Height" Value="36" />
-        <Setter Property="Margin" Value="0,0,0,10" />
+        <Setter Property="Margin" Value="0,0,0,0" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Cursor" Value="Hand" />
@@ -44,6 +44,7 @@
         TargetType="Button">
         <Setter Property="Background" Value="#3A3B6D" />
         <Setter Property="Content" Value="✎" />
+        <Setter Property="Margin" Value="0,0,5,0" />
     </Style>
 
     <!-- Кнопка удаления -->
@@ -53,6 +54,7 @@
         TargetType="Button">
         <Setter Property="Background" Value="#7A2F2F" />
         <Setter Property="Content" Value="🗑" />
+        <Setter Property="Margin" Value="5,0,0,0" />
     </Style>
 
     <!-- Кнопка подтверждения -->
@@ -62,6 +64,7 @@
         TargetType="Button">
         <Setter Property="Background" Value="LimeGreen" />
         <Setter Property="Content" Value="✔" />
+        <Setter Property="Margin" Value="0,0,5,0" />
     </Style>
 
     <!-- Кнопка отмены -->
@@ -71,12 +74,13 @@
         TargetType="Button">
         <Setter Property="Background" Value="DimGray" />
         <Setter Property="Content" Value="✖" />
+        <Setter Property="Margin" Value="5,0,0,0" />
     </Style>
 
     <!-- Шаблон для обычных кнопок -->
     <DataTemplate x:Key="NormalButtonsTemplate">
         <StackPanel
-            Orientation="Vertical"
+            Orientation="Horizontal"
             RenderTransformOrigin="0.5,0.5">
             <StackPanel.RenderTransform>
                 <TranslateTransform Y="0" />
@@ -86,7 +90,6 @@
                 Command="{Binding EditCommand}"
                 Style="{StaticResource EditButtonStyle}" />
             <Button
-                Margin="0"
                 Command="{Binding AskDeleteCommand}"
                 Style="{StaticResource DeleteButtonStyle}" />
         </StackPanel>
@@ -95,7 +98,7 @@
     <!-- Шаблон для кнопок подтверждения -->
     <DataTemplate x:Key="ConfirmButtonsTemplate">
         <StackPanel
-            Orientation="Vertical"
+            Orientation="Horizontal"
             RenderTransformOrigin="0.5,0.5">
             <StackPanel.RenderTransform>
                 <TranslateTransform Y="0" />
@@ -105,7 +108,6 @@
                 Command="{Binding DeleteCommand}"
                 Style="{StaticResource ConfirmButtonStyle}" />
             <Button
-                Margin="0"
                 Command="{Binding CancelDeleteCommand}"
                 Style="{StaticResource CancelButtonStyle}" />
         </StackPanel>

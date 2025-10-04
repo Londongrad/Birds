@@ -1,0 +1,95 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Style TargetType="TabItem">
+        <Setter Property="Foreground" Value="#D7DAE0" />
+        <Setter Property="Background" Value="#2B2B3B" />
+        <Setter Property="BorderBrush" Value="#3D3D50" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="12,6" />
+        <Setter Property="Margin" Value="4,0,4,0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Border
+                        x:Name="HeaderBorder"
+                        Padding="{TemplateBinding Padding}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="8"
+                        SnapsToDevicePixels="True">
+                        <ContentPresenter
+                            x:Name="HeaderContent"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            ContentSource="Header"
+                            RecognizesAccessKey="True" />
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="HeaderBorder" Property="Background" Value="#3B3B55" />
+                            <Setter TargetName="HeaderBorder" Property="BorderBrush" Value="#5A5A75" />
+                            <Setter TargetName="HeaderContent" Property="TextElement.FontWeight" Value="Bold" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="HeaderBorder" Property="Background" Value="#454562" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
+    <!-- ====== TAB CONTROL STYLE ====== -->
+    <Style TargetType="TabControl">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabControl">
+                    <Grid KeyboardNavigation.TabNavigation="Local">
+                        <Grid.RowDefinitions>
+                            <!-- Верхняя панель с вкладками -->
+                            <RowDefinition Height="Auto" />
+                            <!-- Контент -->
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Заголовки вкладок -->
+                        <TabPanel
+                            x:Name="HeaderPanel"
+                            Grid.Row="0"
+                            Margin="0,0,0,8"
+                            Panel.ZIndex="1"
+                            Background="Transparent"
+                            IsItemsHost="True"
+                            KeyboardNavigation.TabIndex="1" />
+
+                        <!-- Контент -->
+                        <Border
+                            Grid.Row="1"
+                            Padding="12"
+                            Background="#2B2B3B"
+                            BorderBrush="#3D3D50"
+                            BorderThickness="1"
+                            CornerRadius="8">
+                            <ContentPresenter
+                                x:Name="PART_SelectedContentHost"
+                                Margin="0"
+                                ContentSource="SelectedContent"
+                                SnapsToDevicePixels="True" />
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>
