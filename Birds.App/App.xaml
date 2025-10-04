@@ -32,6 +32,7 @@
                 <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdStatisticsView/StatsBirdButton.xaml" />
                 <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdStatisticsView/ComboBoxYears.xaml" />
                 <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdStatisticsView/MetricCardBorder.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdStatisticsView/TabControl.xaml" />
 
                 <!-- Main Window View -->
                 <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/MainWindowThemes/MenuButtons.xaml" />
@@ -48,6 +49,9 @@
             <conv:DateOnlyToDateTimeConverter x:Key="DateOnlyConverter" />
             <conv:InverseBoolConverter x:Key="BoolConverter" />
             <conv:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
+            <conv:BirdVmConverter
+                x:Key="BirdVmConverter"
+                Factory="{x:Null}" />
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
             <!--View models <-> Views-->

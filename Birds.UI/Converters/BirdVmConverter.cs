@@ -50,10 +50,19 @@ namespace Birds.UI.Converters
         /// <returns>Созданный <see cref="BirdViewModel"/> или null, если value не <see cref="BirdDTO"/>.</returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is BirdDTO dto && Factory != null)
-                return Factory.Create(dto);
+            if (value is BirdDTO dto)
+            {
+                if (Factory != null)
+                    return Factory.Create(dto);
 
-            return null!;
+                Debug.WriteLine("⚠ BirdVmConverter: Factory is not set!");
+            }
+            else
+            {
+                Debug.WriteLine($"⚠ BirdVmConverter: unexpected value {value?.GetType().Name}");
+            }
+
+            return Binding.DoNothing; // лучше чем null!
         }
 
         /// <summary>
