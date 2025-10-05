@@ -31,7 +31,7 @@
                     DisplayMemberPath="Display"
                     ItemsSource="{Binding Filters}"
                     SelectedItem="{Binding SelectedFilter,
-                                           Mode=TwoWay}"
+                                           Mode=OneWayToSource}"
                     Style="{StaticResource FilterComboBoxStyle}" />
             </StackPanel>
 

@@ -21,7 +21,7 @@ namespace Birds.UI.ViewModels
 
         // Filter state
         [ObservableProperty] private int? selectedYear;
-        [ObservableProperty] private IReadOnlyList<int> availableYears = Array.Empty<int>();
+        [ObservableProperty] private IReadOnlyCollection<int> availableYears = Array.Empty<int>();
 
         // UI lists
         public ObservableCollection<StatItem> SpeciesStats { get; } = new();
@@ -55,10 +55,10 @@ namespace Birds.UI.ViewModels
             if (SelectedYear is int y)
                 q = q.Where(b => b.Arrival.Year == y);
 
-            // Metrics
+            // Metric cards
             TotalBirds = q.Count();
             ReleasedCount = q.Count(b => b.Departure != null && b.IsAlive == true);
-            KillCount = q.Where(b => b.IsAlive == false).Count();
+            KillCount = q.Count(b => b.IsAlive == false);
 
             // Species stats (filtered)
             SpeciesStats.Clear();
@@ -85,10 +85,7 @@ namespace Birds.UI.ViewModels
             }
 
             // Year filter choices
-            AvailableYears = Birds.Select(b => b.Arrival.Year)
-                                  .Distinct()
-                                  .OrderBy(y => y)
-                                  .ToList();
+            AvailableYears = new SortedSet<int>(Birds.Select(b => b.Arrival.Year));
         }
     }
 }

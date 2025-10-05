@@ -63,12 +63,17 @@
                 Orientation="Horizontal">
                 <TextBlock
                     Margin="0,0,5,0"
+                    FontSize="20"
                     Text="{Binding Arrival,
                                    StringFormat={}{0:dd.MM.yyyy}}" />
                 <TextBlock
                     Margin="0,0,5,0"
+                    FontSize="12"
                     Text="—" />
-                <TextBlock Text="{Binding Departure, StringFormat={}{0:dd.MM.yyyy}}" />
+                <TextBlock
+                    FontSize="20"
+                    Text="{Binding Departure,
+                                   StringFormat={}{0:dd.MM.yyyy}}" />
             </StackPanel>
 
             <!-- Кнопки -->
