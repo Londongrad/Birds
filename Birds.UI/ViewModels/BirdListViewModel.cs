@@ -86,6 +86,7 @@ namespace Birds.UI.ViewModels
         public bool FilterBirds(object obj)
         {
             if (obj is not BirdDTO bird) return false;
+            if (SelectedFilter is null) return true;
 
             return SelectedFilter.Filter switch
             {
