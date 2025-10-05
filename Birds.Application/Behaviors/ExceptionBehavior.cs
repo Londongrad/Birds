@@ -30,6 +30,11 @@ namespace Birds.Application.Behaviors
                 _logger.LogWarning(ex, "Validation failed for {RequestName}", typeof(TRequest).Name);
                 return CreateFailureResponse($"Validation error: {ex.Message}");
             }
+            catch (DomainValidationException ex)
+            {
+                _logger.LogWarning(ex, "Domain rule violation for {RequestName}", typeof(TRequest).Name);
+                return CreateFailureResponse(ex.Message);
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unhandled exception for {RequestName}", typeof(TRequest).Name);
