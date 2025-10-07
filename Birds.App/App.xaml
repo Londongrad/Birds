@@ -48,7 +48,7 @@
             <!-- Конвертеры -->
             <conv:DateOnlyToDateTimeConverter x:Key="DateOnlyConverter" />
             <conv:InverseBoolConverter x:Key="BoolConverter" />
-            <conv:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
+            <conv:MultiBoolToVisibilityConverter x:Key="MultiBoolToVisibilityConverter" />
             <conv:BirdVmConverter
                 x:Key="BirdVmConverter"
                 Factory="{x:Null}" />
