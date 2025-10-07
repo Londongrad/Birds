@@ -55,6 +55,11 @@ namespace Birds.UI.ViewModels
         [RelayCommand(CanExecute = nameof(CanSave))]
         private async Task SaveAsync()
         {
+            // Принудительная проверка всех свойств перед сохранением
+            ValidateAllProperties();
+            if (HasErrors)
+                return;
+
             var command = new CreateBirdCommand(
                 SelectedBirdName ?? default,
                 Description,

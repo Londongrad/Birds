@@ -94,7 +94,20 @@ namespace Birds.UI.ViewModels
         [RelayCommand]
         private async Task SaveAsync()
         {
-            await _mediator.Send(new UpdateBirdCommand(Id, BirdsName.Амадин, Description, Arrival, Departure, IsAlive));
+            ValidateAllProperties();
+            if (HasErrors)
+                return;
+
+            await _mediator.Send(
+                new UpdateBirdCommand(Id,
+                    SelectedBirdName ?? default,
+                    Description,
+                    Arrival,
+                    Departure,
+                    IsAlive));
+
+            // После сохранения пересчитываем производные поля
+            UpdateCalculatedFields();
             IsEditing = false;
         }
 
