@@ -8,90 +8,79 @@
     xmlns:viewmodels="clr-namespace:Birds.UI.ViewModels"
     d:DataContext="{d:DesignInstance Type=viewmodels:BirdViewModel}"
     mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdListView/BirdItemTemplates.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
     <Border
         MinHeight="100"
-        Margin="0,10,20,10"
+        Margin="30,10,20,10"
         Padding="20"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Center"
         Background="#2D2D3D"
         CornerRadius="10">
 
-        <!-- Один-единственный Grid для всего -->
         <Grid VerticalAlignment="Center">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*" />
-                <!-- Название + описание -->
-                <ColumnDefinition Width="2*" />
-                <!-- Даты -->
+                <ColumnDefinition Width="*" />
+                <!-- Информация о птице -->
                 <ColumnDefinition Width="Auto" />
                 <!-- Кнопки -->
             </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <!-- Название -->
-                <RowDefinition Height="Auto" />
-                <!-- Описание -->
-            </Grid.RowDefinitions>
 
-            <!-- Название -->
-            <TextBlock
-                Grid.Row="0"
-                Grid.Column="0"
-                HorizontalAlignment="Left"
-                FontSize="24"
-                FontWeight="Bold"
-                Text="{Binding Name}" />
-
-            <!-- Описание -->
-            <TextBlock
-                Grid.Row="1"
-                Grid.Column="0"
-                Margin="0,2,0,0"
-                HorizontalAlignment="Left"
-                FontSize="14"
-                Foreground="#BBB"
-                Text="{Binding Description}" />
-
-            <!-- Даты -->
-            <StackPanel
-                Grid.Row="0"
-                Grid.RowSpan="2"
-                Grid.Column="1"
-                Margin="5,0,0,0"
-                VerticalAlignment="Center"
-                Orientation="Horizontal">
-                <TextBlock
-                    Margin="0,0,5,0"
-                    FontSize="20"
-                    Text="{Binding Arrival,
-                                   StringFormat={}{0:dd.MM.yyyy}}" />
-                <TextBlock
-                    Margin="0,0,5,0"
-                    FontSize="12"
-                    Text="—" />
-                <TextBlock
-                    FontSize="20"
-                    Text="{Binding Departure,
-                                   StringFormat={}{0:dd.MM.yyyy}}" />
-            </StackPanel>
+            <ContentControl
+                Content="{Binding}"
+                Validation.ErrorTemplate="{StaticResource NoErrorTemplate}">
+                <ContentControl.Style>
+                    <Style TargetType="ContentControl">
+                        <Setter Property="ContentTemplate" Value="{StaticResource BirdViewTemplate}" />
+                        <Style.Triggers>
+                            <DataTrigger
+                                Binding="{Binding IsEditing}"
+                                Value="True">
+                                <Setter Property="ContentTemplate" Value="{StaticResource BirdEditTemplate}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ContentControl.Style>
+            </ContentControl>
 
             <!-- Кнопки -->
             <Grid
-                Grid.Row="0"
-                Grid.RowSpan="2"
-                Grid.Column="2"
+                Grid.Column="1"
                 VerticalAlignment="Center">
+
+                <!-- Обычный режим -->
                 <ContentPresenter
+                    x:Name="NormalButtons"
                     Content="{Binding}"
-                    ContentTemplate="{StaticResource NormalButtonsTemplate}"
-                    Visibility="{Binding IsConfirmingDelete,
-                                         Converter={StaticResource InverseBoolToVisibilityConverter}}" />
-                <!-- ActionButtons.xaml -->
+                    ContentTemplate="{StaticResource NormalButtonsTemplate}">
+                    <ContentPresenter.Visibility>
+                        <MultiBinding Converter="{StaticResource MultiBoolToVisibilityConverter}">
+                            <Binding Path="IsConfirmingDelete" />
+                            <Binding Path="IsEditing" />
+                        </MultiBinding>
+                    </ContentPresenter.Visibility>
+                </ContentPresenter>
+
+                <!-- Режим удаления -->
                 <ContentPresenter
                     Content="{Binding}"
                     ContentTemplate="{StaticResource ConfirmButtonsTemplate}"
                     Visibility="{Binding IsConfirmingDelete,
+                                         Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                <!-- Режим редактирования -->
+                <ContentPresenter
+                    Content="{Binding}"
+                    ContentTemplate="{StaticResource EditButtonsTemplate}"
+                    Visibility="{Binding IsEditing,
                                          Converter={StaticResource BoolToVisibilityConverter}}" />
             </Grid>
         </Grid>

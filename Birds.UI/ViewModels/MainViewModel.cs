@@ -1,6 +1,5 @@
 ﻿using Birds.UI.Services.Navigation;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.Extensions.Configuration;
 
 namespace Birds.UI.ViewModels
 {
