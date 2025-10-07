@@ -44,7 +44,7 @@
         TargetType="Button">
         <Setter Property="Background" Value="#3A3B6D" />
         <Setter Property="Content" Value="✎" />
-        <Setter Property="Margin" Value="0,0,5,0" />
+        <Setter Property="Margin" Value="0,0,0,4" />
     </Style>
 
     <!-- Кнопка удаления -->
@@ -54,7 +54,7 @@
         TargetType="Button">
         <Setter Property="Background" Value="#7A2F2F" />
         <Setter Property="Content" Value="🗑" />
-        <Setter Property="Margin" Value="5,0,0,0" />
+        <Setter Property="Margin" Value="0,4,0,0" />
     </Style>
 
     <!-- Кнопка подтверждения -->
@@ -64,7 +64,7 @@
         TargetType="Button">
         <Setter Property="Background" Value="LimeGreen" />
         <Setter Property="Content" Value="✔" />
-        <Setter Property="Margin" Value="0,0,5,0" />
+        <Setter Property="Margin" Value="0,0,0,4" />
     </Style>
 
     <!-- Кнопка отмены -->
@@ -74,14 +74,33 @@
         TargetType="Button">
         <Setter Property="Background" Value="DimGray" />
         <Setter Property="Content" Value="✖" />
-        <Setter Property="Margin" Value="5,0,0,0" />
+        <Setter Property="Margin" Value="0,4,0,0" />
     </Style>
+
+    <!-- Кнопка сохранения -->
+    <Style
+        x:Key="SaveButtonStyle"
+        BasedOn="{StaticResource ActionButtonBase}"
+        TargetType="Button">
+        <Setter Property="Background" Value="LimeGreen" />
+        <Setter Property="Content" Value="💾" />
+        <Setter Property="Margin" Value="0,0,0,4" />
+    </Style>
+
+    <!-- Кнопка отмены редактирования -->
+    <Style
+        x:Key="CancelEditButtonStyle"
+        BasedOn="{StaticResource ActionButtonBase}"
+        TargetType="Button">
+        <Setter Property="Background" Value="DimGray" />
+        <Setter Property="Content" Value="↩" />
+        <Setter Property="Margin" Value="0,4,0,0" />
+    </Style>
+
 
     <!-- Шаблон для обычных кнопок -->
     <DataTemplate x:Key="NormalButtonsTemplate">
-        <StackPanel
-            Orientation="Horizontal"
-            RenderTransformOrigin="0.5,0.5">
+        <StackPanel RenderTransformOrigin="0.5,0.5">
             <StackPanel.RenderTransform>
                 <TranslateTransform Y="0" />
             </StackPanel.RenderTransform>
@@ -95,11 +114,9 @@
         </StackPanel>
     </DataTemplate>
 
-    <!-- Шаблон для кнопок подтверждения -->
+    <!-- Шаблон для кнопок подтверждения удаления -->
     <DataTemplate x:Key="ConfirmButtonsTemplate">
-        <StackPanel
-            Orientation="Horizontal"
-            RenderTransformOrigin="0.5,0.5">
+        <StackPanel RenderTransformOrigin="0.5,0.5">
             <StackPanel.RenderTransform>
                 <TranslateTransform Y="0" />
             </StackPanel.RenderTransform>
@@ -110,6 +127,22 @@
             <Button
                 Command="{Binding CancelDeleteCommand}"
                 Style="{StaticResource CancelButtonStyle}" />
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Шаблон кнопок редактирования -->
+    <DataTemplate x:Key="EditButtonsTemplate">
+        <StackPanel RenderTransformOrigin="0.5,0.5">
+            <StackPanel.RenderTransform>
+                <TranslateTransform Y="0" />
+            </StackPanel.RenderTransform>
+
+            <Button
+                Command="{Binding SaveCommand}"
+                Style="{StaticResource SaveButtonStyle}" />
+            <Button
+                Command="{Binding CancelEditCommand}"
+                Style="{StaticResource CancelEditButtonStyle}" />
         </StackPanel>
     </DataTemplate>
 </ResourceDictionary>

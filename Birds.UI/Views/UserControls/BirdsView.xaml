@@ -36,8 +36,7 @@
             </StackPanel>
 
             <!-- Список птиц ( Ленивое создание ViewModels + виртуализация контейнеров ) -->
-            <ListBox
-                ItemsSource="{Binding BirdsView}">
+            <ListBox ItemsSource="{Binding BirdsView}">
 
                 <ListBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type dto:BirdDTO}">

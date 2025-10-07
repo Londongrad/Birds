@@ -76,11 +76,11 @@
         <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource NoErrorTemplate}" />
     </Style>
 
-    <!--<Style TargetType="ComboBox">
-        <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource NoErrorTemplate}" />
-    </Style>-->
-
     <Style TargetType="DatePicker">
+        <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource NoErrorTemplate}" />
+    </Style>
+
+    <Style TargetType="Grid">
         <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource NoErrorTemplate}" />
     </Style>
 </ResourceDictionary>

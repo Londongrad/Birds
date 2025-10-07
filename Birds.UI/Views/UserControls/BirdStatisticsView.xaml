@@ -98,7 +98,7 @@
                                         CornerRadius="8">
                                         <DockPanel LastChildFill="False">
                                             <TextBlock
-                                                Margin="0 0 10 0"
+                                                Margin="0,0,10,0"
                                                 DockPanel.Dock="Left"
                                                 FontSize="14"
                                                 Foreground="White"
@@ -129,7 +129,7 @@
                                         CornerRadius="8">
                                         <DockPanel LastChildFill="False">
                                             <TextBlock
-                                                Margin="0 0 10 0"
+                                                Margin="0,0,10,0"
                                                 DockPanel.Dock="Left"
                                                 FontSize="14"
                                                 Foreground="White"
@@ -163,7 +163,7 @@
                                             CornerRadius="8">
                                             <DockPanel LastChildFill="False">
                                                 <TextBlock
-                                                    Margin="0 0 10 0"
+                                                    Margin="0,0,10,0"
                                                     DockPanel.Dock="Left"
                                                     FontSize="14"
                                                     Foreground="White"
