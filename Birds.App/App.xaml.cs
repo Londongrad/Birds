@@ -38,9 +38,9 @@ namespace Birds.App
 
             await _host.StartAsync();
 
-            // Задаем фабрику для конвертера
-            var converter = (BirdVmConverter)Resources["BirdVmConverter"];
-            converter.Factory = _host.Services.GetRequiredService<IBirdViewModelFactory>();
+                // Инициализация данных (BirdStoreInitializer)
+                var initializer = _host.Services.GetRequiredService<BirdStoreInitializer>();
+                await initializer.StartAsync(CancellationToken.None);
 
             var nav = _host.Services.GetRequiredService<INavigationService>();
 

@@ -1,7 +1,6 @@
 ﻿using Birds.Application.DTOs;
 using Birds.Application.Queries.GetAllBirds;
 using MediatR;
-using Microsoft.Extensions.Hosting;
 
 namespace Birds.UI.Services.Stores.BirdStore
 {
@@ -16,7 +15,7 @@ namespace Birds.UI.Services.Stores.BirdStore
     /// во всех ViewModel.
     /// </para>
     /// </summary>
-    public class BirdStoreInitializer : IHostedService
+    public class BirdStoreInitializer
     {
         private readonly IBirdStore _birdStore;
         private readonly IMediator _mediator;
