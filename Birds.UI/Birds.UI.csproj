@@ -36,7 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Birds.Infrastructure\Birds.Infrastructure.csproj" />
+    <ProjectReference Include="..\Birds.Application\Birds.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Birds.Infrastructure\Birds.Infrastructure.csproj" />
     <ProjectReference Include="..\Birds.UI\Birds.UI.csproj" />
   </ItemGroup>
 
