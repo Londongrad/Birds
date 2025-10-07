@@ -9,6 +9,8 @@ namespace Birds.UI.Converters
         {
             if (value is DateOnly dateOnly)
                 return dateOnly.ToDateTime(TimeOnly.MinValue);
+
+            // если значение null (например Departure)
             return null;
         }
 
@@ -16,7 +18,12 @@ namespace Birds.UI.Converters
         {
             if (value is DateTime dateTime)
                 return DateOnly.FromDateTime(dateTime);
-            return default(DateOnly);
+
+            // если пользователь очистил дату в DatePicker
+            if (value is null)
+                return null;
+
+            return Binding.DoNothing;
         }
     }
 }
