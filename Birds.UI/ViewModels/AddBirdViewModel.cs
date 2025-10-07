@@ -1,57 +1,48 @@
 ﻿using Birds.Application.Commands.CreateBird;
-using Birds.Domain.Enums;
 using Birds.UI.Services.Notification;
-using CommunityToolkit.Mvvm.ComponentModel;
+using Birds.UI.ViewModels.Base;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
-using System.ComponentModel.DataAnnotations;
 
 namespace Birds.UI.ViewModels
 {
-    public partial class AddBirdViewModel : ObservableValidator
+    /// <summary>
+    /// ViewModel для представления "Добавить птицу".
+    /// Наследует общие поля и правила валидации из <see cref="BirdValidationBaseViewModel"/>.
+    /// </summary>
+    /// <remarks>
+    /// Содержит команды для сохранения новой птицы и уведомления пользователя о результате.
+    /// </remarks>
+    public partial class AddBirdViewModel : BirdValidationBaseViewModel
     {
+        private readonly IMediator _mediator;
+        private readonly INotificationService _notification;
+
+        /// <summary>
+        /// Создаёт новый экземпляр <see cref="AddBirdViewModel"/>.
+        /// </summary>
+        /// <param name="mediator">MediatR-медиатор для отправки команд приложения.</param>
+        /// <param name="notification">Сервис уведомлений пользователя.</param>
         public AddBirdViewModel(IMediator mediator, INotificationService notification)
         {
             _mediator = mediator;
             _notification = notification;
 
-            // При любом изменении ошибок обновляем доступность кнопки
+            // При изменении ошибок — обновляем доступность команды сохранения
             ErrorsChanged += (_, __) => SaveCommand.NotifyCanExecuteChanged();
 
-            // Чтобы при старте кнопка была выключена
+            // Прогоняем первичную валидацию, чтобы кнопка Save сразу была недоступна
             ValidateAllProperties();
         }
 
-        #region [ Fields ]
-
-        private readonly IMediator _mediator;
-        private readonly INotificationService _notification;
-
-        #endregion [ Fields ]
-
-        #region [ Properties ]
-
+        /// <summary>
+        /// Определяет, можно ли выполнить команду сохранения.
+        /// </summary>
         private bool CanSave() => !HasErrors;
 
-        public static Array BirdNames => Enum.GetValues(typeof(BirdsName));
-
-        [Required(ErrorMessage = "Выберите вид птицы")]
-        [ObservableProperty]
-        private BirdsName? selectedBirdName;
-
-        [MaxLength(100, ErrorMessage = "Описание слишком длинное")]
-        [ObservableProperty]
-        private string? description;
-
-        [CustomValidation(typeof(AddBirdViewModel), nameof(ValidateArrival))]
-        [Required(ErrorMessage = "Укажите дату")]
-        [ObservableProperty]
-        private DateOnly arrival = DateOnly.FromDateTime(DateTime.Now);
-
-        #endregion [ Properties ]
-
-        #region [ Commands ]
-
+        /// <summary>
+        /// Команда сохранения новой птицы в систему.
+        /// </summary>
         [RelayCommand(CanExecute = nameof(CanSave))]
         private async Task SaveAsync()
         {
@@ -68,38 +59,9 @@ namespace Birds.UI.ViewModels
 
             await _mediator.Send(command);
             _notification.ShowSuccess("Bird added successfully!");
+
+            // Сброс описания после успешного сохранения
             Description = string.Empty;
         }
-
-        #endregion [ Commands ]
-
-        #region [ Validation ]
-
-        // кастомная валидация даты
-        public static ValidationResult? ValidateArrival(object? value, ValidationContext _)
-        {
-            if (value is not DateOnly d)
-                return new ValidationResult("Укажите дату");
-
-            var min = new DateOnly(2020, 1, 1);
-            var max = DateOnly.FromDateTime(DateTime.Today);
-
-            if (d < min || d > max)
-                return new ValidationResult($"Дата должна быть в диапазоне {min:dd-MM-yyyy} – {max:dd-MM-yyyy}");
-
-            return ValidationResult.Success;
-        }
-
-        // Автоматическая проверка при изменении свойств
-        partial void OnSelectedBirdNameChanged(BirdsName? value)
-            => ValidateProperty(value, nameof(SelectedBirdName));
-
-        partial void OnDescriptionChanged(string? value)
-            => ValidateProperty(value, nameof(Description));
-
-        partial void OnArrivalChanged(DateOnly value)
-            => ValidateProperty(value, nameof(Arrival));
-
-        #endregion [ Validation ]
     }
 }
