@@ -2,9 +2,11 @@
 using Birds.Application.Commands.UpdateBird;
 using Birds.Application.DTOs;
 using Birds.Domain.Enums;
+using Birds.UI.ViewModels.Base;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 
 namespace Birds.UI.ViewModels
@@ -13,6 +15,7 @@ namespace Birds.UI.ViewModels
     /// ViewModel для отдельной птицы, используется для отображения и редактирования.
     /// Наследует общие свойства и правила валидации из <see cref="BirdValidationBaseViewModel"/>.
     /// </summary>
+    public partial class BirdViewModel : BirdValidationBaseViewModel
     {
         private readonly IMediator _mediator;
 
@@ -29,10 +32,13 @@ namespace Birds.UI.ViewModels
             _mediator = mediator;
 
             Name = dto.Name;
+            SelectedBirdName = Enum.TryParse<BirdsName>(dto.Name, out var bird) ? bird : null;  // свойство из базового класса
             Description = dto.Description;
             Arrival = dto.Arrival;
             Departure = dto.Departure;
-            isAlive = dto.IsAlive;
+            IsAlive = dto.IsAlive;
+
+            UpdateCalculatedFields();
         }
 
         #region [ Properties ]
@@ -60,26 +66,27 @@ namespace Birds.UI.ViewModels
         /// <summary>
         /// Дата убытия птицы (если она уже покинула учёт).
         /// </summary>
+        [CustomValidation(typeof(BirdViewModel), nameof(ValidateDeparture))]
         [ObservableProperty]
-        private string? description;
+        private DateOnly? departure;
 
         /// <summary>
         /// Признак того, что птица жива.
         /// </summary>
         [ObservableProperty]
-        private DateOnly arrival;
+        private bool isAlive;
 
         /// <summary>
         /// Количество дней, прошедших с момента прибытия (или до убытия).
         /// </summary>
         [ObservableProperty]
-        private DateOnly? departure;
+        private int daysInStock;
 
         /// <summary>
         /// Строковое представление даты убытия (или текста "по сей день").
         /// </summary>
         [ObservableProperty]
-        private bool isAlive;
+        private string? departureDisplay;
 
         /// <summary>
         /// Определяет, отображаются ли кнопки подтверждения удаления.
@@ -93,7 +100,7 @@ namespace Birds.UI.ViewModels
         [ObservableProperty]
         private bool isEditing;
 
-        #endregion [ ObservableProperties ]
+        #endregion
 
         #region [ Commands ]
 
@@ -137,7 +144,11 @@ namespace Birds.UI.ViewModels
         [RelayCommand]
         private void CancelEdit()
         {
-            // тут можно откатить изменения, если хранить копию DTO
+            // при желании можно восстановить данные из Dto
+            Description = Dto.Description;
+            Arrival = Dto.Arrival;
+            Departure = Dto.Departure;
+            IsAlive = Dto.IsAlive;
             IsEditing = false;
         }
 
@@ -165,8 +176,73 @@ namespace Birds.UI.ViewModels
             IsEditing = false;
         }
 
-        #endregion [ Commands/Edit ]
+        #endregion
 
-        #endregion [ Commands ]
+        #region [ Private helpers ]
+
+        /// <summary>
+        /// Обновляет вычисляемые поля (DepartureDisplay и DaysInStock).
+        /// </summary>
+        private void UpdateCalculatedFields()
+        {
+            DepartureDisplay = Departure.HasValue
+                ? Departure.Value.ToString("dd.MM.yyyy")
+                : "по сей день";
+
+            var endDate = Departure?.ToDateTime(TimeOnly.MinValue) ?? DateTime.Now;
+            DaysInStock = (int)(endDate - Arrival.ToDateTime(TimeOnly.MinValue)).TotalDays;
+        }
+
+        /// <summary>
+        /// Вызывается автоматически при изменении даты отправления (partial-метод от Toolkit).
+        /// </summary>
+        partial void OnDepartureChanged(DateOnly? value)
+        {
+            ValidateProperty(value, nameof(Departure));
+            UpdateCalculatedFields();
+        }
+
+        /// <summary>
+        /// Переопределение логики, вызываемой при изменении даты прибытия.
+        /// </summary>
+        protected override void OnArrivalChangedCore(DateOnly value)
+        {
+            // если Arrival меняют — перепроверяем Departure, т.к. правило зависит от Arrival
+            ValidateProperty(Departure, nameof(Departure));
+            UpdateCalculatedFields();
+        }
+
+        #endregion
+
+        #region [ Validation ]
+
+        /// <summary>
+        /// Валидация даты убытия.
+        /// Разрешает null, запрещает будущее и дату раньше Arrival.
+        /// 
+        /// <para>
+        /// Вынесен из базовой <see cref="BirdValidationBaseViewModel"/>, так как нужен только в этой ViewModel
+        /// </para>
+        /// </summary>
+        public static ValidationResult? ValidateDeparture(object? value, ValidationContext ctx)
+        {
+            if (value is null)
+                return ValidationResult.Success;
+
+            if (value is not DateOnly d)
+                return new ValidationResult("Укажите корректную дату");
+
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            if (d > today)
+                return new ValidationResult($"Дата не может быть в будущем (не позже {today:dd-MM-yyyy})");
+
+            // доступ к Arrival через контекст (BirdViewModel наследуется от базового класса)
+            if (ctx.ObjectInstance is BirdValidationBaseViewModel vm && d < vm.Arrival)
+                return new ValidationResult($"Дата убытия не может быть раньше даты прибытия ({vm.Arrival:dd-MM-yyyy})");
+
+            return ValidationResult.Success;
+        }
+
+        #endregion [ Validation ]
     }
 }
