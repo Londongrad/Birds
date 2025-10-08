@@ -37,6 +37,29 @@ namespace Birds.Domain.Entities
 
         #region [ Methods ]
 
+        public void SetName(BirdsName name)
+        {
+            GuardHelper.AgainstInvalidEnum(name, nameof(name));
+            Name = name;
+            UpdateTimestamp();
+        }
+
+        public void Update(DateOnly arrival, DateOnly? departure, string? description, bool isAlive)
+        {
+            GuardHelper.AgainstInvalidDate(arrival, nameof(arrival));
+
+            Arrival = arrival;
+            Description = description;
+
+            if (departure.HasValue)
+                SetDeparture(departure.Value);
+            else
+                ClearDeparture();
+
+            UpdateStatus(isAlive);
+            UpdateTimestamp();
+        }
+
         public void SetDeparture(DateOnly departure)
         {
             GuardHelper.AgainstInvalidDate(departure, nameof(departure));
