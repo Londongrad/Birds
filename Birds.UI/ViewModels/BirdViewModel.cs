@@ -164,7 +164,8 @@ namespace Birds.UI.ViewModels
                 return;
 
             await _mediator.Send(
-                new UpdateBirdCommand(Id,
+                new UpdateBirdCommand(
+                    Id,
                     SelectedBirdName ?? default,
                     Description,
                     Arrival,
