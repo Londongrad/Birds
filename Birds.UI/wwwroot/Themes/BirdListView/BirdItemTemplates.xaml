@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="clr-namespace:Birds.UI.Views.Helpers">
 
     <!-- ======== ШАБЛОН ПРОСМОТРА (READ-ONLY) ======== -->
     <DataTemplate x:Key="BirdViewTemplate">
@@ -77,6 +78,7 @@
 
             <!-- Название -->
             <ComboBox
+                helpers:ValidationPlacement.Dock="Right"
                 IsEditable="False"
                 ItemsSource="{Binding BirdNames}"
                 SelectedItem="{Binding SelectedBirdName,
@@ -98,6 +100,7 @@
                 Grid.Column="0"
                 Margin="0,2,0,0"
                 HorizontalAlignment="Left"
+                helpers:ValidationPlacement.Dock="Right"
                 FontSize="14"
                 Foreground="#BBB"
                 Style="{StaticResource TextBoxAdd}"
@@ -115,6 +118,7 @@
                 VerticalAlignment="Center"
                 Orientation="Horizontal">
                 <DatePicker
+                    helpers:ValidationPlacement.Placement="Bottom"
                     CalendarStyle="{DynamicResource DarkCalendarStyle}"
                     SelectedDate="{Binding Arrival,
                                            Mode=TwoWay,
@@ -127,6 +131,7 @@
                     FontSize="12"
                     Text="—" />
                 <DatePicker
+                    helpers:ValidationPlacement.Placement="Bottom"
                     CalendarStyle="{DynamicResource DarkCalendarStyle}"
                     SelectedDate="{Binding Departure,
                                            Mode=TwoWay,

@@ -1,26 +1,35 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="clr-namespace:Birds.UI.Views.Helpers">
 
-    <!-- 1) Пустой шаблон: отключает любую красную рамку у контейнеров -->
+    <!-- ========================================================== -->
+    <!-- Пустой шаблон: отключает любую красную рамку у контейнеров -->
+    <!-- ========================================================== -->
     <ControlTemplate x:Key="NoErrorTemplate">
         <AdornedElementPlaceholder />
     </ControlTemplate>
 
-    <!-- Validation.xaml -->
-    <ControlTemplate x:Key="FieldErrorTemplate">
+    <!-- =================================================================== -->
+    <!-- Универсальный шаблон, в котором положение ошибки задается через Attathed property -->
+    <!-- =================================================================== -->
+    <ControlTemplate x:Key="FieldErrorTemplate_Universal">
         <DockPanel LastChildFill="True">
+
+            <!-- =========== -->
             <!-- сам контрол -->
+            <!-- =========== -->
             <AdornedElementPlaceholder
                 x:Name="adorner"
                 DockPanel.Dock="Left" />
 
-            <!-- ошибки справа -->
+            <!-- =========== -->
+            <!-- блок ошибок -->
+            <!-- =========== -->
             <ItemsControl
                 x:Name="errors"
                 Margin="8,0,0,0"
                 VerticalAlignment="Center"
-                DockPanel.Dock="Right"
                 ItemsSource="{Binding ElementName=adorner,
                                       Path=AdornedElement.(Validation.Errors)}">
                 <ItemsControl.ItemTemplate>
@@ -36,18 +45,77 @@
             </ItemsControl>
         </DockPanel>
 
-        <!-- скрываем блок, когда ошибок нет -->
         <ControlTemplate.Triggers>
+
+            <!-- ===================================================== -->
+            <!-- Общий триггер: скрывать ошибки, если HasError = false -->
+            <!-- ===================================================== -->
             <DataTrigger
                 Binding="{Binding ElementName=adorner,
                                   Path=AdornedElement.(Validation.HasError)}"
                 Value="False">
                 <Setter TargetName="errors" Property="Visibility" Value="Collapsed" />
             </DataTrigger>
+
+
+            <!-- ================================ -->
+            <!-- Изменение расположения DockPanel -->
+            <!-- ================================ -->
+            <!-- ============= -->
+            <!-- ошибки справа -->
+            <!-- ============= -->
+            <DataTrigger
+                Binding="{Binding ElementName=adorner,
+                                  Path=AdornedElement.(helpers:ValidationPlacement.Dock)}"
+                Value="Right">
+                <Setter TargetName="adorner" Property="DockPanel.Dock" Value="Left" />
+                <Setter TargetName="errors" Property="DockPanel.Dock" Value="Right" />
+                <Setter TargetName="errors" Property="Margin" Value="8,0,0,0" />
+            </DataTrigger>
+
+            <!-- ============ -->
+            <!-- ошибки слева -->
+            <!-- ============ -->
+            <DataTrigger
+                Binding="{Binding ElementName=adorner,
+                                  Path=AdornedElement.(helpers:ValidationPlacement.Dock)}"
+                Value="Left">
+                <Setter TargetName="adorner" Property="DockPanel.Dock" Value="Right" />
+                <Setter TargetName="errors" Property="DockPanel.Dock" Value="Left" />
+                <Setter TargetName="errors" Property="Margin" Value="0,0,8,0" />
+            </DataTrigger>
+
+            <!-- ============ -->
+            <!-- ошибки снизу -->
+            <!-- ============ -->
+            <DataTrigger
+                Binding="{Binding ElementName=adorner,
+                                  Path=AdornedElement.(helpers:ValidationPlacement.Dock)}"
+                Value="Bottom">
+                <Setter TargetName="adorner" Property="DockPanel.Dock" Value="Top" />
+                <Setter TargetName="errors" Property="DockPanel.Dock" Value="Bottom" />
+                <Setter TargetName="errors" Property="Margin" Value="0,4,0,0" />
+            </DataTrigger>
+
+            <!-- ============= -->
+            <!-- ошибки сверху -->
+            <!-- ============= -->
+            <DataTrigger
+                Binding="{Binding ElementName=adorner,
+                                  Path=AdornedElement.(helpers:ValidationPlacement.Dock)}"
+                Value="Top">
+                <Setter TargetName="adorner" Property="DockPanel.Dock" Value="Bottom" />
+                <Setter TargetName="errors" Property="DockPanel.Dock" Value="Top" />
+                <Setter TargetName="errors" Property="Margin" Value="0,0,0,4" />
+            </DataTrigger>
+
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
+
+    <!-- ====================================================================================== -->
     <!-- Подключаем пустой ErrorTemplate глобально, чтобы убрать красную обводку всего контрола -->
+    <!-- ====================================================================================== -->
     <Style TargetType="Panel">
         <Setter Property="Validation.ErrorTemplate" Value="{StaticResource NoErrorTemplate}" />
     </Style>
