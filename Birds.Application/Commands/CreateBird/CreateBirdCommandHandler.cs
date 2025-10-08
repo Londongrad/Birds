@@ -12,18 +12,18 @@ namespace Birds.Application.Commands.CreateBird
         IUnitOfWork unitOfWork,
         IMapper mapper,
         IMediator mediator)
-        : IRequestHandler<CreateBirdCommand, Guid>
+        : IRequestHandler<CreateBirdCommand>
     {
-        public async Task<Guid> Handle(CreateBirdCommand request, CancellationToken cancellationToken)
+        public async Task Handle(CreateBirdCommand request, CancellationToken cancellationToken)
         {
-            var id = await repository.AddAsync(mapper.Map<Bird>(request), cancellationToken);
+            var bird = mapper.Map<Bird>(request);
+
+            await repository.AddAsync(bird, cancellationToken);
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
-            var bird = mapper.Map<BirdDTO>(request);
-            await mediator.Publish(new BirdCreatedNotification(bird), cancellationToken);
-
-            return id;
+            var birdDTO = mapper.Map<BirdDTO>(bird);
+            await mediator.Publish(new BirdCreatedNotification(birdDTO), cancellationToken);
         }
     }
 }

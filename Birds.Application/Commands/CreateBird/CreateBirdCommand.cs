@@ -7,5 +7,5 @@ namespace Birds.Application.Commands.CreateBird
         BirdsName Name,
         string? Description,
         DateOnly Arrival
-    ) : IRequest<Guid>;
+    ) : IRequest;
 }
