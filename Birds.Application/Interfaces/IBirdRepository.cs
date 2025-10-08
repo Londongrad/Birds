@@ -20,7 +20,7 @@ namespace Birds.Application.Interfaces
         /// Метод <b>не выполняет сохранение в базе данных</b>.
         /// Для фиксации изменений необходимо вызвать <see cref="IUnitOfWork.SaveChangesAsync"/>.
         /// </remarks>
-        Task<Guid> AddAsync(Bird bird, CancellationToken cancellationToken = default);
+        Task AddAsync(Bird bird, CancellationToken cancellationToken = default);
 
         /// <summary>Обновляет существующую птицу в контексте отслеживания.</summary>
         /// <remarks>

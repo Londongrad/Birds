@@ -9,10 +9,9 @@ namespace Birds.Infrastructure.Repositories
     public class BirdRepository(BirdDbContext context) : IBirdRepository
     {
         /// <inheritdoc/>
-        public async Task<Guid> AddAsync(Bird bird, CancellationToken cancellationToken = default)
+        public async Task AddAsync(Bird bird, CancellationToken cancellationToken = default)
         {
             await context.Birds.AddAsync(bird, cancellationToken);
-            return bird.Id;
         }
 
         /// <inheritdoc/>
