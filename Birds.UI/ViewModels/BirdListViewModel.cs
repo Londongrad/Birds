@@ -2,6 +2,7 @@
 using Birds.Application.Notifications;
 using Birds.Domain.Enums;
 using Birds.UI.Enums;
+using Birds.UI.Extensions;
 using Birds.UI.Services.Notification;
 using Birds.UI.Services.Stores.BirdStore;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -14,7 +15,8 @@ namespace Birds.UI.ViewModels
 {
     public partial class BirdListViewModel : ObservableObject,
                                              INotificationHandler<BirdCreatedNotification>,
-                                             INotificationHandler<BirdDeletedNotification>
+                                             INotificationHandler<BirdDeletedNotification>,
+                                             INotificationHandler<BirdUpdatedNotification>
     {
         public BirdListViewModel(
             IMediator mediator,
@@ -134,18 +136,20 @@ namespace Birds.UI.ViewModels
             });
 
             _notification.ShowSuccess("Bird was successfully removed");
-            }
-            else
-            {
-                d.BeginInvoke(() =>
-                {
-                    var vm = Birds.FirstOrDefault(x => x.Id == notification.BirdId);
-                    if (vm != null) Birds.Remove(vm);
-                });
-            }
-            _notification.ShowSuccess("Bird was successfully removed");
+        }
 
-            return Task.CompletedTask;
+        /// <summary>
+        /// Обновление птицы из коллекции по уведомлению.
+        /// На случай вызова не из UI потока, переключаемся на него.
+        /// </summary>
+        public async Task Handle(BirdUpdatedNotification notification, CancellationToken cancellationToken)
+        {
+            await System.Windows.Application.Current.Dispatcher.InvokeOnUiAsync(() =>
+            {
+                Birds.ReplaceOrAdd(b => b.Id == notification.BirdDTO.Id, notification.BirdDTO);
+            });
+
+            _notification.ShowSuccess("Bird was successfully updated");
         }
 
         #endregion [ Handlers ]

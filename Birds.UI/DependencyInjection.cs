@@ -26,11 +26,14 @@ namespace Birds.UI
             services.AddSingleton<IBirdStore, BirdStore>();
             services.AddSingleton<BirdStoreInitializer>();
 
-            // MediatR Handlers
+            // MediatR notification Handlers
             services.AddSingleton<INotificationHandler<BirdCreatedNotification>>(sp =>
                 sp.GetRequiredService<BirdListViewModel>());
 
             services.AddSingleton<INotificationHandler<BirdDeletedNotification>>(sp =>
+                sp.GetRequiredService<BirdListViewModel>());
+
+            services.AddSingleton<INotificationHandler<BirdUpdatedNotification>>(sp =>
                 sp.GetRequiredService<BirdListViewModel>());
 
             services.AddSingleton<INotificationHandler<NavigatedEvent>>(sp =>
