@@ -3,7 +3,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:helpers="clr-namespace:Birds.UI.Views.Helpers">
 
+    <!-- ================================================== -->
+    <!-- Два шаблона представляющих один объект в коллекции -->
+    <!-- ================================================== -->
+
+    <!-- ============================================== -->
     <!-- ======== ШАБЛОН ПРОСМОТРА (READ-ONLY) ======== -->
+    <!-- ============================================== -->
     <DataTemplate x:Key="BirdViewTemplate">
         <Grid VerticalAlignment="Center">
             <Grid.RowDefinitions>
@@ -64,7 +70,9 @@
         </Grid>
     </DataTemplate>
 
+    <!-- ======================================= -->
     <!-- ======== ШАБЛОН РЕДАКТИРОВАНИЯ ======== -->
+    <!-- ======================================= -->
     <DataTemplate x:Key="BirdEditTemplate">
         <Grid VerticalAlignment="Center">
             <Grid.RowDefinitions>

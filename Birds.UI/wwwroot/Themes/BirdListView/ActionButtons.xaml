@@ -2,7 +2,9 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
+    <!-- =================================== -->
     <!-- Базовый стиль для квадратной кнопки -->
+    <!-- =================================== -->
     <Style
         x:Key="ActionButtonBase"
         TargetType="Button">
@@ -37,7 +39,9 @@
         </Setter>
     </Style>
 
+    <!-- ===================== -->
     <!-- Кнопка редактирования -->
+    <!-- ===================== -->
     <Style
         x:Key="EditButtonStyle"
         BasedOn="{StaticResource ActionButtonBase}"
@@ -47,7 +51,9 @@
         <Setter Property="Margin" Value="0,0,0,4" />
     </Style>
 
+    <!-- =============== -->
     <!-- Кнопка удаления -->
+    <!-- =============== -->
     <Style
         x:Key="DeleteButtonStyle"
         BasedOn="{StaticResource ActionButtonBase}"
@@ -57,7 +63,9 @@
         <Setter Property="Margin" Value="0,4,0,0" />
     </Style>
 
+    <!-- ==================== -->
     <!-- Кнопка подтверждения -->
+    <!-- ==================== -->
     <Style
         x:Key="ConfirmButtonStyle"
         BasedOn="{StaticResource ActionButtonBase}"
@@ -67,7 +75,9 @@
         <Setter Property="Margin" Value="0,0,0,4" />
     </Style>
 
+    <!-- ============= -->
     <!-- Кнопка отмены -->
+    <!-- ============= -->
     <Style
         x:Key="CancelButtonStyle"
         BasedOn="{StaticResource ActionButtonBase}"
@@ -77,7 +87,9 @@
         <Setter Property="Margin" Value="0,4,0,0" />
     </Style>
 
+    <!-- ================= -->
     <!-- Кнопка сохранения -->
+    <!-- ================= -->
     <Style
         x:Key="SaveButtonStyle"
         BasedOn="{StaticResource ActionButtonBase}"
@@ -87,7 +99,9 @@
         <Setter Property="Margin" Value="0,0,0,4" />
     </Style>
 
+    <!-- ============================ -->
     <!-- Кнопка отмены редактирования -->
+    <!-- ============================ -->
     <Style
         x:Key="CancelEditButtonStyle"
         BasedOn="{StaticResource ActionButtonBase}"
@@ -98,7 +112,9 @@
     </Style>
 
 
+    <!-- ========================= -->
     <!-- Шаблон для обычных кнопок -->
+    <!-- ========================= -->
     <DataTemplate x:Key="NormalButtonsTemplate">
         <StackPanel RenderTransformOrigin="0.5,0.5">
             <StackPanel.RenderTransform>
@@ -114,7 +130,9 @@
         </StackPanel>
     </DataTemplate>
 
+    <!-- ======================================== -->
     <!-- Шаблон для кнопок подтверждения удаления -->
+    <!-- ======================================== -->
     <DataTemplate x:Key="ConfirmButtonsTemplate">
         <StackPanel RenderTransformOrigin="0.5,0.5">
             <StackPanel.RenderTransform>
@@ -130,7 +148,9 @@
         </StackPanel>
     </DataTemplate>
 
+    <!-- ============================ -->
     <!-- Шаблон кнопок редактирования -->
+    <!-- ============================ -->
     <DataTemplate x:Key="EditButtonsTemplate">
         <StackPanel RenderTransformOrigin="0.5,0.5">
             <StackPanel.RenderTransform>
