@@ -113,27 +113,27 @@ namespace Birds.UI.ViewModels
         /// Добавление созданной птицы в коллекцию по уведомлению.
         /// На случай вызова не из UI потока, переключаемся на него.
         /// </summary>
-        public Task Handle(BirdCreatedNotification notification, CancellationToken cancellationToken)
+        public async Task Handle(BirdCreatedNotification notification, CancellationToken cancellationToken)
         {
-            var d = System.Windows.Application.Current.Dispatcher;
-            if (d.CheckAccess())
-                Birds.Add(notification.Bird); // Уже на UI-потоке — добавляем напрямую
-            else
-                d.BeginInvoke(() => Birds.Add(notification.Bird)); // Переключаемся на UI-поток
-            return Task.CompletedTask;
+            await System.Windows.Application.Current.Dispatcher.InvokeOnUiAsync(() =>
+            {
+                if (notification.Bird != null) Birds.Add(notification.Bird);
+            });
         }
 
         /// <summary>
         /// Удаление птицы из коллекции по уведомлению.
         /// На случай вызова не из UI потока, переключаемся на него.
         /// </summary>
-        public Task Handle(BirdDeletedNotification notification, CancellationToken cancellationToken)
+        public async Task Handle(BirdDeletedNotification notification, CancellationToken cancellationToken)
         {
-            var d = System.Windows.Application.Current.Dispatcher;
-            if (d.CheckAccess())
+            await System.Windows.Application.Current.Dispatcher.InvokeOnUiAsync(() =>
             {
                 var vm = Birds.FirstOrDefault(x => x.Id == notification.BirdId);
                 if (vm != null) Birds.Remove(vm);
+            });
+
+            _notification.ShowSuccess("Bird was successfully removed");
             }
             else
             {
