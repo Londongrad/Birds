@@ -69,22 +69,22 @@ namespace Birds.UI.Views.Helpers
         /// <param name="e">Аргументы изменения значения.</param>
         private static void OnPlacementChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is not FrameworkElement fe)
-                return;
+            if (d is not FrameworkElement fe) return;
 
+            // 1) Всегда подключаем универсальный шаблон
+            fe.SetResourceReference(Validation.ErrorTemplateProperty, "FieldErrorTemplate_Universal");
+
+            // 2) Направление задаём через Dock — его читают триггеры внутри шаблона
             var mode = (PlacementMode)e.NewValue;
-
-            // Ключ шаблона формируется по соглашению "FieldErrorTemplate_Направление"
-            var templateKey = mode switch
+            var dock = mode switch
             {
-                PlacementMode.Right => "FieldErrorTemplate_Right",
-                PlacementMode.Bottom => "FieldErrorTemplate_Bottom",
-                PlacementMode.Left => "FieldErrorTemplate_Left",
-                PlacementMode.Top => "FieldErrorTemplate_Top",
-                _ => "FieldErrorTemplate_Right"
+                PlacementMode.Right => Dock.Right,
+                PlacementMode.Left => Dock.Left,
+                PlacementMode.Top => Dock.Top,
+                PlacementMode.Bottom => Dock.Bottom,
+                _ => Dock.Right
             };
-
-            fe.SetResourceReference(Validation.ErrorTemplateProperty, templateKey);
+            SetDock(fe, dock);
         }
 
         #endregion [ PlacementProperty ]
