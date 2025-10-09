@@ -14,7 +14,7 @@
     <!-- Универсальный шаблон, в котором положение ошибки задается через Attathed property -->
     <!-- =================================================================== -->
     <ControlTemplate x:Key="FieldErrorTemplate_Universal">
-        <DockPanel LastChildFill="True">
+        <DockPanel>
 
             <!-- =========== -->
             <!-- сам контрол -->
@@ -35,10 +35,11 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <TextBlock
-                            MaxWidth="270"
+                            MaxWidth="150"
                             FontSize="14"
                             Foreground="Red"
                             Text="{Binding ErrorContent}"
+                            TextTrimming="CharacterEllipsis"
                             TextWrapping="Wrap" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
@@ -138,14 +139,6 @@
 
     <Style TargetType="ContentPresenter">
         <Setter Property="Validation.ErrorTemplate" Value="{StaticResource NoErrorTemplate}" />
-    </Style>
-
-    <Style TargetType="TextBox">
-        <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource NoErrorTemplate}" />
-    </Style>
-
-    <Style TargetType="DatePicker">
-        <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource NoErrorTemplate}" />
     </Style>
 
     <Style TargetType="Grid">
