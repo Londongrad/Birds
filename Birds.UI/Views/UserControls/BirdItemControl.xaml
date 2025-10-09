@@ -28,10 +28,11 @@
 
         <Grid VerticalAlignment="Center">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
                 <!-- Информация о птице -->
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+
                 <!-- Кнопки -->
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
             <ContentControl
