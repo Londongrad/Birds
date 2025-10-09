@@ -86,7 +86,6 @@
 
             <!-- Название -->
             <ComboBox
-                helpers:ValidationPlacement.Dock="Right"
                 IsEditable="False"
                 ItemsSource="{Binding BirdNames}"
                 SelectedItem="{Binding SelectedBirdName,
@@ -108,7 +107,6 @@
                 Grid.Column="0"
                 Margin="0,2,0,0"
                 HorizontalAlignment="Left"
-                helpers:ValidationPlacement.Dock="Right"
                 FontSize="14"
                 Foreground="#BBB"
                 Style="{StaticResource TextBoxAdd}"
@@ -126,6 +124,7 @@
                 VerticalAlignment="Center"
                 Orientation="Horizontal">
                 <DatePicker
+                    helpers:ValidationPlacement.MaxErrorWidth="150"
                     helpers:ValidationPlacement.Placement="Bottom"
                     CalendarStyle="{DynamicResource DarkCalendarStyle}"
                     SelectedDate="{Binding Arrival,
@@ -139,6 +138,7 @@
                     FontSize="12"
                     Text="—" />
                 <DatePicker
+                    helpers:ValidationPlacement.MaxErrorWidth="150"
                     helpers:ValidationPlacement.Placement="Bottom"
                     CalendarStyle="{DynamicResource DarkCalendarStyle}"
                     SelectedDate="{Binding Departure,

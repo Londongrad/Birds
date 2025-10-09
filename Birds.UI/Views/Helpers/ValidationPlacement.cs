@@ -97,12 +97,12 @@ namespace Birds.UI.Views.Helpers
         /// относительно элемента управления.
         /// </summary>
         /// <remarks>
-        /// Это свойство используется внутри шаблона ошибок (<see cref="ControlTemplate"/>),
-        /// чтобы динамически определять, с какой стороны отображать сообщения об ошибках:
+        /// Это свойство используется внутри шаблона ошибок (<see cref="ControlTemplate"/>)
+        /// для определения стороны, с которой отображаются сообщения об ошибках:
         /// слева, справа, сверху или снизу от контрола.
-        /// 
+        ///
         /// <para>
-        /// По умолчанию используется значение <see cref="System.Windows.Controls.Dock.Right"/>.
+        /// <br/><b>⚠️ Не предназначено для задания в XAML вручную. Использовать <see cref="PlacementProperty"/>.</b>
         /// </para>
         /// </remarks>
         public static readonly DependencyProperty DockProperty =
@@ -142,6 +142,53 @@ namespace Birds.UI.Views.Helpers
             => (Dock)element.GetValue(DockProperty);
 
         #endregion [ DockProperty ]
+
+        #region [ MaxErrorWidthProperty ]
+
+        /// <summary>
+        /// Определяет максимальную ширину блока сообщений об ошибках валидации.
+        /// </summary>
+        /// <remarks>
+        /// Значение задаётся в пикселях и применяется к элементу визуализации ошибки,
+        /// обычно к <see cref="TextBlock"/>, который выводит текст ошибки внутри шаблона
+        /// (<see cref="Validation.ErrorTemplate"/>).
+        ///
+        /// <para>
+        /// Если свойство не указано, используется значение по умолчанию — <c>270</c>.
+        /// </para>
+        ///
+        /// <para>
+        /// Это свойство особенно полезно, если для разных представлений требуется
+        /// различная ширина текста ошибок — например, более узкая колонка в форме
+        /// добавления и более широкая в списке.
+        /// </para>
+        /// </remarks>
+        public static readonly DependencyProperty MaxErrorWidthProperty =
+            DependencyProperty.RegisterAttached(
+                "MaxErrorWidth",
+                typeof(double),
+                typeof(ValidationPlacement),
+                new PropertyMetadata(270.0));
+
+        /// <summary>
+        /// Устанавливает максимальную ширину блока сообщений об ошибках валидации
+        /// для указанного элемента управления.
+        /// </summary>
+        /// <param name="element">Элемент, к которому применяется прикреплённое свойство.</param>
+        /// <param name="value">Максимальная ширина блока ошибок (в пикселях).</param>
+        public static void SetMaxErrorWidth(DependencyObject element, double value)
+            => element.SetValue(MaxErrorWidthProperty, value);
+
+        /// <summary>
+        /// Возвращает максимальную ширину блока сообщений об ошибках валидации
+        /// для указанного элемента управления.
+        /// </summary>
+        /// <param name="element">Элемент, из которого считывается значение свойства.</param>
+        /// <returns>Текущее значение максимальной ширины блока ошибок (в пикселях).</returns>
+        public static double GetMaxErrorWidth(DependencyObject element)
+            => (double)element.GetValue(MaxErrorWidthProperty);
+
+        #endregion [ MaxErrorWidthProperty ]
     }
 
     /// <summary>

@@ -19,7 +19,6 @@
                 Text="Bird's type" />
 
             <ComboBox
-                helpers:ValidationPlacement.Dock="Right"
                 IsEditable="False"
                 ItemsSource="{Binding BirdNames}"
                 SelectedItem="{Binding SelectedBirdName,
@@ -33,7 +32,6 @@
                 Text="Description" />
 
             <TextBox
-                helpers:ValidationPlacement.Dock="Right"
                 Style="{StaticResource TextBoxAdd}"
                 Text="{Binding Description,
                                Mode=TwoWay,
@@ -45,7 +43,6 @@
                 Text="Arrival" />
 
             <DatePicker
-                helpers:ValidationPlacement.Dock="Right"
                 CalendarStyle="{DynamicResource DarkCalendarStyle}"
                 SelectedDate="{Binding Arrival,
                                        Mode=TwoWay,

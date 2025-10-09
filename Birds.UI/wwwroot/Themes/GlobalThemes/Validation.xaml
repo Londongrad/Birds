@@ -17,25 +17,37 @@
         <DockPanel>
 
             <!-- =========== -->
-            <!-- сам контрол -->
+            <!-- сам элемент, к которому ошибка -->
             <!-- =========== -->
             <AdornedElementPlaceholder
                 x:Name="adorner"
                 DockPanel.Dock="Left" />
 
-            <!-- =========== -->
-            <!-- блок ошибок -->
-            <!-- =========== -->
+            <!-- ============================ -->
+            <!-- Текст сообщения об ошибке -->
+            <!-- ============================ -->
+            <!--
+                Здесь задаётся максимальная ширина текста ошибки.
+                Связка выполняется через прикреплённое свойство
+                helpers:ValidationPlacement.MaxErrorWidth,
+                которое можно указать прямо у контрола (например, DatePicker или TextBox).
+
+                Пример использования:
+                <DatePicker helpers:ValidationPlacement.MaxErrorWidth="180" />
+
+                Если свойство не задано, применяется значение по умолчанию — 270 пикселей.
+            -->
             <ItemsControl
                 x:Name="errors"
-                Margin="8,0,0,0"
+                Margin="0,0,0,0"
                 VerticalAlignment="Center"
                 ItemsSource="{Binding ElementName=adorner,
                                       Path=AdornedElement.(Validation.Errors)}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <TextBlock
-                            MaxWidth="150"
+                            MaxWidth="{Binding ElementName=adorner,
+                                               Path=AdornedElement.(helpers:ValidationPlacement.MaxErrorWidth)}"
                             FontSize="14"
                             Foreground="Red"
                             Text="{Binding ErrorContent}"
