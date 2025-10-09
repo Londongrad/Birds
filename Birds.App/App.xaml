@@ -20,6 +20,8 @@
                 <!-- Bird List View -->
                 <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdListView/ActionButtons.xaml" />
                 <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdListView/ComboBoxSortFilter.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdListView/ToggleButton.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdListView/Ellipse.xaml" />
 
                 <!-- Add Bird View -->
                 <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/AddBirdView/AddBirdButton.xaml" />
@@ -49,6 +51,9 @@
             <conv:DateOnlyToDateTimeConverter x:Key="DateOnlyConverter" />
             <conv:InverseBoolConverter x:Key="BoolConverter" />
             <conv:MultiBoolToVisibilityConverter x:Key="MultiBoolToVisibilityConverter" />
+            <conv:BoolToVisibilityInverseConverter x:Key="BoolToVisibilityInverse" />
+            <conv:BoolToStatusTextConverter x:Key="BoolToStatusTextConverter" />
+            <conv:BoolToColorConverter x:Key="BoolToColorConverter" />
             <conv:BirdVmConverter
                 x:Key="BirdVmConverter"
                 Factory="{x:Null}" />
