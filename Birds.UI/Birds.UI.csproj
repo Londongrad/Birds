@@ -11,18 +11,30 @@
     <None Remove="wwwroot\Images\add.png" />
     <None Remove="wwwroot\Images\bird.ico" />
     <None Remove="wwwroot\Images\chart.png" />
+    <None Remove="wwwroot\Images\error.png" />
     <None Remove="wwwroot\Images\ex.png" />
     <None Remove="wwwroot\Images\file_basket_red.png" />
+    <None Remove="wwwroot\Images\info.png" />
     <None Remove="wwwroot\Images\list.png" />
     <None Remove="wwwroot\Images\ok.png" />
     <None Remove="wwwroot\Images\shutdown.png" />
+    <None Remove="wwwroot\Images\success.png" />
+    <None Remove="wwwroot\Images\warning.png" />
   </ItemGroup>
 
   <ItemGroup>
     <Resource Include="wwwroot\Images\add.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
-    <Resource Include="wwwroot\Images\chart.png" />
+    <Resource Include="wwwroot\Images\chart.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="wwwroot\Images\error.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="wwwroot\Images\info.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="wwwroot\Images\list.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
@@ -50,6 +62,12 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
     <Resource Include="wwwroot\Images\shutdown.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="wwwroot\Images\success.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="wwwroot\Images\warning.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>

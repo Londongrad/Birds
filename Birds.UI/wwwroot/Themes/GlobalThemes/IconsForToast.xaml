@@ -1,28 +1,21 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:img="clr-namespace:System.Windows.Media.Imaging;assembly=PresentationCore">
 
-    <!-- Иконки как UIElement -->
-    <Image
-        x:Key="SuccessIcon"
-        Width="16"
-        Height="16"
-        Source="pack://application:,,,/Birds.UI;component/wwwroot/Images/success.png" />
-    <Image
-        x:Key="ErrorIcon"
-        Width="16"
-        Height="16"
-        Source="pack://application:,,,/Birds.UI;component/wwwroot/Images/error.png" />
-    <Image
-        x:Key="WarningIcon"
-        Width="16"
-        Height="16"
-        Source="pack://application:,,,/Birds.UI;component/wwwroot/Images/warning.png" />
-    <Image
-        x:Key="InfoIcon"
-        Width="16"
-        Height="16"
-        Source="pack://application:,,,/Birds.UI;component/wwwroot/Images/info.png" />
+    <!-- Источники иконок как ImageSource -->
+    <img:BitmapImage
+        x:Key="SuccessIconSource"
+        UriSource="pack://application:,,,/Birds.UI;component/wwwroot/Images/success.png" />
+    <img:BitmapImage
+        x:Key="ErrorIconSource"
+        UriSource="pack://application:,,,/Birds.UI;component/wwwroot/Images/error.png" />
+    <img:BitmapImage
+        x:Key="WarningIconSource"
+        UriSource="pack://application:,,,/Birds.UI;component/wwwroot/Images/warning.png" />
+    <img:BitmapImage
+        x:Key="InfoIconSource"
+        UriSource="pack://application:,,,/Birds.UI;component/wwwroot/Images/info.png" />
 
     <!-- Стиль текста уведомления -->
     <Style

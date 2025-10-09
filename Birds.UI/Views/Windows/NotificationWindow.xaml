@@ -25,6 +25,11 @@
         <StackPanel
             VerticalAlignment="Center"
             Orientation="Horizontal">
+            <Image
+                x:Name="IconImage"
+                Width="16"
+                Height="16"
+                Margin="0,0,6,0" />
             <TextBlock
                 x:Name="MessageText"
                 VerticalAlignment="Center"

@@ -1,5 +1,6 @@
 ﻿using Birds.UI.Services.Notification;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -18,23 +19,28 @@ namespace Birds.UI.Views.Windows
                 ? $"{options.Title}\n{message}"
                 : message;
 
-            // цвет/иконка по типу
+            // Настраиваем цвет и иконку
             switch (options.Type)
             {
                 case NotificationType.Success:
                     RootBorder.Background = Brushes.Green;
+                    IconImage.Source = (ImageSource)FindResource("SuccessIconSource");
                     break;
                 case NotificationType.Error:
                     RootBorder.Background = Brushes.Red;
+                    IconImage.Source = (ImageSource)FindResource("ErrorIconSource");
                     break;
                 case NotificationType.Info:
                     RootBorder.Background = Brushes.Blue;
+                    IconImage.Source = (ImageSource)FindResource("InfoIconSource");
                     break;
                 case NotificationType.Warning:
                     RootBorder.Background = Brushes.Orange;
+                    IconImage.Source = (ImageSource)FindResource("WarningIconSource");
                     break;
             }
 
+            // Автозакрытие по таймеру
             _timer = new DispatcherTimer { Interval = options.Duration };
             _timer.Tick += (s, e) =>
             {
