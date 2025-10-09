@@ -17,8 +17,12 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
+                <!-- Имя/описание -->
                 <ColumnDefinition Width="3*" />
+                <!-- Даты -->
                 <ColumnDefinition Width="2*" />
+                <!-- Статус -->
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
             <!-- Название -->
@@ -67,6 +71,11 @@
                     Text="{Binding DaysInStock,
                                    StringFormat={}{0} дней}" />
             </StackPanel>
+
+            <Ellipse Grid.Row="0"
+                     Grid.RowSpan="2"
+                     Grid.Column="2"
+                     Style="{StaticResource GlowingPulseIndicator}" />
         </Grid>
     </DataTemplate>
 
@@ -82,6 +91,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*" />
                 <ColumnDefinition Width="2*" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
             <!-- Название -->
@@ -148,6 +158,23 @@
                                            UpdateSourceTrigger=PropertyChanged}"
                     Style="{StaticResource DatePickerAdd}" />
             </StackPanel>
+
+            <ToggleButton
+                Grid.Row="0"
+                Grid.RowSpan="2"
+                Grid.Column="2"
+                Margin="5,0"
+                Padding="8,2"
+                VerticalAlignment="Center"
+                Background="{Binding IsAlive,
+                                     Converter={StaticResource BoolToColorConverter}}"
+                BorderThickness="0"
+                Content="{Binding IsAlive,
+                                  Converter={StaticResource BoolToStatusTextConverter}}"
+                Foreground="White"
+                IsChecked="{Binding IsAlive,
+                                    Mode=TwoWay}"
+                Style="{StaticResource ModernToggleSwitch}" />
         </Grid>
     </DataTemplate>
 </ResourceDictionary>
