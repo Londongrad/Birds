@@ -5,106 +5,132 @@
     <!-- =========================================== -->
     <!-- Современный тумблер в стиле Switch -->
     <!-- =========================================== -->
-
     <Style
-        x:Key="ModernToggleSwitch"
-        TargetType="ToggleButton">
-        <Setter Property="Width" Value="50" />
-        <Setter Property="Height" Value="28" />
-        <Setter Property="Background" Value="#444" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Padding" Value="0" />
-        <Setter Property="Cursor" Value="Hand" />
+        x:Key="ToggleButton"
+        TargetType="{x:Type CheckBox}">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="ToggleButton">
+                <ControlTemplate TargetType="{x:Type CheckBox}">
+                    <ControlTemplate.Resources>
+                        <SolidColorBrush x:Key="fillBrush">LightBlue</SolidColorBrush>
+                        <SolidColorBrush x:Key="borderBrush">Gray</SolidColorBrush>
+                    </ControlTemplate.Resources>
                     <Grid
-                        x:Name="RootGrid"
-                        Width="{TemplateBinding Width}"
-                        Height="{TemplateBinding Height}">
-                        <!-- Фон -->
-                        <Border
-                            x:Name="SwitchBackground"
-                            Background="{TemplateBinding Background}"
-                            CornerRadius="14"
-                            Opacity="0.8" />
-
-                        <!-- Круглый переключатель -->
-                        <Border
-                            x:Name="Thumb"
-                            Width="22"
-                            Height="22"
-                            Margin="3,0,0,0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
-                            Background="White"
-                            CornerRadius="11"
-                            RenderTransformOrigin="0.5,0.5">
-                            <Border.RenderTransform>
-                                <TranslateTransform x:Name="ThumbTransform" X="0" />
-                            </Border.RenderTransform>
-                            <Border.Effect>
-                                <DropShadowEffect
-                                    BlurRadius="4"
-                                    Opacity="0.3"
-                                    ShadowDepth="1"
-                                    Color="#000" />
-                            </Border.Effect>
-                        </Border>
+                        Height="18"
+                        Background="Transparent"
+                        SnapsToDevicePixels="True">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="34" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid x:Name="markGrid">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Rectangle
+                                x:Name="moveEllipse"
+                                Height="16"
+                                Fill="Transparent">
+                                <Rectangle.Style>
+                                    <Style TargetType="Rectangle">
+                                        <Style.Triggers>
+                                            <DataTrigger
+                                                Binding="{Binding IsChecked,
+                                                                  RelativeSource={RelativeSource TemplatedParent}}"
+                                                Value="True">
+                                                <DataTrigger.EnterActions>
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <DoubleAnimation
+                                                                Storyboard.TargetProperty="Width"
+                                                                From="0"
+                                                                To="16"
+                                                                Duration="0:0:0.4" />
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </DataTrigger.EnterActions>
+                                                <DataTrigger.ExitActions>
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <DoubleAnimation
+                                                                Storyboard.TargetProperty="Width"
+                                                                To="0"
+                                                                Duration="0:0:0.4" />
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </DataTrigger.ExitActions>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Rectangle.Style>
+                            </Rectangle>
+                            <Rectangle
+                                Name="line"
+                                Grid.ColumnSpan="2"
+                                Margin="1,4,1,4"
+                                IsHitTestVisible="False"
+                                RadiusX="6"
+                                RadiusY="6"
+                                StrokeThickness=".8">
+                                <Rectangle.Style>
+                                    <Style TargetType="{x:Type Rectangle}">
+                                        <Setter Property="Fill" Value="LightGray" />
+                                    </Style>
+                                </Rectangle.Style>
+                            </Rectangle>
+                            <Ellipse
+                                Name="spot"
+                                Grid.Column="1"
+                                Width="{Binding ActualHeight,
+                                                RelativeSource={RelativeSource Self}}"
+                                HorizontalAlignment="Left"
+                                StrokeThickness=".8">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Fill" Value="LightSteelBlue" />
+                                        <Setter Property="Stroke" Value="CadetBlue" />
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+                        </Grid>
+                        <ContentPresenter
+                            x:Name="contentPresenter"
+                            Grid.Column="1"
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Content="{TemplateBinding Content}"
+                            ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Focusable="False"
+                            RecognizesAccessKey="True"
+                            SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                     </Grid>
-
-                    <!-- Анимации -->
                     <ControlTemplate.Triggers>
-
-                        <!-- Состояние Checked -->
-                        <Trigger Property="IsChecked" Value="True">
-                            <Trigger.EnterActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <!-- Цвет фона -->
-                                        <ColorAnimation
-                                            Storyboard.TargetName="SwitchBackground"
-                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                            To="#2ECC71"
-                                            Duration="0:0:0.2" />
-                                        <!-- Позиция круга -->
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="ThumbTransform"
-                                            Storyboard.TargetProperty="X"
-                                            To="22"
-                                            Duration="0:0:0.2" />
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </Trigger.EnterActions>
-                            <Trigger.ExitActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <!-- Цвет фона обратно -->
-                                        <ColorAnimation
-                                            Storyboard.TargetName="SwitchBackground"
-                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                            To="#E74C3C"
-                                            Duration="0:0:0.2" />
-                                        <!-- Позиция круга обратно -->
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="ThumbTransform"
-                                            Storyboard.TargetProperty="X"
-                                            To="0"
-                                            Duration="0:0:0.2" />
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </Trigger.ExitActions>
-                        </Trigger>
-
-                        <!-- Состояние Hover -->
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="SwitchBackground" Property="Opacity" Value="1" />
+                            <Setter TargetName="line" Property="Stroke" Value="DarkGray" />
+                            <Setter TargetName="spot" Property="Stroke" Value="DarkGray" />
                         </Trigger>
-
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value=".5" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="line" Property="Stroke" Value="Black" />
+                            <Setter TargetName="spot" Property="Stroke" Value="Black" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="line" Property="Fill" Value="LightSkyBlue" />
+                            <Setter TargetName="spot" Property="Fill" Value="SkyBlue" />
+                            <Setter TargetName="spot" Property="Stroke" Value="SteelBlue" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="{x:Null}">
+                            <Setter TargetName="line" Property="Fill" Value="lightGray" />
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
-
 </ResourceDictionary>
+

@@ -16,12 +16,12 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
+
             <Grid.ColumnDefinitions>
-                <!-- Имя/описание -->
-                <ColumnDefinition Width="3*" />
-                <!-- Даты -->
-                <ColumnDefinition Width="2*" />
-                <!-- Статус -->
+                <ColumnDefinition
+                    Width="*"
+                    MinWidth="150" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
@@ -29,10 +29,12 @@
             <TextBlock
                 Grid.Row="0"
                 Grid.Column="0"
+                Margin="0,0,10,0"
                 HorizontalAlignment="Left"
                 FontSize="24"
                 FontWeight="Bold"
-                Text="{Binding Name}" />
+                Text="{Binding Name}"
+                TextTrimming="CharacterEllipsis" />
 
             <!-- Описание -->
             <TextBlock
@@ -42,40 +44,66 @@
                 HorizontalAlignment="Left"
                 FontSize="14"
                 Foreground="#BBB"
-                Text="{Binding Description}" />
+                Text="{Binding Description}"
+                TextTrimming="CharacterEllipsis" />
 
-            <!-- Даты -->
-            <StackPanel
+            <!-- Блок дат, количества дней и индикатор -->
+            <Grid
                 Grid.Row="0"
                 Grid.RowSpan="2"
                 Grid.Column="1"
-                Margin="5,0,0,0"
-                VerticalAlignment="Center"
-                Orientation="Horizontal">
+                Margin="15,0,0,0"
+                VerticalAlignment="Center">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Прибытие -->
                 <TextBlock
-                    Margin="0,0,5,0"
+                    Grid.Column="0"
+                    Margin="0,0,8,0"
                     FontSize="20"
                     Text="{Binding Arrival,
                                    StringFormat={}{0:dd.MM.yyyy}}" />
+
                 <TextBlock
-                    Margin="0,0,5,0"
+                    Grid.Column="1"
+                    Margin="0,0,8,0"
                     FontSize="12"
                     Text="—" />
+
+                <!-- Убытие -->
                 <TextBlock
-                    Margin="0,0,10,0"
+                    Grid.Column="2"
+                    Margin="0,0,15,0"
                     FontSize="20"
                     Text="{Binding DepartureDisplay}" />
+
+                <!-- Количество дней -->
                 <TextBlock
+                    Grid.Column="3"
+                    Margin="0,0,15,0"
                     FontSize="16"
                     Foreground="#AAA"
                     Text="{Binding DaysInStock,
                                    StringFormat={}{0} дней}" />
-            </StackPanel>
 
-            <Ellipse Grid.Row="0"
-                     Grid.RowSpan="2"
-                     Grid.Column="2"
-                     Style="{StaticResource GlowingPulseIndicator}" />
+                <!-- Индикатор -->
+                <Ellipse
+                    Grid.Column="4"
+                    Width="10"
+                    Height="10"
+                    Margin="0,0,15,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Fill="{Binding IsAlive,
+                                   Converter={StaticResource BoolToColorConverter}}" />
+            </Grid>
         </Grid>
     </DataTemplate>
 
@@ -89,8 +117,10 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*" />
-                <ColumnDefinition Width="2*" />
+                <ColumnDefinition
+                    Width="*"
+                    MinWidth="150" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
@@ -125,15 +155,24 @@
                                ValidatesOnNotifyDataErrors=True,
                                UpdateSourceTrigger=PropertyChanged}" />
 
-            <!-- Даты -->
-            <StackPanel
+            <!-- Даты + переключатель -->
+            <Grid
                 Grid.Row="0"
                 Grid.RowSpan="2"
                 Grid.Column="1"
-                Margin="5,0,0,0"
-                VerticalAlignment="Center"
-                Orientation="Horizontal">
+                Margin="10,0,10,0"
+                VerticalAlignment="Center">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Дата прибытия -->
                 <DatePicker
+                    Grid.Column="0"
                     helpers:ValidationPlacement.MaxErrorWidth="150"
                     helpers:ValidationPlacement.Placement="Bottom"
                     CalendarStyle="{DynamicResource DarkCalendarStyle}"
@@ -143,11 +182,16 @@
                                            ValidatesOnNotifyDataErrors=True,
                                            UpdateSourceTrigger=PropertyChanged}"
                     Style="{StaticResource DatePickerAdd}" />
+
                 <TextBlock
+                    Grid.Column="1"
                     Margin="5,0,5,0"
                     FontSize="12"
                     Text="—" />
+
+                <!-- Дата убытия -->
                 <DatePicker
+                    Grid.Column="2"
                     helpers:ValidationPlacement.MaxErrorWidth="150"
                     helpers:ValidationPlacement.Placement="Bottom"
                     CalendarStyle="{DynamicResource DarkCalendarStyle}"
@@ -157,24 +201,23 @@
                                            ValidatesOnNotifyDataErrors=True,
                                            UpdateSourceTrigger=PropertyChanged}"
                     Style="{StaticResource DatePickerAdd}" />
-            </StackPanel>
 
-            <ToggleButton
-                Grid.Row="0"
-                Grid.RowSpan="2"
-                Grid.Column="2"
-                Margin="5,0"
-                Padding="8,2"
-                VerticalAlignment="Center"
-                Background="{Binding IsAlive,
-                                     Converter={StaticResource BoolToColorConverter}}"
-                BorderThickness="0"
-                Content="{Binding IsAlive,
-                                  Converter={StaticResource BoolToStatusTextConverter}}"
-                Foreground="White"
-                IsChecked="{Binding IsAlive,
-                                    Mode=TwoWay}"
-                Style="{StaticResource ModernToggleSwitch}" />
+                <!-- Переключатель жив/не жив -->
+                <CheckBox
+                    Grid.Column="3"
+                    Margin="15,0,0,0"
+                    Padding="8,2"
+                    VerticalAlignment="Center"
+                    Background="{Binding IsAlive,
+                                         Converter={StaticResource BoolToColorConverter}}"
+                    BorderThickness="0"
+                    Content="{Binding IsAlive,
+                                      Converter={StaticResource BoolToStatusTextConverter}}"
+                    Foreground="White"
+                    IsChecked="{Binding IsAlive,
+                                        Mode=TwoWay}"
+                    Style="{StaticResource ToggleButton}" />
+            </Grid>
         </Grid>
     </DataTemplate>
 </ResourceDictionary>
