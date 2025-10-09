@@ -115,12 +115,6 @@ namespace Birds.UI.ViewModels
         }
 
         /// <summary>
-        /// Команда переключения состояния "жива/не жива".
-        /// </summary>
-        [RelayCommand]
-        private void ToggleAlive() => IsAlive = !IsAlive;
-
-        /// <summary>
         /// Команда отображения кнопок подтверждения удаления.
         /// </summary>
         [RelayCommand]
@@ -144,7 +138,8 @@ namespace Birds.UI.ViewModels
         [RelayCommand]
         private void CancelEdit()
         {
-            // при желании можно восстановить данные из Dto
+            // Восстанавливаем данные из Dto
+            SelectedBirdName = Enum.TryParse<BirdsName>(Dto.Name, out var bird) ? bird : null;
             Description = Dto.Description;
             Arrival = Dto.Arrival;
             Departure = Dto.Departure;
@@ -227,6 +222,9 @@ namespace Birds.UI.ViewModels
         /// </summary>
         public static ValidationResult? ValidateDeparture(object? value, ValidationContext ctx)
         {
+            if (ctx.ObjectInstance is BirdViewModel BirdVM && value is null && BirdVM.IsAlive == false)
+                return new ValidationResult($"Сначала укажите дату");
+
             if (value is null)
                 return ValidationResult.Success;
 
@@ -242,6 +240,12 @@ namespace Birds.UI.ViewModels
                 return new ValidationResult($"Дата убытия не может быть раньше даты прибытия ({vm.Arrival:dd-MM-yyyy})");
 
             return ValidationResult.Success;
+        }
+
+        partial void OnIsAliveChanged(bool value)
+        {
+            // Если птицу пометили как мертвую — проверяем Departure
+            ValidateProperty(Departure, nameof(Departure));
         }
 
         #endregion [ Validation ]
