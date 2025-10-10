@@ -1,10 +1,12 @@
 ﻿using Birds.Application.DTOs;
 using Birds.Application.Notifications;
+using Birds.Domain.Entities;
 using Birds.Domain.Enums;
 using Birds.UI.Enums;
 using Birds.UI.Extensions;
 using Birds.UI.Services.Notification;
 using Birds.UI.Services.Stores.BirdStore;
+using Birds.UI.Views.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MediatR;
 using System.Collections.ObjectModel;
@@ -29,10 +31,13 @@ namespace Birds.UI.ViewModels
             // Получаем ссылку на коллекцию птиц из BirdStore
             Birds = birdStore.Birds;
 
-            // ICollectionView с фильтром для UI
-            BirdsView = CollectionViewSource.GetDefaultView(Birds);
+            // Представление для UI
+            BirdsView = new ListCollectionView(Birds)
+            {
+                CustomSort = new BirdComparer(),
+                Filter = FilterBirds,
+            };
             SelectedFilter = Filters.First();
-            BirdsView.Filter = FilterBirds;
 
         }
 
