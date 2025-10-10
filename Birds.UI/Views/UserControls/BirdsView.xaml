@@ -21,6 +21,15 @@
                 Margin="0,0,0,10"
                 DockPanel.Dock="Top"
                 Orientation="Horizontal">
+
+                <TextBox
+                    Width="100"
+                    Height="30"
+                    Margin="0,0,10,0"
+                    Style="{StaticResource TextBoxAdd}"
+                    Text="{Binding SearchText,
+                                   UpdateSourceTrigger=PropertyChanged}" />
+
                 <TextBlock
                     DockPanel.Dock="Top"
                     FontSize="24"

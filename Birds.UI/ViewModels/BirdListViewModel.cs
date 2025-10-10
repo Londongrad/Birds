@@ -1,6 +1,5 @@
 ﻿using Birds.Application.DTOs;
 using Birds.Application.Notifications;
-using Birds.Domain.Entities;
 using Birds.Domain.Enums;
 using Birds.UI.Enums;
 using Birds.UI.Extensions;
@@ -73,6 +72,7 @@ namespace Birds.UI.ViewModels
         #region [ ObservableProperties ]
 
         [ObservableProperty] private FilterOption selectedFilter;
+        [ObservableProperty] private string? searchText;
 
         #endregion [ ObservableProperties ]
 
@@ -88,13 +88,39 @@ namespace Birds.UI.ViewModels
         }
 
         /// <summary>
-        /// Сортировка коллекции по фильтру
+        /// Событие изменения текста поиска. Обновляет представление. Вызывается из Mvvm.Toolkit
+        /// </summary>
+        /// <param name="value"></param>
+        partial void OnSearchTextChanged(string? value)
+        {
+            BirdsView.Refresh();
+        }
+
+        /// <summary>
+        /// Сортировка коллекции по фильтру.
         /// </summary>
         public bool FilterBirds(object obj)
         {
             if (obj is not BirdDTO bird) return false;
-            if (SelectedFilter is null) return true;
 
+            // Проверяем текст поиска
+            if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                var text = SearchText.Trim();
+
+                bool matchesSearch =
+                    (bird.Name?.Contains(text, StringComparison.CurrentCultureIgnoreCase) == true)
+                    || (bird.Description?.Contains(text, StringComparison.CurrentCultureIgnoreCase) == true);
+
+                if (!matchesSearch)
+                    return false;
+            }
+
+            // Проверяем фильтр (только если он выбран)
+            if (SelectedFilter is null)
+                return true;
+
+            // Фильтрация по выбранному фильтру
             return SelectedFilter.Filter switch
             {
                 BirdFilter.All => true,
