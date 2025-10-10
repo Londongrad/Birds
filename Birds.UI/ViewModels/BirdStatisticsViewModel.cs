@@ -56,102 +56,106 @@ namespace Birds.UI.ViewModels
 
         private void Recalculate()
         {
+            // 1️) Фильтрация
             IEnumerable<BirdDTO> q = Birds;
             if (SelectedYear is int y)
                 q = q.Where(b => b.Arrival.Year == y);
 
-            // Metric cards
-            TotalBirds = q.Count();
-            ReleasedCount = q.Count(b => b.Departure != null && b.IsAlive == true);
-            KillCount = q.Count(b => b.IsAlive == false);
+            var filteredBirds = q as IList<BirdDTO> ?? q.ToList();
 
-            // Species stats (filtered)
-            SpeciesStats.Clear();
-            foreach (var g in q.GroupBy(b => b.Name)
-                               .OrderByDescending(g => g.Count()))
+            // 2️) Быстрый подсчёт карточек (в один проход)
+            int total = 0, released = 0, killed = 0;
+            foreach (var b in filteredBirds)
             {
-                SpeciesStats.Add(new StatItem(g.Key, g.Count()));
+                total++;
+                if (b.Departure != null && b.IsAlive == true)
+                    released++;
+                else if (b.IsAlive == false)
+                    killed++;
             }
 
-            // Year stats (always for all years to show global picture)
+            TotalBirds = total;
+            ReleasedCount = released;
+            KillCount = killed;
+
+            // 3️) Группировка по виду (одна для Species + LongestKeeping). Лучше, чем в нескольких местах GroupBy.
+            var byName = filteredBirds.ToLookup(b => b.Name);
+
+            // Статистика по виду птицы
+            SpeciesStats.Clear();
+            foreach (var group in byName.OrderByDescending(g => g.Count()))
+                SpeciesStats.Add(new StatItem(group.Key, group.Count()));
+
+            // 4️) Группировка по году (всегда глобальная)
             YearStats.Clear();
             foreach (var g in Birds.GroupBy(b => b.Arrival.Year).OrderBy(g => g.Key))
-            {
                 YearStats.Add(new StatItem(g.Key.ToString(), g.Count()));
-            }
 
-            // Month stats (respect filter)
+            // 5️) Группировка по месяцам (в рамках фильтра)
             MonthStats.Clear();
-            foreach (var g in q.GroupBy(b => new { b.Arrival.Year, b.Arrival.Month })
-                               .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month))
+            foreach (var g in filteredBirds
+                .GroupBy(b => b.Arrival.ToString("yyyy-MM"))
+                .OrderBy(g => g.Key))
             {
-                var label = $"{g.Key.Year}-{g.Key.Month:00}";
-                MonthStats.Add(new StatItem(label, g.Count()));
+                MonthStats.Add(new StatItem(g.Key, g.Count()));
             }
 
-            // Year filter choices
+            // 6️) Список лет (для фильтра)
             AvailableYears = new SortedSet<int>(Birds.Select(b => b.Arrival.Year));
 
-            // Дополнительная статистика
-            if (q.Any())
+            // 7️) Дополнительные метрики
+            if (filteredBirds.Count > 0)
             {
                 // Самая продуктивная неделя
-                var topWeekGroup = q.GroupBy(b =>
-                {
-                    var dt = b.Arrival.ToDateTime(TimeOnly.MinValue);
-                    return System.Globalization.CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(
-                        dt,
-                        System.Globalization.CalendarWeekRule.FirstFourDayWeek,
-                        DayOfWeek.Monday);
-                })
-                .OrderByDescending(g => g.Count())
-                .FirstOrDefault();
+                var topWeekGroup = filteredBirds
+                    .GroupBy(b =>
+                    {
+                        var dt = b.Arrival.ToDateTime(TimeOnly.MinValue);
+                        return System.Globalization.CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(
+                            dt,
+                            System.Globalization.CalendarWeekRule.FirstFourDayWeek,
+                            DayOfWeek.Monday);
+                    })
+                    .OrderByDescending(g => g.Count())
+                    .FirstOrDefault();
 
-                if (topWeekGroup != null)
-                {
-                    var weekNumber = topWeekGroup.Key;
-                    TopWeek = $"Неделя {weekNumber}: {topWeekGroup.Count()} птиц";
-                }
-                else
-                {
-                    TopWeek = "—";
-                }
+                TopWeek = topWeekGroup != null
+                    ? $"Неделя {topWeekGroup.Key}: {topWeekGroup.Count()} птиц"
+                    : "—";
 
                 // Самый продуктивный день
-                var topDayGroup = q.GroupBy(b => b.Arrival)
-                                   .OrderByDescending(g => g.Count())
-                                   .FirstOrDefault();
+                var topDayGroup = filteredBirds
+                    .GroupBy(b => b.Arrival)
+                    .OrderByDescending(g => g.Count())
+                    .FirstOrDefault();
 
                 TopDay = topDayGroup != null
                     ? $"{topDayGroup.Key:dd.MM.yyyy}: {topDayGroup.Count()} птиц"
                     : "—";
 
-                // Самый длинный перерыв между поимками
-                var orderedDates = q.Select(b => b.Arrival)
-                                    .Distinct()
-                                    .OrderBy(d => d)
-                                    .ToList();
+                // Самый длинный перерыв
+                var orderedDates = filteredBirds
+                    .Select(b => b.Arrival)
+                    .Distinct()
+                    .OrderBy(d => d)
+                    .ToList();
 
                 if (orderedDates.Count > 1)
                 {
                     var maxGap = TimeSpan.Zero;
-                    DateOnly? prev = null;
-                    DateOnly? start = null;
-                    DateOnly? end = null;
+                    DateOnly? start = null, end = null;
 
-                    foreach (var d in orderedDates)
+                    for (int i = 1; i < orderedDates.Count; i++)
                     {
-                        if (prev is not null)
+                        var gap = orderedDates[i].ToDateTime(TimeOnly.MinValue) -
+                                  orderedDates[i - 1].ToDateTime(TimeOnly.MinValue);
+
+                        if (gap > maxGap)
                         {
-                            var gap = d.ToDateTime(TimeOnly.MinValue) - prev.Value.ToDateTime(TimeOnly.MinValue);
-                            if (gap > maxGap)
-                            {
-                                maxGap = gap;
-                                start = prev;
-                                end = d;
-                            }
+                            maxGap = gap;
+                            start = orderedDates[i - 1];
+                            end = orderedDates[i];
                         }
-                        prev = d;
                     }
 
                     LongestBreak = $"{maxGap.TotalDays - 1} дней без поимок (между {start:dd.MM.yyyy} и {end:dd.MM.yyyy})";
@@ -166,25 +170,22 @@ namespace Birds.UI.ViewModels
                 TopWeek = TopDay = LongestBreak = "—";
             }
 
-            // Самое долгое содержание по каждому виду
+            // 8️) Самое долгое содержание по виду
             LongestKeepingStats.Clear();
-
             var today = DateOnly.FromDateTime(DateTime.Today);
 
-            foreach (var g in filteredBirds.GroupBy(b => b.Name))
+            foreach (var group in byName)
             {
-                // Считаем длительность для каждой птицы — если Departure нет, используем сегодня
-                var maxDays = g
+                var maxDays = group
                     .Select(b =>
                     {
                         var end = b.Departure ?? today;
-                        return (end.ToDateTime(TimeOnly.MinValue) -
-                                b.Arrival.ToDateTime(TimeOnly.MinValue)).TotalDays;
+                        return (end.ToDateTime(TimeOnly.MinValue) - b.Arrival.ToDateTime(TimeOnly.MinValue)).TotalDays;
                     })
                     .DefaultIfEmpty(0)
                     .Max();
 
-                LongestKeepingStats.Add(new StatItem(g.Key, (int)maxDays));
+                LongestKeepingStats.Add(new StatItem(group.Key, (int)maxDays));
             }
         }
     }
