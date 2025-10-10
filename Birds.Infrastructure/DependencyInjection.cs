@@ -9,10 +9,14 @@ namespace Birds.Infrastructure
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddInfrastructure(this IServiceCollection services, string connectionString)
+        public static IServiceCollection AddInfrastructure(this IServiceCollection services)
         {
+            // Получение строки подключения 
+            var projectRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\.."));
+            var dbPath = Path.Combine(projectRoot, "birds.db");
+
             services.AddDbContext<BirdDbContext>(options =>
-                options.UseSqlite(connectionString));
+                options.UseSqlite($"Data Source={dbPath}"));
 
             services.AddScoped<IBirdRepository, BirdRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();

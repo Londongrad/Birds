@@ -7,10 +7,8 @@ using Birds.UI.Services.Navigation;
 using Birds.UI.Services.Stores.BirdStore;
 using Birds.UI.ViewModels;
 using Birds.UI.Views.Windows;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Configuration;
 using System.Windows;
 
 namespace Birds.App
@@ -30,12 +28,7 @@ namespace Birds.App
                     .ConfigureServices((context, services) =>
                     {
                         services.AddApplication();
-
-                        var connectionString = context.Configuration.GetConnectionString("DefaultConnection")
-                            ?? throw new ConfigurationErrorsException(
-                                "Не найдена строка подключения 'DefaultConnection' в appsettings.json");
-
-                        services.AddInfrastructure(connectionString);
+                        services.AddInfrastructure();
                         services.AddUI();
                     })
                     .Build();
