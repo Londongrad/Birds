@@ -54,32 +54,60 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- LEFT: metric cards -->
-                <StackPanel>
-                    <Border Style="{StaticResource MetricCardBorder}">
-                        <TextBlock
-                            FontSize="18"
-                            FontWeight="Bold"
-                            Foreground="White"
-                            Text="{Binding TotalBirds,
-                                           StringFormat=Всего поймано: {0}}" />
-                    </Border>
+                <ScrollViewer
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <Border Style="{StaticResource MetricCardBorder}">
+                            <TextBlock
+                                FontSize="18"
+                                FontWeight="Bold"
+                                Foreground="White"
+                                Text="{Binding TotalBirds,
+                                               StringFormat=Всего поймано: {0}}" />
+                        </Border>
 
-                    <Border Style="{StaticResource MetricCardBorder}">
-                        <TextBlock
-                            FontSize="16"
-                            Foreground="#7CE38B"
-                            Text="{Binding ReleasedCount,
-                                           StringFormat=Отпущено: {0}}" />
-                    </Border>
+                        <Border Style="{StaticResource MetricCardBorder}">
+                            <TextBlock
+                                FontSize="16"
+                                Foreground="#7CE38B"
+                                Text="{Binding ReleasedCount,
+                                               StringFormat=Отпущено: {0}}" />
+                        </Border>
 
-                    <Border Style="{StaticResource MetricCardBorder}">
-                        <TextBlock
-                            FontSize="16"
-                            Foreground="#8ECDF5"
-                            Text="{Binding KillCount,
-                                           StringFormat=Уничтожено: {0}}" />
-                    </Border>
-                </StackPanel>
+                        <Border Style="{StaticResource MetricCardBorder}">
+                            <TextBlock
+                                FontSize="16"
+                                Foreground="#8ECDF5"
+                                Text="{Binding KillCount,
+                                               StringFormat=Уничтожено: {0}}" />
+                        </Border>
+
+                        <Border Style="{StaticResource MetricCardBorder}">
+                            <TextBlock
+                                FontSize="14"
+                                Foreground="#E3C87C"
+                                Text="{Binding TopWeek,
+                                               StringFormat=Самая продуктивная неделя: {0}}" />
+                        </Border>
+
+                        <Border Style="{StaticResource MetricCardBorder}">
+                            <TextBlock
+                                FontSize="14"
+                                Foreground="#E3C87C"
+                                Text="{Binding TopDay,
+                                               StringFormat=Самый продуктивный день: {0}}" />
+                        </Border>
+
+                        <Border Style="{StaticResource MetricCardBorder}">
+                            <TextBlock
+                                FontSize="14"
+                                Foreground="#E3C87C"
+                                Text="{Binding LongestBreak,
+                                               StringFormat=Самый большой перерыв: {0}}" />
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
 
                 <!-- RIGHT: tabs with lists + SCROLL -->
                 <TabControl Grid.Column="1">
@@ -96,7 +124,7 @@
                                         Padding="10"
                                         Background="#333344"
                                         CornerRadius="8">
-                                        <DockPanel LastChildFill="False">
+                                        <DockPanel LastChildFill="True">
                                             <TextBlock
                                                 Margin="0,0,10,0"
                                                 DockPanel.Dock="Left"
@@ -127,7 +155,7 @@
                                         Padding="10"
                                         Background="#333344"
                                         CornerRadius="8">
-                                        <DockPanel LastChildFill="False">
+                                        <DockPanel LastChildFill="True">
                                             <TextBlock
                                                 Margin="0,0,10,0"
                                                 DockPanel.Dock="Left"
@@ -161,7 +189,7 @@
                                             Padding="10"
                                             Background="#333344"
                                             CornerRadius="8">
-                                            <DockPanel LastChildFill="False">
+                                            <DockPanel LastChildFill="True">
                                                 <TextBlock
                                                     Margin="0,0,10,0"
                                                     DockPanel.Dock="Left"

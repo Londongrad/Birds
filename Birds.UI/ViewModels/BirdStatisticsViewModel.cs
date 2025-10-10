@@ -19,6 +19,10 @@ namespace Birds.UI.ViewModels
         [ObservableProperty] private int releasedCount;
         [ObservableProperty] private int killCount;
 
+        [ObservableProperty] private string? topWeek;
+        [ObservableProperty] private string? topDay;
+        [ObservableProperty] private string? longestBreak;
+
         // Filter state
         [ObservableProperty] private int? selectedYear;
         [ObservableProperty] private IReadOnlyCollection<int> availableYears = Array.Empty<int>();
@@ -86,6 +90,80 @@ namespace Birds.UI.ViewModels
 
             // Year filter choices
             AvailableYears = new SortedSet<int>(Birds.Select(b => b.Arrival.Year));
+
+            // Дополнительная статистика
+            if (q.Any())
+            {
+                // Самая продуктивная неделя
+                var topWeekGroup = q.GroupBy(b =>
+                {
+                    var dt = b.Arrival.ToDateTime(TimeOnly.MinValue);
+                    return System.Globalization.CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(
+                        dt,
+                        System.Globalization.CalendarWeekRule.FirstFourDayWeek,
+                        DayOfWeek.Monday);
+                })
+                .OrderByDescending(g => g.Count())
+                .FirstOrDefault();
+
+                if (topWeekGroup != null)
+                {
+                    var weekNumber = topWeekGroup.Key;
+                    TopWeek = $"Неделя {weekNumber}: {topWeekGroup.Count()} птиц";
+                }
+                else
+                {
+                    TopWeek = "—";
+                }
+
+                // Самый продуктивный день
+                var topDayGroup = q.GroupBy(b => b.Arrival)
+                                   .OrderByDescending(g => g.Count())
+                                   .FirstOrDefault();
+
+                TopDay = topDayGroup != null
+                    ? $"{topDayGroup.Key:dd.MM.yyyy}: {topDayGroup.Count()} птиц"
+                    : "—";
+
+                // Самый длинный перерыв между поимками
+                var orderedDates = q.Select(b => b.Arrival)
+                                    .Distinct()
+                                    .OrderBy(d => d)
+                                    .ToList();
+
+                if (orderedDates.Count > 1)
+                {
+                    var maxGap = TimeSpan.Zero;
+                    DateOnly? prev = null;
+                    DateOnly? start = null;
+                    DateOnly? end = null;
+
+                    foreach (var d in orderedDates)
+                    {
+                        if (prev is not null)
+                        {
+                            var gap = d.ToDateTime(TimeOnly.MinValue) - prev.Value.ToDateTime(TimeOnly.MinValue);
+                            if (gap > maxGap)
+                            {
+                                maxGap = gap;
+                                start = prev;
+                                end = d;
+                            }
+                        }
+                        prev = d;
+                    }
+
+                    LongestBreak = $"{maxGap.TotalDays - 1} дней без поимок (между {start:dd.MM.yyyy} и {end:dd.MM.yyyy})";
+                }
+                else
+                {
+                    LongestBreak = "—";
+                }
+            }
+            else
+            {
+                TopWeek = TopDay = LongestBreak = "—";
+            }
         }
     }
 }
