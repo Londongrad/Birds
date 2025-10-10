@@ -31,6 +31,7 @@ namespace Birds.UI.ViewModels
         public ObservableCollection<StatItem> SpeciesStats { get; } = new();
         public ObservableCollection<StatItem> YearStats { get; } = new();
         public ObservableCollection<StatItem> MonthStats { get; } = new();
+        public ObservableCollection<StatItem> LongestKeepingStats { get; } = new();
 
         public BirdStatisticsViewModel(IBirdStore birdStore)
         {
@@ -163,6 +164,27 @@ namespace Birds.UI.ViewModels
             else
             {
                 TopWeek = TopDay = LongestBreak = "—";
+            }
+
+            // Самое долгое содержание по каждому виду
+            LongestKeepingStats.Clear();
+
+            var today = DateOnly.FromDateTime(DateTime.Today);
+
+            foreach (var g in filteredBirds.GroupBy(b => b.Name))
+            {
+                // Считаем длительность для каждой птицы — если Departure нет, используем сегодня
+                var maxDays = g
+                    .Select(b =>
+                    {
+                        var end = b.Departure ?? today;
+                        return (end.ToDateTime(TimeOnly.MinValue) -
+                                b.Arrival.ToDateTime(TimeOnly.MinValue)).TotalDays;
+                    })
+                    .DefaultIfEmpty(0)
+                    .Max();
+
+                LongestKeepingStats.Add(new StatItem(g.Key, (int)maxDays));
             }
         }
     }

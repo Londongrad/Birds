@@ -208,6 +208,42 @@
                             </ItemsControl>
                         </ScrollViewer>
                     </TabItem>
+
+                    <!-- По длительности содержания -->
+                    <TabItem Header="По длительности содержания">
+                        <ScrollViewer
+                            HorizontalScrollBarVisibility="Disabled"
+                            VerticalScrollBarVisibility="Auto">
+                            <ItemsControl
+                                Margin="0,8,0,0"
+                                ItemsSource="{Binding LongestKeepingStats}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border
+                                            Margin="0,0,0,6"
+                                            Padding="10"
+                                            Background="#333344"
+                                            CornerRadius="8">
+                                            <DockPanel LastChildFill="False">
+                                                <TextBlock
+                                                    Margin="0,0,10,0"
+                                                    DockPanel.Dock="Left"
+                                                    FontSize="14"
+                                                    Foreground="White"
+                                                    Text="{Binding Label}" />
+                                                <TextBlock
+                                                    DockPanel.Dock="Right"
+                                                    FontSize="14"
+                                                    Foreground="#C0C3C8"
+                                                    Text="{Binding Count,
+                                                                   StringFormat={}{0} дней}" />
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </TabItem>
                 </TabControl>
             </Grid>
         </Grid>
