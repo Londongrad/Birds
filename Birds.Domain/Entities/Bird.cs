@@ -20,7 +20,7 @@ namespace Birds.Domain.Entities
         private Bird()
         { }
 
-        public Bird(Guid id, BirdsName name, string? description, DateOnly arrival, bool isAlive = true)
+        private Bird(Guid id, BirdsName name, string? description, DateOnly arrival, bool isAlive = true)
             : base(id)
         {
             GuardHelper.AgainstEmptyGuid(id, nameof(id));
@@ -36,6 +36,18 @@ namespace Birds.Domain.Entities
         #endregion [ Ctors ]
 
         #region [ Methods ]
+
+        /// <summary>
+        /// Factory method to create a new Bird instance
+        /// </summary>
+        public static Bird Create(BirdsName name, string? description, DateOnly arrival, bool isAlive = true)
+        {
+            // Validate inputs (duplicate validation as in constructor)
+            GuardHelper.AgainstInvalidEnum(name, nameof(name));
+            GuardHelper.AgainstInvalidDateOnly(arrival, nameof(arrival));
+
+            return new Bird(Guid.NewGuid(), name, description, arrival, isAlive);
+        }
 
         public void SetName(BirdsName name)
         {

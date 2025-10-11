@@ -14,8 +14,7 @@ namespace Birds.Application.Mappings
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name.ToDisplayName()));
 
             CreateMap<CreateBirdCommand, Bird>()
-                .ConstructUsing(cmd => new Bird(
-                    Guid.NewGuid(),
+                .ConstructUsing(cmd => Bird.Create(
                     cmd.Name,
                     cmd.Description,
                     cmd.Arrival,

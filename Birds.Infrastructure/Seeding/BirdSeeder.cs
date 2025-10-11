@@ -39,8 +39,7 @@ namespace Birds.Infrastructure.Seeding
                     counters[birdName]++;
                     var number = counters[birdName];
 
-                    var bird = new Bird(
-                        Guid.NewGuid(),
+                    var bird = Bird.Create(
                         birdName,
                         $"{birdName} #{number}",
                         arrival,
