@@ -19,11 +19,8 @@ namespace Birds.UI.ViewModels
                                              INotificationHandler<BirdDeletedNotification>,
                                              INotificationHandler<BirdUpdatedNotification>
     {
-        public BirdListViewModel(
-            INotificationService notification,
-            IBirdStore birdStore)
+        public BirdListViewModel(IBirdStore birdStore)
         {
-            _notification = notification;
             _birdStore = birdStore;
 
             // Получаем ссылку на коллекцию птиц из BirdStore
@@ -46,7 +43,6 @@ namespace Birds.UI.ViewModels
 
         #region [ Fields ]
 
-        private readonly INotificationService _notification;
         private readonly IBirdStore _birdStore;
 
         #endregion [ Fields ]
@@ -183,8 +179,6 @@ namespace Birds.UI.ViewModels
                 if (vm != null)
                     Birds.Remove(vm);
             });
-
-            _notification.ShowSuccess("Bird was successfully removed");
         }
 
         /// <summary>
@@ -197,8 +191,6 @@ namespace Birds.UI.ViewModels
             {
                 Birds.ReplaceOrAdd(b => b.Id == notification.BirdDTO.Id, notification.BirdDTO);
             });
-
-            _notification.ShowSuccess("Bird was successfully updated");
         }
 
         #endregion [ Notification Handlers ]
