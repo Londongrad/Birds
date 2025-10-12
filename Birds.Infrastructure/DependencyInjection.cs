@@ -12,7 +12,7 @@ namespace Birds.Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services)
         {
             services.AddDbContext<BirdDbContext>(options =>
-                options.UseSqlite($"Data Source={dbPath}"));
+                options.UseNpgsql(connectionString));
 
             services.AddScoped<IBirdRepository, BirdRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
