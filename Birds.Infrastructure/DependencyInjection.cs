@@ -11,10 +11,6 @@ namespace Birds.Infrastructure
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services)
         {
-            // Получение строки подключения 
-            var projectRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\.."));
-            var dbPath = Path.Combine(projectRoot, "birds.db");
-
             services.AddDbContext<BirdDbContext>(options =>
                 options.UseSqlite($"Data Source={dbPath}"));
 
