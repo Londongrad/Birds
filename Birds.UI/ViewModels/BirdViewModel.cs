@@ -1,7 +1,9 @@
 ﻿using Birds.Application.Commands.DeleteBird;
 using Birds.Application.Commands.UpdateBird;
+using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
 using Birds.Domain.Enums;
+using Birds.UI.Services.Notification;
 using Birds.UI.ViewModels.Base;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -20,16 +22,17 @@ namespace Birds.UI.ViewModels
         #region [ Fields ]
 
         private readonly IMediator _mediator;
+        private readonly INotificationService _notificationService;
 
         #endregion [ Fields ]
 
-        public BirdViewModel(BirdDTO dto, IMediator mediator)
+        public BirdViewModel(BirdDTO dto, IMediator mediator, INotificationService notificationService)
         {
             Debug.WriteLine($"Item with id = {dto.Id} was created.");
 
             Dto = dto;
             _mediator = mediator;
-
+            _notificationService = notificationService;
             Name = dto.Name;
             SelectedBirdName = Enum.TryParse<BirdsName>(dto.Name, out var bird) ? bird : null;  // property from base class
             Description = dto.Description;
@@ -109,7 +112,13 @@ namespace Birds.UI.ViewModels
         [RelayCommand]
         private async Task DeleteAsync()
         {
-            await _mediator.Send(new DeleteBirdCommand(Id));
+            Result result = await _mediator.Send(new DeleteBirdCommand(Id));
+
+            if (result.IsSuccess)
+                _notificationService.ShowSuccess("Bird deleted successfully!");
+            else
+                _notificationService.ShowError("Unable to delete bird.");
+
             IsConfirmingDelete = false;
         }
 
@@ -157,7 +166,7 @@ namespace Birds.UI.ViewModels
             if (HasErrors)
                 return;
 
-            await _mediator.Send(
+            Result result = await _mediator.Send(
                 new UpdateBirdCommand(
                     Id,
                     SelectedBirdName ?? default,
@@ -165,6 +174,11 @@ namespace Birds.UI.ViewModels
                     Arrival,
                     Departure,
                     IsAlive));
+
+            if (result.IsSuccess)
+                _notificationService.ShowSuccess("Bird updated successfully!");
+            else
+                _notificationService.ShowError("Unable to update bird.");
 
             // Recalculate derived fields after saving
             UpdateCalculatedFields();

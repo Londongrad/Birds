@@ -1,6 +1,7 @@
 ﻿using Birds.Application.DTOs;
 using MediatR;
 using Birds.UI.ViewModels;
+using Birds.UI.Services.Notification;
 
 namespace Birds.UI.Services.Factories.BirdViewModelFactory
 {
@@ -17,6 +18,7 @@ namespace Birds.UI.Services.Factories.BirdViewModelFactory
     public class BirdViewModelFactory : IBirdViewModelFactory
     {
         private readonly IMediator _mediator;
+        private readonly INotificationService _notificationService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BirdViewModelFactory"/> class.
@@ -25,12 +27,13 @@ namespace Birds.UI.Services.Factories.BirdViewModelFactory
         /// The mediator instance used to send requests and notifications
         /// between the view models and other parts of the application.
         /// </param>
-        public BirdViewModelFactory(IMediator mediator)
+        public BirdViewModelFactory(IMediator mediator, INotificationService notificationService)
         {
             _mediator = mediator;
+            _notificationService = notificationService;
         }
 
         /// <inheritdoc/>
-        public BirdViewModel Create(BirdDTO dto) => new(dto, _mediator);
+        public BirdViewModel Create(BirdDTO dto) => new(dto, _mediator, _notificationService);
     }
 }
