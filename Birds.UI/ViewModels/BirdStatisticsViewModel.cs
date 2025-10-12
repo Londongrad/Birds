@@ -93,15 +93,47 @@ namespace Birds.UI.ViewModels
 
         private void Recalculate()
         {
-            // 1️) Фильтрация
+            // 1) Data filtering
+            var filteredBirds = FilterBirdsByYear();
+
+            // 2) Calculation of main counts
+            CalculateCounts(filteredBirds);
+
+            // 3) Grouping by species
+            UpdateSpeciesStats(filteredBirds);
+
+            // 4) Grouping by years
+            UpdateYearStats();
+
+            // 5) Grouping by months
+            UpdateMonthStats(filteredBirds);
+
+            // 6) List of available years
+            UpdateAvailableYears();
+
+            // 7) Additional metrics
+            CalculateAdditionalMetrics(filteredBirds);
+
+            // 8) The most prolonged keeping by species
+            CalculateLongestKeeping(filteredBirds);
+        }
+
+        /// <summary> Data filtering </summary>
+        private IList<BirdDTO> FilterBirdsByYear()
+        {
             IEnumerable<BirdDTO> q = Birds;
+
             if (SelectedYear is int y)
                 q = q.Where(b => b.Arrival.Year == y);
 
-            var filteredBirds = q as IList<BirdDTO> ?? q.ToList();
+            return q as IList<BirdDTO> ?? q.ToList();
+        }
 
-            // 2️) Быстрый подсчёт карточек (в один проход)
+        /// <summary> Calculation of main counts </summary>
+        private void CalculateCounts(IList<BirdDTO> filteredBirds)
+        {
             int total = 0, released = 0, killed = 0;
+
             foreach (var b in filteredBirds)
             {
                 total++;
@@ -114,21 +146,29 @@ namespace Birds.UI.ViewModels
             TotalBirds = total;
             ReleasedCount = released;
             KillCount = killed;
+        }
 
-            // 3️) Группировка по виду (одна для Species + LongestKeeping). Лучше, чем в нескольких местах GroupBy.
+        /// <summary> Grouping by species </summary>
+        private void UpdateSpeciesStats(IList<BirdDTO> filteredBirds)
+        {
             var byName = filteredBirds.ToLookup(b => b.Name);
 
-            // Статистика по виду птицы
             SpeciesStats.Clear();
             foreach (var group in byName.OrderByDescending(g => g.Count()))
                 SpeciesStats.Add(new StatItem(group.Key, group.Count()));
+        }
 
-            // 4️) Группировка по году (всегда глобальная)
+        /// <summary> Grouping by years </summary>
+        private void UpdateYearStats()
+        {
             YearStats.Clear();
             foreach (var g in Birds.GroupBy(b => b.Arrival.Year).OrderBy(g => g.Key))
                 YearStats.Add(new StatItem(g.Key.ToString(), g.Count()));
+        }
 
-            // 5️) Группировка по месяцам (в рамках фильтра)
+        /// <summary> Grouping by months </summary>
+        private void UpdateMonthStats(IList<BirdDTO> filteredBirds)
+        {
             MonthStats.Clear();
             foreach (var g in filteredBirds
                 .GroupBy(b => b.Arrival.ToString("yyyy-MM"))
@@ -136,80 +176,95 @@ namespace Birds.UI.ViewModels
             {
                 MonthStats.Add(new StatItem(g.Key, g.Count()));
             }
+        }
 
-            // 6️) Список лет (для фильтра)
+        /// <summary> List of available years </summary>
+        private void UpdateAvailableYears()
+        {
             AvailableYears = new SortedSet<int>(Birds.Select(b => b.Arrival.Year));
+        }
 
-            // 7️) Дополнительные метрики
-            if (filteredBirds.Count > 0)
-            {
-                // Самая продуктивная неделя
-                var topWeekGroup = filteredBirds
-                    .GroupBy(b =>
-                    {
-                        var dt = b.Arrival.ToDateTime(TimeOnly.MinValue);
-                        return System.Globalization.CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(
-                            dt,
-                            System.Globalization.CalendarWeekRule.FirstFourDayWeek,
-                            DayOfWeek.Monday);
-                    })
-                    .OrderByDescending(g => g.Count())
-                    .FirstOrDefault();
-
-                TopWeek = topWeekGroup != null
-                    ? $"Неделя {topWeekGroup.Key}: {topWeekGroup.Count()} птиц"
-                    : "—";
-
-                // Самый продуктивный день
-                var topDayGroup = filteredBirds
-                    .GroupBy(b => b.Arrival)
-                    .OrderByDescending(g => g.Count())
-                    .FirstOrDefault();
-
-                TopDay = topDayGroup != null
-                    ? $"{topDayGroup.Key:dd.MM.yyyy}: {topDayGroup.Count()} птиц"
-                    : "—";
-
-                // Самый длинный перерыв
-                var orderedDates = filteredBirds
-                    .Select(b => b.Arrival)
-                    .Distinct()
-                    .OrderBy(d => d)
-                    .ToList();
-
-                if (orderedDates.Count > 1)
-                {
-                    var maxGap = TimeSpan.Zero;
-                    DateOnly? start = null, end = null;
-
-                    for (int i = 1; i < orderedDates.Count; i++)
-                    {
-                        var gap = orderedDates[i].ToDateTime(TimeOnly.MinValue) -
-                                  orderedDates[i - 1].ToDateTime(TimeOnly.MinValue);
-
-                        if (gap > maxGap)
-                        {
-                            maxGap = gap;
-                            start = orderedDates[i - 1];
-                            end = orderedDates[i];
-                        }
-                    }
-
-                    LongestBreak = $"{maxGap.TotalDays - 1} дней без поимок (между {start:dd.MM.yyyy} и {end:dd.MM.yyyy})";
-                }
-                else
-                {
-                    LongestBreak = "—";
-                }
-            }
-            else
+        /// <summary> Additional metrics (week, day, break) </summary>
+        private void CalculateAdditionalMetrics(IList<BirdDTO> filteredBirds)
+        {
+            if (filteredBirds.Count == 0)
             {
                 TopWeek = TopDay = LongestBreak = "—";
+                return;
             }
 
-            // 8️) Самое долгое содержание по виду
-            LongestKeepingStats.Clear();
+            // The most productive week
+            var topWeekGroup = filteredBirds
+                .GroupBy(b =>
+                {
+                    var dt = b.Arrival.ToDateTime(TimeOnly.MinValue);
+                    return System.Globalization.CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(
+                        dt,
+                        System.Globalization.CalendarWeekRule.FirstFourDayWeek,
+                        DayOfWeek.Monday);
+                })
+                .OrderByDescending(g => g.Count())
+                .FirstOrDefault();
+
+            TopWeek = topWeekGroup != null
+                ? $"Неделя {topWeekGroup.Key}: {topWeekGroup.Count()} птиц"
+                : "—";
+
+            // The most productive day
+            var topDayGroup = filteredBirds
+                .GroupBy(b => b.Arrival)
+                .OrderByDescending(g => g.Count())
+                .FirstOrDefault();
+
+            TopDay = topDayGroup != null
+                ? $"{topDayGroup.Key:dd.MM.yyyy}: {topDayGroup.Count()} птиц"
+                : "—";
+
+            // The most prolong break
+            CalculateLongestBreak(filteredBirds);
+        }
+
+        /// <summary> Submethod for calculating the most prolong break </summary>
+        private void CalculateLongestBreak(IList<BirdDTO> filteredBirds)
+        {
+            var orderedDates = filteredBirds
+                .Select(b => b.Arrival)
+                .Distinct()
+                .OrderBy(d => d)
+                .ToList();
+
+            if (orderedDates.Count <= 1)
+            {
+                LongestBreak = "—";
+                return;
+            }
+
+            var maxGap = TimeSpan.Zero;
+            DateOnly? start = null, end = null;
+
+            for (int i = 1; i < orderedDates.Count; i++)
+            {
+                var gap = orderedDates[i].ToDateTime(TimeOnly.MinValue) -
+                          orderedDates[i - 1].ToDateTime(TimeOnly.MinValue);
+
+                if (gap > maxGap)
+                {
+                    maxGap = gap;
+                    start = orderedDates[i - 1];
+                    end = orderedDates[i];
+                }
+            }
+
+            LongestBreak = $"{maxGap.TotalDays - 1} дней без поимок (между {start:dd.MM.yyyy} и {end:dd.MM.yyyy})";
+        }
+
+        /// <summary> The most prolonged keeping by species </summary>
+        private void CalculateLongestKeeping(IList<BirdDTO> filteredBirds)
+        {
             var today = DateOnly.FromDateTime(DateTime.Today);
+            var byName = filteredBirds.ToLookup(b => b.Name);
+
+            LongestKeepingStats.Clear();
 
             foreach (var group in byName)
             {
@@ -225,5 +280,7 @@ namespace Birds.UI.ViewModels
                 LongestKeepingStats.Add(new StatItem(group.Key, (int)maxDays));
             }
         }
+
+        #endregion [ Methods ]
     }
 }
