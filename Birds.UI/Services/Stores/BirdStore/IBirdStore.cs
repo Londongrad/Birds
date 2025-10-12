@@ -4,15 +4,15 @@ using System.Collections.ObjectModel;
 namespace Birds.UI.Services.Stores.BirdStore
 {
     /// <summary>
-    /// Интерфейс общего хранилища данных о птицах.
-    /// Предоставляет доступ к коллекции <see cref="BirdDTO"/>, 
-    /// которая может использоваться во всех ViewModel приложения.
+    /// Interface for the shared bird data store.
+    /// Provides access to the <see cref="BirdDTO"/> collection,
+    /// which can be used across all ViewModels in the application.
     /// </summary>
     public interface IBirdStore
     {
         /// <summary>
-        /// Общая коллекция птиц, доступная для чтения и изменения.
-        /// Используется для синхронизации данных между разными представлениями.
+        /// The shared collection of birds, available for reading and modification.
+        /// Used to synchronize data between different views.
         /// </summary>
         ObservableCollection<BirdDTO> Birds { get; }
     }

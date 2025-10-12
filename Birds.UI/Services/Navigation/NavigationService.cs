@@ -10,16 +10,16 @@ namespace Birds.UI.Services.Navigation
     {
         #region [ Fields ]
 
-        /// <summary> Словарь фабрик для создания экземпляров ViewModel по типу. </summary>
+        /// <summary>Dictionary of factories for creating ViewModel instances by type.</summary>
         private readonly Dictionary<Type, Func<ObservableObject>> _creators = new();
 
-        /// <summary> Словарь фабрик для создания окон по типу ViewModel. </summary>
+        /// <summary>Dictionary of factories for creating windows by ViewModel type.</summary>
         private readonly Dictionary<Type, Func<Window>> _windowCreators = new();
 
-        /// <summary> Экземпляр MediatR для публикации событий навигации. </summary>
+        /// <summary>Instance of MediatR used for publishing navigation events.</summary>
         private readonly IMediator _mediator;
 
-        /// <summary> Текущая активная ViewModel. </summary> 
+        /// <summary>The currently active ViewModel.</summary>
         private ObservableObject? _current;
 
         #endregion [ Fields ]

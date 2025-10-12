@@ -11,14 +11,14 @@ namespace Birds.UI.Converters
             if (values == null || values.Length == 0)
                 return Visibility.Collapsed;
 
-            // Считаем, что все значения — bool
+            // Consider only boolean values
             foreach (var v in values)
             {
                 if (v is bool b && b)
                     return Visibility.Collapsed;
             }
 
-            // Если ни один не true — показать
+            // If no boolean value is true, return Visible
             return Visibility.Visible;
         }
 

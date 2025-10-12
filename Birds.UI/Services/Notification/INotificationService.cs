@@ -1,46 +1,46 @@
 ﻿namespace Birds.UI.Services.Notification
 {
     /// <summary>
-    /// Сервис для отображения всплывающих уведомлений (тостов) в пользовательском интерфейсе.
-    /// Обеспечивает простой API для показа сообщений разных типов с дефолтными параметрами,
-    /// а также универсальный метод <see cref="Show"/> для кастомной настройки.
+    /// Service for displaying popup notifications (toasts) in the user interface.
+    /// Provides a simple API for showing messages of different types with default parameters,
+    /// as well as a universal <see cref="Show"/> method for custom configuration.
     /// </summary>
     public interface INotificationService
     {
         /// <summary>
-        /// Показывает уведомление с указанным сообщением и опциями.
-        /// Если <paramref name="options"/> не переданы, используются значения по умолчанию.
+        /// Displays a notification with the specified message and options.
+        /// If <paramref name="options"/> is not provided, default values are used.
         /// </summary>
-        /// <param name="message">Текст сообщения для отображения.</param>
-        /// <param name="options">Дополнительные параметры уведомления (тип, длительность, кнопка закрытия и т.п.).</param>
+        /// <param name="message">The message text to display.</param>
+        /// <param name="options">Additional notification options (type, duration, close button, etc.).</param>
         void Show(string message, NotificationOptions? options = null);
 
         /// <summary>
-        /// Показывает уведомление об успешном выполнении операции.
-        /// Использует предустановленные параметры (зелёная тема, автозакрытие через 2 секунды).
+        /// Displays a success notification.
+        /// Uses predefined parameters (green theme, auto-close after 2 seconds).
         /// </summary>
-        /// <param name="message">Текст сообщения для отображения.</param>
+        /// <param name="message">The message text to display.</param>
         void ShowSuccess(string message);
 
         /// <summary>
-        /// Показывает уведомление об ошибке.
-        /// Использует предустановленные параметры (красная тема, автозакрытие через 2 секунды).
+        /// Displays an error notification.
+        /// Uses predefined parameters (red theme, auto-close after 2 seconds).
         /// </summary>
-        /// <param name="message">Текст сообщения для отображения.</param>
+        /// <param name="message">The message text to display.</param>
         void ShowError(string message);
 
         /// <summary>
-        /// Показывает информационное уведомление.
-        /// Использует предустановленные параметры (синяя тема, автозакрытие через 2 секунды).
+        /// Displays an informational notification.
+        /// Uses predefined parameters (blue theme, auto-close after 2 seconds).
         /// </summary>
-        /// <param name="message">Текст сообщения для отображения.</param>
+        /// <param name="message">The message text to display.</param>
         void ShowInfo(string message);
 
         /// <summary>
-        /// Показывает уведомление-предупреждение.
-        /// Использует предустановленные параметры (оранжевая тема, автозакрытие через 2 секунды).
+        /// Displays a warning notification.
+        /// Uses predefined parameters (orange theme, auto-close after 2 seconds).
         /// </summary>
-        /// <param name="message">Текст сообщения для отображения.</param>
+        /// <param name="message">The message text to display.</param>
         void ShowWarning(string message);
     }
 }

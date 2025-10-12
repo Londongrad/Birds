@@ -3,22 +3,23 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- =========================================== -->
-    <!-- Дышащий индикатор статуса птицы -->
+    <!-- Glowing breathing indicator for bird status -->
     <!-- =========================================== -->
     <Style
         x:Key="GlowingPulseIndicator"
         TargetType="Ellipse">
-        <!-- Базовые параметры -->
+
+        <!-- Base settings -->
         <Setter Property="Width" Value="12" />
         <Setter Property="Height" Value="12" />
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Margin" Value="0,0,10,0" />
 
-        <!-- Основная заливка -->
+        <!-- Main fill -->
         <Setter Property="Fill" Value="{Binding IsAlive, Converter={StaticResource BoolToColorConverter}}" />
 
-        <!-- Эффект свечения по умолчанию -->
+        <!-- Default glow effect -->
         <Setter Property="Effect">
             <Setter.Value>
                 <DropShadowEffect
@@ -29,10 +30,10 @@
             </Setter.Value>
         </Setter>
 
-        <!-- Триггеры -->
+        <!-- Triggers -->
         <Style.Triggers>
 
-            <!-- Изменение цвета эффекта при смене состояния -->
+            <!-- Change glow color when status changes -->
             <DataTrigger
                 Binding="{Binding IsAlive}"
                 Value="True">
@@ -61,7 +62,7 @@
                 </Setter>
             </DataTrigger>
 
-            <!-- Анимация дыхания -->
+            <!-- Breathing animation -->
             <EventTrigger RoutedEvent="Loaded">
                 <BeginStoryboard>
                     <Storyboard

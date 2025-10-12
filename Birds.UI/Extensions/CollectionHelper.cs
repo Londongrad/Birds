@@ -3,28 +3,28 @@
 namespace Birds.UI.Extensions;
 
 /// <summary>
-/// Набор методов расширения для индексированных коллекций (<see cref="IList{T}"/>),
-/// обеспечивающих безопасную замену и добавление элементов.
+/// A set of extension methods for indexed collections (<see cref="IList{T}"/>)
+/// that provide safe element replacement and addition.
 /// </summary>
 public static partial class CollectionHelper
 {
     /// <summary>
-    /// Заменяет первый элемент в коллекции, удовлетворяющий указанному условию.
+    /// Replaces the first element in the collection that matches the specified condition.
     /// </summary>
-    /// <typeparam name="T">Тип элементов коллекции.</typeparam>
-    /// <param name="list">Индексированная коллекция, в которой выполняется поиск и замена.</param>
+    /// <typeparam name="T">The type of elements in the collection.</typeparam>
+    /// <param name="list">The indexed collection where the search and replacement are performed.</param>
     /// <param name="predicate">
-    /// Условие, определяющее элемент, который требуется заменить.
-    /// Если элемент, удовлетворяющий условию, найден — он будет заменён на <paramref name="newItem"/>.
+    /// A condition that determines the element to be replaced.
+    /// If an element satisfying the condition is found, it will be replaced with <paramref name="newItem"/>.
     /// </param>
-    /// <param name="newItem">Элемент, который будет установлен вместо найденного элемента.</param>
+    /// <param name="newItem">The element that will replace the found element.</param>
     /// <returns>
-    /// <see langword="true"/>, если элемент был найден и успешно заменён;
-    /// в противном случае — <see langword="false"/>.
+    /// <see langword="true"/> if the element was found and successfully replaced;
+    /// otherwise, <see langword="false"/>.
     /// </returns>
     /// <remarks>
-    /// Если коллекция реализует <see cref="ICollection"/> и поддерживает синхронизацию через свойство
-    /// <see cref="ICollection.SyncRoot"/>, то операция выполняется под блокировкой, обеспечивая потокобезопасность.
+    /// If the collection implements <see cref="ICollection"/> and supports synchronization
+    /// via the <see cref="ICollection.SyncRoot"/> property, the operation is performed under a lock to ensure thread safety.
     /// </remarks>
     public static bool Replace<T>(this IList<T> list, Predicate<T> predicate, T newItem)
     {
@@ -40,25 +40,25 @@ public static partial class CollectionHelper
     }
 
     /// <summary>
-    /// Выполняет замену первого элемента, удовлетворяющего указанному условию, 
-    /// либо добавляет новый элемент, если подходящий элемент не найден.
+    /// Replaces the first element that matches the specified condition, 
+    /// or adds a new element if no matching element is found.
     /// </summary>
-    /// <typeparam name="T">Тип элементов коллекции.</typeparam>
-    /// <param name="list">Индексированная коллекция, в которой выполняется операция.</param>
+    /// <typeparam name="T">The type of elements in the collection.</typeparam>
+    /// <param name="list">The indexed collection where the operation is performed.</param>
     /// <param name="predicate">
-    /// Условие, определяющее элемент, который требуется заменить.
-    /// Если элемент найден — он будет заменён на <paramref name="newItem"/>;
-    /// если не найден — новый элемент будет добавлен в конец коллекции.
+    /// A condition that determines the element to be replaced.
+    /// If the element is found, it will be replaced with <paramref name="newItem"/>;
+    /// if not found, the new element will be added to the end of the collection.
     /// </param>
-    /// <param name="newItem">Элемент, который будет добавлен или установлен вместо найденного элемента.</param>
+    /// <param name="newItem">The element that will be added or used to replace the found element.</param>
     /// <returns>
-    /// <see langword="true"/>, если элемент был найден и заменён;
-    /// <see langword="false"/>, если элемент не найден и был добавлен в коллекцию.
+    /// <see langword="true"/> if the element was found and replaced;
+    /// <see langword="false"/> if the element was not found and was added to the collection.
     /// </returns>
     /// <remarks>
-    /// Если коллекция реализует <see cref="ICollection"/> и поддерживает синхронизацию через свойство
-    /// <see cref="ICollection.SyncRoot"/>, операция выполняется под блокировкой.
-    /// Этот метод удобно использовать для обновления элементов в коллекции, когда известно, что элемент может как существовать, так и отсутствовать.
+    /// If the collection implements <see cref="ICollection"/> and supports synchronization
+    /// via the <see cref="ICollection.SyncRoot"/> property, the operation is performed under a lock.
+    /// This method is useful for updating elements in a collection when the element may or may not already exist.
     /// </remarks>
     public static bool ReplaceOrAdd<T>(this IList<T> list, Predicate<T> predicate, T newItem)
     {
@@ -74,7 +74,7 @@ public static partial class CollectionHelper
     }
 
     // ------------------------------------------
-    // Приватные внутренние версии без блокировок
+    // Private internal versions without locking
     // ------------------------------------------
 
     private static bool PrivateReplace<T>(this IList<T> list, Predicate<T> predicate, T newItem)

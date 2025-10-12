@@ -18,7 +18,6 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBox">
                     <Grid>
-                        <!-- Фон и рамка -->
                         <Border
                             Background="{TemplateBinding Background}"
                             BorderBrush="#555"
@@ -32,7 +31,6 @@
                                 TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Border>
 
-                        <!-- Кнопка-лупа -->
                         <ToggleButton
                             x:Name="ToggleButton"
                             Grid.Column="1"
@@ -53,7 +51,6 @@
                                         BorderThickness="1"
                                         CornerRadius="0,4,4,0">
                                         <Grid>
-                                            <!-- Лупа -->
                                             <Ellipse
                                                 Width="12"
                                                 Height="12"
@@ -90,7 +87,6 @@
                             </ToggleButton.Template>
                         </ToggleButton>
 
-                        <!-- Popup -->
                         <Popup
                             x:Name="PART_Popup"
                             AllowsTransparency="True"

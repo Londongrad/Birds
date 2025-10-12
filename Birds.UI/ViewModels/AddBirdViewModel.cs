@@ -7,11 +7,11 @@ using MediatR;
 namespace Birds.UI.ViewModels
 {
     /// <summary>
-    /// ViewModel для представления "Добавить птицу".
-    /// Наследует общие поля и правила валидации из <see cref="BirdValidationBaseViewModel"/>.
+    /// ViewModel for the "Add Bird" view.
+    /// Inherits common fields and validation rules from <see cref="BirdValidationBaseViewModel"/>.
     /// </summary>
     /// <remarks>
-    /// Содержит команды для сохранения новой птицы и уведомления пользователя о результате.
+    /// Contains commands for saving a new bird and notifying the user about the result.
     /// </remarks>
     public partial class AddBirdViewModel : BirdValidationBaseViewModel
     {
@@ -19,34 +19,34 @@ namespace Birds.UI.ViewModels
         private readonly INotificationService _notification;
 
         /// <summary>
-        /// Создаёт новый экземпляр <see cref="AddBirdViewModel"/>.
+        /// Creates a new instance of <see cref="AddBirdViewModel"/>.
         /// </summary>
-        /// <param name="mediator">MediatR-медиатор для отправки команд приложения.</param>
-        /// <param name="notification">Сервис уведомлений пользователя.</param>
+        /// <param name="mediator">The MediatR mediator used to send application commands.</param>
+        /// <param name="notification">The user notification service.</param>
         public AddBirdViewModel(IMediator mediator, INotificationService notification)
         {
             _mediator = mediator;
             _notification = notification;
 
-            // При изменении ошибок — обновляем доступность команды сохранения
+            // When validation errors change — update the Save command availability
             ErrorsChanged += (_, __) => SaveCommand.NotifyCanExecuteChanged();
 
-            // Прогоняем первичную валидацию, чтобы кнопка Save сразу была недоступна
+            // Run initial validation so that the Save button is disabled by default
             ValidateAllProperties();
         }
 
         /// <summary>
-        /// Определяет, можно ли выполнить команду сохранения.
+        /// Determines whether the Save command can be executed.
         /// </summary>
         private bool CanSave() => !HasErrors;
 
         /// <summary>
-        /// Команда сохранения новой птицы в систему.
+        /// Command to save a new bird to the system.
         /// </summary>
         [RelayCommand(CanExecute = nameof(CanSave))]
         private async Task SaveAsync()
         {
-            // Принудительная проверка всех свойств перед сохранением
+            // Force validation of all properties before saving
             ValidateAllProperties();
             if (HasErrors)
                 return;
@@ -60,7 +60,7 @@ namespace Birds.UI.ViewModels
             await _mediator.Send(command);
             _notification.ShowSuccess("Bird added successfully!");
 
-            // Сброс описания после успешного сохранения
+            // Reset the description after successful save
             Description = string.Empty;
         }
     }

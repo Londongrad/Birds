@@ -7,7 +7,7 @@ namespace Birds.Domain.Extensions
         public static string ToDisplayName(this BirdsName bird)
         => bird switch
         {
-            // Пока Hardcode, но при реализации локализации данные можно будет брать из ресурсов
+            // Hardcoded for now, but when localization is implemented, the data can be retrieved from resources.
             BirdsName.Воробей => "Воробей", // => Resources.Sparrow
             BirdsName.Щегол => "Щегол",
             BirdsName.Амадин => "Амадин",

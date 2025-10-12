@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:img="clr-namespace:System.Windows.Media.Imaging;assembly=PresentationCore">
 
-    <!-- Источники иконок как ImageSource -->
+    <!-- Icon sources as ImageSource -->
     <img:BitmapImage
         x:Key="SuccessIconSource"
         UriSource="pack://application:,,,/Birds.UI;component/wwwroot/Images/success.png" />
@@ -17,7 +17,7 @@
         x:Key="InfoIconSource"
         UriSource="pack://application:,,,/Birds.UI;component/wwwroot/Images/info.png" />
 
-    <!-- Стиль текста уведомления -->
+    <!-- Notification text style -->
     <Style
         x:Key="NotificationText"
         TargetType="TextBlock">
@@ -27,7 +27,7 @@
         <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
 
-    <!-- Кнопка закрытия уведомления -->
+    <!-- Notification close button -->
     <Style
         x:Key="NotificationCloseButton"
         TargetType="Button">
@@ -52,7 +52,7 @@
         <Setter Property="Cursor" Value="Hand" />
     </Style>
 
-    <!-- Контейнер уведомления / фон уведомления -->
+    <!-- Notification container / background -->
     <Style
         x:Key="NotificationView"
         TargetType="Border">
@@ -61,7 +61,7 @@
         <Setter Property="Background" Value="#333333" />
     </Style>
 
-    <!-- Можно добавить стиль заголовка (если используется) -->
+    <!-- Optional title style (if used) -->
     <Style
         x:Key="NotificationTitle"
         TargetType="TextBlock">

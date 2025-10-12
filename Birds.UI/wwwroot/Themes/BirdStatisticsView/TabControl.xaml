@@ -57,13 +57,11 @@
                 <ControlTemplate TargetType="TabControl">
                     <Grid KeyboardNavigation.TabNavigation="Local">
                         <Grid.RowDefinitions>
-                            <!-- Верхняя панель с вкладками -->
                             <RowDefinition Height="Auto" />
-                            <!-- Контент -->
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
-                        <!-- Заголовки вкладок -->
+                        <!-- Headers -->
                         <TabPanel
                             x:Name="HeaderPanel"
                             Grid.Row="0"
@@ -73,7 +71,7 @@
                             IsItemsHost="True"
                             KeyboardNavigation.TabIndex="1" />
 
-                        <!-- Контент -->
+                        <!-- Content -->
                         <Border
                             Grid.Row="1"
                             Padding="12"

@@ -3,13 +3,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:helpers="clr-namespace:Birds.UI.Views.Helpers">
 
-    <!-- ================================================== -->
-    <!-- Два шаблона представляющих один объект в коллекции -->
-    <!-- ================================================== -->
+    <!-- ================================================ -->
+    <!-- Two templates represent one object in collection -->
+    <!-- ================================================ -->
 
-    <!-- ============================================== -->
-    <!-- ======== ШАБЛОН ПРОСМОТРА (READ-ONLY) ======== -->
-    <!-- ============================================== -->
+    <!-- =========================================== -->
+    <!-- ======== VIEW TEMPLATE (READ-ONLY) ======== -->
+    <!-- =========================================== -->
     <DataTemplate x:Key="BirdViewTemplate">
         <Grid VerticalAlignment="Center">
             <Grid.RowDefinitions>
@@ -25,7 +25,7 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <!-- Название -->
+            <!-- Bird name -->
             <TextBlock
                 Grid.Row="0"
                 Grid.Column="0"
@@ -36,7 +36,7 @@
                 Text="{Binding Name}"
                 TextTrimming="CharacterEllipsis" />
 
-            <!-- Описание -->
+            <!-- Description -->
             <TextBlock
                 Grid.Row="1"
                 Grid.Column="0"
@@ -47,7 +47,7 @@
                 Text="{Binding Description}"
                 TextTrimming="CharacterEllipsis" />
 
-            <!-- Блок дат, количества дней и индикатор -->
+            <!-- Dates, number of days and indicator -->
             <Grid
                 Grid.Row="0"
                 Grid.RowSpan="2"
@@ -63,7 +63,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Прибытие -->
+                <!-- Arrival -->
                 <TextBlock
                     Grid.Column="0"
                     Margin="0,0,8,0"
@@ -77,14 +77,14 @@
                     FontSize="12"
                     Text="—" />
 
-                <!-- Убытие -->
+                <!-- Departure -->
                 <TextBlock
                     Grid.Column="2"
                     Margin="0,0,15,0"
                     FontSize="20"
                     Text="{Binding DepartureDisplay}" />
 
-                <!-- Количество дней -->
+                <!-- Number of days -->
                 <TextBlock
                     Grid.Column="3"
                     Margin="0,0,15,0"
@@ -93,7 +93,7 @@
                     Text="{Binding DaysInStock,
                                    StringFormat={}{0} дней}" />
 
-                <!-- Индикатор -->
+                <!-- Indicator -->
                 <Ellipse
                     Grid.Column="4"
                     Width="10"
@@ -108,7 +108,7 @@
     </DataTemplate>
 
     <!-- ======================================= -->
-    <!-- ======== ШАБЛОН РЕДАКТИРОВАНИЯ ======== -->
+    <!-- ======== EDIT TEMPLATE ======== -->
     <!-- ======================================= -->
     <DataTemplate x:Key="BirdEditTemplate">
         <Grid VerticalAlignment="Center">
@@ -124,7 +124,7 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <!-- Название -->
+            <!-- Name -->
             <ComboBox
                 IsEditable="False"
                 ItemsSource="{Binding BirdNames}"
@@ -141,7 +141,7 @@
                 </ComboBox.Style>
             </ComboBox>
 
-            <!-- Описание -->
+            <!-- Description -->
             <TextBox
                 Grid.Row="1"
                 Grid.Column="0"
@@ -155,7 +155,7 @@
                                ValidatesOnNotifyDataErrors=True,
                                UpdateSourceTrigger=PropertyChanged}" />
 
-            <!-- Даты + переключатель -->
+            <!-- Dates + switch -->
             <Grid
                 Grid.Row="0"
                 Grid.RowSpan="2"
@@ -170,7 +170,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Дата прибытия -->
+                <!-- Arrival -->
                 <DatePicker
                     Grid.Column="0"
                     helpers:ValidationPlacement.MaxErrorWidth="150"
@@ -189,7 +189,7 @@
                     FontSize="12"
                     Text="—" />
 
-                <!-- Дата убытия -->
+                <!-- Departure -->
                 <DatePicker
                     Grid.Column="2"
                     helpers:ValidationPlacement.MaxErrorWidth="150"
@@ -202,7 +202,7 @@
                                            UpdateSourceTrigger=PropertyChanged}"
                     Style="{StaticResource DatePickerAdd}" />
 
-                <!-- Переключатель жив/не жив -->
+                <!-- Switch (is alive or not) -->
                 <CheckBox
                     Grid.Column="3"
                     Margin="15,0,0,0"

@@ -209,7 +209,7 @@
                         </ScrollViewer>
                     </TabItem>
 
-                    <!-- По длительности содержания -->
+                    <!-- The most prolonged keeping by species -->
                     <TabItem Header="По длительности содержания">
                         <ScrollViewer
                             HorizontalScrollBarVisibility="Disabled"

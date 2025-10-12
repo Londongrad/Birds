@@ -5,8 +5,8 @@
         #region [ Properties ]
 
         public Guid Id { get; private set; }
-        public DateTime CreatedAt { get; private set; }
-        public DateTime UpdatedAt { get; private set; }
+        public DateTime? CreatedAt { get; private set; }
+        public DateTime? UpdatedAt { get; private set; }
 
         #endregion [ Properties ]
 
@@ -27,7 +27,7 @@
 
         #region [ Methods ]
 
-        /// <summary>Метод для обновления времени редактирования сущности</summary>
+        /// <summary>Method for updating the entity's last modified time.</summary>
         protected void UpdateTimestamp()
         {
             UpdatedAt = DateTime.UtcNow;

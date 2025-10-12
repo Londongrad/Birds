@@ -6,12 +6,12 @@ namespace Birds.UI.Services.Factories.BirdViewModelFactory
     public interface IBirdViewModelFactory
     {
         /// <summary>
-        /// Создаёт новый экземпляр <see cref="BirdViewModel"/> на основе переданного <see cref="BirdDTO"/>.
+        /// Creates a new instance of <see cref="BirdViewModel"/> based on the provided <see cref="BirdDTO"/>.
         /// </summary>
-        /// <param name="dto">Объект передачи данных, содержащий информацию о птице.</param>
+        /// <param name="dto">The data transfer object containing information about the bird.</param>
         /// <returns>
-        /// Новый экземпляр <see cref="BirdViewModel"/>, инициализированный данными из <paramref name="dto"/>
-        /// и подключённый к механизму медиатора приложения.
+        /// A new instance of <see cref="BirdViewModel"/>, initialized with the data from <paramref name="dto"/>
+        /// and connected to the application's mediator mechanism.
         /// </returns>
         BirdViewModel Create(BirdDTO dto);
     }

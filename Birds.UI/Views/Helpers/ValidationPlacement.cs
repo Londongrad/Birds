@@ -4,19 +4,19 @@ using System.Windows.Controls;
 namespace Birds.UI.Views.Helpers
 {
     /// <summary>
-    /// Предоставляет прикрепляемое свойство, позволяющее выбрать расположение
-    /// визуализации ошибок валидации (<see cref="Validation.ErrorTemplate"/>)
-    /// для отдельных элементов управления.
+    /// Provides an attached property that allows selecting the placement
+    /// of validation error visuals (<see cref="Validation.ErrorTemplate"/>)
+    /// for individual UI controls.
     /// </summary>
     /// <remarks>
-    /// Данное свойство позволяет динамически подменять шаблон ошибки
-    /// в зависимости от значения <see cref="PlacementProperty"/> —
-    /// например, отображать сообщения об ошибках справа или снизу от контрола,
-    /// не дублируя стили и шаблоны.
+    /// This property enables dynamically switching the error template
+    /// based on the <see cref="PlacementProperty"/> value —
+    /// for example, showing validation messages either to the right or below a control
+    /// without duplicating styles and templates.
     ///
     /// <para>
-    /// По умолчанию, если свойство <see cref="PlacementProperty"/> не задано,
-    /// используется стандартный шаблон <c>FieldErrorTemplate</c> (расположение справа).
+    /// By default, if <see cref="PlacementProperty"/> is not set,
+    /// the standard template <c>FieldErrorTemplate</c> (right placement) is used.
     /// </para>
     /// </remarks>
     public static class ValidationPlacement
@@ -24,16 +24,16 @@ namespace Birds.UI.Views.Helpers
         #region [ PlacementProperty ]
 
         /// <summary>
-        /// Определяет расположение отображения ошибок валидации —
-        /// справа от контрола или под ним.
+        /// Defines the placement of validation error messages —
+        /// either to the right of or below the control.
         /// </summary>
         /// <remarks>
-        /// Значение по умолчанию — <see cref="PlacementMode.Right"/>.
+        /// The default value is <see cref="PlacementMode.Right"/>.
         /// 
         /// <para>
-        /// При изменении значения свойство автоматически подменяет
-        /// используемый шаблон ошибки, устанавливая в качестве ресурса
-        /// либо <c>FieldErrorTemplate</c>, либо <c>FieldErrorBottomTemplate</c>.
+        /// When the value changes, the property automatically updates
+        /// the applied error template by setting the corresponding resource
+        /// (<c>FieldErrorTemplate</c> or <c>FieldErrorBottomTemplate</c>).
         /// </para>
         /// </remarks>
         public static readonly DependencyProperty PlacementProperty =
@@ -44,37 +44,37 @@ namespace Birds.UI.Views.Helpers
                 new PropertyMetadata(PlacementMode.Right, OnPlacementChanged));
 
         /// <summary>
-        /// Задаёт расположение ошибок валидации для указанного элемента управления.
+        /// Sets the placement of validation errors for the specified control.
         /// </summary>
-        /// <param name="element">Элемент, к которому применяется прикреплённое свойство.</param>
-        /// <param name="value">Новое значение расположения ошибок валидации.</param>
+        /// <param name="element">The control to which the attached property is applied.</param>
+        /// <param name="value">The new placement value for validation errors.</param>
         public static void SetPlacement(DependencyObject element, PlacementMode value)
             => element.SetValue(PlacementProperty, value);
 
         /// <summary>
-        /// Возвращает текущее расположение ошибок валидации
-        /// для указанного элемента управления.
+        /// Gets the current placement of validation errors
+        /// for the specified control.
         /// </summary>
-        /// <param name="element">Элемент, из которого считывается значение.</param>
-        /// <returns>Значение перечисления <see cref="PlacementMode"/>.</returns>
+        /// <param name="element">The control from which to read the value.</param>
+        /// <returns>The <see cref="PlacementMode"/> enumeration value.</returns>
         public static PlacementMode GetPlacement(DependencyObject element)
             => (PlacementMode)element.GetValue(PlacementProperty);
 
         /// <summary>
-        /// Вызывается при изменении значения свойства <see cref="Placement"/>.
-        /// Устанавливает соответствующий шаблон ошибки (<see cref="ControlTemplate"/>)
-        /// в свойство <see cref="Validation.ErrorTemplate"/>.
+        /// Called when the <see cref="Placement"/> property value changes.
+        /// Sets the appropriate error template (<see cref="ControlTemplate"/>)
+        /// in <see cref="Validation.ErrorTemplate"/>.
         /// </summary>
-        /// <param name="d">Элемент, к которому прикреплено свойство.</param>
-        /// <param name="e">Аргументы изменения значения.</param>
+        /// <param name="d">The element to which the property is attached.</param>
+        /// <param name="e">The property change event arguments.</param>
         private static void OnPlacementChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is not FrameworkElement fe) return;
 
-            // 1) Всегда подключаем универсальный шаблон
+            // 1) Always apply the universal error template
             fe.SetResourceReference(Validation.ErrorTemplateProperty, "FieldErrorTemplate_Universal");
 
-            // 2) Направление задаём через Dock — его читают триггеры внутри шаблона
+            // 2) Set the direction via Dock — triggers inside the template read this value
             var mode = (PlacementMode)e.NewValue;
             var dock = mode switch
             {
@@ -92,17 +92,16 @@ namespace Birds.UI.Views.Helpers
         #region [ DockProperty ]
 
         /// <summary>
-        /// Определяет прикрепляемое свойство <see cref="DockProperty"/>,
-        /// позволяющее задать расположение области отображения ошибок валидации
-        /// относительно элемента управления.
+        /// Defines the <see cref="DockProperty"/> attached property,
+        /// which determines where the validation error area is displayed
+        /// relative to the control.
         /// </summary>
         /// <remarks>
-        /// Это свойство используется внутри шаблона ошибок (<see cref="ControlTemplate"/>)
-        /// для определения стороны, с которой отображаются сообщения об ошибках:
-        /// слева, справа, сверху или снизу от контрола.
+        /// This property is used internally in the error template (<see cref="ControlTemplate"/>)
+        /// to define the side (left, right, top, or bottom) on which the validation messages appear.
         ///
         /// <para>
-        /// <br/><b>⚠️ Не предназначено для задания в XAML вручную. Использовать <see cref="PlacementProperty"/>.</b>
+        /// <b>⚠️ Not intended for manual use in XAML. Use <see cref="PlacementProperty"/> instead.</b>
         /// </para>
         /// </remarks>
         public static readonly DependencyProperty DockProperty =
@@ -113,30 +112,26 @@ namespace Birds.UI.Views.Helpers
                 new PropertyMetadata(Dock.Right));
 
         /// <summary>
-        /// Задаёт значение прикрепляемого свойства <see cref="DockProperty"/>
-        /// для указанного элемента управления.
+        /// Sets the <see cref="DockProperty"/> value
+        /// for the specified control.
         /// </summary>
         /// <param name="element">
-        /// Элемент, к которому применяется свойство <see cref="DockProperty"/>.
+        /// The element to which the <see cref="DockProperty"/> is applied.
         /// </param>
         /// <param name="value">
-        /// Новое значение перечисления <see cref="Dock"/>,
-        /// определяющее сторону отображения ошибок.
+        /// The <see cref="Dock"/> value specifying where the error messages should appear.
         /// </param>
         public static void SetDock(DependencyObject element, Dock value)
             => element.SetValue(DockProperty, value);
 
         /// <summary>
-        /// Возвращает текущее значение прикрепляемого свойства <see cref="DockProperty"/>
-        /// для указанного элемента управления.
+        /// Gets the current <see cref="DockProperty"/> value
+        /// for the specified control.
         /// </summary>
-        /// <param name="element">
-        /// Элемент, из которого извлекается значение свойства.
-        /// </param>
+        /// <param name="element">The element from which to retrieve the property value.</param>
         /// <returns>
-        /// Значение перечисления <see cref="Dock"/>,
-        /// указывающее, где должны отображаться сообщения об ошибках
-        /// относительно элемента управления.
+        /// The <see cref="Dock"/> value indicating where
+        /// the validation messages are displayed relative to the control.
         /// </returns>
         public static Dock GetDock(DependencyObject element)
             => (Dock)element.GetValue(DockProperty);
@@ -146,21 +141,21 @@ namespace Birds.UI.Views.Helpers
         #region [ MaxErrorWidthProperty ]
 
         /// <summary>
-        /// Определяет максимальную ширину блока сообщений об ошибках валидации.
+        /// Defines the maximum width of the validation error message block.
         /// </summary>
         /// <remarks>
-        /// Значение задаётся в пикселях и применяется к элементу визуализации ошибки,
-        /// обычно к <see cref="TextBlock"/>, который выводит текст ошибки внутри шаблона
-        /// (<see cref="Validation.ErrorTemplate"/>).
+        /// The value is specified in pixels and applied to the visual element
+        /// that displays the error message — typically a <see cref="TextBlock"/>
+        /// inside the <see cref="Validation.ErrorTemplate"/>.
         ///
         /// <para>
-        /// Если свойство не указано, используется значение по умолчанию — <c>270</c>.
+        /// If not specified, the default value is <c>270</c>.
         /// </para>
         ///
         /// <para>
-        /// Это свойство особенно полезно, если для разных представлений требуется
-        /// различная ширина текста ошибок — например, более узкая колонка в форме
-        /// добавления и более широкая в списке.
+        /// This property is useful when different views require
+        /// different error text widths — for example, narrower columns in add forms
+        /// and wider ones in list views.
         /// </para>
         /// </remarks>
         public static readonly DependencyProperty MaxErrorWidthProperty =
@@ -171,20 +166,20 @@ namespace Birds.UI.Views.Helpers
                 new PropertyMetadata(270.0));
 
         /// <summary>
-        /// Устанавливает максимальную ширину блока сообщений об ошибках валидации
-        /// для указанного элемента управления.
+        /// Sets the maximum width of the validation error message block
+        /// for the specified control.
         /// </summary>
-        /// <param name="element">Элемент, к которому применяется прикреплённое свойство.</param>
-        /// <param name="value">Максимальная ширина блока ошибок (в пикселях).</param>
+        /// <param name="element">The control to which the attached property is applied.</param>
+        /// <param name="value">The maximum error block width (in pixels).</param>
         public static void SetMaxErrorWidth(DependencyObject element, double value)
             => element.SetValue(MaxErrorWidthProperty, value);
 
         /// <summary>
-        /// Возвращает максимальную ширину блока сообщений об ошибках валидации
-        /// для указанного элемента управления.
+        /// Gets the maximum width of the validation error message block
+        /// for the specified control.
         /// </summary>
-        /// <param name="element">Элемент, из которого считывается значение свойства.</param>
-        /// <returns>Текущее значение максимальной ширины блока ошибок (в пикселях).</returns>
+        /// <param name="element">The control from which to read the property value.</param>
+        /// <returns>The current maximum error block width (in pixels).</returns>
         public static double GetMaxErrorWidth(DependencyObject element)
             => (double)element.GetValue(MaxErrorWidthProperty);
 
@@ -192,7 +187,7 @@ namespace Birds.UI.Views.Helpers
     }
 
     /// <summary>
-    /// Определяет возможные варианты расположения сообщений об ошибках валидации.
+    /// Defines the possible placement options for displaying validation error messages.
     /// </summary>
     public enum PlacementMode
     {
@@ -201,4 +196,5 @@ namespace Birds.UI.Views.Helpers
         Left,
         Top
     }
+
 }

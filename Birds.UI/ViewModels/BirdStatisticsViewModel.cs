@@ -12,7 +12,7 @@ namespace Birds.UI.ViewModels
 
     public partial class BirdStatisticsViewModel : ObservableObject
     {
-        public ObservableCollection<BirdDTO> Birds { get; }
+        #region [ Observable Properties ]
 
         // Top metric cards (recomputed with filter applied)
         [ObservableProperty] private int totalBirds;
@@ -26,6 +26,13 @@ namespace Birds.UI.ViewModels
         // Filter state
         [ObservableProperty] private int? selectedYear;
         [ObservableProperty] private IReadOnlyCollection<int> availableYears = Array.Empty<int>();
+
+        #endregion [ Observable Properties ]
+
+        #region [ Properties ]
+
+        // Shared UI collection
+        public ObservableCollection<BirdDTO> Birds { get; }
 
         // UI lists
         public ObservableCollection<StatItem> SpeciesStats { get; } = new();
@@ -44,6 +51,8 @@ namespace Birds.UI.ViewModels
             Recalculate();
         }
 
+        #region [ Events ]
+
         private void OnBirdsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             Recalculate();
@@ -51,8 +60,15 @@ namespace Birds.UI.ViewModels
 
         partial void OnSelectedYearChanged(int? value) => Recalculate();
 
-        [RelayCommand]
-        private void ClearYearFilter() => SelectedYear = null;
+        #endregion [ Events ]
+
+        #region [ Commands ]
+
+        [RelayCommand] private void ClearYearFilter() => SelectedYear = null;
+
+        #endregion [ Commands ]
+
+        #region [ Methods ]
 
         private void Recalculate()
         {

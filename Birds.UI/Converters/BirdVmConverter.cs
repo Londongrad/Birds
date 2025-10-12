@@ -8,46 +8,46 @@ using System.Windows.Data;
 namespace Birds.UI.Converters
 {
     /// <summary>
-    /// Конвертер, преобразующий объект <see cref="BirdDTO"/> в <see cref="BirdViewModel"/>.
-    /// Используется в <see cref="DataTemplate"/> внутри списка птиц, чтобы при отрисовке элементов
-    /// создавать экземпляры <see cref="BirdViewModel"/> только для реально видимых элементов
-    /// (ленивая инициализация с поддержкой виртуализации).
+    /// Converter that transforms a <see cref="BirdDTO"/> object into a <see cref="BirdViewModel"/>.
+    /// Used in a <see cref="DataTemplate"/> within the bird list to create instances of
+    /// <see cref="BirdViewModel"/> only for actually visible items during rendering
+    /// (lazy initialization with virtualization support).
     /// </summary>
     /// <remarks>
-    /// Этот конвертер необходим, потому что в коллекции во <see cref="BirdListViewModel"/> хранятся DTO-объекты,
-    /// но для взаимодействия с UI используется полноценная <see cref="BirdViewModel"/>.
+    /// This converter is necessary because the collection in <see cref="BirdListViewModel"/> stores DTO objects,
+    /// but interaction with the UI requires a full <see cref="BirdViewModel"/>.
     /// <para>
-    /// С помощью фабрики <see cref="IBirdViewModelFactory"/> происходит инъекция зависимостей в App.xaml.cs
-    /// и правильное создание экземпляров <see cref="BirdViewModel"/>.
+    /// Through the <see cref="IBirdViewModelFactory"/>, dependencies are injected in App.xaml.cs,
+    /// ensuring proper creation of <see cref="BirdViewModel"/> instances.
     /// </para>
     /// </remarks>
     public class BirdVmConverter : IValueConverter
     {
         /// <summary>
-        /// Фабрика для создания экземпляров <see cref="BirdViewModel"/> на основе <see cref="BirdDTO"/>.
-        /// Обязательно должна быть установлена (через ресурсы XAML или вручную в коде).
+        /// Factory for creating <see cref="BirdViewModel"/> instances based on <see cref="BirdDTO"/>.
+        /// Must be set (via XAML resources or manually in code).
         /// <para>
-        /// Задается в App.xaml.cs.
+        /// Configured in App.xaml.cs.
         /// </para>
         /// </summary>
         public IBirdViewModelFactory? Factory { get; set; }
 
         /// <summary>
-        /// Конструктор без параметров необходим для корректной работы XAML.
+        /// Parameterless constructor required for correct XAML operation.
         /// <para>
-        /// В случае данного конвертера определен явно, хотя это не обязательно. Главное, чтобы был пустой конструктор.
+        /// Explicitly defined here, although not strictly necessary. The main requirement is to have a parameterless constructor.
         /// </para>
         /// </summary>
         public BirdVmConverter() { }
 
         /// <summary>
-        /// Выполняет преобразование <see cref="BirdDTO"/> в <see cref="BirdViewModel"/>.
+        /// Converts a <see cref="BirdDTO"/> to a <see cref="BirdViewModel"/>.
         /// </summary>
-        /// <param name="value">Объект <see cref="BirdDTO"/>, переданный из ItemsSource.</param>
-        /// <param name="targetType">Целевой тип (не используется).</param>
-        /// <param name="parameter">Дополнительный параметр (не используется).</param>
-        /// <param name="culture">Информация о культуре (не используется).</param>
-        /// <returns>Созданный <see cref="BirdViewModel"/> или null, если value не <see cref="BirdDTO"/>.</returns>
+        /// <param name="value">A <see cref="BirdDTO"/> object passed from ItemsSource.</param>
+        /// <param name="targetType">The target type (not used).</param>
+        /// <param name="parameter">An additional parameter (not used).</param>
+        /// <param name="culture">Culture information (not used).</param>
+        /// <returns>The created <see cref="BirdViewModel"/>, or null if value is not a <see cref="BirdDTO"/>.</returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is BirdDTO dto)
@@ -62,13 +62,14 @@ namespace Birds.UI.Converters
                 Debug.WriteLine($"⚠ BirdVmConverter: unexpected value {value?.GetType().Name}");
             }
 
-            return Binding.DoNothing; // лучше чем null!
+            return Binding.DoNothing; // better than null!
         }
 
         /// <summary>
-        /// Обратное преобразование не поддерживается.
+        /// Reverse conversion is not supported.
         /// </summary>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => throw new NotImplementedException();
     }
+
 }

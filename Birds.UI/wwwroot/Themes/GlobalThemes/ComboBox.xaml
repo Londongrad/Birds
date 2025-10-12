@@ -470,7 +470,7 @@
         x:Key="ComboBox"
         TargetType="{x:Type ComboBox}">
 
-        <!-- Важно, чтобы шаблон ошибки привязывался через динамическую привязку -->
+        <!-- Important: The error template must be bound using a dynamic resource reference -->
         <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource FieldErrorTemplate_Universal}" />
 
         <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}" />

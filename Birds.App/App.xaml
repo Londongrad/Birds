@@ -10,7 +10,7 @@
             <ResourceDictionary.MergedDictionaries>
 
                 <!-- ========== -->
-                <!-- Конвертеры -->
+                <!-- Converters -->
                 <!-- ========== -->
                 <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/GlobalThemes/Converters.xaml" />
 

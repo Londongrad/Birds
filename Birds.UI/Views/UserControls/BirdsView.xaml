@@ -13,10 +13,11 @@
     mc:Ignorable="d">
 
     <Border Style="{StaticResource ViewsBorder}">
-
+        <Grid>
+            <!-- Main content -->
         <DockPanel>
 
-            <!-- Счетчик количества птиц -->
+                <!-- Filter and search panel -->
             <StackPanel
                 Margin="0,0,0,10"
                 DockPanel.Dock="Top"
@@ -36,6 +37,7 @@
                     Text="{Binding BirdsView.Count,
                                    StringFormat=Всего птиц: {0},
                                    Mode=OneWay}" />
+
                 <ComboBox
                     DisplayMemberPath="Display"
                     ItemsSource="{Binding Filters}"
@@ -44,7 +46,7 @@
                     Style="{StaticResource FilterComboBoxStyle}" />
             </StackPanel>
 
-            <!-- Список птиц ( Ленивое создание ViewModels + виртуализация контейнеров ) -->
+                <!-- List of birds -->
             <ListBox ItemsSource="{Binding BirdsView}">
 
                 <ListBox.ItemTemplate>

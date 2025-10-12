@@ -5,14 +5,14 @@ using System.Windows.Media;
 namespace Birds.UI.Converters
 {
     /// <summary>
-    /// Преобразует булево значение <see cref="bool"/> в цвет (кисть) для визуального отображения состояния.
+    /// Converts a boolean value (<see cref="bool"/>) into a color (brush) for visual state representation.
     /// </summary>
     /// <remarks>
-    /// Используется для элементов, отражающих состояние птицы:
-    /// - <c>true</c> (жива) → зелёная кисть <see cref="Brushes.ForestGreen"/>.
-    /// - <c>false</c> (мертва) → красная кисть <see cref="Brushes.IndianRed"/>.
+    /// Used for elements that reflect the bird's state:
+    /// - <c>true</c> (alive) → green brush <see cref="Brushes.ForestGreen"/>.
+    /// - <c>false</c> (dead) → red brush <see cref="Brushes.IndianRed"/>.
     /// 
-    /// Применяется в <c>Ellipse.Fill</c> или <c>ToggleButton.Background</c>.
+    /// Applied in <c>Ellipse.Fill</c> or <c>ToggleButton.Background</c>.
     /// </remarks>
     public class BoolToColorConverter : IValueConverter
     {
@@ -24,7 +24,7 @@ namespace Birds.UI.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            // Обычно обратное преобразование не нужно
+            // Reverse conversion is usually not needed
             return Binding.DoNothing;
         }
     }

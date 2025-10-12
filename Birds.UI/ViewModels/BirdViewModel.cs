@@ -12,18 +12,17 @@ using System.Diagnostics;
 namespace Birds.UI.ViewModels
 {
     /// <summary>
-    /// ViewModel для отдельной птицы, используется для отображения и редактирования.
-    /// Наследует общие свойства и правила валидации из <see cref="BirdValidationBaseViewModel"/>.
+    /// ViewModel representing a single bird, used for display and editing.
+    /// Inherits common properties and validation rules from <see cref="BirdValidationBaseViewModel"/>.
     /// </summary>
     public partial class BirdViewModel : BirdValidationBaseViewModel
     {
+        #region [ Fields ]
+
         private readonly IMediator _mediator;
 
-        /// <summary>
-        /// Создаёт экземпляр <see cref="BirdViewModel"/> и инициализирует его данными из <see cref="BirdDTO"/>.
-        /// </summary>
-        /// <param name="dto">DTO-модель птицы, полученная из слоя приложения.</param>
-        /// <param name="mediator">MediatR-медиатор для отправки команд (удаление, обновление).</param>
+        #endregion [ Fields ]
+
         public BirdViewModel(BirdDTO dto, IMediator mediator)
         {
             Debug.WriteLine($"Item with id = {dto.Id} was created.");
@@ -32,7 +31,7 @@ namespace Birds.UI.ViewModels
             _mediator = mediator;
 
             Name = dto.Name;
-            SelectedBirdName = Enum.TryParse<BirdsName>(dto.Name, out var bird) ? bird : null;  // свойство из базового класса
+            SelectedBirdName = Enum.TryParse<BirdsName>(dto.Name, out var bird) ? bird : null;  // property from base class
             Description = dto.Description;
             Arrival = dto.Arrival;
             Departure = dto.Departure;
@@ -44,68 +43,68 @@ namespace Birds.UI.ViewModels
         #region [ Properties ]
 
         /// <summary>
-        /// Исходный DTO-объект птицы.
+        /// The original bird DTO object.
         /// </summary>
         public BirdDTO Dto { get; }
 
         /// <summary>
-        /// Уникальный идентификатор птицы.
+        /// The unique identifier of the bird.
         /// </summary>
         public Guid Id => Dto.Id;
 
-        #endregion
+        #endregion [ Properties ]
 
         #region [ ObservableProperties ]
 
         /// <summary>
-        /// Имя птицы.
+        /// The bird’s name.
         /// </summary>
         [ObservableProperty]
         private string name;
 
         /// <summary>
-        /// Дата убытия птицы (если она уже покинула учёт).
+        /// The departure date of the bird (if it has left the record).
         /// </summary>
         [CustomValidation(typeof(BirdViewModel), nameof(ValidateDeparture))]
         [ObservableProperty]
         private DateOnly? departure;
 
         /// <summary>
-        /// Признак того, что птица жива.
+        /// Indicates whether the bird is alive.
         /// </summary>
         [ObservableProperty]
         private bool isAlive;
 
         /// <summary>
-        /// Количество дней, прошедших с момента прибытия (или до убытия).
+        /// The number of days since arrival (or until departure).
         /// </summary>
         [ObservableProperty]
         private int daysInStock;
 
         /// <summary>
-        /// Строковое представление даты убытия (или текста "по сей день").
+        /// A textual representation of the departure date (or “to this day” if none).
         /// </summary>
         [ObservableProperty]
         private string? departureDisplay;
 
         /// <summary>
-        /// Определяет, отображаются ли кнопки подтверждения удаления.
+        /// Determines whether delete confirmation buttons are visible.
         /// </summary>
         [ObservableProperty]
         private bool isConfirmingDelete;
 
         /// <summary>
-        /// Определяет, находится ли элемент в режиме редактирования.
+        /// Indicates whether the item is in edit mode.
         /// </summary>
         [ObservableProperty]
         private bool isEditing;
 
-        #endregion
+        #endregion [ ObservableProperties ]
 
         #region [ Commands ]
 
         /// <summary>
-        /// Команда удаления птицы.
+        /// Command for deleting a bird.
         /// </summary>
         [RelayCommand]
         private async Task DeleteAsync()
@@ -115,30 +114,30 @@ namespace Birds.UI.ViewModels
         }
 
         /// <summary>
-        /// Команда отображения кнопок подтверждения удаления.
+        /// Command for displaying delete confirmation buttons.
         /// </summary>
         [RelayCommand]
         private void AskDelete() => IsConfirmingDelete = true;
 
         /// <summary>
-        /// Команда отмены подтверждения удаления.
+        /// Command for canceling delete confirmation.
         /// </summary>
         [RelayCommand]
         private void CancelDelete() => IsConfirmingDelete = false;
 
         /// <summary>
-        /// Команда перехода в режим редактирования.
+        /// Command for switching to edit mode.
         /// </summary>
         [RelayCommand]
         private void Edit() => IsEditing = true;
 
         /// <summary>
-        /// Команда отмены редактирования и отката изменений.
+        /// Command for canceling editing and reverting changes.
         /// </summary>
         [RelayCommand]
         private void CancelEdit()
         {
-            // Восстанавливаем данные из Dto
+            // Restore data from DTO
             SelectedBirdName = Enum.TryParse<BirdsName>(Dto.Name, out var bird) ? bird : null;
             Description = Dto.Description;
             Arrival = Dto.Arrival;
@@ -148,8 +147,8 @@ namespace Birds.UI.ViewModels
         }
 
         /// <summary>
-        /// Команда сохранения изменений после редактирования.
-        /// Выполняет валидацию и обновление через MediatR.
+        /// Command for saving changes after editing.
+        /// Performs validation and updates via MediatR.
         /// </summary>
         [RelayCommand]
         private async Task SaveAsync()
@@ -167,30 +166,30 @@ namespace Birds.UI.ViewModels
                     Departure,
                     IsAlive));
 
-            // После сохранения пересчитываем производные поля
+            // Recalculate derived fields after saving
             UpdateCalculatedFields();
             IsEditing = false;
         }
 
-        #endregion
+        #endregion [ Commands ]
 
         #region [ Private helpers ]
 
         /// <summary>
-        /// Обновляет вычисляемые поля (DepartureDisplay и DaysInStock).
+        /// Updates calculated fields (<see cref="DepartureDisplay"/> and <see cref="DaysInStock"/>).
         /// </summary>
         private void UpdateCalculatedFields()
         {
             DepartureDisplay = Departure.HasValue
                 ? Departure.Value.ToString("dd.MM.yyyy")
-                : "по сей день";
+                : "to this day";
 
             var endDate = Departure?.ToDateTime(TimeOnly.MinValue) ?? DateTime.Now;
             DaysInStock = (int)(endDate - Arrival.ToDateTime(TimeOnly.MinValue)).TotalDays;
         }
 
         /// <summary>
-        /// Вызывается автоматически при изменении даты отправления (partial-метод от Toolkit).
+        /// Automatically invoked when the departure date changes (partial method generated by the Toolkit).
         /// </summary>
         partial void OnDepartureChanged(DateOnly? value)
         {
@@ -199,55 +198,56 @@ namespace Birds.UI.ViewModels
         }
 
         /// <summary>
-        /// Переопределение логики, вызываемой при изменении даты прибытия.
+        /// Overrides logic executed when the arrival date changes.
         /// </summary>
         protected override void OnArrivalChangedCore(DateOnly value)
         {
-            // если Arrival меняют — перепроверяем Departure, т.к. правило зависит от Arrival
+            // When Arrival changes, revalidate Departure since its rule depends on Arrival
             ValidateProperty(Departure, nameof(Departure));
             UpdateCalculatedFields();
         }
 
-        #endregion
+        #endregion [ Private helpers ]
 
         #region [ Validation ]
 
         /// <summary>
-        /// Валидация даты убытия.
-        /// Разрешает null, запрещает будущее и дату раньше Arrival.
+        /// Validates the departure date.
+        /// Allows null, disallows future dates and dates earlier than Arrival.
         /// 
         /// <para>
-        /// Вынесен из базовой <see cref="BirdValidationBaseViewModel"/>, так как нужен только в этой ViewModel
+        /// Moved from <see cref="BirdValidationBaseViewModel"/> since it is only required in this ViewModel.
         /// </para>
         /// </summary>
         public static ValidationResult? ValidateDeparture(object? value, ValidationContext ctx)
         {
-            if (ctx.ObjectInstance is BirdViewModel BirdVM && value is null && BirdVM.IsAlive == false)
-                return new ValidationResult($"Сначала укажите дату");
+            if (ctx.ObjectInstance is BirdViewModel birdVM && value is null && birdVM.IsAlive == false)
+                return new ValidationResult("Please specify the date first.");
 
             if (value is null)
                 return ValidationResult.Success;
 
             if (value is not DateOnly d)
-                return new ValidationResult("Укажите корректную дату");
+                return new ValidationResult("Please specify a valid date.");
 
             var today = DateOnly.FromDateTime(DateTime.Today);
             if (d > today)
-                return new ValidationResult($"Дата не может быть в будущем (не позже {today:dd-MM-yyyy})");
+                return new ValidationResult($"The date cannot be in the future (no later than {today:dd-MM-yyyy}).");
 
-            // доступ к Arrival через контекст (BirdViewModel наследуется от базового класса)
+            // Access Arrival via context (BirdViewModel inherits from the base class)
             if (ctx.ObjectInstance is BirdValidationBaseViewModel vm && d < vm.Arrival)
-                return new ValidationResult($"Дата убытия не может быть раньше даты прибытия ({vm.Arrival:dd-MM-yyyy})");
+                return new ValidationResult($"Departure date cannot be earlier than arrival date ({vm.Arrival:dd-MM-yyyy}).");
 
             return ValidationResult.Success;
         }
 
         partial void OnIsAliveChanged(bool value)
         {
-            // Если птицу пометили как мертвую — проверяем Departure
+            // If the bird is marked as dead — validate the Departure date
             ValidateProperty(Departure, nameof(Departure));
         }
 
         #endregion [ Validation ]
     }
+
 }

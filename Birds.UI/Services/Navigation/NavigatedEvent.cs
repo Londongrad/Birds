@@ -5,16 +5,16 @@ using System.Windows;
 namespace Birds.UI.Services.Navigation
 {
     /// <summary>
-    /// Событие навигации, публикуемое через MediatR после открытия нового окна.
+    /// Navigation event published via MediatR after a new window is opened.
     /// <para>
-    /// Содержит ссылку на <see cref="Window"/>, которое было открыто,
-    /// и соответствующую <see cref="ObservableObject"/> ViewModel, назначенную этому окну.
+    /// Contains a reference to the <see cref="Window"/> that was opened
+    /// and the corresponding <see cref="ObservableObject"/> ViewModel assigned to that window.
     /// </para>
-    /// Другие сервисы (например, сервис нотификаций) могут обработать это событие,
-    /// чтобы привязаться к новому окну или выполнить дополнительную логику,
-    /// связанную с переключением контекста.
+    /// Other services (e.g., a notification service) can handle this event
+    /// to attach to the newly opened window or perform additional logic
+    /// related to context switching.
     /// </summary>
-    /// <param name="Window">Экземпляр окна, которое было открыто.</param>
-    /// <param name="ViewModel">ViewModel, ставшая активной для данного окна.</param>
+    /// <param name="Window">The instance of the window that was opened.</param>
+    /// <param name="ViewModel">The ViewModel that became active for the specified window.</param>
     public record NavigatedEvent(Window Window, ObservableObject ViewModel) : INotification;
 }

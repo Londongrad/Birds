@@ -1,6 +1,5 @@
 ﻿using Birds.UI.Services.Notification;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -19,7 +18,7 @@ namespace Birds.UI.Views.Windows
                 ? $"{options.Title}\n{message}"
                 : message;
 
-            // Настраиваем цвет и иконку
+            // Manage colors and icons based on notification type
             switch (options.Type)
             {
                 case NotificationType.Success:
@@ -40,7 +39,7 @@ namespace Birds.UI.Views.Windows
                     break;
             }
 
-            // Автозакрытие по таймеру
+            // Auto-close timer
             _timer = new DispatcherTimer { Interval = options.Duration };
             _timer.Tick += (s, e) =>
             {

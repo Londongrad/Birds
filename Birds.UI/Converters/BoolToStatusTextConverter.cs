@@ -4,46 +4,47 @@ using System.Windows.Data;
 namespace Birds.UI.Converters
 {
     /// <summary>
-    /// Преобразует булево значение в строку состояния "Жива" или "Мертва".
+    /// Converts a boolean value into the status text "Alive" or "Dead".
     /// </summary>
     /// <remarks>
-    /// Используется для отображения текста в <c>TextBlock</c> или <c>ToggleButton.Content</c>.
+    /// Used for displaying text in <c>TextBlock</c> or <c>ToggleButton.Content</c>.
     /// 
-    /// - <c>true</c> → "Жива"
-    /// - <c>false</c> → "Мертва"
+    /// - <c>true</c> → "Alive"
+    /// - <c>false</c> → "Dead"
     /// </remarks>
     public class BoolToStatusTextConverter : IValueConverter
     {
         /// <summary>
-        /// Преобразует <see cref="bool"/> в текстовое представление состояния.
+        /// Converts a <see cref="bool"/> value into a textual representation of the state.
         /// </summary>
-        /// <param name="value">Булево значение, указывающее, жива ли птица.</param>
-        /// <param name="targetType">Тип целевого свойства привязки.</param>
-        /// <param name="parameter">Не используется.</param>
-        /// <param name="culture">Культура преобразования.</param>
-        /// <returns>Строка "Жива" или "Мертва".</returns>
+        /// <param name="value">Boolean value indicating whether the bird is alive.</param>
+        /// <param name="targetType">The type of the target binding property.</param>
+        /// <param name="parameter">Not used.</param>
+        /// <param name="culture">Culture information for the conversion.</param>
+        /// <returns>The string "Alive" or "Dead".</returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             bool isAlive = value is bool b && b;
-            return isAlive ? "Жива" : "Мертва";
+            return isAlive ? "Alive" : "Dead";
         }
 
         /// <summary>
-        /// Преобразует текст "Жива"/"Мертва" обратно в <see cref="bool"/>.
+        /// Converts the text "Alive"/"Dead" back to a <see cref="bool"/>.
         /// </summary>
-        /// <param name="value">Текстовое значение состояния.</param>
-        /// <param name="targetType">Тип целевого свойства привязки.</param>
-        /// <param name="parameter">Не используется.</param>
-        /// <param name="culture">Культура преобразования.</param>
-        /// <returns><c>true</c>, если "Жива"; <c>false</c>, если "Мертва".</returns>
+        /// <param name="value">Textual representation of the state.</param>
+        /// <param name="targetType">The type of the target binding property.</param>
+        /// <param name="parameter">Not used.</param>
+        /// <param name="culture">Culture information for the conversion.</param>
+        /// <returns><c>true</c> if "Alive"; <c>false</c> if "Dead".</returns>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             string? text = value as string;
-            if (string.Equals(text, "Жива", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(text, "Alive", StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (string.Equals(text, "Мертва", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(text, "Dead", StringComparison.OrdinalIgnoreCase))
                 return false;
             return Binding.DoNothing;
         }
     }
+
 }

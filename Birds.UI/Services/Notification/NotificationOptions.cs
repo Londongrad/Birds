@@ -1,13 +1,13 @@
 ﻿namespace Birds.UI.Services.Notification
 {
     /// <summary>
-    /// Опции отображения уведомления.
-    /// Используются для настройки длительности, наличия кнопки закрытия, заголовка и типа уведомления.
+    /// Notification display options.
+    /// Used to configure the duration, presence of a close button, title, and notification type.
     /// </summary>
-    /// <param name="Type">Тип уведомления (успех, ошибка, предупреждение, информация).</param>
-    /// <param name="Duration">Длительность отображения уведомления.</param>
-    /// <param name="ShowCloseButton">Признак, показывать ли кнопку закрытия.</param>
-    /// <param name="Title">Необязательный заголовок уведомления.</param>
+    /// <param name="Type">The type of notification (success, error, warning, information).</param>
+    /// <param name="Duration">The duration of the notification display.</param>
+    /// <param name="ShowCloseButton">Indicates whether to show the close button.</param>
+    /// <param name="Title">An optional notification title.</param>
     public record NotificationOptions(
         NotificationType Type = NotificationType.Info,
         TimeSpan Duration = default,
@@ -16,12 +16,12 @@
     )
     {
         /// <summary>
-        /// Длительность по умолчанию (2 секунды), если в параметре <see cref="Duration"/> передано значение по умолчанию.
+        /// The default duration (2 seconds), used if <see cref="Duration"/> is set to its default value.
         /// </summary>
         public static readonly TimeSpan DefaultDuration = TimeSpan.FromSeconds(2);
 
         /// <summary>
-        /// Возвращает реальную длительность (если не задана, используется <see cref="DefaultDuration"/>).
+        /// Returns the effective duration (uses <see cref="DefaultDuration"/> if not explicitly set).
         /// </summary>
         public TimeSpan EffectiveDuration => Duration == default ? DefaultDuration : Duration;
     }

@@ -5,25 +5,25 @@ using Birds.UI.ViewModels;
 namespace Birds.UI.Services.Factories.BirdViewModelFactory
 {
     /// <summary>
-    /// Фабрика, отвечающая за создание экземпляров <see cref="BirdViewModel"/>
-    /// из объектов передачи данных <see cref="BirdDTO"/>.
+    /// A factory responsible for creating instances of <see cref="BirdViewModel"/>
+    /// from data transfer objects (<see cref="BirdDTO"/>).
     /// </summary>
     /// <remarks>
-    /// Класс инкапсулирует логику создания view-model, гарантируя,
-    /// что они будут корректно сконструированы со всеми необходимыми зависимостями.  
-    /// Для взаимодействия между view-model и другими компонентами приложения
-    /// используется <see cref="IMediator"/>.
+    /// This class encapsulates the logic of creating view models, ensuring
+    /// they are properly constructed with all required dependencies.  
+    /// The <see cref="IMediator"/> is used to facilitate communication
+    /// between the view models and other components of the application.
     /// </remarks>
     public class BirdViewModelFactory : IBirdViewModelFactory
     {
         private readonly IMediator _mediator;
 
         /// <summary>
-        /// Инициализирует новый экземпляр класса <see cref="BirdViewModelFactory"/>.
+        /// Initializes a new instance of the <see cref="BirdViewModelFactory"/> class.
         /// </summary>
         /// <param name="mediator">
-        /// Экземпляр медиатора, используемый для отправки запросов и уведомлений
-        /// между view-model и остальными частями приложения.
+        /// The mediator instance used to send requests and notifications
+        /// between the view models and other parts of the application.
         /// </param>
         public BirdViewModelFactory(IMediator mediator)
         {

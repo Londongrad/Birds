@@ -10,10 +10,10 @@ namespace Birds.UI.Services.Notification
         private Window? _parent;
 
         /// <summary>
-        /// Подключает сервис нотификаций к указанному окну.
-        /// После вызова уведомления будут позиционироваться относительно этого окна.
+        /// Attaches the notification service to the specified window.
+        /// After attachment, notifications will be positioned relative to this window.
         /// </summary>
-        /// <param name="window">Окно, к которому нужно привязаться.</param>
+        /// <param name="window">The window to attach to.</param>
         private void AttachWindow(Window window)
         {
             _parent = window ?? throw new ArgumentNullException(nameof(window));
@@ -21,7 +21,7 @@ namespace Birds.UI.Services.Notification
 
         public Task Handle(NavigatedEvent notification, CancellationToken ct)
         {
-            // Когда происходит навигация — переподключаемся к новому окну
+            // When navigation occurs — reattach to the newly opened window
             AttachWindow(notification.Window);
             return Task.CompletedTask;
         }
@@ -30,7 +30,7 @@ namespace Birds.UI.Services.Notification
         public void Show(string message, NotificationOptions? options)
         {
             if (_parent == null)
-                throw new InvalidOperationException("Сервис нотификаций не привязан ни к одному окну.");
+                throw new InvalidOperationException("The notification service is not attached to any window.");
 
             var toast = new NotificationWindow(message, options ?? new NotificationOptions())
             {
@@ -38,7 +38,7 @@ namespace Birds.UI.Services.Notification
                 WindowStartupLocation = WindowStartupLocation.Manual
             };
 
-            // позиционирование в правом верхнем углу окна
+            // Position the toast in the top-right corner of the window
             toast.Left = _parent.Left + _parent.Width - toast.Width - 10;
             toast.Top = _parent.Top + 10;
 

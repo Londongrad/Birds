@@ -2,11 +2,11 @@
 {
     public interface IUnitOfWork
     {
-        /// <summary>Сохраняет все изменения, сделанные в текущем контексте.</summary>
-        /// <returns>Количество изменённых записей в базе данных.</returns>
+        /// <summary>Saves all changes made in the current context.</summary>
+        /// <returns>The number of records modified in the database.</returns>
         /// <remarks>
-        /// Метод фиксирует изменения, сделанные через репозитории.
-        /// Вызывать его необходимо вручную после операций <c>AddAsync</c>, <c>Update</c> и <c>Remove</c>.
+        /// This method commits the changes made through the repositories.
+        /// It must be called manually after performing <c>AddAsync</c>, <c>Update</c>, or <c>Remove</c> operations.
         /// </remarks>
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

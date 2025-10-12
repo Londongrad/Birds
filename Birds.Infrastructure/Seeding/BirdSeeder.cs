@@ -16,8 +16,8 @@ namespace Birds.Infrastructure.Seeding
             using var scope = _services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<BirdDbContext>();
 
-            //context.Database.EnsureDeleted();
-            await context.Database.EnsureCreatedAsync(cancellationToken);
+            //await context.Database.EnsureDeletedAsync();
+            //await context.Database.EnsureCreatedAsync(cancellationToken);
 
             if (!await context.Birds.AnyAsync(cancellationToken))
             {
@@ -55,7 +55,7 @@ namespace Birds.Infrastructure.Seeding
 
                     birds.Add(bird);
 
-                    // Когда накопился батч — сохраняем
+                    // When batch is full, save to database
                     if (birds.Count >= batchSize)
                     {
                         await context.Birds.AddRangeAsync(birds, cancellationToken);
@@ -64,7 +64,7 @@ namespace Birds.Infrastructure.Seeding
                     }
                 }
 
-                // Последний хвостик
+                // Last batch
                 if (birds.Count > 0)
                 {
                     await context.Birds.AddRangeAsync(birds, cancellationToken);

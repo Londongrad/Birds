@@ -9,7 +9,6 @@
         <Setter Property="MaxWidth" Value="100" />
         <Setter Property="Margin" Value="0,0,0,0" />
         <Setter Property="Padding" Value="3,0" />
-        <!-- стало меньше -->
         <Setter Property="FontSize" Value="16" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -20,7 +19,6 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBox">
                     <Grid>
-                        <!-- Фон и рамка -->
                         <Border
                             Background="{TemplateBinding Background}"
                             BorderBrush="#555"
@@ -30,10 +28,8 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="30" />
-                                    <!-- под кнопку -->
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Текст выбранного года -->
                                 <ContentPresenter
                                     Grid.Column="0"
                                     Margin="6,0,4,0"
@@ -42,7 +38,6 @@
                                     Content="{TemplateBinding SelectionBoxItem}"
                                     TextElement.Foreground="{TemplateBinding Foreground}" />
 
-                                <!-- Кнопка-лупа -->
                                 <ToggleButton
                                     x:Name="ToggleButton"
                                     Grid.Column="1"
@@ -100,7 +95,6 @@
                             </Grid>
                         </Border>
 
-                        <!-- Popup -->
                         <Popup
                             x:Name="PART_Popup"
                             AllowsTransparency="True"
@@ -126,5 +120,4 @@
             </Setter.Value>
         </Setter>
     </Style>
-
 </ResourceDictionary>

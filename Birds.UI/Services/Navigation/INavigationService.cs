@@ -5,56 +5,56 @@ using System.Windows;
 namespace Birds.UI.Services.Navigation
 {
     /// <summary>
-    /// Сервис навигации для управления текущей ViewModel и открытия отдельных окон.
+    /// Navigation service for managing the current ViewModel and opening separate windows.
     /// </summary>
     public interface INavigationService
     {
         /// <summary>
-        /// Текущая активная ViewModel, отображаемая во View (например, в ContentControl).
+        /// The currently active ViewModel displayed in the View (e.g., inside a ContentControl).
         /// </summary>
         ObservableObject? Current { get; }
 
         /// <summary>
-        /// Навигация к переданной ViewModel внутри текущего окна.
+        /// Navigates to the specified ViewModel within the current window.
         /// </summary>
         Task NavigateTo(object? viewModel);
 
         /// <summary>
-        /// Навигация к ViewModel по её типу (создаётся через зарегистрированный фабричный метод)
-        /// и отображается внутри текущего окна.
+        /// Navigates to a ViewModel by its type (created via a registered factory method)
+        /// and displays it within the current window.
         /// </summary>
         Task NavigateToType(Type? type);
 
         /// <summary>
-        /// Внутренняя реализация навигации для ViewModel (установка Current + вызов хуков OnNavigatedToAsync).
+        /// Internal navigation logic for ViewModels (sets <see cref="Current"/> and triggers <c>OnNavigatedToAsync</c> hooks).
         /// </summary>
         Task NavigateToInternal(ObservableObject viewModel);
 
         /// <summary>
-        /// Команда для навигации по конкретному экземпляру ViewModel (для биндинга в XAML).
+        /// Command for navigating to a specific ViewModel instance (for XAML binding).
         /// </summary>
         IAsyncRelayCommand<object?> NavigateToCommand { get; }
 
         /// <summary>
-        /// Команда для навигации по типу ViewModel (для биндинга в XAML).
+        /// Command for navigating by ViewModel type (for XAML binding).
         /// </summary>
         IAsyncRelayCommand<Type?> NavigateToTypeCommand { get; }
 
         /// <summary>
-        /// Открывает отдельное окно для указанной ViewModel.
-        /// ViewModel отображается в новом экземпляре Window.
+        /// Opens a separate window for the specified ViewModel.
+        /// The ViewModel is displayed in a new <see cref="Window"/> instance.
         /// </summary>
         Task OpenWindow(ObservableObject viewModel);
 
         /// <summary>
-        /// Регистрирует фабрику для создания ViewModel по её типу.
-        /// Используется при вызове NavigateToType.
+        /// Registers a factory for creating a ViewModel by its type.
+        /// Used when calling <see cref="NavigateToType"/>.
         /// </summary>
         void AddCreator<TViewModel>(Func<ObservableObject> creator) where TViewModel : ObservableObject;
 
         /// <summary>
-        /// Регистрирует фабрику для создания окна по типу ViewModel.
-        /// Используется при вызове OpenWindow.
+        /// Registers a factory for creating a window based on the ViewModel type.
+        /// Used when calling <see cref="OpenWindow"/>.
         /// </summary>
         void AddWindow<TViewModel>(Func<Window> windowFactory) where TViewModel : ObservableObject;
     }

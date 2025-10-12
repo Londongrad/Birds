@@ -4,15 +4,15 @@ using System.Collections.ObjectModel;
 namespace Birds.UI.Services.Stores.BirdStore
 {
     /// <summary>
-    /// Реализация общего хранилища данных о птицах.
-    /// Содержит одну коллекцию <see cref="BirdDTO"/>, 
-    /// которая живёт в течение всего времени работы приложения.
+    /// Implementation of a shared data store for bird information.
+    /// Contains a single <see cref="BirdDTO"/> collection
+    /// that persists throughout the entire application lifetime.
     /// </summary>
     public class BirdStore : IBirdStore
     {
         /// <summary>
-        /// Создаёт новый экземпляр <see cref="BirdStore"/>.
-        /// При инициализации формируется пустая коллекция <see cref="BirdDTO"/>.
+        /// Initializes a new instance of the <see cref="BirdStore"/> class.
+        /// During initialization, an empty <see cref="BirdDTO"/> collection is created.
         /// </summary>
         public BirdStore()
         {
@@ -23,6 +23,10 @@ namespace Birds.UI.Services.Stores.BirdStore
         /// Общая коллекция птиц, разделяемая всеми ViewModel.
         /// Добавление, удаление или изменение элементов коллекции 
         /// будет отражаться во всех местах, где используется <see cref="BirdStore"/>.
+        /// <summary>
+        /// The shared collection of birds accessible to all ViewModels.
+        /// Adding, removing, or modifying elements in this collection
+        /// will be reflected in all parts of the application using <see cref="BirdStore"/>.
         /// </summary>
         public ObservableCollection<BirdDTO> Birds { get; }
     }

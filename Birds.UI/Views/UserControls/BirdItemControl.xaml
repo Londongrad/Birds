@@ -28,10 +28,7 @@
 
         <Grid VerticalAlignment="Center">
             <Grid.ColumnDefinitions>
-                <!-- Информация о птице -->
                 <ColumnDefinition Width="*" />
-
-                <!-- Кнопки -->
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
@@ -52,12 +49,12 @@
                 </ContentControl.Style>
             </ContentControl>
 
-            <!-- Кнопки -->
+            <!-- Action buttons -->
             <Grid
                 Grid.Column="1"
                 VerticalAlignment="Center">
 
-                <!-- Обычный режим -->
+                <!-- Manual mode -->
                 <ContentPresenter
                     x:Name="NormalButtons"
                     Content="{Binding}"
@@ -70,14 +67,14 @@
                     </ContentPresenter.Visibility>
                 </ContentPresenter>
 
-                <!-- Режим удаления -->
+                <!-- Delete mode -->
                 <ContentPresenter
                     Content="{Binding}"
                     ContentTemplate="{StaticResource ConfirmButtonsTemplate}"
                     Visibility="{Binding IsConfirmingDelete,
                                          Converter={StaticResource BoolToVisibilityConverter}}" />
 
-                <!-- Режим редактирования -->
+                <!-- Edit mode -->
                 <ContentPresenter
                     Content="{Binding}"
                     ContentTemplate="{StaticResource EditButtonsTemplate}"

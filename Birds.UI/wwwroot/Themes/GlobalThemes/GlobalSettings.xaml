@@ -28,7 +28,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
-                    <!-- Важно: именно ContentPresenter без Grid/Border вокруг -->
+                    <!-- Important: use ContentPresenter directly, without wrapping it in Grid or Border -->
                     <ContentPresenter />
                 </ControlTemplate>
             </Setter.Value>

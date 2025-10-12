@@ -5,12 +5,12 @@ using MediatR;
 namespace Birds.UI.Services.Stores.BirdStore
 {
     /// <summary>
-    /// Сервис инициализации хранилища птиц при старте приложения.
+    /// Service responsible for initializing the bird store at application startup.
     /// 
     /// <para>
-    /// Основная задача — загрузить список птиц из базы данных с помощью <see cref="IMediator"/>
-    /// и заполнить общую коллекцию <see cref="IBirdStore"/> для использования
-    /// во всех ViewModel.
+    /// The main purpose is to load the list of birds from the database using <see cref="IMediator"/>
+    /// and populate the shared <see cref="IBirdStore"/> collection for use across
+    /// all ViewModels.
     /// </para>
     /// </summary>
     public class BirdStoreInitializer
@@ -19,10 +19,10 @@ namespace Birds.UI.Services.Stores.BirdStore
         private readonly IMediator _mediator;
 
         /// <summary>
-        /// Создаёт новый экземпляр сервиса инициализации хранилища птиц.
+        /// Creates a new instance of the bird store initialization service.
         /// </summary>
-        /// <param name="birdStore">Общее хранилище коллекции птиц.</param>
-        /// <param name="mediator">MediatR-объект для выполнения запросов к базе данных.</param>
+        /// <param name="birdStore">The shared bird collection store.</param>
+        /// <param name="mediator">The MediatR instance used for executing database queries.</param>
         public BirdStoreInitializer(IBirdStore birdStore, IMediator mediator)
         {
             _birdStore = birdStore;
@@ -30,8 +30,8 @@ namespace Birds.UI.Services.Stores.BirdStore
         }
 
         /// <summary>
-        /// Метод, вызываемый при старте приложения.
-        /// Загружает всех птиц из базы и добавляет их в <see cref="IBirdStore"/>.
+        /// Called when the application starts.
+        /// Loads all birds from the database and populates the <see cref="IBirdStore"/>.
         /// </summary>
         public async Task StartAsync(CancellationToken cancellationToken)
         {
@@ -42,8 +42,8 @@ namespace Birds.UI.Services.Stores.BirdStore
         }
 
         /// <summary>
-        /// Метод, вызываемый при завершении приложения.
-        /// В данном случае не требуется никакой логики.
+        /// Called when the application is shutting down.
+        /// No logic is required in this case.
         /// </summary>
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     }

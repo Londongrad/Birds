@@ -5,44 +5,44 @@ using System.ComponentModel.DataAnnotations;
 namespace Birds.UI.ViewModels.Base
 {
     /// <summary>
-    /// Базовая модель для валидации общих свойств птиц (вид, описание, дата прибытия).
-    /// Используется как основа для AddBirdViewModel и BirdViewModel (редактирование).
+    /// Base model for validating common bird properties (species, description, arrival date).
+    /// Serves as the foundation for <see cref="AddBirdViewModel"/> and <see cref="BirdViewModel"/> (editing).
     /// </summary>
     /// <remarks>
-    /// Наследуется от <see cref="ObservableValidator"/> для автоматической поддержки
-    /// проверки свойств через аннотации <see cref="ValidationAttribute"/>.
+    /// Inherits from <see cref="ObservableValidator"/> to automatically support
+    /// property validation through <see cref="ValidationAttribute"/> annotations.
     /// </remarks>
     public abstract partial class BirdValidationBaseViewModel : ObservableValidator
     {
         #region [ Properties ]
 
         /// <summary>
-        /// Список доступных видов птиц, получаемый из перечисления <see cref="BirdsName"/>.
+        /// A list of available bird species obtained from the <see cref="BirdsName"/> enumeration.
         /// </summary>
         public static Array BirdNames => Enum.GetValues(typeof(BirdsName));
 
         /// <summary>
-        /// Выбранный вид птицы.
-        /// Обязательно для заполнения, иначе валидация выдаст ошибку.
+        /// The selected bird species.
+        /// Required; validation will fail if not provided.
         /// </summary>
-        [Required(ErrorMessage = "Выберите вид птицы")]
+        [Required(ErrorMessage = "Select a bird species")]
         [ObservableProperty]
         private BirdsName? selectedBirdName;
 
         /// <summary>
-        /// Описание птицы.
-        /// Необязательно, но ограничено длиной до 100 символов.
+        /// The bird description.
+        /// Optional, but limited to 100 characters.
         /// </summary>
-        [MaxLength(100, ErrorMessage = "Описание слишком длинное")]
+        [MaxLength(100, ErrorMessage = "Description is too long")]
         [ObservableProperty]
         private string? description;
 
         /// <summary>
-        /// Дата прибытия птицы.
-        /// Обязательно для заполнения, проверяется методом <see cref="ValidateArrival"/>.
+        /// The bird's arrival date.
+        /// Required and validated by <see cref="ValidateArrival"/>.
         /// </summary>
         [CustomValidation(typeof(BirdValidationBaseViewModel), nameof(ValidateArrival))]
-        [Required(ErrorMessage = "Укажите дату")]
+        [Required(ErrorMessage = "Specify the date")]
         [ObservableProperty]
         private DateOnly arrival = DateOnly.FromDateTime(DateTime.Now);
 
@@ -51,46 +51,46 @@ namespace Birds.UI.ViewModels.Base
         #region [ Validation ]
 
         /// <summary>
-        /// Проверяет корректность даты прибытия птицы.
+        /// Validates the correctness of the bird's arrival date.
         /// </summary>
-        /// <param name="value">Проверяемое значение даты.</param>
-        /// <param name="_">Контекст проверки (не используется).</param>
+        /// <param name="value">The date value to validate.</param>
+        /// <param name="_">Validation context (not used).</param>
         /// <returns>
-        /// <see cref="ValidationResult.Success"/>, если дата корректна;
-        /// иначе — ошибка с текстом, описывающим допустимый диапазон.
+        /// <see cref="ValidationResult.Success"/> if the date is valid;
+        /// otherwise, an error describing the acceptable range.
         /// </returns>
         public static ValidationResult? ValidateArrival(object? value, ValidationContext _)
         {
             if (value is not DateOnly d)
-                return new ValidationResult("Укажите дату");
+                return new ValidationResult("Specify the date");
 
             var min = new DateOnly(2020, 1, 1);
             var max = DateOnly.FromDateTime(DateTime.Today);
 
             if (d < min || d > max)
-                return new ValidationResult($"Дата должна быть в диапазоне {min:dd-MM-yyyy} – {max:dd-MM-yyyy}");
+                return new ValidationResult($"Date must be between {min:dd-MM-yyyy} and {max:dd-MM-yyyy}");
 
             return ValidationResult.Success;
         }
 
         /// <summary>
-        /// Автоматически вызывает проверку свойства при изменении выбранного вида птицы.
+        /// Automatically triggers property validation when the selected bird species changes.
         /// </summary>
-        /// <param name="value">Новое значение свойства <see cref="SelectedBirdName"/>.</param>
+        /// <param name="value">The new value of the <see cref="SelectedBirdName"/> property.</param>
         partial void OnSelectedBirdNameChanged(BirdsName? value)
             => ValidateProperty(value, nameof(SelectedBirdName));
 
         /// <summary>
-        /// Автоматически вызывает проверку свойства при изменении описания.
+        /// Automatically triggers property validation when the description changes.
         /// </summary>
-        /// <param name="value">Новое значение свойства <see cref="Description"/>.</param>
+        /// <param name="value">The new value of the <see cref="Description"/> property.</param>
         partial void OnDescriptionChanged(string? value)
             => ValidateProperty(value, nameof(Description));
 
         /// <summary>
-        /// Автоматически вызывает проверку свойства при изменении даты прибытия.
+        /// Automatically triggers property validation when the arrival date changes.
         /// </summary>
-        /// <param name="value">Новое значение свойства <see cref="Arrival"/>.</param>
+        /// <param name="value">The new value of the <see cref="Arrival"/> property.</param>
         partial void OnArrivalChanged(DateOnly value)
         {
             ValidateProperty(value, nameof(Arrival));
@@ -98,7 +98,7 @@ namespace Birds.UI.ViewModels.Base
         }
 
         /// <summary>
-        /// Вызывается при изменении даты прибытия (для переопределения в потомках).
+        /// Invoked when the arrival date changes (can be overridden in derived classes).
         /// </summary>
         protected virtual void OnArrivalChangedCore(DateOnly value) { }
 

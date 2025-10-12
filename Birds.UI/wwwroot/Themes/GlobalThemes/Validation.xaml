@@ -4,38 +4,38 @@
     xmlns:helpers="clr-namespace:Birds.UI.Views.Helpers">
 
     <!-- ========================================================== -->
-    <!-- Пустой шаблон: отключает любую красную рамку у контейнеров -->
+    <!-- Empty template: disables any red border on containers -->
     <!-- ========================================================== -->
     <ControlTemplate x:Key="NoErrorTemplate">
         <AdornedElementPlaceholder />
     </ControlTemplate>
 
     <!-- =================================================================== -->
-    <!-- Универсальный шаблон, в котором положение ошибки задается через Attathed property -->
+    <!-- Universal template where error placement is controlled via an attached property -->
     <!-- =================================================================== -->
     <ControlTemplate x:Key="FieldErrorTemplate_Universal">
         <DockPanel>
 
             <!-- =========== -->
-            <!-- сам элемент, к которому ошибка -->
+            <!-- The adorned element that contains the validation error -->
             <!-- =========== -->
             <AdornedElementPlaceholder
                 x:Name="adorner"
                 DockPanel.Dock="Left" />
 
             <!-- ============================ -->
-            <!-- Текст сообщения об ошибке -->
+            <!-- Validation error message text -->
             <!-- ============================ -->
             <!--
-                Здесь задаётся максимальная ширина текста ошибки.
-                Связка выполняется через прикреплённое свойство
+                Defines the maximum width of the validation message text.
+                The binding is performed using the attached property
                 helpers:ValidationPlacement.MaxErrorWidth,
-                которое можно указать прямо у контрола (например, DatePicker или TextBox).
+                which can be set directly on the control (e.g., DatePicker or TextBox).
 
-                Пример использования:
+                Example usage:
                 <DatePicker helpers:ValidationPlacement.MaxErrorWidth="180" />
 
-                Если свойство не задано, применяется значение по умолчанию — 270 пикселей.
+                If not specified, the default value (270 pixels) is used.
             -->
             <ItemsControl
                 x:Name="errors"
@@ -61,7 +61,7 @@
         <ControlTemplate.Triggers>
 
             <!-- ===================================================== -->
-            <!-- Общий триггер: скрывать ошибки, если HasError = false -->
+            <!-- Global trigger: hides errors when HasError = false -->
             <!-- ===================================================== -->
             <DataTrigger
                 Binding="{Binding ElementName=adorner,
@@ -70,12 +70,11 @@
                 <Setter TargetName="errors" Property="Visibility" Value="Collapsed" />
             </DataTrigger>
 
-
             <!-- ================================ -->
-            <!-- Изменение расположения DockPanel -->
+            <!-- Changing DockPanel layout dynamically -->
             <!-- ================================ -->
             <!-- ============= -->
-            <!-- ошибки справа -->
+            <!-- Errors on the right -->
             <!-- ============= -->
             <DataTrigger
                 Binding="{Binding ElementName=adorner,
@@ -87,7 +86,7 @@
             </DataTrigger>
 
             <!-- ============ -->
-            <!-- ошибки слева -->
+            <!-- Errors on the left -->
             <!-- ============ -->
             <DataTrigger
                 Binding="{Binding ElementName=adorner,
@@ -99,7 +98,7 @@
             </DataTrigger>
 
             <!-- ============ -->
-            <!-- ошибки снизу -->
+            <!-- Errors at the bottom -->
             <!-- ============ -->
             <DataTrigger
                 Binding="{Binding ElementName=adorner,
@@ -111,7 +110,7 @@
             </DataTrigger>
 
             <!-- ============= -->
-            <!-- ошибки сверху -->
+            <!-- Errors at the top -->
             <!-- ============= -->
             <DataTrigger
                 Binding="{Binding ElementName=adorner,
@@ -127,7 +126,7 @@
 
 
     <!-- ====================================================================================== -->
-    <!-- Подключаем пустой ErrorTemplate глобально, чтобы убрать красную обводку всего контрола -->
+    <!-- Apply the empty ErrorTemplate globally to remove the red control border -->
     <!-- ====================================================================================== -->
     <Style TargetType="Panel">
         <Setter Property="Validation.ErrorTemplate" Value="{StaticResource NoErrorTemplate}" />
@@ -154,6 +153,7 @@
     </Style>
 
     <Style TargetType="Grid">
+        <!-- Important: bind dynamically to support runtime resource changes -->
         <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource NoErrorTemplate}" />
     </Style>
 </ResourceDictionary>
