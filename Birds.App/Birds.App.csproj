@@ -10,23 +10,28 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<None Remove="appsettings.json" />
 		<None Remove="birds.db-shm" />
 		<None Remove="birds.db-wal" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Content Include="appsettings.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.20">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Birds.Infrastructure\Birds.Infrastructure.csproj" />
 		<ProjectReference Include="..\Birds.UI\Birds.UI.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Update="birds.db">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
 	</ItemGroup>
 
 </Project>

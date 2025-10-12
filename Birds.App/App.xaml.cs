@@ -28,7 +28,16 @@ namespace Birds.App
                     .ConfigureServices((context, services) =>
                     {
                         services.AddApplication();
-                        services.AddInfrastructure();
+
+                        // Retrieve database connection string from appsettings.json
+                        var connectionString = context.Configuration.GetConnectionString("DefaultConnection")
+                            ?? throw new ConfigurationErrorsException(
+                                "Connection string 'DefaultConnection' not found in appsettings.json");
+
+                        // Register Infrastructure Layer (EF Core, DbContext, Repositories, etc.)
+                        services.AddInfrastructure(connectionString);
+
+                        // Register UI Layer (ViewModels, Stores, Navigation, etc.)
                         services.AddUI();
                     })
                     .Build();
