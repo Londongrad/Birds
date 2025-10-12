@@ -1,4 +1,6 @@
 ﻿using Birds.Application.Common.Models;
+using Birds.Application.Exceptions;
+using Birds.Domain.Common.Exceptions;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -34,6 +36,11 @@ namespace Birds.Application.Behaviors
             {
                 _logger.LogWarning(ex, "Domain rule violation for {RequestName}", typeof(TRequest).Name);
                 return CreateFailureResponse(ex.Message);
+            }
+            catch (NotFoundException ex)
+            {
+                _logger.LogWarning(ex, "Entity not found in {RequestName}", typeof(TRequest).Name);
+                return CreateFailureResponse($"Not found: {ex.Message}");
             }
             catch (Exception ex)
             {
