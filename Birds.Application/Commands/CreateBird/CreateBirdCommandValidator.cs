@@ -14,7 +14,8 @@ namespace Birds.Application.Commands.CreateBird
                 .WithMessage("Arrival date cannot be earlier than 2020.");
 
             RuleFor(x => x.Description)
-                .MaximumLength(100).WithMessage("Description must not exceed 100 characters");
+                .MaximumLength(100)
+                .WithMessage("Description must not exceed 100 characters");
         }
     }
 }

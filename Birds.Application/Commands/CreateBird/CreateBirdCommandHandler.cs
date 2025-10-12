@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
 using Birds.Application.Interfaces;
 using Birds.Application.Notifications;
@@ -12,10 +13,13 @@ namespace Birds.Application.Commands.CreateBird
         IUnitOfWork unitOfWork,
         IMapper mapper,
         IMediator mediator)
-        : IRequestHandler<CreateBirdCommand>
+        : IRequestHandler<CreateBirdCommand, Result>
     {
-        public async Task Handle(CreateBirdCommand request, CancellationToken cancellationToken)
+        public async Task<Result> Handle(CreateBirdCommand request, CancellationToken cancellationToken)
         {
+            if (request == null)
+                return Result.Failure("Request cannot be null.");
+
             var bird = mapper.Map<Bird>(request);
 
             await repository.AddAsync(bird, cancellationToken);
@@ -24,6 +28,8 @@ namespace Birds.Application.Commands.CreateBird
 
             var birdDTO = mapper.Map<BirdDTO>(bird);
             await mediator.Publish(new BirdCreatedNotification(birdDTO), cancellationToken);
+
+            return Result.Success();
         }
     }
 }

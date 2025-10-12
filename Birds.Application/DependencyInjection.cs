@@ -16,6 +16,7 @@ namespace Birds.Application
             // Behaviors
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ExceptionHandlingBehavior<,>));
 
             services.AddAutoMapper(cfg => { }, Assembly.GetExecutingAssembly());
 
