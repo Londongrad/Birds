@@ -25,7 +25,7 @@ namespace Birds.Domain.Entities
         {
             GuardHelper.AgainstEmptyGuid(id, nameof(id));
             GuardHelper.AgainstInvalidEnum(name, nameof(name));
-            GuardHelper.AgainstInvalidDate(arrival, nameof(arrival));
+            GuardHelper.AgainstInvalidDateOnly(arrival, nameof(arrival));
 
             Name = name;
             Description = description;
@@ -56,9 +56,10 @@ namespace Birds.Domain.Entities
             UpdateTimestamp();
         }
 
+        /// <summary>Update the entity in one go</summary>
         public void Update(DateOnly arrival, DateOnly? departure, string? description, bool isAlive)
         {
-            GuardHelper.AgainstInvalidDate(arrival, nameof(arrival));
+            GuardHelper.AgainstInvalidDateOnly(arrival, nameof(arrival));
 
             Arrival = arrival;
             Description = description;
@@ -74,8 +75,8 @@ namespace Birds.Domain.Entities
 
         public void SetDeparture(DateOnly departure)
         {
-            GuardHelper.AgainstInvalidDate(departure, nameof(departure));
-            GuardHelper.AgainstInvalidDateRange(Arrival, departure, nameof(departure));
+            GuardHelper.AgainstInvalidDateOnly(departure, nameof(departure));
+            GuardHelper.AgainstInvalidDateRange(Arrival, departure);
 
             Departure = departure;
             UpdateTimestamp();
@@ -89,8 +90,7 @@ namespace Birds.Domain.Entities
 
         public void UpdateStatus(bool isAlive)
         {
-            if (Departure is null && isAlive == false)
-                throw new ArgumentException("Departure date must be set before marking the bird as dead.");
+            GuardHelper.AgainstInvalidStatusUpdate(Departure, isAlive, nameof(Departure));
 
             IsAlive = isAlive;
             UpdateTimestamp();
