@@ -44,7 +44,7 @@ namespace Birds.UI.ViewModels.Base
         [CustomValidation(typeof(BirdValidationBaseViewModel), nameof(ValidateArrival))]
         [Required(ErrorMessage = "Specify the date")]
         [ObservableProperty]
-        private DateOnly arrival = DateOnly.FromDateTime(DateTime.Now);
+        private DateOnly arrival = DateOnly.FromDateTime(DateTime.UtcNow);
 
         #endregion
 
