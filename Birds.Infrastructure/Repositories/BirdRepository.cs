@@ -3,6 +3,7 @@ using Birds.Application.Interfaces;
 using Birds.Domain.Entities;
 using Birds.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Immutable;
 
 namespace Birds.Infrastructure.Repositories
 {
@@ -17,7 +18,8 @@ namespace Birds.Infrastructure.Repositories
         /// <inheritdoc/>
         public async Task<IReadOnlyList<Bird>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            return await context.Birds.AsNoTracking().ToListAsync(cancellationToken);
+            var birds = await context.Birds.AsNoTracking().ToListAsync(cancellationToken);
+            return birds.ToImmutableArray();
         }
 
         /// <inheritdoc/>
