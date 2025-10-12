@@ -1,4 +1,6 @@
-﻿namespace Birds.Application.Common.Models
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Birds.Application.Common.Models
 {
     /// <summary>
     /// Represents a basic operation result indicating success or failure.
@@ -15,14 +17,14 @@
         /// </summary>
         public string? Error { get; }
 
-        protected Result(bool isSuccess, string? error)
+        private Result(bool isSuccess, string? error)
         {
             IsSuccess = isSuccess;
             Error = error;
         }
 
         /// <summary>
-        /// Creates a successful result without a value.
+        /// Creates a successful result.
         /// </summary>
         public static Result Success() => new(true, null);
 
@@ -33,19 +35,31 @@
     }
 
     /// <summary>
-    /// Represents a result of an operation that can return a value of type <typeparamref name="T"/>.
+    /// Represents a result of an operation that returns a value of type <typeparamref name="T"/>.
     /// </summary>
     /// <typeparam name="T">Type of the value returned if the operation succeeds.</typeparam>
-    public class Result<T> : Result
+    public class Result<T>
     {
+        /// <summary>
+        /// Indicates whether the operation was successful.
+        /// </summary>
+        [MemberNotNullWhen(true, nameof(Value))]
+        public bool IsSuccess { get; }  
+
+        /// <summary>
+        /// Gets an error message if the operation failed.
+        /// </summary>
+        public string? Error { get; }
+
         /// <summary>
         /// Gets the value of the operation if it succeeded.
         /// </summary>
         public T? Value { get; }
 
         private Result(bool isSuccess, string? error, T? value)
-            : base(isSuccess, error)
         {
+            IsSuccess = isSuccess;
+            Error = error;
             Value = value;
         }
 
@@ -57,6 +71,6 @@
         /// <summary>
         /// Creates a failed result with the specified error message.
         /// </summary>
-        public static new Result<T> Failure(string error) => new(false, error, default);
+        public static Result<T> Failure(string error) => new(false, error, default);
     }
 }
