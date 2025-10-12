@@ -1,7 +1,8 @@
-﻿using Birds.Application.DTOs;
+﻿using Birds.Application.Common.Models;
+using Birds.Application.DTOs;
 using MediatR;
 
 namespace Birds.Application.Queries.GetAllBirds
 {
-    public record GetAllBirdsQuery() : IRequest<IReadOnlyList<BirdDTO>>;
+    public record GetAllBirdsQuery() : IRequest<Result<IReadOnlyList<BirdDTO>>>;
 }

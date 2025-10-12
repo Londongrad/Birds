@@ -1,6 +1,7 @@
-﻿using MediatR;
+﻿using Birds.Application.Common.Models;
+using MediatR;
 
 namespace Birds.Application.Commands.UpdateBirdStatus
 {
-    public record UpdateBirdStatusCommand(Guid Id, bool IsAlive) : IRequest;
+    public record UpdateBirdStatusCommand(Guid Id, bool IsAlive) : IRequest<Result>;
 }

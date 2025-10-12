@@ -1,4 +1,5 @@
-﻿using Birds.Domain.Enums;
+﻿using Birds.Application.Common.Models;
+using Birds.Domain.Enums;
 using MediatR;
 
 namespace Birds.Application.Commands.UpdateBird
@@ -10,5 +11,5 @@ namespace Birds.Application.Commands.UpdateBird
         DateOnly Arrival, 
         DateOnly? Departure, 
         bool IsAlive) 
-        : IRequest;
+        : IRequest<Result>;
 }
