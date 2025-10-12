@@ -1,4 +1,5 @@
 ﻿using Birds.Application.Commands.CreateBird;
+using Birds.Application.Common.Models;
 using Birds.UI.Services.Notification;
 using Birds.UI.ViewModels.Base;
 using CommunityToolkit.Mvvm.Input;
@@ -49,7 +50,7 @@ namespace Birds.UI.ViewModels
             // Force validation of all properties before saving
             ValidateAllProperties();
             if (HasErrors)
-                return;
+               return;
 
             var command = new CreateBirdCommand(
                 SelectedBirdName ?? default,
@@ -57,8 +58,12 @@ namespace Birds.UI.ViewModels
                 Arrival
             );
 
-            await _mediator.Send(command);
-            _notification.ShowSuccess("Bird added successfully!");
+            Result result = await _mediator.Send(command);
+
+            if (result.IsSuccess)
+                _notification.ShowSuccess("Bird added successfully!");
+            else
+                _notification.ShowError("Unable to save bird");
 
             // Reset the description after successful save
             Description = string.Empty;
