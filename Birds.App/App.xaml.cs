@@ -7,11 +7,14 @@ using Birds.UI.Services.Navigation;
 using Birds.UI.Services.Stores.BirdStore;
 using Birds.UI.ViewModels;
 using Birds.UI.Views.Windows;
+using DotNetEnv;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Configuration;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Windows;
 
 namespace Birds.App
@@ -51,15 +54,34 @@ namespace Birds.App
             {
                 // Create and configure the .NET Generic Host (Dependency Injection container).
                 _host = Host.CreateDefaultBuilder()
+
+                     // Configuration loading
+                    .ConfigureAppConfiguration((context, config) =>
+                    {
+                        // Load .env file from the root of the solution
+                        Env.TraversePath().Load();
+
+                        // Add environment variables (so ${DB_PASSWORD}, etc. can be used inside appsettings.json)
+                        config.AddEnvironmentVariables();
+                    })
+
+                    // Configure Dependency Injection
                     .ConfigureServices((context, services) =>
                     {
                         // Register Application Layer (CQRS, Mediator, Validators, etc.)
                         services.AddApplication();
 
-                        // Retrieve database connection string from appsettings.json
-                        var connectionString = context.Configuration.GetConnectionString("DefaultConnection")
+                        // Get raw connection string (with ${...} placeholders)
+                        var rawConnection = context.Configuration.GetConnectionString("DefaultConnection")
                             ?? throw new ConfigurationErrorsException(
                                 "Connection string 'DefaultConnection' not found in appsettings.json");
+
+                        // Replace ${VARIABLE} placeholders with actual environment variable values
+                        var connectionString = Regex.Replace(rawConnection, @"\$\{(\w+)\}", match =>
+                        {
+                            var key = match.Groups[1].Value;
+                            return Environment.GetEnvironmentVariable(key) ?? match.Value;
+                        });
 
                         // Register Infrastructure Layer (EF Core, DbContext, Repositories, etc.)
                         services.AddInfrastructure(connectionString);
