@@ -1,7 +1,6 @@
 ﻿using Birds.Application.Interfaces;
 using Birds.Infrastructure.Persistence;
 using Birds.Infrastructure.Repositories;
-using Birds.Infrastructure.Seeding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,8 +15,6 @@ namespace Birds.Infrastructure
 
             services.AddScoped<IBirdRepository, BirdRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-            services.AddHostedService<BirdSeeder>();
 
             return services;
         }
