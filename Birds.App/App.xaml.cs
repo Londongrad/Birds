@@ -13,7 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Configuration;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Windows;
 
@@ -55,7 +54,7 @@ namespace Birds.App
                 // Create and configure the .NET Generic Host (Dependency Injection container).
                 _host = Host.CreateDefaultBuilder()
 
-                     // Configuration loading
+                    // Configuration loading
                     .ConfigureAppConfiguration((context, config) =>
                     {
                         // Load .env file from the root of the solution
@@ -130,24 +129,35 @@ namespace Birds.App
         /// <param name="e">Exit event arguments.</param>
         protected override async void OnExit(ExitEventArgs e)
         {
-            if (_host != null)
+            if (_host is null)
+                return;
+
+            try
+            {
+                // Stop the host and release resources.
+                await _host.StopAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Error during application shutdown:\n{ex.Message}",
+                    "Shutdown Warning",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+            finally
             {
                 try
                 {
-                    // Stop the host and release resources.
-                    await _host.StopAsync();
+                    _host.Dispose();
+                }
+                catch (InvalidOperationException ex) when (ex.Message.Contains("Connecting"))
+                {
+                    Debug.WriteLine($"Ignored EF Core connecting-state dispose: {ex.Message}");
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(
-                        $"Error during application shutdown:\n{ex.Message}",
-                        "Shutdown Warning",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-                }
-                finally
-                {
-                    _host.Dispose();
+                    Debug.WriteLine($"Error during Dispose: {ex}");
                 }
             }
 
