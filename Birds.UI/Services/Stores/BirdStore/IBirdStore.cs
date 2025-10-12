@@ -1,5 +1,6 @@
 ﻿using Birds.Application.DTOs;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace Birds.UI.Services.Stores.BirdStore
 {
@@ -8,12 +9,17 @@ namespace Birds.UI.Services.Stores.BirdStore
     /// Provides access to the <see cref="BirdDTO"/> collection,
     /// which can be used across all ViewModels in the application.
     /// </summary>
-    public interface IBirdStore
+    public interface IBirdStore : INotifyPropertyChanged
     {
         /// <summary>
         /// The shared collection of birds, available for reading and modification.
         /// Used to synchronize data between different views.
         /// </summary>
         ObservableCollection<BirdDTO> Birds { get; }
+
+        /// <summary>
+        /// Indicates whether data is currently being loaded.
+        /// </summary>
+        bool IsLoading { get; set; }
     }
 }

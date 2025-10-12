@@ -20,12 +20,11 @@ namespace Birds.UI.ViewModels
                                              INotificationHandler<BirdUpdatedNotification>
     {
         public BirdListViewModel(
-            IMediator mediator,
             INotificationService notification,
             IBirdStore birdStore)
         {
-            _mediator = mediator;
             _notification = notification;
+            _birdStore = birdStore;
 
             // Получаем ссылку на коллекцию птиц из BirdStore
             Birds = birdStore.Birds;
@@ -38,12 +37,17 @@ namespace Birds.UI.ViewModels
             };
             SelectedFilter = Filters.First();
 
+            _birdStore.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(_birdStore.IsLoading))
+                    OnPropertyChanged(nameof(IsLoading));
+            };
         }
 
         #region [ Fields ]
 
-        private readonly IMediator _mediator;
         private readonly INotificationService _notification;
+        private readonly IBirdStore _birdStore;
 
         #endregion [ Fields ]
 
@@ -52,6 +56,9 @@ namespace Birds.UI.ViewModels
         public ObservableCollection<BirdDTO> Birds { get; }
         public static Array BirdNames => Enum.GetValues(typeof(BirdsName));
         public ICollectionView BirdsView { get; }
+
+        /// <summary>Data loading indicator from BirdStore.</summary>
+        public bool IsLoading => _birdStore.IsLoading;
         public List<FilterOption> Filters { get; } =
         [
             new(BirdFilter.All, "Показать всех"),
@@ -76,34 +83,43 @@ namespace Birds.UI.ViewModels
 
         #endregion [ ObservableProperties ]
 
-        #region [ Methods ]
+        #region [ Events ]
 
         /// <summary>
-        /// Событие изменения фильтра. Обновляет представление. Вызывается из Mvvm.Toolkit
+        /// Triggered when the filter option changes. Updates the view.
+        /// Automatically invoked by the Mvvm.Toolkit source generator.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The newly selected filter option.</param>
         partial void OnSelectedFilterChanged(FilterOption value)
         {
             BirdsView.Refresh();
         }
 
         /// <summary>
-        /// Событие изменения текста поиска. Обновляет представление. Вызывается из Mvvm.Toolkit
+        /// Triggered when the search text changes. Updates the view.
+        /// Automatically invoked by the Mvvm.Toolkit source generator.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The new search text value.</param>
         partial void OnSearchTextChanged(string? value)
         {
             BirdsView.Refresh();
         }
 
+        #endregion [ Events ]
+
+        #region [ Methods ]
+
         /// <summary>
-        /// Сортировка коллекции по фильтру.
+        /// Filters the bird collection according to the selected filter and search text.
         /// </summary>
+        /// <param name="obj">The object to be checked against the current filter.</param>
+        /// <returns><see langword="true"/> if the bird matches the filter and search criteria; otherwise, <see langword="false"/>.</returns>
         public bool FilterBirds(object obj)
         {
-            if (obj is not BirdDTO bird) return false;
+            if (obj is not BirdDTO bird)
+                return false;
 
-            // Проверяем текст поиска
+            // Check search text
             if (!string.IsNullOrWhiteSpace(SearchText))
             {
                 var text = SearchText.Trim();
@@ -116,11 +132,11 @@ namespace Birds.UI.ViewModels
                     return false;
             }
 
-            // Проверяем фильтр (только если он выбран)
+            // If no filter is selected, show all birds
             if (SelectedFilter is null)
                 return true;
 
-            // Фильтрация по выбранному фильтру
+            // Apply the selected filter
             return SelectedFilter.Filter switch
             {
                 BirdFilter.All => true,
@@ -140,38 +156,40 @@ namespace Birds.UI.ViewModels
 
         #endregion [ Methods ]
 
-        #region [ Handlers ]
+        #region [ Notification Handlers ]
 
         /// <summary>
-        /// Добавление созданной птицы в коллекцию по уведомлению.
-        /// На случай вызова не из UI потока, переключаемся на него.
+        /// Adds the newly created bird to the collection when a notification is received.
+        /// If invoked from a non-UI thread, switches to the UI thread.
         /// </summary>
         public async Task Handle(BirdCreatedNotification notification, CancellationToken cancellationToken)
         {
             await System.Windows.Application.Current.Dispatcher.InvokeOnUiAsync(() =>
             {
-                if (notification.Bird != null) Birds.Add(notification.Bird);
+                if (notification.Bird != null)
+                    Birds.Add(notification.Bird);
             });
         }
 
         /// <summary>
-        /// Удаление птицы из коллекции по уведомлению.
-        /// На случай вызова не из UI потока, переключаемся на него.
+        /// Removes a bird from the collection when a notification is received.
+        /// If invoked from a non-UI thread, switches to the UI thread.
         /// </summary>
         public async Task Handle(BirdDeletedNotification notification, CancellationToken cancellationToken)
         {
             await System.Windows.Application.Current.Dispatcher.InvokeOnUiAsync(() =>
             {
                 var vm = Birds.FirstOrDefault(x => x.Id == notification.BirdId);
-                if (vm != null) Birds.Remove(vm);
+                if (vm != null)
+                    Birds.Remove(vm);
             });
 
             _notification.ShowSuccess("Bird was successfully removed");
         }
 
         /// <summary>
-        /// Обновление птицы из коллекции по уведомлению.
-        /// На случай вызова не из UI потока, переключаемся на него.
+        /// Updates an existing bird in the collection when a notification is received.
+        /// If invoked from a non-UI thread, switches to the UI thread.
         /// </summary>
         public async Task Handle(BirdUpdatedNotification notification, CancellationToken cancellationToken)
         {
@@ -183,6 +201,6 @@ namespace Birds.UI.ViewModels
             _notification.ShowSuccess("Bird was successfully updated");
         }
 
-        #endregion [ Handlers ]
+        #endregion [ Notification Handlers ]
     }
 }

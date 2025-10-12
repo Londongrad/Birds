@@ -1,5 +1,6 @@
 ﻿using Birds.Application.DTOs;
 using Birds.Application.Queries.GetAllBirds;
+using Birds.UI.Extensions;
 using MediatR;
 
 namespace Birds.UI.Services.Stores.BirdStore
@@ -35,10 +36,18 @@ namespace Birds.UI.Services.Stores.BirdStore
         /// </summary>
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            _birdStore.IsLoading = true;
+
             var birds = await _mediator.Send(new GetAllBirdsQuery(), cancellationToken);
 
-            foreach (BirdDTO bird in birds)
-                _birdStore.Birds.Add(bird);
+            await System.Windows.Application.Current.Dispatcher.InvokeOnUiAsync(() =>
+            {
+                _birdStore.Birds.Clear();
+                foreach (BirdDTO bird in birds)
+                    _birdStore.Birds.Add(bird);
+            });
+
+            _birdStore.IsLoading = false;
         }
 
         /// <summary>

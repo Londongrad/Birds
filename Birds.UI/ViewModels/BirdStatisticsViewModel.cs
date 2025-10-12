@@ -40,8 +40,22 @@ namespace Birds.UI.ViewModels
         public ObservableCollection<StatItem> MonthStats { get; } = new();
         public ObservableCollection<StatItem> LongestKeepingStats { get; } = new();
 
+        /// <summary>
+        /// Data loading indicator from the store.
+        /// </summary>
+        public bool IsLoading => _birdStore.IsLoading;
+
+        #endregion [ Properties ]
+
+        #region [ Fields ]
+
+        private readonly IBirdStore _birdStore;
+
+        #endregion [ Fields ]
+
         public BirdStatisticsViewModel(IBirdStore birdStore)
         {
+            _birdStore = birdStore;
             Birds = birdStore.Birds;
 
             // React on collection changes
@@ -49,6 +63,13 @@ namespace Birds.UI.ViewModels
 
             // Initial fill
             Recalculate();
+
+            // Subscribe to store property changes to update the UI when IsLoading changes.
+            _birdStore.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(_birdStore.IsLoading))
+                    OnPropertyChanged(nameof(IsLoading));
+            };
         }
 
         #region [ Events ]

@@ -1,4 +1,5 @@
 ﻿using Birds.Application.DTOs;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
 
 namespace Birds.UI.Services.Stores.BirdStore
@@ -8,7 +9,7 @@ namespace Birds.UI.Services.Stores.BirdStore
     /// Contains a single <see cref="BirdDTO"/> collection
     /// that persists throughout the entire application lifetime.
     /// </summary>
-    public class BirdStore : IBirdStore
+    public partial class BirdStore : ObservableObject, IBirdStore
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BirdStore"/> class.
@@ -20,9 +21,11 @@ namespace Birds.UI.Services.Stores.BirdStore
         }
 
         /// <summary>
-        /// Общая коллекция птиц, разделяемая всеми ViewModel.
-        /// Добавление, удаление или изменение элементов коллекции 
-        /// будет отражаться во всех местах, где используется <see cref="BirdStore"/>.
+        /// Indicates whether data is currently being loaded.
+        /// </summary>
+        [ObservableProperty]
+        private bool isLoading;
+
         /// <summary>
         /// The shared collection of birds accessible to all ViewModels.
         /// Adding, removing, or modifying elements in this collection
