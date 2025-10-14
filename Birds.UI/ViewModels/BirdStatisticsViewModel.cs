@@ -1,4 +1,5 @@
 ﻿using Birds.Application.DTOs;
+using Birds.UI.Enums;
 using Birds.UI.Services.Stores.BirdStore;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -40,10 +41,9 @@ namespace Birds.UI.ViewModels
         public ObservableCollection<StatItem> MonthStats { get; } = new();
         public ObservableCollection<StatItem> LongestKeepingStats { get; } = new();
 
-        /// <summary>
-        /// Data loading indicator from the store.
         /// </summary>
-        public bool IsLoading => _birdStore.IsLoading;
+        /// <summary>Data loading indicator from BirdStore.</summary>
+        public bool IsLoading => _birdStore.LoadState == LoadState.Loading;
 
         #endregion [ Properties ]
 
@@ -67,7 +67,7 @@ namespace Birds.UI.ViewModels
             // Subscribe to store property changes to update the UI when IsLoading changes.
             _birdStore.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName == nameof(_birdStore.IsLoading))
+                if (e.PropertyName == nameof(_birdStore.LoadState))
                     OnPropertyChanged(nameof(IsLoading));
             };
         }

@@ -1,33 +1,40 @@
 ﻿using Birds.Application.DTOs;
-using Birds.Application.Notifications;
 using Birds.Domain.Enums;
 using Birds.UI.Enums;
-using Birds.UI.Extensions;
-using Birds.UI.Services.Notification;
+using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Stores.BirdStore;
 using Birds.UI.Views.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
-using MediatR;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Data;
 
 namespace Birds.UI.ViewModels
 {
-    public partial class BirdListViewModel : ObservableObject,
-                                             INotificationHandler<BirdCreatedNotification>,
-                                             INotificationHandler<BirdDeletedNotification>,
-                                             INotificationHandler<BirdUpdatedNotification>
+    /// <summary>
+    /// ViewModel responsible for displaying and filtering the bird collection in the UI.
+    ///
+    /// <para>
+    /// This ViewModel does not perform any data loading or modification itself.
+    /// Instead, it uses the shared <see cref="IBirdManager"/> and its <see cref="IBirdStore"/>
+    /// to access the observable bird collection for presentation.
+    /// </para>
+    ///
+    /// <para>
+    /// It provides sorting, filtering, and search capabilities for the existing collection,
+    /// while all CRUD operations and reloading logic are handled in <see cref="IBirdManager"/>.
+    /// </para>
+    /// </summary>
     public partial class BirdListViewModel : ObservableObject
     {
-        public BirdListViewModel(IBirdStore birdStore)
+        public BirdListViewModel(IBirdManager birdManager)
         {
-            _birdStore = birdStore;
+            _birdManager = birdManager;
 
-            // Получаем ссылку на коллекцию птиц из BirdStore
-            Birds = birdStore.Birds;
+            // Get the shared bird collection from the store
+            Birds = birdManager.Store.Birds;
 
-            // Представление для UI
+            // Collection view for UI binding with sorting and filtering
             BirdsView = new ListCollectionView(Birds)
             {
                 CustomSort = new BirdComparer(),
@@ -35,16 +42,16 @@ namespace Birds.UI.ViewModels
             };
             SelectedFilter = Filters.First();
 
-            _birdStore.PropertyChanged += (s, e) =>
+            birdManager.Store.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName == nameof(_birdStore.IsLoading))
+                if (e.PropertyName == nameof(birdManager.Store.LoadState))
                     OnPropertyChanged(nameof(IsLoading));
             };
         }
 
         #region [ Fields ]
 
-        private readonly IBirdStore _birdStore;
+        private readonly IBirdManager _birdManager;
 
         #endregion [ Fields ]
 
@@ -55,7 +62,7 @@ namespace Birds.UI.ViewModels
         public ICollectionView BirdsView { get; }
 
         /// <summary>Data loading indicator from BirdStore.</summary>
-        public bool IsLoading => _birdStore.IsLoading;
+        public bool IsLoading => _birdManager.Store.LoadState == LoadState.Loading;
         public List<FilterOption> Filters { get; } =
         [
             new(BirdFilter.All, "Показать всех"),

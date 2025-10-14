@@ -1,9 +1,9 @@
-﻿using Birds.Application.Commands.CreateBird;
-using Birds.Application.Common.Models;
+﻿using Birds.Application.Common.Models;
+using Birds.Application.DTOs;
+using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Notification;
 using Birds.UI.ViewModels.Base;
 using CommunityToolkit.Mvvm.Input;
-using MediatR;
 
 namespace Birds.UI.ViewModels
 {
@@ -16,18 +16,18 @@ namespace Birds.UI.ViewModels
     /// </remarks>
     public partial class AddBirdViewModel : BirdValidationBaseViewModel
     {
-        private readonly IMediator _mediator;
         private readonly INotificationService _notification;
+        private readonly IBirdManager _birdManager;
 
         /// <summary>
         /// Creates a new instance of <see cref="AddBirdViewModel"/>.
         /// </summary>
         /// <param name="mediator">The MediatR mediator used to send application commands.</param>
         /// <param name="notification">The user notification service.</param>
-        public AddBirdViewModel(IMediator mediator, INotificationService notification)
+        public AddBirdViewModel(INotificationService notification, IBirdManager birdManager)
         {
-            _mediator = mediator;
             _notification = notification;
+            _birdManager = birdManager;
 
             // When validation errors change — update the Save command availability
             ErrorsChanged += (_, __) => SaveCommand.NotifyCanExecuteChanged();
@@ -50,15 +50,15 @@ namespace Birds.UI.ViewModels
             // Force validation of all properties before saving
             ValidateAllProperties();
             if (HasErrors)
-               return;
+                return;
 
-            var command = new CreateBirdCommand(
+            var dto = new BirdCreateDTO(
                 SelectedBirdName ?? default,
                 Description,
                 Arrival
             );
 
-            Result result = await _mediator.Send(command);
+            Result<BirdDTO> result = await _birdManager.AddAsync(dto, CancellationToken.None);
 
             if (result.IsSuccess)
                 _notification.ShowSuccess("Bird added successfully!");

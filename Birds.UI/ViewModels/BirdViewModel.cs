@@ -1,13 +1,11 @@
-﻿using Birds.Application.Commands.DeleteBird;
-using Birds.Application.Commands.UpdateBird;
-using Birds.Application.Common.Models;
+﻿using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
-using Birds.Domain.Enums;
+using Birds.Application.DTOs.Helpers;
+using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Notification;
 using Birds.UI.ViewModels.Base;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MediatR;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 
@@ -21,20 +19,22 @@ namespace Birds.UI.ViewModels
     {
         #region [ Fields ]
 
-        private readonly IMediator _mediator;
+        private readonly IBirdManager _birdManager;
         private readonly INotificationService _notificationService;
 
         #endregion [ Fields ]
 
-        public BirdViewModel(BirdDTO dto, IMediator mediator, INotificationService notificationService)
+        public BirdViewModel(BirdDTO dto, IBirdManager birdManager, INotificationService notificationService)
         {
             Debug.WriteLine($"Item with id = {dto.Id} was created.");
 
             Dto = dto;
-            _mediator = mediator;
+
+            _birdManager = birdManager;
             _notificationService = notificationService;
+
             Name = dto.Name;
-            SelectedBirdName = Enum.TryParse<BirdsName>(dto.Name, out var bird) ? bird : null;  // property from base class
+            SelectedBirdName = BirdEnumHelper.ParseBirdName(dto.Name);  // property from base class
             Description = dto.Description;
             Arrival = dto.Arrival;
             Departure = dto.Departure;
@@ -112,7 +112,7 @@ namespace Birds.UI.ViewModels
         [RelayCommand]
         private async Task DeleteAsync()
         {
-            Result result = await _mediator.Send(new DeleteBirdCommand(Id));
+            Result result = await _birdManager.DeleteAsync(Id, CancellationToken.None);
 
             if (result.IsSuccess)
                 _notificationService.ShowSuccess("Bird deleted successfully!");
@@ -147,7 +147,7 @@ namespace Birds.UI.ViewModels
         private void CancelEdit()
         {
             // Restore data from DTO
-            SelectedBirdName = Enum.TryParse<BirdsName>(Dto.Name, out var bird) ? bird : null;
+            SelectedBirdName = BirdEnumHelper.ParseBirdName(Dto.Name);
             Description = Dto.Description;
             Arrival = Dto.Arrival;
             Departure = Dto.Departure;
@@ -156,9 +156,16 @@ namespace Birds.UI.ViewModels
         }
 
         /// <summary>
-        /// Command for saving changes after editing.
-        /// Performs validation and updates via MediatR.
+        /// Command that validates user input and updates the bird through <see cref="IBirdManager"/>.
         /// </summary>
+        /// <remarks>
+        /// If validation passes, the method sends an update request via <see cref="IBirdManager"/>.  
+        /// Upon completion, a success or error notification is displayed to the user using  
+        /// <see cref="INotificationService"/>.  
+        /// 
+        /// After a successful update, calculated fields (e.g. days in stock and departure display)  
+        /// are refreshed, and edit mode is turned off.
+        /// </remarks>
         [RelayCommand]
         private async Task SaveAsync()
         {
@@ -166,14 +173,14 @@ namespace Birds.UI.ViewModels
             if (HasErrors)
                 return;
 
-            Result result = await _mediator.Send(
-                new UpdateBirdCommand(
+            Result result = await _birdManager.UpdateAsync(
+                new BirdDTO(
                     Id,
-                    SelectedBirdName ?? default,
+                    Name,
                     Description,
                     Arrival,
                     Departure,
-                    IsAlive));
+                    IsAlive), CancellationToken.None);
 
             if (result.IsSuccess)
                 _notificationService.ShowSuccess("Bird updated successfully!");
@@ -263,5 +270,4 @@ namespace Birds.UI.ViewModels
 
         #endregion [ Validation ]
     }
-
 }
