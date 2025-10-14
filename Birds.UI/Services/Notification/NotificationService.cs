@@ -40,25 +40,25 @@ namespace Birds.UI.Services.Notification
 
             // Position the toast in the top-right corner of the window
             toast.Left = _parent.Left + _parent.Width - toast.Width - 10;
-            toast.Top = _parent.Top + 10;
+            toast.Top = _parent.Top + 30;
 
             toast.Show();
         }
 
         /// <inheritdoc/>
         public void ShowError(string message) =>
-            Show(message, new NotificationOptions(NotificationType.Error, TimeSpan.FromSeconds(2)));
+            Show(message, new NotificationOptions(NotificationType.Error, TimeSpan.FromSeconds(3)));
 
         /// <inheritdoc/>
         public void ShowInfo(string message) =>
-            Show(message, new NotificationOptions(NotificationType.Info, TimeSpan.FromSeconds(2)));
+            Show(message, new NotificationOptions(NotificationType.Info, TimeSpan.FromSeconds(3)));
 
         /// <inheritdoc/>
         public void ShowSuccess(string message) =>
-            Show(message, new NotificationOptions(NotificationType.Success, TimeSpan.FromSeconds(2)));
+            Show(message, new NotificationOptions(NotificationType.Success, TimeSpan.FromSeconds(3)));
 
         /// <inheritdoc/>
         public void ShowWarning(string message) =>
-            Show(message, new NotificationOptions(NotificationType.Warning, TimeSpan.FromSeconds(2)));
+            Show(message, new NotificationOptions(NotificationType.Warning, TimeSpan.FromSeconds(3)));
     }
 }

@@ -1,1 +1,1 @@
-Из сторонних библиотек: FluentValidation, MediatR, AutoMapper, CommunityToolkit.Mvvm.
+Из сторонних библиотек: FluentValidation, MediatR, AutoMapper, CommunityToolkit.Mvvm, Polly, DotNetEnv, PostgreSQL

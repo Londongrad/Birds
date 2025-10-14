@@ -1,5 +1,5 @@
-﻿using Birds.Application.Notifications;
-using Birds.UI.Services.Factories.BirdViewModelFactory;
+﻿using Birds.UI.Services.Factories.BirdViewModelFactory;
+using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Navigation;
 using Birds.UI.Services.Notification;
 using Birds.UI.Services.Stores.BirdStore;
@@ -25,17 +25,9 @@ namespace Birds.UI
             services.AddSingleton<IBirdViewModelFactory, BirdViewModelFactory>();
             services.AddSingleton<IBirdStore, BirdStore>();
             services.AddSingleton<BirdStoreInitializer>();
+            services.AddSingleton<IBirdManager, BirdManager>();
 
             // MediatR notification Handlers
-            services.AddSingleton<INotificationHandler<BirdCreatedNotification>>(sp =>
-                sp.GetRequiredService<BirdListViewModel>());
-
-            services.AddSingleton<INotificationHandler<BirdDeletedNotification>>(sp =>
-                sp.GetRequiredService<BirdListViewModel>());
-
-            services.AddSingleton<INotificationHandler<BirdUpdatedNotification>>(sp =>
-                sp.GetRequiredService<BirdListViewModel>());
-
             services.AddSingleton<INotificationHandler<NavigatedEvent>>(sp =>
                 (NotificationService)sp.GetRequiredService<INotificationService>());
 
