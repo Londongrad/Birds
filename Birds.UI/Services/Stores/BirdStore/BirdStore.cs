@@ -1,36 +1,37 @@
 ﻿using Birds.Application.DTOs;
+using Birds.UI.Enums;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
 
 namespace Birds.UI.Services.Stores.BirdStore
 {
     /// <summary>
-    /// Implementation of a shared data store for bird information.
-    /// Contains a single <see cref="BirdDTO"/> collection
-    /// that persists throughout the entire application lifetime.
+    /// Centralized store that holds the current collection of birds
+    /// and represents the overall data loading state.
     /// </summary>
     public partial class BirdStore : ObservableObject, IBirdStore
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BirdStore"/> class.
-        /// During initialization, an empty <see cref="BirdDTO"/> collection is created.
-        /// </summary>
-        public BirdStore()
-        {
-            Birds = new ObservableCollection<BirdDTO>();
-        }
-
-        /// <summary>
-        /// Indicates whether data is currently being loaded.
-        /// </summary>
         [ObservableProperty]
-        private bool isLoading;
+        private LoadState loadState = LoadState.Uninitialized;
 
         /// <summary>
-        /// The shared collection of birds accessible to all ViewModels.
-        /// Adding, removing, or modifying elements in this collection
-        /// will be reflected in all parts of the application using <see cref="BirdStore"/>.
+        /// Gets the shared collection of all loaded birds.
         /// </summary>
-        public ObservableCollection<BirdDTO> Birds { get; }
+        public ObservableCollection<BirdDTO> Birds { get; } = [];
+
+        /// <summary>
+        /// Updates the store state when a new loading operation begins.
+        /// </summary>
+        public void BeginLoading() => LoadState = LoadState.Loading;
+
+        /// <summary>
+        /// Updates the store state when loading completes successfully.
+        /// </summary>
+        public void CompleteLoading() => LoadState = LoadState.Loaded;
+
+        /// <summary>
+        /// Updates the store state when a loading error occurs.
+        /// </summary>
+        public void FailLoading() => LoadState = LoadState.Failed;
     }
 }

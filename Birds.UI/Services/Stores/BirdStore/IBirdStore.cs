@@ -1,4 +1,5 @@
 ﻿using Birds.Application.DTOs;
+using Birds.UI.Enums;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 
@@ -8,6 +9,7 @@ namespace Birds.UI.Services.Stores.BirdStore
     /// Interface for the shared bird data store.
     /// Provides access to the <see cref="BirdDTO"/> collection,
     /// which can be used across all ViewModels in the application.
+    /// <para>Has observable loading state.</para>
     /// </summary>
     public interface IBirdStore : INotifyPropertyChanged
     {
@@ -18,8 +20,12 @@ namespace Birds.UI.Services.Stores.BirdStore
         ObservableCollection<BirdDTO> Birds { get; }
 
         /// <summary>
-        /// Indicates whether data is currently being loaded.
+        /// Gets or sets the current loading state of the bird store.
         /// </summary>
-        bool IsLoading { get; set; }
+        LoadState LoadState { get; set; }
+
+        void BeginLoading();
+        void CompleteLoading();
+        void FailLoading();
     }
 }
