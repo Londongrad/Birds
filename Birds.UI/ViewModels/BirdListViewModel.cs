@@ -18,6 +18,7 @@ namespace Birds.UI.ViewModels
                                              INotificationHandler<BirdCreatedNotification>,
                                              INotificationHandler<BirdDeletedNotification>,
                                              INotificationHandler<BirdUpdatedNotification>
+    public partial class BirdListViewModel : ObservableObject
     {
         public BirdListViewModel(IBirdStore birdStore)
         {
@@ -151,48 +152,5 @@ namespace Birds.UI.ViewModels
         }
 
         #endregion [ Methods ]
-
-        #region [ Notification Handlers ]
-
-        /// <summary>
-        /// Adds the newly created bird to the collection when a notification is received.
-        /// If invoked from a non-UI thread, switches to the UI thread.
-        /// </summary>
-        public async Task Handle(BirdCreatedNotification notification, CancellationToken cancellationToken)
-        {
-            await System.Windows.Application.Current.Dispatcher.InvokeOnUiAsync(() =>
-            {
-                if (notification.Bird != null)
-                    Birds.Add(notification.Bird);
-            });
-        }
-
-        /// <summary>
-        /// Removes a bird from the collection when a notification is received.
-        /// If invoked from a non-UI thread, switches to the UI thread.
-        /// </summary>
-        public async Task Handle(BirdDeletedNotification notification, CancellationToken cancellationToken)
-        {
-            await System.Windows.Application.Current.Dispatcher.InvokeOnUiAsync(() =>
-            {
-                var vm = Birds.FirstOrDefault(x => x.Id == notification.BirdId);
-                if (vm != null)
-                    Birds.Remove(vm);
-            });
-        }
-
-        /// <summary>
-        /// Updates an existing bird in the collection when a notification is received.
-        /// If invoked from a non-UI thread, switches to the UI thread.
-        /// </summary>
-        public async Task Handle(BirdUpdatedNotification notification, CancellationToken cancellationToken)
-        {
-            await System.Windows.Application.Current.Dispatcher.InvokeOnUiAsync(() =>
-            {
-                Birds.ReplaceOrAdd(b => b.Id == notification.BirdDTO.Id, notification.BirdDTO);
-            });
-        }
-
-        #endregion [ Notification Handlers ]
     }
 }

@@ -2,7 +2,6 @@
 using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
 using Birds.Application.Interfaces;
-using Birds.Application.Notifications;
 using MediatR;
 
 namespace Birds.Application.Commands.UpdateBird
@@ -10,7 +9,6 @@ namespace Birds.Application.Commands.UpdateBird
     public class UpdateBirdCommandHandler(
         IBirdRepository repository,
         IUnitOfWork unitOfWork,
-        IMediator mediator,
         IMapper mapper)
         : IRequestHandler<UpdateBirdCommand, Result>
     {
@@ -29,7 +27,6 @@ namespace Birds.Application.Commands.UpdateBird
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
             var birdDTO = mapper.Map<BirdDTO>(bird);
-            await mediator.Publish(new BirdUpdatedNotification(birdDTO), cancellationToken);
 
             return Result.Success();
         }

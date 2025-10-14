@@ -1,11 +1,12 @@
 ﻿using Birds.Application.Common.Models;
 using Birds.Application.Interfaces;
-using Birds.Application.Notifications;
 using MediatR;
 
 namespace Birds.Application.Commands.DeleteBird
 {
-    public class DeleteBirdCommandHandler(IBirdRepository repository, IUnitOfWork unitOfWork, IMediator mediator)
+    public class DeleteBirdCommandHandler(
+        IBirdRepository repository, 
+        IUnitOfWork unitOfWork)
         : IRequestHandler<DeleteBirdCommand, Result>
     {
         public async Task<Result> Handle(DeleteBirdCommand request, CancellationToken cancellationToken)
@@ -18,8 +19,6 @@ namespace Birds.Application.Commands.DeleteBird
             repository.Remove(bird);
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
-
-            await mediator.Publish(new BirdDeletedNotification(bird.Id), cancellationToken);
 
             return Result.Success();
         }
