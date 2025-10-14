@@ -1,39 +1,32 @@
 ﻿using Birds.Application.DTOs;
-using MediatR;
-using Birds.UI.ViewModels;
+using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Notification;
+using Birds.UI.ViewModels;
 
 namespace Birds.UI.Services.Factories.BirdViewModelFactory
 {
     /// <summary>
-    /// A factory responsible for creating instances of <see cref="BirdViewModel"/>
+    /// Factory responsible for creating instances of <see cref="BirdViewModel"/>
     /// from data transfer objects (<see cref="BirdDTO"/>).
+    ///
+    /// <para>
+    /// This class ensures that each created <see cref="BirdViewModel"/> is
+    /// properly initialized with required dependencies such as
+    /// <see cref="IBirdManager"/> and <see cref="INotificationService"/>.
+    /// </para>
     /// </summary>
     /// <remarks>
-    /// This class encapsulates the logic of creating view models, ensuring
-    /// they are properly constructed with all required dependencies.  
-    /// The <see cref="IMediator"/> is used to facilitate communication
-    /// between the view models and other components of the application.
+    /// The <see cref="IBirdManager"/> provides access to shared data operations
+    /// and the centralized bird store, while <see cref="INotificationService"/>
+    /// is used to display messages and feedback to the user.
     /// </remarks>
-    public class BirdViewModelFactory : IBirdViewModelFactory
+    public class BirdViewModelFactory(IBirdManager birdManager, INotificationService notificationService) : IBirdViewModelFactory
     {
-        private readonly IMediator _mediator;
-        private readonly INotificationService _notificationService;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BirdViewModelFactory"/> class.
-        /// </summary>
-        /// <param name="mediator">
-        /// The mediator instance used to send requests and notifications
-        /// between the view models and other parts of the application.
-        /// </param>
-        public BirdViewModelFactory(IMediator mediator, INotificationService notificationService)
-        {
-            _mediator = mediator;
-            _notificationService = notificationService;
-        }
+        private readonly IBirdManager _birdManager = birdManager;
+        private readonly INotificationService _notificationService = notificationService;
 
         /// <inheritdoc/>
-        public BirdViewModel Create(BirdDTO dto) => new(dto, _mediator, _notificationService);
+        public BirdViewModel Create(BirdDTO dto) =>
+            new(dto, _birdManager, _notificationService);
     }
 }
