@@ -43,6 +43,9 @@ namespace Birds.UI.Services.Stores.BirdStore
         /// </summary>
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
             _birdStore.LoadState = LoadState.Loading;
 
             // Define a retry policy: retry if the Result is not successful
@@ -61,7 +64,8 @@ namespace Birds.UI.Services.Stores.BirdStore
                     });
 
             // Execute the query through the retry policy
-            var result = await retryPolicy.ExecuteAsync(() => _mediator.Send(new GetAllBirdsQuery(), cancellationToken));
+            var result = await retryPolicy.ExecuteAsync(async ct => 
+                         await _mediator.Send(new GetAllBirdsQuery(), ct), cancellationToken);
 
             if (!result.IsSuccess)
             {
@@ -78,6 +82,9 @@ namespace Birds.UI.Services.Stores.BirdStore
                 return;
             }
 
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
             await System.Windows.Application.Current.Dispatcher.InvokeOnUiAsync(() =>
             {
                 _birdStore.Birds.Clear();
@@ -86,6 +93,7 @@ namespace Birds.UI.Services.Stores.BirdStore
             });
 
             _birdStore.LoadState = LoadState.Loaded; // mark as successfully loaded
+            _logger.LogInformation("Bird data successfully loaded. {Count} birds retrieved.", _birdStore.Birds.Count);
         }
 
         /// <summary>
