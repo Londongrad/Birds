@@ -13,8 +13,8 @@ namespace Birds.Infrastructure
             services.AddDbContext<BirdDbContext>(options =>
                 options.UseNpgsql(connectionString));
 
-            services.AddScoped<IBirdRepository, BirdRepository>();
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddSingleton<IBirdRepository, BirdRepository>();
+            services.AddSingleton<IUnitOfWork, UnitOfWork>();
 
             return services;
         }

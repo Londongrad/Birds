@@ -49,7 +49,7 @@ namespace Birds.UI.Services.Stores.BirdStore
             var retryPolicy = Policy
                 .HandleResult<Result<IReadOnlyList<BirdDTO>>>(r => !r.IsSuccess)
                 .WaitAndRetryAsync(
-                    retryCount: 2,
+                    retryCount: 4,
                     sleepDurationProvider: attempt => TimeSpan.FromSeconds(attempt * 2), // 2, 4, 6, 8 seconds
                     onRetry: (outcome, delay, attempt, context) =>
                     {
