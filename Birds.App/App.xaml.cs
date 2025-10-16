@@ -54,6 +54,24 @@ namespace Birds.App
 
             base.OnStartup(e);
 
+            // Global exception handlers to catch unhandled exceptions from various contexts.
+            DispatcherUnhandledException += (sender, args) =>
+            {
+                HandleException(args.Exception, "UI Dispatcher Exception");
+                args.Handled = true; // Prevent application crash
+            };
+
+            AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+            {
+                HandleException(args.ExceptionObject as Exception, "AppDomain Exception");
+            };
+
+            TaskScheduler.UnobservedTaskException += (sender, args) =>
+            {
+                HandleException(args.Exception, "Unobserved Task Exception");
+                args.SetObserved();
+            };
+
             try
             {
                 // Create and configure the .NET Generic Host (Dependency Injection container).
@@ -227,6 +245,51 @@ namespace Birds.App
             catch
             {
                 // Ignore any interop or permission errors.
+            }
+        }
+
+        /// <summary>
+        /// Handles unexpected exceptions that occur during the application's runtime.
+        /// Displays an error message to the user and optionally logs diagnostic details.
+        /// </summary>
+        /// <param name="context">A short description of where the exception occurred (e.g., "UI Exception", "Startup Error").</param>
+        /// <param name="ex">The exception instance containing details about the error.</param>
+        /// <remarks>
+        /// This method is used by global exception handlers such as
+        /// <see cref="System.Windows.Application.DispatcherUnhandledException"/>,
+        /// <see cref="AppDomain.UnhandledException"/>, and
+        /// <see cref="TaskScheduler.UnobservedTaskException"/> to provide
+        /// centralized error reporting and prevent the application from crashing unexpectedly.
+        /// </remarks>
+
+        private void HandleException(Exception? ex, string source)
+        {
+            if (ex is null)
+                return;
+
+            try
+            {
+                // If the host and services are available, use the notification service.
+                if (_host?.Services != null)
+                {
+                    var notification = _host.Services.GetRequiredService<Birds.UI.Services.Notification.INotificationService>();
+                    notification.ShowError($"{source}: {ex.Message}");
+                }
+                else
+                {
+                    // Fallback to a message box if DI is not available.
+                    MessageBox.Show(
+                        $"{source}:\n{ex.Message}",
+                        "Unexpected Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
+
+                Log.Error(ex, "Unhandled exception in {Source}", source);
+            }
+            catch (Exception)
+            {
+                Log.Error(ex, "Unhandled exception in {Source}", source);
             }
         }
     }
