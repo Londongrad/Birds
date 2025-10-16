@@ -11,6 +11,7 @@ using DotNetEnv;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 using System.Configuration;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
@@ -47,13 +48,19 @@ namespace Birds.App
                 return;
             }
 
+            // Initialize Serilog before building the Host
+            Log.Logger = new LoggerConfiguration()
+                .CreateLogger();
+
             base.OnStartup(e);
 
             try
             {
                 // Create and configure the .NET Generic Host (Dependency Injection container).
                 _host = Host.CreateDefaultBuilder()
-
+                    // Integrates Serilog into the host pipeline
+                    .UseSerilog((context, services, configuration) =>
+                        configuration.ReadFrom.Configuration(context.Configuration))
                     // Configuration loading
                     .ConfigureAppConfiguration((context, config) =>
                     {
@@ -90,8 +97,12 @@ namespace Birds.App
                     })
                     .Build();
 
+                Log.Information("Application starting...");
+
                 // Start the host and its background services (if any).
                 await _host.StartAsync();
+
+                Log.Information("Host started successfully");
 
                 // Configure converters and navigation services.
                 ConfigureConverter();
@@ -111,6 +122,8 @@ namespace Birds.App
             }
             catch (Exception ex)
             {
+                Log.Fatal(ex, "Application failed during startup");
+
                 // Display a message box if startup fails.
                 MessageBox.Show(
                     $"Error during application startup:\n{ex.Message}",
@@ -153,16 +166,20 @@ namespace Birds.App
                 }
                 catch (InvalidOperationException ex) when (ex.Message.Contains("Connecting"))
                 {
-                    Debug.WriteLine($"Ignored EF Core connecting-state dispose: {ex.Message}");
+                    Log.Debug("Ignored EF Core connecting-state dispose: {Message}", ex.Message);
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Error during Dispose: {ex}");
+                    Log.Warning(ex, "Error during Dispose");
                 }
             }
 
             // Release the mutex so the app can be launched again.
             _mutex?.ReleaseMutex();
+
+            Log.Information("Application exiting normally");
+            Log.CloseAndFlush(); // Ensures all logs are written to file
+
             base.OnExit(e);
         }
 
