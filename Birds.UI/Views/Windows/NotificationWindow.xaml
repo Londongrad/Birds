@@ -6,12 +6,12 @@
     xmlns:local="clr-namespace:Birds.UI.Views.Windows"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="NotificationWindow"
-    Width="250"
-    Height="60"
+    MaxWidth="300"
     AllowsTransparency="True"
     Background="Transparent"
     ResizeMode="NoResize"
     ShowInTaskbar="False"
+    SizeToContent="WidthAndHeight"
     Topmost="True"
     WindowStyle="None"
     mc:Ignorable="d">
@@ -32,9 +32,11 @@
                 Margin="0,0,6,0" />
             <TextBlock
                 x:Name="MessageText"
+                MaxWidth="250"
                 VerticalAlignment="Center"
                 FontSize="14"
                 Foreground="White"
+                TextTrimming="CharacterEllipsis"
                 TextWrapping="Wrap" />
         </StackPanel>
     </Border>

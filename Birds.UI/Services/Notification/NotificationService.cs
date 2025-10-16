@@ -1,4 +1,5 @@
 ﻿using Birds.UI.Services.Navigation;
+using Birds.UI.Services.Notification.Birds.UI.Services.Notification;
 using Birds.UI.Views.Windows;
 using MediatR;
 using System.Windows;
@@ -32,17 +33,7 @@ namespace Birds.UI.Services.Notification
             if (_parent == null)
                 throw new InvalidOperationException("The notification service is not attached to any window.");
 
-            var toast = new NotificationWindow(message, options ?? new NotificationOptions())
-            {
-                Owner = _parent,
-                WindowStartupLocation = WindowStartupLocation.Manual
-            };
-
-            // Position the toast in the top-right corner of the window
-            toast.Left = _parent.Left + _parent.Width - toast.Width - 10;
-            toast.Top = _parent.Top + 30;
-
-            toast.Show();
+            NotificationManager.ShowNotification(message, options ?? new NotificationOptions(), _parent);
         }
 
         /// <inheritdoc/>
