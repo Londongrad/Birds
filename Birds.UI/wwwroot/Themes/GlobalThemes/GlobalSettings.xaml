@@ -19,20 +19,21 @@
 
     <Style TargetType="ListBoxItem">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Margin" Value="0" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Top" />
-        <Setter Property="Focusable" Value="False" />
-        <Setter Property="Template">
+        <Setter Property="Focusable" Value="True" />
+
+        <!-- To remove the default selection highlight, uncomment the Template setter below -->
+        <!--<Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
-                    <!-- Important: use ContentPresenter directly, without wrapping it in Grid or Border -->
                     <ContentPresenter />
                 </ControlTemplate>
             </Setter.Value>
-        </Setter>
+        </Setter>-->
     </Style>
 
     <Style TargetType="ListBox">
