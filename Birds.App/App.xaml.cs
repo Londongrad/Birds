@@ -1,4 +1,6 @@
-﻿using Birds.Application;
+﻿#region [ Using Directives ]
+
+using Birds.Application;
 using Birds.Infrastructure;
 using Birds.UI;
 using Birds.UI.Converters;
@@ -17,6 +19,8 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Windows;
 
+#endregion [ Using Directives ]
+
 namespace Birds.App
 {
     /// <summary>
@@ -25,8 +29,14 @@ namespace Birds.App
     /// </summary>
     public partial class App : System.Windows.Application
     {
+        #region [ Fields ]
+
         private IHost? _host;
         private static Mutex? _mutex;
+
+        #endregion [ Fields ]
+
+        #region [ Startup / Initialization ]
 
         /// <summary>
         /// Called when the WPF application starts.
@@ -54,6 +64,8 @@ namespace Birds.App
 
             base.OnStartup(e);
 
+            #region [ Global Exception Handlers ]
+
             // Global exception handlers to catch unhandled exceptions from various contexts.
             DispatcherUnhandledException += (sender, args) =>
             {
@@ -71,6 +83,8 @@ namespace Birds.App
                 HandleException(args.Exception, "Unobserved Task Exception");
                 args.SetObserved();
             };
+
+            #endregion [ Global Exception Handlers ]
 
             try
             {
@@ -131,12 +145,11 @@ namespace Birds.App
                 var nav = _host.Services.GetRequiredService<INavigationService>();
                 await nav.OpenWindow(mainVm);
 
+                // Configure application lifetime events.
+                var lifetime = _host.Services.GetRequiredService<IHostApplicationLifetime>();
+
                 // Run BirdStore initialization in the background (async, non-blocking).
-                _ = Task.Run(async () =>
-                {
-                    var initializer = _host.Services.GetRequiredService<BirdStoreInitializer>();
-                    await initializer.StartAsync(CancellationToken.None);
-                });
+                InitializeBackgroundServices(_host, lifetime);
             }
             catch (Exception ex)
             {
@@ -152,6 +165,10 @@ namespace Birds.App
                 Shutdown(-1);
             }
         }
+
+        #endregion [ Startup / Initialization ]
+
+        #region [ Shutdown / Cleanup ]
 
         /// <summary>
         /// Called when the WPF application exits.
@@ -201,6 +218,30 @@ namespace Birds.App
             base.OnExit(e);
         }
 
+        #endregion [ Shutdown / Cleanup ]
+
+        #region [ Application Setup Helpers ]
+
+        private void InitializeBackgroundServices(IHost host, IHostApplicationLifetime lifetime)
+        {
+            _ = Task.Run(async () =>
+            {
+                var initializer = host.Services.GetRequiredService<BirdStoreInitializer>();
+                try
+                {
+                    await initializer.StartAsync(lifetime.ApplicationStopping);
+                }
+                catch (OperationCanceledException)
+                {
+                    Log.Warning("BirdStore initialization cancelled because the application is stopping.");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Unhandled exception in BirdStoreInitializer: {ex}");
+                }
+            });
+        }
+
         /// <summary>
         /// Configures the BirdVmConverter instance to use the dependency-injected ViewModel factory.
         /// </summary>
@@ -218,6 +259,10 @@ namespace Birds.App
             var nav = _host!.Services.GetRequiredService<INavigationService>();
             nav.AddWindow<MainViewModel>(() => new MainWindow());
         }
+
+        #endregion [ Application Setup Helpers ]
+
+        #region [ Single Instance Management ]
 
         /// <summary>
         /// Brings an already running instance of the application to the foreground.
@@ -247,6 +292,10 @@ namespace Birds.App
                 // Ignore any interop or permission errors.
             }
         }
+
+        #endregion [ Single Instance Management ]
+
+        #region [ Exception Handling ]
 
         /// <summary>
         /// Handles unexpected exceptions that occur during the application's runtime.
@@ -292,6 +341,8 @@ namespace Birds.App
                 Log.Error(ex, "Unhandled exception in {Source}", source);
             }
         }
+
+        #endregion [ Exception Handling ]
     }
 
     /// <summary>
