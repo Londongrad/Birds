@@ -14,7 +14,6 @@ namespace Birds.Infrastructure
                 options.UseNpgsql(connectionString));
 
             services.AddSingleton<IBirdRepository, BirdRepository>();
-            services.AddSingleton<IUnitOfWork, UnitOfWork>();
 
             return services;
         }
