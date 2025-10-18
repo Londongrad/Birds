@@ -4,9 +4,7 @@ using MediatR;
 
 namespace Birds.Application.Commands.DeleteBird
 {
-    public class DeleteBirdCommandHandler(
-        IBirdRepository repository, 
-        IUnitOfWork unitOfWork)
+    public class DeleteBirdCommandHandler(IBirdRepository repository)
         : IRequestHandler<DeleteBirdCommand, Result>
     {
         public async Task<Result> Handle(DeleteBirdCommand request, CancellationToken cancellationToken)
@@ -14,11 +12,7 @@ namespace Birds.Application.Commands.DeleteBird
             if (request is null)
                 return Result.Failure("Request canno be null");
 
-            var bird = await repository.GetByIdAsync(request.Id, cancellationToken);
-
-            repository.Remove(bird);
-
-            await unitOfWork.SaveChangesAsync(cancellationToken);
+            await repository.DeleteAsync(request.Id, cancellationToken);
 
             return Result.Success();
         }
