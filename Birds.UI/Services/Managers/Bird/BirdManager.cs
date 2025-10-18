@@ -36,19 +36,29 @@ namespace Birds.UI.Services.Managers.Bird
         /// <inheritdoc/>
         public async Task<Result<BirdDTO>> AddAsync(BirdCreateDTO newBird, CancellationToken cancellationToken)
         {
-            Result<BirdDTO> result = await _mediator.Send(new CreateBirdCommand(newBird.Name, newBird.Description, newBird.Arrival), cancellationToken);
+            Result<BirdDTO> result = await _mediator.Send(
+                new CreateBirdCommand(
+                    newBird.Name,
+                    newBird.Description,
+                    newBird.Arrival
+                    ), cancellationToken);
 
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
+                return result;
+
+            if (_store.LoadState == LoadState.Loaded)
             {
-                if (_store.LoadState == LoadState.Loaded)
-                {
-                    await AddBirdToStore(result.Value);
-                }
-                else
-                {
-                    _notification.ShowInfo("Connection restored. Reloading bird data...");
-                    await ReloadAsync(cancellationToken); // Reload data
-                }
+                await AddBirdToStore(result.Value);
+            }
+            else if (_store.LoadState == LoadState.Failed || _store.LoadState == LoadState.Uninitialized)
+            {
+                _notification.ShowInfo("Connection restored. Reloading bird data...");
+                await ReloadAsync(cancellationToken); // Reload data
+            }
+            else if (_store.LoadState == LoadState.Loading)
+            {
+                _notification.ShowInfo("Collection is initializing; adding bird locally.");
+                await AddBirdToStore(result.Value);
             }
 
             return result;
