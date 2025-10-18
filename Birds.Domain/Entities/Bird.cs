@@ -40,6 +40,7 @@ namespace Birds.Domain.Entities
         /// <summary>
         /// Factory method to create a new Bird instance
         /// </summary>
+        /// <returns>A newly created <see cref="Bird"/> instance.</returns>
         public static Bird Create(BirdsName name, string? description, DateOnly arrival, bool isAlive = true)
         {
             // Validate inputs (duplicate validation as in constructor)
@@ -47,6 +48,25 @@ namespace Birds.Domain.Entities
             GuardHelper.AgainstInvalidDateOnly(arrival, nameof(arrival));
 
             return new Bird(Guid.NewGuid(), name, description, arrival, isAlive);
+        }
+
+        /// <summary>
+        /// Recreates an existing bird instance using its stored identifier and data.
+        /// </summary>
+        /// <remarks>
+        /// Used to restore a previously created bird from persistent storage or an update command.
+        /// </remarks>
+        /// <param name="id">The unique identifier of the existing bird.</param>
+        /// <param name="name">The bird’s name.</param>
+        /// <returns>A reconstructed <see cref="Bird"/> instance.</returns>
+        public static Bird Restore(Guid id, BirdsName name, string? description, DateOnly arrival, bool isAlive)
+        {
+            // Validate inputs (duplicate validation as in constructor)
+            GuardHelper.AgainstInvalidEnum(name, nameof(name));
+            GuardHelper.AgainstInvalidDateOnly(arrival, nameof(arrival));
+            GuardHelper.AgainstEmptyGuid(id, nameof(id));
+
+            return new Bird(id, name, description, arrival, isAlive);
         }
 
         public void SetName(BirdsName name)
