@@ -20,12 +20,22 @@ namespace Birds.UI.Services.Managers.Bird
                        INotificationService notification
         ) : IBirdManager
     {
+        #region [ Fields ]
+
         private readonly IBirdStore _store = store;
         private readonly BirdStoreInitializer _initializer = initializer;
         private readonly IMediator _mediator = mediator;
         private readonly INotificationService _notification = notification;
 
+        #endregion [ Fields ]
+
+        #region [ Properties ]
+
         public IBirdStore Store => _store;
+
+        #endregion [ Properties ]
+
+        #region [ Interface methods ]
 
         /// <inheritdoc/>
         public async Task ReloadAsync(CancellationToken cancellationToken)
@@ -36,6 +46,19 @@ namespace Birds.UI.Services.Managers.Bird
         /// <inheritdoc/>
         public async Task<Result<BirdDTO>> AddAsync(BirdCreateDTO newBird, CancellationToken cancellationToken)
         {
+            // Handle "uninitialized" or "failed" states
+            if (_store.LoadState == LoadState.Uninitialized || _store.LoadState == LoadState.Failed)
+            {
+                _notification.ShowInfo("Connection restored. Reloading bird data...");
+                await ReloadAsync(cancellationToken);   // Force reload
+                await WaitUntilStoreLoadedAsync(cancellationToken); // Wait for successful reload
+            }
+            else if (_store.LoadState == LoadState.Loading)
+            {
+                // Just wait for the initial load to complete
+                await WaitUntilStoreLoadedAsync(cancellationToken);
+            }
+
             Result<BirdDTO> result = await _mediator.Send(
                 new CreateBirdCommand(
                     newBird.Name,
@@ -46,21 +69,7 @@ namespace Birds.UI.Services.Managers.Bird
             if (!result.IsSuccess)
                 return result;
 
-            if (_store.LoadState == LoadState.Loaded)
-            {
-                await AddBirdToStore(result.Value);
-            }
-            else if (_store.LoadState == LoadState.Failed || _store.LoadState == LoadState.Uninitialized)
-            {
-                _notification.ShowInfo("Connection restored. Reloading bird data...");
-                await ReloadAsync(cancellationToken); // Reload data
-            }
-            else if (_store.LoadState == LoadState.Loading)
-            {
-                _notification.ShowInfo("Collection is initializing; adding bird locally.");
-                await AddBirdToStore(result.Value);
-            }
-
+            await AddBirdToStore(result.Value);
             return result;
         }
 
@@ -93,6 +102,10 @@ namespace Birds.UI.Services.Managers.Bird
 
             return result;
         }
+
+        #endregion [ Interface methods ]
+
+        #region [ Private Helper Methods ]
 
         /// <summary>
         /// Executes the specified UI-related action on the main thread.
@@ -136,5 +149,39 @@ namespace Birds.UI.Services.Managers.Bird
                     _store.Birds.Remove(toRemove);
             });
         }
+
+        /// <summary>
+        /// Asynchronously waits until the bird store finishes loading.
+        /// If the store is already loaded, the method returns immediately.
+        /// </summary>
+        /// <returns>
+        /// A task that completes when the store reaches the <see cref="LoadState.Loaded"/> state.
+        /// </returns>
+        private Task WaitUntilStoreLoadedAsync(CancellationToken cancellationToken)
+        {
+            if (_store.LoadState == LoadState.Loaded)
+                return Task.CompletedTask; // Already ready
+
+            var tcs = new TaskCompletionSource();
+
+            void OnLoaded()
+            {
+                _store.StoreLoaded -= OnLoaded;
+                tcs.TrySetResult();
+            }
+
+            _store.StoreLoaded += OnLoaded;
+
+            // Cancelation support
+            cancellationToken.Register(() =>
+            {
+                _store.StoreLoaded -= OnLoaded;
+                tcs.TrySetCanceled();
+            });
+
+            return tcs.Task;
+        }
+
+        #endregion [ Private Helper Methods ]
     }
 }
