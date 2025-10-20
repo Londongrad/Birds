@@ -3,6 +3,7 @@ using Birds.Application.DTOs;
 using Birds.Application.Queries.GetAllBirds;
 using Birds.UI.Enums;
 using Birds.UI.Extensions;
+using Birds.UI.Services.Notification;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Polly;
@@ -31,11 +32,13 @@ namespace Birds.UI.Services.Stores.BirdStore
     public class BirdStoreInitializer(
         IBirdStore birdStore, 
         IMediator mediator, 
-        ILogger<BirdStoreInitializer> logger)
+        ILogger<BirdStoreInitializer> logger,
+        INotificationService notificationService)
     {
         private readonly IBirdStore _birdStore = birdStore;
         private readonly IMediator _mediator = mediator;
         private readonly ILogger<BirdStoreInitializer> _logger = logger;
+        private readonly INotificationService _notificationService = notificationService;
 
         /// <summary>
         /// Called when the application starts.
@@ -46,7 +49,9 @@ namespace Birds.UI.Services.Stores.BirdStore
             if (cancellationToken.IsCancellationRequested)
                 return;
 
-            _birdStore.LoadState = LoadState.Loading;
+            _birdStore.BeginLoading();
+
+            _notificationService.ShowInfo("Loading bird data...");
 
             // Define a retry policy: retry if the Result is not successful
             var retryPolicy = Policy
@@ -71,7 +76,7 @@ namespace Birds.UI.Services.Stores.BirdStore
             {
                 _logger.LogError("{Error}", result.Error);
 
-                _birdStore.LoadState = LoadState.Failed; // mark as failed
+                _birdStore.FailLoading(); // mark as failed
 
                 MessageBox.Show(
                     "Failed to load bird data from the database. The application cannot continue without this data.\n\nPlease check your connection or restart the application.",
@@ -92,7 +97,8 @@ namespace Birds.UI.Services.Stores.BirdStore
                     _birdStore.Birds.Add(bird);
             });
 
-            _birdStore.LoadState = LoadState.Loaded; // mark as successfully loaded
+            _notificationService.ShowInfo("Bird data loaded successfully.");
+            _birdStore.CompleteLoading(); // mark as successfully loaded and fire an event
             _logger.LogInformation("Bird data successfully loaded. {Count} birds retrieved.", _birdStore.Birds.Count);
         }
 
