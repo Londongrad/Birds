@@ -24,8 +24,25 @@ namespace Birds.UI.Services.Stores.BirdStore
         /// </summary>
         LoadState LoadState { get; set; }
 
+        /// <summary>
+        /// Occurs when the bird store has finished loading all data
+        /// and is ready for use.
+        /// </summary>
+        event Action? StoreLoaded;
+
+        /// <summary>
+        /// Updates the store state when a new loading operation begins.
+        /// </summary>
         void BeginLoading();
+
+        /// <summary>
+        /// Updates the store state when loading completes successfully.
+        /// </summary>
         void CompleteLoading();
+
+        /// <summary>
+        /// Updates the store state when a loading error occurs.
+        /// </summary>
         void FailLoading();
     }
 }

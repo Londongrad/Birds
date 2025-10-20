@@ -14,24 +14,23 @@ namespace Birds.UI.Services.Stores.BirdStore
         [ObservableProperty]
         private LoadState loadState = LoadState.Uninitialized;
 
-        /// <summary>
-        /// Gets the shared collection of all loaded birds.
-        /// </summary>
+        /// <inheritdoc/>
         public ObservableCollection<BirdDTO> Birds { get; } = [];
 
-        /// <summary>
-        /// Updates the store state when a new loading operation begins.
-        /// </summary>
+        /// <inheritdoc/>
+        public event Action? StoreLoaded;
+
+        /// <inheritdoc/>
         public void BeginLoading() => LoadState = LoadState.Loading;
 
-        /// <summary>
-        /// Updates the store state when loading completes successfully.
-        /// </summary>
-        public void CompleteLoading() => LoadState = LoadState.Loaded;
+        /// <inheritdoc/>
+        public void CompleteLoading()
+        {
+            LoadState = LoadState.Loaded;
+            StoreLoaded?.Invoke(); // Fire event when data is ready
+        }
 
-        /// <summary>
-        /// Updates the store state when a loading error occurs.
-        /// </summary>
+        /// <inheritdoc/>
         public void FailLoading() => LoadState = LoadState.Failed;
     }
 }
