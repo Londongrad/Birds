@@ -3,6 +3,7 @@ using Birds.Application.DTOs;
 using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Notification;
 using Birds.UI.ViewModels.Base;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace Birds.UI.ViewModels
@@ -16,8 +17,12 @@ namespace Birds.UI.ViewModels
     /// </remarks>
     public partial class AddBirdViewModel : BirdValidationBaseViewModel
     {
+        #region [ Fields ]
+
         private readonly INotificationService _notification;
         private readonly IBirdManager _birdManager;
+
+        #endregion [ Fields ]
 
         /// <summary>
         /// Creates a new instance of <see cref="AddBirdViewModel"/>.
@@ -36,10 +41,23 @@ namespace Birds.UI.ViewModels
             ValidateAllProperties();
         }
 
+        #region [ Observable Properties ]
+
+        [ObservableProperty]
+        private bool isBusy; // Indicates whether the add operation is in progress
+
+        #endregion [ Observable Properties ]
+
+        #region [ Methods ]
+
         /// <summary>
         /// Determines whether the Save command can be executed.
         /// </summary>
-        private bool CanSave() => !HasErrors;
+        private bool CanSave() => !HasErrors && !IsBusy;
+
+        #endregion [ Methods ]
+
+        #region [ Commands ]
 
         /// <summary>
         /// Command to save a new bird to the system.
@@ -52,6 +70,11 @@ namespace Birds.UI.ViewModels
             if (HasErrors)
                 return;
 
+            IsBusy = true; // Disable button
+            SaveCommand.NotifyCanExecuteChanged();
+
+            _notification.ShowInfo("Adding bird...");
+
             var dto = new BirdCreateDTO(
                 SelectedBirdName ?? default,
                 Description,
@@ -61,12 +84,18 @@ namespace Birds.UI.ViewModels
             Result<BirdDTO> result = await _birdManager.AddAsync(dto, CancellationToken.None);
 
             if (result.IsSuccess)
+            {
                 _notification.ShowSuccess("Bird added successfully!");
+                // Reset the description after successful save
+                Description = string.Empty;
+            }
             else
                 _notification.ShowError("Unable to save bird");
 
-            // Reset the description after successful save
-            Description = string.Empty;
+            IsBusy = false; // Enable button again
+            SaveCommand.NotifyCanExecuteChanged();
         }
+
+        #endregion [ Commands ]
     }
 }
