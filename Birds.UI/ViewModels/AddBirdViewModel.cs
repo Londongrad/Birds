@@ -46,6 +46,9 @@ namespace Birds.UI.ViewModels
         [ObservableProperty]
         private bool isBusy; // Indicates whether the add operation is in progress
 
+        [ObservableProperty]
+        private bool isOneTime;
+
         #endregion [ Observable Properties ]
 
         #region [ Methods ]
@@ -78,7 +81,9 @@ namespace Birds.UI.ViewModels
             var dto = new BirdCreateDTO(
                 SelectedBirdName ?? default,
                 Description,
-                Arrival
+                Arrival,
+                IsOneTime ? Arrival : null,
+                !IsOneTime
             );
 
             Result<BirdDTO> result = await _birdManager.AddAsync(dto, CancellationToken.None);

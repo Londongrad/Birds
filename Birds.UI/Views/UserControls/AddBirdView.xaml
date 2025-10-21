@@ -8,8 +8,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="clr-namespace:Birds.UI.ViewModels"
     d:DataContext="{d:DesignInstance Type=viewmodels:AddBirdViewModel}"
-    d:DesignHeight="500"
-    d:DesignWidth="400"
+    d:DesignHeight="600"
+    d:DesignWidth="300"
     mc:Ignorable="d">
 
     <Border Style="{StaticResource ViewsBorder}">
@@ -50,6 +50,17 @@
                                        ValidatesOnNotifyDataErrors=True,
                                        UpdateSourceTrigger=PropertyChanged}"
                 Style="{StaticResource DatePickerAdd}" />
+
+
+
+            <TextBlock
+                Style="{StaticResource TextBlockAdd}"
+                Text="Is one time bird?" />
+
+            <CheckBox
+                IsChecked="{Binding IsOneTime,
+                                    Mode=TwoWay}"
+                Style="{StaticResource ToggleButton}" />
 
             <Button
                 Command="{Binding SaveCommand}"
