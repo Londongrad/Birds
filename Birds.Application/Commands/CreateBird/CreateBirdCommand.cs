@@ -8,6 +8,8 @@ namespace Birds.Application.Commands.CreateBird
     public record CreateBirdCommand(
         BirdsName Name,
         string? Description,
-        DateOnly Arrival
+        DateOnly Arrival,
+        DateOnly? Departure = null,
+        bool IsAlive = true
     ) : IRequest<Result<BirdDTO>>;
 }
