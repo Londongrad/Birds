@@ -9,6 +9,7 @@
     <conv:BoolToVisibilityInverseConverter x:Key="BoolToVisibilityInverse" />
     <conv:BoolToStatusTextConverter x:Key="BoolToStatusTextConverter" />
     <conv:BoolToColorConverter x:Key="BoolToColorConverter" />
+    <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
     <conv:BirdVmConverter
         x:Key="BirdVmConverter"
         Factory="{x:Null}" />
