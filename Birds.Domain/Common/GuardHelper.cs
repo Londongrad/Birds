@@ -26,8 +26,11 @@ namespace Birds.Domain.Common
         /// <param name="argumentName">The name of the argument being validated.</param>
         /// <param name="allowFuture">If false, disallows dates later than the current UTC date.</param>
         /// <exception cref="DomainValidationException">Thrown when the date is default, in the future, or too far in the past.</exception>
-        public static void AgainstInvalidDateOnly(DateOnly value, string argumentName, bool allowFuture = false)
+        public static void AgainstInvalidDateOnly(DateOnly? value, string argumentName, bool allowFuture = false)
         {
+            if (value == null)
+                return;
+
             if (value == default)
                 throw new DomainValidationException($"{argumentName} cannot be default");
 
@@ -114,8 +117,11 @@ namespace Birds.Domain.Common
         /// <param name="from">The start date of the range.</param>
         /// <param name="to">The end date of the range.</param>
         /// <exception cref="DomainValidationException">Thrown when the start date is later than the end date.</exception>
-        public static void AgainstInvalidDateRange(DateOnly from, DateOnly to)
+        public static void AgainstInvalidDateRange(DateOnly from, DateOnly? to)
         {
+            if (to is null)
+                return;
+
             if (from > to)
                 throw new DomainValidationException("Date range is invalid");
         }
