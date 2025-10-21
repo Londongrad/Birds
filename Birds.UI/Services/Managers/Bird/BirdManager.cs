@@ -63,7 +63,9 @@ namespace Birds.UI.Services.Managers.Bird
                 new CreateBirdCommand(
                     newBird.Name,
                     newBird.Description,
-                    newBird.Arrival
+                    newBird.Arrival,
+                    newBird.Departure,
+                    newBird.IsAlive
                     ), cancellationToken);
 
             if (!result.IsSuccess)
