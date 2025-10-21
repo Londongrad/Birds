@@ -19,7 +19,8 @@ namespace Birds.Application.Mappings
                     cmd.Name,
                     cmd.Description,
                     cmd.Arrival,
-                    true
+                    cmd.Departure,
+                    cmd.IsAlive
                 ));
 
             CreateMap<UpdateBirdCommand, Bird>()
@@ -27,7 +28,8 @@ namespace Birds.Application.Mappings
                 cmd.Id,
                 cmd.Name,
                 cmd.Description,
-                cmd.Arrival,
+                cmd.Arrival, 
+                cmd.Departure,
                 cmd.IsAlive
             ));
         }
