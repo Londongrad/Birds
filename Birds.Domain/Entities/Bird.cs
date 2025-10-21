@@ -20,16 +20,24 @@ namespace Birds.Domain.Entities
         private Bird()
         { }
 
-        private Bird(Guid id, BirdsName name, string? description, DateOnly arrival, bool isAlive = true)
+        private Bird(
+            Guid id, 
+            BirdsName name, 
+            string? description, 
+            DateOnly arrival, 
+            DateOnly? departure = null, 
+            bool isAlive = true)
             : base(id)
         {
             GuardHelper.AgainstEmptyGuid(id, nameof(id));
             GuardHelper.AgainstInvalidEnum(name, nameof(name));
             GuardHelper.AgainstInvalidDateOnly(arrival, nameof(arrival));
+            GuardHelper.AgainstInvalidDateOnly(departure, nameof(departure));
 
             Name = name;
             Description = description;
             Arrival = arrival;
+            Departure = departure;
             IsAlive = isAlive;
         }
 
@@ -41,13 +49,19 @@ namespace Birds.Domain.Entities
         /// Factory method to create a new Bird instance
         /// </summary>
         /// <returns>A newly created <see cref="Bird"/> instance.</returns>
-        public static Bird Create(BirdsName name, string? description, DateOnly arrival, bool isAlive = true)
+        public static Bird Create(
+            BirdsName name, 
+            string? description, 
+            DateOnly arrival, 
+            DateOnly? departure = null, 
+            bool isAlive = true)
         {
             // Validate inputs (duplicate validation as in constructor)
             GuardHelper.AgainstInvalidEnum(name, nameof(name));
             GuardHelper.AgainstInvalidDateOnly(arrival, nameof(arrival));
+            GuardHelper.AgainstInvalidDateOnly(departure, nameof(departure));
 
-            return new Bird(Guid.NewGuid(), name, description, arrival, isAlive);
+            return new Bird(Guid.NewGuid(), name, description, arrival, departure, isAlive);
         }
 
         /// <summary>
@@ -59,14 +73,21 @@ namespace Birds.Domain.Entities
         /// <param name="id">The unique identifier of the existing bird.</param>
         /// <param name="name">The bird’s name.</param>
         /// <returns>A reconstructed <see cref="Bird"/> instance.</returns>
-        public static Bird Restore(Guid id, BirdsName name, string? description, DateOnly arrival, bool isAlive)
+        public static Bird Restore(
+            Guid id, 
+            BirdsName name, 
+            string? description, 
+            DateOnly arrival, 
+            DateOnly? departure,
+            bool isAlive)
         {
             // Validate inputs (duplicate validation as in constructor)
             GuardHelper.AgainstInvalidEnum(name, nameof(name));
             GuardHelper.AgainstInvalidDateOnly(arrival, nameof(arrival));
+            GuardHelper.AgainstInvalidDateOnly(departure, nameof(departure));
             GuardHelper.AgainstEmptyGuid(id, nameof(id));
 
-            return new Bird(id, name, description, arrival, isAlive);
+            return new Bird(id, name, description, arrival, departure, isAlive);
         }
 
         public void SetName(BirdsName name)
@@ -93,7 +114,7 @@ namespace Birds.Domain.Entities
             UpdateTimestamp();
         }
 
-        public void SetDeparture(DateOnly departure)
+        public void SetDeparture(DateOnly? departure)
         {
             GuardHelper.AgainstInvalidDateOnly(departure, nameof(departure));
             GuardHelper.AgainstInvalidDateRange(Arrival, departure);
