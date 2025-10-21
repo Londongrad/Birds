@@ -207,13 +207,8 @@
                     Grid.Column="3"
                     Margin="15,0,0,0"
                     Padding="8,2"
-                    VerticalAlignment="Center"
-                    Background="{Binding IsAlive,
-                                         Converter={StaticResource BoolToColorConverter}}"
-                    BorderThickness="0"
                     Content="{Binding IsAlive,
                                       Converter={StaticResource BoolToStatusTextConverter}}"
-                    Foreground="White"
                     IsChecked="{Binding IsAlive,
                                         Mode=TwoWay}"
                     Style="{StaticResource ToggleButton}" />
