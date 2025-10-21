@@ -34,6 +34,7 @@ namespace Birds.Infrastructure.Seeding
                 {
                     var birdName = (BirdsName)random.Next(1, 8);
                     var arrival = now.AddDays(-random.Next(0, 365 * 3));
+                    DateOnly? departure = null;
                     var isAlive = random.Next(0, 2) == 1;
 
                     counters[birdName]++;
@@ -43,12 +44,13 @@ namespace Birds.Infrastructure.Seeding
                         birdName,
                         $"{birdName} #{number}",
                         arrival,
+                        departure,
                         isAlive
                     );
 
                     if (!isAlive)
                     {
-                        var departure = arrival.AddDays(random.Next(0, (now.DayNumber - arrival.DayNumber) + 1));
+                        departure = arrival.AddDays(random.Next(0, (now.DayNumber - arrival.DayNumber) + 1));
                         bird.SetDeparture(departure);
                     }
 
