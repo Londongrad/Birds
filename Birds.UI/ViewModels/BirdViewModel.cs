@@ -192,6 +192,15 @@ namespace Birds.UI.ViewModels
             IsEditing = false;
         }
 
+        /// <summary>
+        /// For the DatePicker to be able to clear the departure date.
+        /// </summary>
+        [RelayCommand]
+        private void ClearDeparture()
+        {
+            Departure = null;
+        }
+
         #endregion [ Commands ]
 
         #region [ Private helpers ]

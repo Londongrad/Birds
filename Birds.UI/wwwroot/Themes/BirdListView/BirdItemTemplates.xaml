@@ -168,6 +168,7 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <!-- Arrival -->
@@ -202,9 +203,27 @@
                                            UpdateSourceTrigger=PropertyChanged}"
                     Style="{StaticResource DatePickerAdd}" />
 
+                <!-- Clear button -->
+                <Button
+                    Grid.Column="3"
+                    Width="18"
+                    Height="18"
+                    Margin="0"
+                    Padding="0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Command="{Binding ClearDepartureCommand}"
+                    Content="✕"
+                    FontSize="10"
+                    Foreground="#999"
+                    Visibility="{Binding Departure,
+                                         Converter={StaticResource NullToVisibilityConverter}}" />
+
                 <!-- Switch (is alive or not) -->
                 <CheckBox
-                    Grid.Column="3"
+                    Grid.Column="4"
                     Margin="15,0,0,0"
                     Padding="8,2"
                     Content="{Binding IsAlive,
