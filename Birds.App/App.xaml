@@ -23,6 +23,7 @@
                 <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/GlobalThemes/Validation.xaml" />
                 <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/GlobalThemes/ViewsBorder.xaml" />
                 <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/GlobalThemes/IconsForToast.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/GlobalThemes/ToolTip.xaml" />
 
                 <!-- ============== -->
                 <!-- Bird List View -->
