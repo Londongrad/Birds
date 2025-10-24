@@ -10,7 +10,7 @@ namespace Birds.Infrastructure
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, string connectionString)
         {
-            services.AddDbContextFactory<BirdDbContext>(options =>
+            services.AddDbContext<BirdDbContext>(options =>
                 options.UseNpgsql(connectionString));
 
             services.AddSingleton<IBirdRepository, BirdRepository>();

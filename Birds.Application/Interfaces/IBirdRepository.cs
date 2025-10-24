@@ -15,31 +15,25 @@ namespace Birds.Application.Interfaces
         /// <returns>A collection of <see cref="IReadOnlyList{Bird}"/>.</returns>
         Task<IReadOnlyList<Bird>> GetAllAsync(CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Adds a new bird to the underlying data store.
-        /// </summary>
+        /// <summary>Adds a new bird to the tracking context.</summary>
         /// <remarks>
-        /// The bird is inserted asynchronously. 
-        /// Actual persistence behavior depends on the specific data access implementation.
+        /// This method <b>does not perform saving to the database</b>.
+        /// To persist the changes, you must call <see cref="IUnitOfWork.SaveChangesAsync"/>.
         /// </remarks>
         Task AddAsync(Bird bird, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Updates an existing bird in the data store.
-        /// </summary>
+        /// <summary>Updates an existing bird in the tracking context.</summary>
         /// <remarks>
-        /// The update is applied directly without loading the entity into memory.
+        /// This method <b>does not perform saving to the database</b>.
+        /// To persist the changes, you must call <see cref="IUnitOfWork.SaveChangesAsync"/>.
         /// </remarks>
-        /// <param name="bird">The bird entity containing the new values.</param>
-        Task UpdateAsync(Bird bird, CancellationToken cancellationToken = default);
+        void Update(Bird bird);
 
-        /// <summary>
-        /// Deletes a bird from the data store.
-        /// </summary>
+        /// <summary>Removes a bird from the tracking context.</summary>
         /// <remarks>
-        /// The deletion is performed directly without loading the entity into memory.
+        /// This method <b>does not perform saving to the database</b>.
+        /// To persist the changes, you must call <see cref="IUnitOfWork.SaveChangesAsync"/>.
         /// </remarks>
-        /// <param name="id">The unique identifier of the bird to remove.</param>
-        Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+        void Remove(Bird bird);
     }
 }
