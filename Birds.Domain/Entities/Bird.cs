@@ -33,6 +33,7 @@ namespace Birds.Domain.Entities
             GuardHelper.AgainstInvalidEnum(name, nameof(name));
             GuardHelper.AgainstInvalidDateOnly(arrival, nameof(arrival));
             GuardHelper.AgainstInvalidDateOnly(departure, nameof(departure));
+            GuardHelper.AgainstInvalidStatusUpdate(departure, isAlive, nameof(departure));
 
             Name = name;
             Description = description;
@@ -90,56 +91,25 @@ namespace Birds.Domain.Entities
             return new Bird(id, name, description, arrival, departure, isAlive);
         }
 
-        public void SetName(BirdsName name)
+        /// <summary>
+        /// Updates the bird’s state by replacing all its core attributes at once.
+        /// </summary>
+        /// <remarks>
+        /// Intended for full entity updates when all fields are known and validated externally.
+        /// </remarks>
+        public void Update(BirdsName name, string? description, DateOnly arrival, DateOnly? departure, bool isAlive)
         {
             GuardHelper.AgainstInvalidEnum(name, nameof(name));
-            Name = name;
-            UpdateTimestamp();
-        }
-
-        /// <summary>Update the entity in one go</summary>
-        public void Update(DateOnly arrival, DateOnly? departure, string? description, bool isAlive)
-        {
             GuardHelper.AgainstInvalidDateOnly(arrival, nameof(arrival));
-
-            Arrival = arrival;
-            Description = description;
-
-            if (departure.HasValue)
-                SetDeparture(departure.Value);
-            else
-                ClearDeparture();
-
-            UpdateStatus(isAlive);
-            UpdateTimestamp();
-        }
-
-        public void SetDeparture(DateOnly? departure)
-        {
             GuardHelper.AgainstInvalidDateOnly(departure, nameof(departure));
-            GuardHelper.AgainstInvalidDateRange(Arrival, departure);
-
-            Departure = departure;
-            UpdateTimestamp();
-        }
-
-        public void ClearDeparture()
-        {
-            Departure = null;
-            UpdateTimestamp();
-        }
-
-        public void UpdateStatus(bool isAlive)
-        {
             GuardHelper.AgainstInvalidStatusUpdate(Departure, isAlive, nameof(Departure));
 
-            IsAlive = isAlive;
-            UpdateTimestamp();
-        }
-
-        public void SetDescription(string? description)
-        {
+            Name = name;
             Description = description;
+            Arrival = arrival;
+            Departure = departure;
+            IsAlive = isAlive;
+
             UpdateTimestamp();
         }
 
