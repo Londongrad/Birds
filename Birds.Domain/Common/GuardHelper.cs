@@ -13,7 +13,7 @@ namespace Birds.Domain.Common
         /// <param name="value">The string to validate.</param>
         /// <param name="argumentName">The name of the argument being validated.</param>
         /// <exception cref="DomainValidationException">Thrown when the string is null, empty, or whitespace.</exception>
-        public static void AgainstNullOrEmpty(string value, string argumentName)
+        public static void AgainstNullOrEmpty(string? value, string argumentName)
         {
             if (string.IsNullOrWhiteSpace(value))
                 throw new DomainValidationException($"{argumentName} cannot be null or empty");
@@ -31,7 +31,7 @@ namespace Birds.Domain.Common
             if (value == null)
                 return;
 
-            if (value == default)
+            if (value.Value == default)
                 throw new DomainValidationException($"{argumentName} cannot be default");
 
             if (!allowFuture && value > DateOnly.FromDateTime(DateTime.UtcNow))
@@ -44,7 +44,7 @@ namespace Birds.Domain.Common
         /// <summary>
         /// Ensures that the given <see cref="DateTime"/> value is valid, not default, and within allowed bounds.
         /// </summary>
-        /// <param name="value">The date to validate.</param>
+        /// <param name="value">The date to validate in UTC format.</param>
         /// <param name="argumentName">The name of the argument being validated.</param>
         /// <param name="allowFuture">If false, disallows future dates beyond the current UTC time.</param>
         /// <exception cref="DomainValidationException">Thrown when the date is default, in the future, or too far in the past.</exception>
@@ -122,8 +122,11 @@ namespace Birds.Domain.Common
             if (to is null)
                 return;
 
+            AgainstInvalidDateOnly(from, nameof(from));
+            AgainstInvalidDateOnly(to, nameof(to));
+
             if (from > to)
-                throw new DomainValidationException("Date range is invalid");
+                throw new DomainValidationException($"Invalid date range: from {from} cannot be later than to {to}");
         }
 
         /// <summary>
@@ -138,6 +141,8 @@ namespace Birds.Domain.Common
         /// </exception>
         public static void AgainstInvalidStatusUpdate(DateOnly? departure, bool isAlive, string argumentName)
         {
+            AgainstInvalidDateOnly(departure, nameof(departure));
+
             if (departure is null && isAlive == false)
                 throw new DomainValidationException($"{argumentName} date must be set before marking the bird as dead.");
         }
