@@ -12,14 +12,11 @@
 
         #region [ Ctors ]
 
-        protected EntityBase()
-        {
-            CreatedAt = UpdatedAt = DateTime.UtcNow;
-        }
+        protected EntityBase() { }
 
         protected EntityBase(Guid id)
         {
-            CreatedAt = UpdatedAt = DateTime.UtcNow;
+            CreatedAt = DateTime.UtcNow;
             Id = id;
         }
 
