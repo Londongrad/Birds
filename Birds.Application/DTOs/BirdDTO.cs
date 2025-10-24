@@ -6,6 +6,8 @@
         string? Description,
         DateOnly Arrival,
         DateOnly? Departure,
-        bool IsAlive
+        bool IsAlive,
+        DateTime? CreatedAt,
+        DateTime? UpdatedAt
     );
 }
