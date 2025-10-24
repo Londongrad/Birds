@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Birds.Application.Commands.CreateBird;
-using Birds.Application.Commands.UpdateBird;
 using Birds.Application.DTOs;
 using Birds.Domain.Entities;
 using Birds.Domain.Extensions;
@@ -22,16 +21,6 @@ namespace Birds.Application.Mappings
                     cmd.Departure,
                     cmd.IsAlive
                 ));
-
-            CreateMap<UpdateBirdCommand, Bird>()
-            .ConstructUsing(cmd => Bird.Restore(
-                cmd.Id,
-                cmd.Name,
-                cmd.Description,
-                cmd.Arrival, 
-                cmd.Departure,
-                cmd.IsAlive
-            ));
         }
     }
 }
