@@ -30,8 +30,10 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
+            <!-- Bird details -->
             <ContentControl
                 Content="{Binding}"
                 Validation.ErrorTemplate="{StaticResource NoErrorTemplate}">
@@ -81,6 +83,34 @@
                     Visibility="{Binding IsEditing,
                                          Converter={StaticResource BoolToVisibilityConverter}}" />
             </Grid>
+
+            <!-- Created/updated info tooltip -->
+            <Border
+                Grid.Column="2"
+                Width="15"
+                Height="15"
+                Margin="5 0 0 0"
+                Padding="0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="Gray"
+                CornerRadius="7.5">
+
+                <ToolTipService.ToolTip>
+                    <TextBlock>
+                        <Run Text="{Binding LocalCreatedAt, Mode=OneWay, StringFormat=Created: {0:dd.MM.yyyy HH:mm}}" />
+                        <LineBreak />
+                        <Run Text="{Binding LocalUpdatedAt, Mode=TwoWay, StringFormat=Updated: {0:dd.MM.yyyy HH:mm}}" />
+                    </TextBlock>
+                </ToolTipService.ToolTip>
+
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontWeight="Bold"
+                    Foreground="White"
+                    Text="!" />
+            </Border>
         </Grid>
     </Border>
 </UserControl>
