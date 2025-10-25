@@ -25,7 +25,7 @@ namespace Birds.UI.Services.Managers.Bird
         /// <summary>
         /// Updates an existing bird and refreshes the collection if required.
         /// </summary>
-        Task<Result> UpdateAsync(BirdDTO updatedBird, CancellationToken cancellationToken);
+        Task<Result<BirdDTO>> UpdateAsync(BirdUpdateDTO updatedBird, CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes a bird by ID and refreshes the collection if required.

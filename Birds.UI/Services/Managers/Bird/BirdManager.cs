@@ -12,7 +12,6 @@ using MediatR;
 
 namespace Birds.UI.Services.Managers.Bird
 {
-    /// <inheritdoc/>
     public class BirdManager(
                        IBirdStore store,
                        BirdStoreInitializer initializer,
@@ -76,7 +75,7 @@ namespace Birds.UI.Services.Managers.Bird
         }
 
         /// <inheritdoc/>
-        public async Task<Result> UpdateAsync(BirdDTO updatedBird, CancellationToken cancellationToken)
+        public async Task<Result<BirdDTO>> UpdateAsync(BirdUpdateDTO updatedBird, CancellationToken cancellationToken)
         {
             var command = new UpdateBirdCommand(
                 updatedBird.Id,
@@ -86,10 +85,10 @@ namespace Birds.UI.Services.Managers.Bird
                 updatedBird.Departure,
                 updatedBird.IsAlive);
 
-            Result result = await _mediator.Send(command, cancellationToken);
+            Result<BirdDTO> result = await _mediator.Send(command, cancellationToken);
 
             if (result.IsSuccess)
-                await UpdateBirdInStore(updatedBird);
+                await UpdateBirdInStore(result.Value);
 
             return result;
         }
