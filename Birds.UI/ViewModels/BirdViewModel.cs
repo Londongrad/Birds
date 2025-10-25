@@ -7,7 +7,6 @@ using Birds.UI.ViewModels.Base;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 
 namespace Birds.UI.ViewModels
 {
@@ -39,6 +38,8 @@ namespace Birds.UI.ViewModels
             Arrival = dto.Arrival;
             Departure = dto.Departure;
             IsAlive = dto.IsAlive;
+            LocalCreatedAt = dto.CreatedAt?.ToLocalTime();
+            LocalUpdatedAt = dto.UpdatedAt?.ToLocalTime();
 
             UpdateCalculatedFields();
         }
@@ -54,6 +55,11 @@ namespace Birds.UI.ViewModels
         /// The unique identifier of the bird.
         /// </summary>
         public Guid Id => Dto.Id;
+
+        /// <summary>
+        /// Bird's creation date in local time.
+        /// </summary>
+        public DateTime? LocalCreatedAt { get; }
 
         #endregion [ Properties ]
 
@@ -101,6 +107,12 @@ namespace Birds.UI.ViewModels
         /// </summary>
         [ObservableProperty]
         private bool isEditing;
+
+        /// <summary>
+        /// Bird's last updated date in local time.
+        /// </summary>
+        [ObservableProperty]
+        private DateTime? localUpdatedAt;
 
         #endregion [ ObservableProperties ]
 
@@ -173,8 +185,8 @@ namespace Birds.UI.ViewModels
             if (HasErrors)
                 return;
 
-            Result result = await _birdManager.UpdateAsync(
-                new BirdDTO(
+            Result<BirdDTO> result = await _birdManager.UpdateAsync(
+                new BirdUpdateDTO(
                     Id,
                     Name,
                     Description,
@@ -183,7 +195,10 @@ namespace Birds.UI.ViewModels
                     IsAlive), CancellationToken.None);
 
             if (result.IsSuccess)
+            {
                 _notificationService.ShowSuccess("Bird updated successfully!");
+                LocalUpdatedAt = result.Value.UpdatedAt?.ToLocalTime();
+            }
             else
                 _notificationService.ShowError("Unable to update bird.");
 
