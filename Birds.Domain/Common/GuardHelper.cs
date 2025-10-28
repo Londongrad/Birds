@@ -42,6 +42,22 @@ namespace Birds.Domain.Common
         }
 
         /// <summary>
+        /// Throws a <see cref="DomainValidationException"/> if the specified numeric value is less than or equal to zero.
+        /// </summary>
+        /// <typeparam name="T">A numeric value type that implements <see cref="IComparable{T}"/> (e.g., int, double, decimal).</typeparam>
+        /// <param name="value">The numeric value to validate.</param>
+        /// <param name="argumentName">The name of the argument being validated.</param>
+        /// <exception cref="DomainValidationException">
+        /// Thrown when <paramref name="value"/> is less than or equal to zero.
+        /// </exception>
+        public static void AgainstNonPositiveNumber<T>(T value, string argumentName)
+            where T : struct, IComparable<T>
+        {
+            if (value.CompareTo(default) <= 0)
+                throw new DomainValidationException($"{argumentName} should be positive");
+        }
+
+        /// <summary>
         /// Ensures that the given <see cref="DateTime"/> value is valid, not default, and within allowed bounds.
         /// </summary>
         /// <param name="value">The date to validate in UTC format.</param>
