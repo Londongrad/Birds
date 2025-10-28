@@ -6,7 +6,7 @@ using MediatR;
 
 namespace Birds.Application.Commands.UpdateBird
 {
-    public class UpdateBirdCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public class UpdateBirdCommandHandler(IBirdRepository birdRepository, IMapper mapper)
         : IRequestHandler<UpdateBirdCommand, Result<BirdDTO>>
     {
         public async Task<Result<BirdDTO>> Handle(UpdateBirdCommand request, CancellationToken cancellationToken)
@@ -14,7 +14,7 @@ namespace Birds.Application.Commands.UpdateBird
             if (request is null)
                 return Result<BirdDTO>.Failure("Request cannot be null");
 
-            var bird = await unitOfWork.BirdRepository.GetByIdAsync(request.Id, cancellationToken);
+            var bird = await birdRepository.GetByIdAsync(request.Id, cancellationToken);
 
             bird.Update(
                 request.Name, 
@@ -23,7 +23,7 @@ namespace Birds.Application.Commands.UpdateBird
                 request.Departure, 
                 request.IsAlive);
 
-            await unitOfWork.SaveChangesAsync(cancellationToken);
+            await birdRepository.UpdateAsync(bird, cancellationToken);
 
             var birdDTO = mapper.Map<BirdDTO>(bird);
 

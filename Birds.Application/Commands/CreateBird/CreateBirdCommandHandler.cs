@@ -8,7 +8,7 @@ using MediatR;
 namespace Birds.Application.Commands.CreateBird
 {
     public class CreateBirdCommandHandler(
-        IUnitOfWork unitOfWork,
+        IBirdRepository birdRepository,
         IMapper mapper)
         : IRequestHandler<CreateBirdCommand, Result<BirdDTO>>
     {
@@ -19,8 +19,7 @@ namespace Birds.Application.Commands.CreateBird
 
             var bird = mapper.Map<Bird>(request);
 
-            await unitOfWork.BirdRepository.AddAsync(bird, cancellationToken);
-            await unitOfWork.SaveChangesAsync(cancellationToken);
+            await birdRepository.AddAsync(bird, cancellationToken);
 
             var birdDTO = mapper.Map<BirdDTO>(bird);
 
