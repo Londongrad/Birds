@@ -25,8 +25,6 @@ namespace Birds.UI.ViewModels
 
         public BirdViewModel(BirdDTO dto, IBirdManager birdManager, INotificationService notificationService)
         {
-            Debug.WriteLine($"Item with id = {dto.Id} was created.");
-
             Dto = dto;
 
             _birdManager = birdManager;
