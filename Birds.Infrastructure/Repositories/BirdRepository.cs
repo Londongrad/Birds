@@ -12,6 +12,7 @@ namespace Birds.Infrastructure.Repositories
         public async Task AddAsync(Bird bird, CancellationToken cancellationToken = default)
         {
             await context.Birds.AddAsync(bird, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -28,15 +29,17 @@ namespace Birds.Infrastructure.Repositories
         }
 
         /// <inheritdoc/>
-        public void Remove(Bird bird)
+        public async Task RemoveAsync(Bird bird, CancellationToken cancellationToken = default)
         {
             context.Birds.Remove(bird);
+            await context.SaveChangesAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
-        public void Update(Bird bird)
+        public async Task UpdateAsync(Bird bird, CancellationToken cancellationToken = default)
         {
             context.Birds.Update(bird);
+            await context.SaveChangesAsync(cancellationToken);
         }
     }
 }

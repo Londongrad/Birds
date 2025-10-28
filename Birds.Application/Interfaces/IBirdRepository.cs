@@ -15,25 +15,22 @@ namespace Birds.Application.Interfaces
         /// <returns>A collection of <see cref="IReadOnlyList{Bird}"/>.</returns>
         Task<IReadOnlyList<Bird>> GetAllAsync(CancellationToken cancellationToken = default);
 
-        /// <summary>Adds a new bird to the tracking context.</summary>
+        /// <summary>Adds a new bird and immediately persists the change to the database.</summary>
         /// <remarks>
-        /// This method <b>does not perform saving to the database</b>.
-        /// To persist the changes, you must call <see cref="IUnitOfWork.SaveChangesAsync"/>.
+        /// This method adds the specified <see cref="Bird"/> entity to the data source and saves the change.
         /// </remarks>
         Task AddAsync(Bird bird, CancellationToken cancellationToken = default);
 
-        /// <summary>Updates an existing bird in the tracking context.</summary>
+        /// <summary>Updates an existing bird and immediately persists the changes to the database.</summary>
         /// <remarks>
-        /// This method <b>does not perform saving to the database</b>.
-        /// To persist the changes, you must call <see cref="IUnitOfWork.SaveChangesAsync"/>.
+        /// This method marks the provided <see cref="Bird"/> entity as modified and saves the update to the data source.
         /// </remarks>
-        void Update(Bird bird);
+        Task UpdateAsync(Bird bird, CancellationToken cancellationToken = default);
 
-        /// <summary>Removes a bird from the tracking context.</summary>
+        /// <summary>Removes a bird and immediately persists the change to the database.</summary>
         /// <remarks>
-        /// This method <b>does not perform saving to the database</b>.
-        /// To persist the changes, you must call <see cref="IUnitOfWork.SaveChangesAsync"/>.
+        /// This method deletes the specified <see cref="Bird"/> entity from the data source and saves the change.
         /// </remarks>
-        void Remove(Bird bird);
+        Task RemoveAsync(Bird bird, CancellationToken cancellationToken = default);
     }
 }
