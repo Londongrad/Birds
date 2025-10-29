@@ -102,7 +102,7 @@ namespace Birds.Domain.Entities
             GuardHelper.AgainstInvalidEnum(name, nameof(name));
             GuardHelper.AgainstInvalidDateOnly(arrival, nameof(arrival));
             GuardHelper.AgainstInvalidDateOnly(departure, nameof(departure));
-            GuardHelper.AgainstInvalidStatusUpdate(Departure, isAlive, nameof(Departure));
+            GuardHelper.AgainstInvalidStatusUpdate(departure, isAlive, nameof(departure));
 
             Name = name;
             Description = description;
