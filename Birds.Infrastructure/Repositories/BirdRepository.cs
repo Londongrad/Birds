@@ -18,13 +18,17 @@ namespace Birds.Infrastructure.Repositories
         /// <inheritdoc/>
         public async Task<IReadOnlyList<Bird>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            return await context.Birds.AsNoTracking().ToListAsync(cancellationToken);
+            return await context.Birds
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
         public async Task<Bird> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            return await context.Birds.FindAsync([id], cancellationToken)
+            return await context.Birds
+                .AsNoTracking()
+                .FirstOrDefaultAsync(b => b.Id == id, cancellationToken)
                 ?? throw new NotFoundException(nameof(Bird), id);
         }
 
