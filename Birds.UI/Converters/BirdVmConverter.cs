@@ -1,7 +1,6 @@
 ﻿using Birds.Application.DTOs;
 using Birds.UI.Services.Factories.BirdViewModelFactory;
 using Birds.UI.ViewModels;
-using System.Diagnostics;
 using System.Globalization;
 using System.Windows.Data;
 
@@ -54,12 +53,6 @@ namespace Birds.UI.Converters
             {
                 if (Factory != null)
                     return Factory.Create(dto);
-
-                Debug.WriteLine("⚠ BirdVmConverter: Factory is not set!");
-            }
-            else
-            {
-                Debug.WriteLine($"⚠ BirdVmConverter: unexpected value {value?.GetType().Name}");
             }
 
             return Binding.DoNothing; // better than null!
@@ -71,5 +64,4 @@ namespace Birds.UI.Converters
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => throw new NotImplementedException();
     }
-
 }
