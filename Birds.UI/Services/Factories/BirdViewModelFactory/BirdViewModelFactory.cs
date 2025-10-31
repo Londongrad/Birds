@@ -1,6 +1,6 @@
 ﻿using Birds.Application.DTOs;
 using Birds.UI.Services.Managers.Bird;
-using Birds.UI.Services.Notification;
+using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.ViewModels;
 
 namespace Birds.UI.Services.Factories.BirdViewModelFactory
@@ -20,13 +20,21 @@ namespace Birds.UI.Services.Factories.BirdViewModelFactory
     /// and the centralized bird store, while <see cref="INotificationService"/>
     /// is used to display messages and feedback to the user.
     /// </remarks>
-    public class BirdViewModelFactory(IBirdManager birdManager, INotificationService notificationService) : IBirdViewModelFactory
+    public class BirdViewModelFactory(
+        IBirdManager birdManager, 
+        INotificationService notificationService) : IBirdViewModelFactory
     {
-        private readonly IBirdManager _birdManager = birdManager;
-        private readonly INotificationService _notificationService = notificationService;
+        private readonly IBirdManager _birdManager = birdManager 
+            ?? throw new ArgumentNullException(nameof(birdManager));
+
+        private readonly INotificationService _notificationService = notificationService 
+            ?? throw new ArgumentNullException(nameof(notificationService));
 
         /// <inheritdoc/>
-        public BirdViewModel Create(BirdDTO dto) =>
-            new(dto, _birdManager, _notificationService);
+        public BirdViewModel Create(BirdDTO dto)
+        {
+            ArgumentNullException.ThrowIfNull(dto);
+            return new(dto, _birdManager, _notificationService);
+        }
     }
 }
