@@ -11,7 +11,7 @@ namespace Birds.Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, string connectionString)
         {
             services.AddDbContext<BirdDbContext>(options =>
-                options.UseNpgsql(connectionString));
+                options.UseNpgsql(connectionString), ServiceLifetime.Singleton);
 
             services.AddSingleton<IBirdRepository, BirdRepository>();
 
