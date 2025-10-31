@@ -3,6 +3,7 @@ using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
 using Birds.Application.Interfaces;
 using Birds.Domain.Entities;
+using Birds.Shared.Constants;
 using MediatR;
 
 namespace Birds.Application.Commands.CreateBird
@@ -15,7 +16,7 @@ namespace Birds.Application.Commands.CreateBird
         public async Task<Result<BirdDTO>> Handle(CreateBirdCommand request, CancellationToken cancellationToken)
         {
             if (request == null)
-                return Result<BirdDTO>.Failure("Request cannot be null.");
+                return Result<BirdDTO>.Failure(ErrorMessages.RequestCannotBeNull);
 
             var bird = mapper.Map<Bird>(request);
 

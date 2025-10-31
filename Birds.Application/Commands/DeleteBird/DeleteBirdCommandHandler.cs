@@ -1,5 +1,6 @@
 ﻿using Birds.Application.Common.Models;
 using Birds.Application.Interfaces;
+using Birds.Shared.Constants;
 using MediatR;
 
 namespace Birds.Application.Commands.DeleteBird
@@ -10,7 +11,7 @@ namespace Birds.Application.Commands.DeleteBird
         public async Task<Result> Handle(DeleteBirdCommand request, CancellationToken cancellationToken)
         {
             if (request is null)
-                return Result.Failure("Request canno be null");
+                return Result.Failure(ErrorMessages.RequestCannotBeNull);
 
             var bird = await birdRepository.GetByIdAsync(request.Id, cancellationToken);
 
