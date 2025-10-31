@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Birds.Shared.Constants;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Birds.Application.Behaviors
@@ -13,11 +14,11 @@ namespace Birds.Application.Behaviors
             RequestHandlerDelegate<TResponse> next,
             CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Handling {RequestType}", typeof(TRequest).Name);
+            _logger.LogInformation(LogMessages.HandlingRequest, typeof(TRequest).Name);
 
             var response = await next();
 
-            _logger.LogInformation("Handled {RequestType}", typeof(TRequest).Name);
+            _logger.LogInformation(LogMessages.HandledRequest, typeof(TRequest).Name);
 
             return response;
         }

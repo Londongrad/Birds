@@ -1,6 +1,7 @@
 ﻿using Birds.Application.Common.Models;
 using Birds.Application.Exceptions;
 using Birds.Domain.Common.Exceptions;
+using Birds.Shared.Constants;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -29,22 +30,22 @@ namespace Birds.Application.Behaviors
             }
             catch (ValidationException ex)
             {
-                _logger.LogWarning(ex, "Validation failed for {RequestName}", typeof(TRequest).Name);
+                _logger.LogWarning(ex, LogMessages.ValidationFailed, typeof(TRequest).Name);
                 return CreateFailureResponse($"Validation error: {ex.Message}");
             }
             catch (DomainValidationException ex)
             {
-                _logger.LogWarning(ex, "Domain rule violation for {RequestName}", typeof(TRequest).Name);
+                _logger.LogWarning(ex, LogMessages.DomainRuleViolation, typeof(TRequest).Name);
                 return CreateFailureResponse(ex.Message);
             }
             catch (NotFoundException ex)
             {
-                _logger.LogWarning(ex, "Entity not found in {RequestName}", typeof(TRequest).Name);
+                _logger.LogWarning(ex, LogMessages.EntityNotFound, typeof(TRequest).Name);
                 return CreateFailureResponse($"Not found: {ex.Message}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unhandled exception for {RequestName}", typeof(TRequest).Name);
+                _logger.LogError(ex, LogMessages.UnhandledException, typeof(TRequest).Name);
                 return CreateFailureResponse($"Unexpected error: {ex.Message}");
             }
         }
@@ -73,8 +74,7 @@ namespace Birds.Application.Behaviors
 
             // Case 3: Anything else → throw, because it’s not a Result
             throw new InvalidOperationException(
-                $"ExceptionHandlingBehavior can only handle responses of type Result or Result<T>. " +
-                $"Actual type: {responseType.Name}");
+                string.Format(ErrorMessages.InvalidOperationException, responseType.Name));
         }
     }
 }
