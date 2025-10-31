@@ -2,10 +2,12 @@
 
 using Birds.Application;
 using Birds.Infrastructure;
+using Birds.Shared.Constants;
 using Birds.UI;
 using Birds.UI.Converters;
 using Birds.UI.Services.Factories.BirdViewModelFactory;
-using Birds.UI.Services.Navigation;
+using Birds.UI.Services.Navigation.Interfaces;
+using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.Services.Stores.BirdStore;
 using Birds.UI.ViewModels;
 using Birds.UI.Views.Windows;
@@ -112,7 +114,7 @@ namespace Birds.App
                         // Get raw connection string (with ${...} placeholders)
                         var rawConnection = context.Configuration.GetConnectionString("DefaultConnection")
                             ?? throw new ConfigurationErrorsException(
-                                "Connection string 'DefaultConnection' not found in appsettings.json");
+                                ErrorMessages.ConnectionStringNotFound);
 
                         // Replace ${VARIABLE} placeholders with actual environment variable values
                         var connectionString = Regex.Replace(rawConnection, @"\$\{(\w+)\}", match =>
@@ -129,12 +131,12 @@ namespace Birds.App
                     })
                     .Build();
 
-                Log.Information("Application starting...");
+                Log.Information(LogMessages.AppStarting);
 
                 // Start the host and its background services (if any).
                 await _host.StartAsync();
 
-                Log.Information("Host started successfully");
+                Log.Information(LogMessages.HostStarted);
 
                 // Configure converters and navigation services.
                 ConfigureConverter();
@@ -153,7 +155,7 @@ namespace Birds.App
             }
             catch (Exception ex)
             {
-                Log.Fatal(ex, "Application failed during startup");
+                Log.Fatal(ex, LogMessages.AppFailed);
 
                 // Display a message box if startup fails.
                 MessageBox.Show(
@@ -201,18 +203,18 @@ namespace Birds.App
                 }
                 catch (InvalidOperationException ex) when (ex.Message.Contains("Connecting"))
                 {
-                    Log.Debug("Ignored EF Core connecting-state dispose: {Message}", ex.Message);
+                    Log.Debug(LogMessages.EFCoreException, ex.Message);
                 }
                 catch (Exception ex)
                 {
-                    Log.Warning(ex, "Error during Dispose");
+                    Log.Warning(ex, LogMessages.DisposeError);
                 }
             }
 
             // Release the mutex so the app can be launched again.
             _mutex?.ReleaseMutex();
 
-            Log.Information("Application exiting normally");
+            Log.Information(LogMessages.AppExited);
             Log.CloseAndFlush(); // Ensures all logs are written to file
 
             base.OnExit(e);
@@ -233,7 +235,7 @@ namespace Birds.App
                 }
                 catch (OperationCanceledException)
                 {
-                    Log.Warning("BirdStore initialization cancelled because the application is stopping.");
+                    Log.Warning(LogMessages.InitializerStopped);
                 }
                 catch (Exception ex)
                 {
@@ -321,7 +323,7 @@ namespace Birds.App
                 // If the host and services are available, use the notification service.
                 if (_host?.Services != null)
                 {
-                    var notification = _host.Services.GetRequiredService<Birds.UI.Services.Notification.INotificationService>();
+                    var notification = _host.Services.GetRequiredService<INotificationService>();
                     notification.ShowError($"{source}: {ex.Message}");
                 }
                 else
@@ -334,11 +336,11 @@ namespace Birds.App
                         MessageBoxImage.Error);
                 }
 
-                Log.Error(ex, "Unhandled exception in {Source}", source);
+                Log.Error(ex, LogMessages.UnhandledExceptionInSource, source);
             }
             catch (Exception)
             {
-                Log.Error(ex, "Unhandled exception in {Source}", source);
+                Log.Error(ex, LogMessages.UnhandledExceptionInSource, source);
             }
         }
 
