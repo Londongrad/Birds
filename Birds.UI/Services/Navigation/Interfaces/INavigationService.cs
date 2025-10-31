@@ -2,7 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using System.Windows;
 
-namespace Birds.UI.Services.Navigation
+namespace Birds.UI.Services.Navigation.Interfaces
 {
     /// <summary>
     /// Navigation service for managing the current ViewModel and opening separate windows.

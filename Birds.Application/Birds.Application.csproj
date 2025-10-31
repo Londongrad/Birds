@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Birds.Domain\Birds.Domain.csproj" />
+    <ProjectReference Include="..\Birds.Shared\Birds.Shared.csproj" />
   </ItemGroup>
 
 </Project>

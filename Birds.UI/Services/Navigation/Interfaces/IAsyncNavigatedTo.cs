@@ -1,4 +1,4 @@
-﻿namespace Birds.UI.Services.Navigation
+﻿namespace Birds.UI.Services.Navigation.Interfaces
 {
     /// <summary>
     /// Defines a contract for view models that require asynchronous initialization
