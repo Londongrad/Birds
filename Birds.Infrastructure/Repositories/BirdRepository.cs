@@ -27,7 +27,6 @@ namespace Birds.Infrastructure.Repositories
         public async Task<Bird> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return await context.Birds
-                .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.Id == id, cancellationToken)
                 ?? throw new NotFoundException(nameof(Bird), id);
         }
