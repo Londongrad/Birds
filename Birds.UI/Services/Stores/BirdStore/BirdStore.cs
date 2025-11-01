@@ -18,17 +18,10 @@ namespace Birds.UI.Services.Stores.BirdStore
         public ObservableCollection<BirdDTO> Birds { get; } = [];
 
         /// <inheritdoc/>
-        public event Action? StoreLoaded;
-
-        /// <inheritdoc/>
         public void BeginLoading() => LoadState = LoadState.Loading;
 
         /// <inheritdoc/>
-        public void CompleteLoading()
-        {
-            LoadState = LoadState.Loaded;
-            StoreLoaded?.Invoke(); // Fire event when data is ready
-        }
+        public void CompleteLoading() => LoadState = LoadState.Loaded;
 
         /// <inheritdoc/>
         public void FailLoading() => LoadState = LoadState.Failed;
