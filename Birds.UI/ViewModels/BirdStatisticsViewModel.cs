@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Globalization;
 
 namespace Birds.UI.ViewModels
 {
@@ -138,9 +139,10 @@ namespace Birds.UI.ViewModels
             foreach (var b in filteredBirds)
             {
                 total++;
-                if (b.Departure != null && b.IsAlive == true)
+
+                if (b.Departure != null && b.IsAlive is true)
                     released++;
-                else if (b.IsAlive == false)
+                else if (b.IsAlive is false)
                     killed++;
             }
 
@@ -202,17 +204,26 @@ namespace Birds.UI.ViewModels
                 .GroupBy(b =>
                 {
                     var dt = b.Arrival.ToDateTime(TimeOnly.MinValue);
-                    return System.Globalization.CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(
-                        dt,
-                        System.Globalization.CalendarWeekRule.FirstFourDayWeek,
-                        DayOfWeek.Monday);
+                    return new
+                    {
+                        Year = ISOWeek.GetYear(dt),
+                        Week = ISOWeek.GetWeekOfYear(dt)
+                    };
                 })
                 .OrderByDescending(g => g.Count())
                 .FirstOrDefault();
 
-            TopWeek = topWeekGroup != null
-                ? $"Неделя {topWeekGroup.Key}: {topWeekGroup.Count()} птиц"
-                : "—";
+            if (topWeekGroup is not null)
+            {
+                int year = topWeekGroup.Key.Year;
+                int week = topWeekGroup.Key.Week;
+                string range = FormatIsoWeekRange(year, week);
+                TopWeek = $"{range} — {topWeekGroup.Count()} птиц";
+            }
+            else
+            {
+                TopWeek = "—";
+            }
 
             // The most productive day
             var topDayGroup = filteredBirds
