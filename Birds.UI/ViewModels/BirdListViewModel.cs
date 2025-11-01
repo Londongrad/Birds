@@ -63,6 +63,7 @@ namespace Birds.UI.ViewModels
 
         /// <summary>Data loading indicator from BirdStore.</summary>
         public bool IsLoading => _birdManager.Store.LoadState == LoadState.Loading;
+
         public List<FilterOption> Filters { get; } =
         [
             new(BirdFilter.All, "Показать всех"),
@@ -130,6 +131,8 @@ namespace Birds.UI.ViewModels
 
                 bool matchesSearch =
                     (bird.Name?.Contains(text, StringComparison.CurrentCultureIgnoreCase) == true)
+                    || (bird.Arrival.ToString().Contains(text, StringComparison.CurrentCultureIgnoreCase) == true)
+                    || (bird.Departure?.ToString().Contains(text, StringComparison.CurrentCultureIgnoreCase) == true)
                     || (bird.Description?.Contains(text, StringComparison.CurrentCultureIgnoreCase) == true);
 
                 if (!matchesSearch)
