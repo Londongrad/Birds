@@ -50,6 +50,7 @@ namespace Birds.UI.ViewModels
         #region [ Fields ]
 
         private readonly IBirdStore _birdStore;
+        private static readonly CultureInfo Ru = CultureInfo.GetCultureInfo("ru-RU");
 
         #endregion [ Fields ]
 
@@ -171,10 +172,13 @@ namespace Birds.UI.ViewModels
         {
             MonthStats.Clear();
             foreach (var g in filteredBirds
-                .GroupBy(b => b.Arrival.ToString("yyyy-MM"))
-                .OrderBy(g => g.Key))
+                .GroupBy(b => new { b.Arrival.Year, b.Arrival.Month })
+                .OrderByDescending(g => g.Key.Year)
+                .ThenByDescending(g => g.Key.Month))
             {
-                MonthStats.Add(new StatItem(g.Key, g.Count()));
+                var firstOfMonth = new DateOnly(g.Key.Year, g.Key.Month, 1);
+                var label = firstOfMonth.ToString("MMM yyyy", Ru); // «окт 2024»
+                MonthStats.Add(new StatItem(label, g.Count()));
             }
         }
 
@@ -279,6 +283,23 @@ namespace Birds.UI.ViewModels
 
                 LongestKeepingStats.Add(new StatItem(group.Key, (int)maxDays));
             }
+        }
+
+        /// <summary>
+        /// ISO week range formatting helper
+        /// </summary>
+        private static string FormatIsoWeekRange(int isoYear, int isoWeek)
+        {
+            var start = ISOWeek.ToDateTime(isoYear, isoWeek, DayOfWeek.Monday);
+            var end = ISOWeek.ToDateTime(isoYear, isoWeek, DayOfWeek.Sunday);
+
+            if (start.Year != end.Year)
+                return $"{start:dd MMM yyyy}—{end:dd MMM yyyy}";
+
+            if (start.Month != end.Month)
+                return $"{start:dd MMM}-{end:dd MMM yyyy}";
+
+            return $"{start:dd}-{end:dd} {start.ToString("MMMM yyyy", Ru)}";
         }
 
         #endregion [ Methods ]
