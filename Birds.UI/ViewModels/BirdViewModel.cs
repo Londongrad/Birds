@@ -3,7 +3,7 @@ using Birds.Application.DTOs;
 using Birds.Application.DTOs.Helpers;
 using Birds.Shared.Constants;
 using Birds.UI.Services.Managers.Bird;
-using Birds.UI.Services.Notification;
+using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.ViewModels.Base;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -123,6 +123,8 @@ namespace Birds.UI.ViewModels
         [RelayCommand]
         private async Task DeleteAsync()
         {
+            _notificationService.ShowInfo(InfoMessages.DeletingBird);
+
             Result result = await _birdManager.DeleteAsync(Id, CancellationToken.None);
 
             if (result.IsSuccess)
@@ -170,11 +172,11 @@ namespace Birds.UI.ViewModels
         /// Command that validates user input and updates the bird through <see cref="IBirdManager"/>.
         /// </summary>
         /// <remarks>
-        /// If validation passes, the method sends an update request via <see cref="IBirdManager"/>.  
-        /// Upon completion, a success or error notification is displayed to the user using  
-        /// <see cref="INotificationService"/>.  
-        /// 
-        /// After a successful update, calculated fields (e.g. days in stock and departure display)  
+        /// If validation passes, the method sends an update request via <see cref="IBirdManager"/>.
+        /// Upon completion, a success or error notification is displayed to the user using
+        /// <see cref="INotificationService"/>.
+        ///
+        /// After a successful update, calculated fields (e.g. days in stock and departure display)
         /// are refreshed, and edit mode is turned off.
         /// </remarks>
         [RelayCommand]
@@ -183,6 +185,8 @@ namespace Birds.UI.ViewModels
             ValidateAllProperties();
             if (HasErrors)
                 return;
+
+            _notificationService.ShowInfo(InfoMessages.UpdatingBird);
 
             Result<BirdDTO> result = await _birdManager.UpdateAsync(
                 new BirdUpdateDTO(
@@ -199,7 +203,10 @@ namespace Birds.UI.ViewModels
                 LocalUpdatedAt = result.Value.UpdatedAt?.ToLocalTime();
             }
             else
-                _notificationService.ShowError("Unable to update bird.");
+            {
+                CancelEdit();
+                _notificationService.ShowError(ErrorMessages.CannotUpdateBird);
+            }
 
             // Recalculate derived fields after saving
             UpdateCalculatedFields();
@@ -258,7 +265,7 @@ namespace Birds.UI.ViewModels
         /// <summary>
         /// Validates the departure date.
         /// Allows null, disallows future dates and dates earlier than Arrival.
-        /// 
+        ///
         /// <para>
         /// Moved from <see cref="BirdValidationBaseViewModel"/> since it is only required in this ViewModel.
         /// </para>
