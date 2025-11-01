@@ -1,6 +1,8 @@
 ﻿using Birds.Domain.Enums;
+using Birds.Shared.Constants;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 
 namespace Birds.UI.ViewModels.Base
 {
@@ -25,7 +27,7 @@ namespace Birds.UI.ViewModels.Base
         /// The selected bird species.
         /// Required; validation will fail if not provided.
         /// </summary>
-        [Required(ErrorMessage = "Select a bird species")]
+        [Required(ErrorMessage = ValidationMessages.UnselectedBird)]
         [ObservableProperty]
         private BirdsName? selectedBirdName;
 
@@ -33,7 +35,7 @@ namespace Birds.UI.ViewModels.Base
         /// The bird description.
         /// Optional, but limited to 100 characters.
         /// </summary>
-        [MaxLength(100, ErrorMessage = "Description is too long")]
+        [MaxLength(100, ErrorMessage = ValidationMessages.LongDescription)]
         [ObservableProperty]
         private string? description;
 
@@ -42,11 +44,11 @@ namespace Birds.UI.ViewModels.Base
         /// Required and validated by <see cref="ValidateArrival"/>.
         /// </summary>
         [CustomValidation(typeof(BirdValidationBaseViewModel), nameof(ValidateArrival))]
-        [Required(ErrorMessage = "Specify the date")]
+        [Required(ErrorMessage = ValidationMessages.DateIsNotSpecified)]
         [ObservableProperty]
         private DateOnly arrival = DateOnly.FromDateTime(DateTime.UtcNow);
 
-        #endregion
+        #endregion [ Properties ]
 
         #region [ Validation ]
 
@@ -62,13 +64,14 @@ namespace Birds.UI.ViewModels.Base
         public static ValidationResult? ValidateArrival(object? value, ValidationContext _)
         {
             if (value is not DateOnly d)
-                return new ValidationResult("Specify the date");
+                return new ValidationResult(ValidationMessages.DateIsNotSpecified);
 
             var min = new DateOnly(2020, 1, 1);
             var max = DateOnly.FromDateTime(DateTime.Today);
 
             if (d < min || d > max)
-                return new ValidationResult($"Date must be between {min:dd-MM-yyyy} and {max:dd-MM-yyyy}");
+                return new ValidationResult(
+                    string.Format(CultureInfo.CurrentCulture, ValidationMessages.InvalidDateRange, min, max));
 
             return ValidationResult.Success;
         }
@@ -100,8 +103,9 @@ namespace Birds.UI.ViewModels.Base
         /// <summary>
         /// Invoked when the arrival date changes (can be overridden in derived classes).
         /// </summary>
-        protected virtual void OnArrivalChangedCore(DateOnly value) { }
+        protected virtual void OnArrivalChangedCore(DateOnly value)
+        { }
 
-        #endregion
+        #endregion [ Validation ]
     }
 }

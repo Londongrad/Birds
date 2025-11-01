@@ -1,6 +1,7 @@
 ﻿using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
 using Birds.Application.DTOs.Helpers;
+using Birds.Shared.Constants;
 using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Notification;
 using Birds.UI.ViewModels.Base;
@@ -125,9 +126,9 @@ namespace Birds.UI.ViewModels
             Result result = await _birdManager.DeleteAsync(Id, CancellationToken.None);
 
             if (result.IsSuccess)
-                _notificationService.ShowSuccess("Bird deleted successfully!");
+                _notificationService.ShowSuccess(InfoMessages.DeletedBird);
             else
-                _notificationService.ShowError("Unable to delete bird.");
+                _notificationService.ShowError(ErrorMessages.CannotDeleteBird);
 
             IsConfirmingDelete = false;
         }
@@ -194,7 +195,7 @@ namespace Birds.UI.ViewModels
 
             if (result.IsSuccess)
             {
-                _notificationService.ShowSuccess("Bird updated successfully!");
+                _notificationService.ShowSuccess(InfoMessages.UpdatedBird);
                 LocalUpdatedAt = result.Value.UpdatedAt?.ToLocalTime();
             }
             else
@@ -225,7 +226,7 @@ namespace Birds.UI.ViewModels
         {
             DepartureDisplay = Departure.HasValue
                 ? Departure.Value.ToString("dd.MM.yyyy")
-                : "to this day";
+                : InfoMessages.ToThisDay;
 
             var endDate = Departure?.ToDateTime(TimeOnly.MinValue) ?? DateTime.Now;
             DaysInStock = (int)(endDate - Arrival.ToDateTime(TimeOnly.MinValue)).TotalDays;
@@ -265,21 +266,23 @@ namespace Birds.UI.ViewModels
         public static ValidationResult? ValidateDeparture(object? value, ValidationContext ctx)
         {
             if (ctx.ObjectInstance is BirdViewModel birdVM && value is null && birdVM.IsAlive == false)
-                return new ValidationResult("Please specify the date first.");
+                return new ValidationResult(ValidationMessages.DateIsNotSpecified);
 
             if (value is null)
                 return ValidationResult.Success;
 
             if (value is not DateOnly d)
-                return new ValidationResult("Please specify a valid date.");
+                return new ValidationResult(ValidationMessages.DateIsNotValid);
 
             var today = DateOnly.FromDateTime(DateTime.Today);
             if (d > today)
-                return new ValidationResult($"The date cannot be in the future (no later than {today:dd-MM-yyyy}).");
+                return new ValidationResult(
+                    string.Format(ValidationMessages.DateCannotBeInTheFuture, today));
 
             // Access Arrival via context (BirdViewModel inherits from the base class)
             if (ctx.ObjectInstance is BirdValidationBaseViewModel vm && d < vm.Arrival)
-                return new ValidationResult($"Departure date cannot be earlier than arrival date ({vm.Arrival:dd-MM-yyyy}).");
+                return new ValidationResult(
+                    string.Format(ValidationMessages.DepartureLaterThenArrival, vm.Arrival));
 
             return ValidationResult.Success;
         }

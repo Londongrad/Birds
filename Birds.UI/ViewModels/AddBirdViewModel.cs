@@ -76,7 +76,7 @@ namespace Birds.UI.ViewModels
             IsBusy = true; // Disable button
             SaveCommand.NotifyCanExecuteChanged();
 
-            _notification.ShowInfo("Adding bird...");
+            _notification.ShowInfo(InfoMessages.AddingBird);
 
             var dto = new BirdCreateDTO(
                 SelectedBirdName ?? default,
@@ -90,7 +90,7 @@ namespace Birds.UI.ViewModels
 
             if (result.IsSuccess)
             {
-                _notification.ShowSuccess("Bird added successfully!");
+                _notification.ShowSuccess(InfoMessages.BirdAdded);
                 // Reset the description after successful save
                 Description = string.Empty;
             }
