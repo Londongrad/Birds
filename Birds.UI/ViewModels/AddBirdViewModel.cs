@@ -1,7 +1,8 @@
 ﻿using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
+using Birds.Shared.Constants;
 using Birds.UI.Services.Managers.Bird;
-using Birds.UI.Services.Notification;
+using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.ViewModels.Base;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -74,6 +75,7 @@ namespace Birds.UI.ViewModels
                 return;
 
             IsBusy = true; // Disable button
+            Result<BirdDTO> result;
             SaveCommand.NotifyCanExecuteChanged();
 
             _notification.ShowInfo(InfoMessages.AddingBird);
@@ -86,7 +88,15 @@ namespace Birds.UI.ViewModels
                 !IsOneTime
             );
 
-            Result<BirdDTO> result = await _birdManager.AddAsync(dto, CancellationToken.None);
+            try
+            {
+                result = await _birdManager.AddAsync(dto, CancellationToken.None);
+            }
+            finally
+            {
+                IsBusy = false; // Enable button again
+                SaveCommand.NotifyCanExecuteChanged();
+            }
 
             if (result.IsSuccess)
             {
@@ -95,10 +105,7 @@ namespace Birds.UI.ViewModels
                 Description = string.Empty;
             }
             else
-                _notification.ShowError("Unable to save bird");
-
-            IsBusy = false; // Enable button again
-            SaveCommand.NotifyCanExecuteChanged();
+                _notification.ShowError(ErrorMessages.CannotSaveBird);
         }
 
         #endregion [ Commands ]
