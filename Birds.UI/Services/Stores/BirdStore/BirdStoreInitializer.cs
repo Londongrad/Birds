@@ -74,15 +74,13 @@ namespace Birds.UI.Services.Stores.BirdStore
 
             if (!result.IsSuccess)
             {
-                _logger.LogError("{Error}", result.Error);
+                _logger.LogError(LogMessages.Error, result.Error);
 
                 _birdStore.FailLoading(); // mark as failed
 
-                MessageBox.Show(
-                    "Failed to load bird data from the database. The application cannot continue without this data.\n\nPlease check your connection or restart the application.",
-                    "Critical Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                _notificationService.Show(
+                    ErrorMessages.BirdLoadFailed,
+                    new NotificationOptions(NotificationType.Error, TimeSpan.FromSeconds(7)));
 
                 return;
             }
@@ -97,9 +95,9 @@ namespace Birds.UI.Services.Stores.BirdStore
                     _birdStore.Birds.Add(bird);
             });
 
-            _notificationService.ShowInfo("Bird data loaded successfully.");
+            _notificationService.ShowInfo(InfoMessages.LoadedSuccessfully);
             _birdStore.CompleteLoading(); // mark as successfully loaded and fire an event
-            _logger.LogInformation("Bird data successfully loaded. {Count} birds retrieved.", _birdStore.Birds.Count);
+            _logger.LogInformation(LogMessages.LoadedSuccessfully, _birdStore.Birds.Count);
         }
 
         /// <summary>
