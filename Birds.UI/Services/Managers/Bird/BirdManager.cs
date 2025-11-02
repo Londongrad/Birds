@@ -152,32 +152,62 @@ namespace Birds.UI.Services.Managers.Bird
         }
 
         /// <summary>
-        /// Asynchronously waits until the bird store finishes loading.
-        /// If the store is already loaded, the method returns immediately.
+        /// Asynchronously waits until the bird store reaches a terminal load state
+        /// (<see cref="LoadState.Loaded"/> or <see cref="LoadState.Failed"/>).
+        /// <para>
+        /// Uses <c>INotifyPropertyChanged</c> (via <c>ObservableObject</c>) to observe
+        /// <see cref="IBirdStore.LoadState"/> changes through the <c>PropertyChanged</c> event.
+        /// </para>
+        /// <para>
+        /// Fast path: if the store is already in a terminal state, returns a completed task immediately.
+        /// Otherwise, subscribes to <c>PropertyChanged</c> and completes when <see cref="IBirdStore.LoadState"/>
+        /// becomes <see cref="LoadState.Loaded"/> or <see cref="LoadState.Failed"/>.
+        /// </para>
+        /// <para>
+        /// Race handling: right after subscribing, performs an extra state check to cover the window
+        /// where the state might have changed between the initial check and the subscription (and no event will arrive).
+        /// </para>
+        /// <para>
+        /// Cancellation: if <paramref name="cancellationToken"/> is canceled, unsubscribes and completes the task as canceled.
+        /// Continuations run asynchronously due to <see cref="TaskCreationOptions.RunContinuationsAsynchronously"/>.
+        /// </para>
         /// </summary>
+        /// <param name="cancellationToken">Cancellation token to abort waiting.</param>
         /// <returns>
-        /// A task that completes when the store reaches the <see cref="LoadState.Loaded"/> state.
+        /// A task that completes when the store reaches <see cref="LoadState.Loaded"/> or <see cref="LoadState.Failed"/>.
         /// </returns>
-        private Task WaitUntilStoreLoadedAsync(CancellationToken cancellationToken)
+        private Task WaitUntilLoadedOrFailedAsync(CancellationToken cancellationToken)
         {
-            if (_store.LoadState == LoadState.Loaded)
-                return Task.CompletedTask; // Already ready
+            if (_store.LoadState is LoadState.Loaded or LoadState.Failed)
+                return Task.CompletedTask;
 
-            var tcs = new TaskCompletionSource();
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            void OnLoaded()
+            void OnChanged(object? s, PropertyChangedEventArgs e)
             {
-                _store.StoreLoaded -= OnLoaded;
+                if (e.PropertyName is nameof(IBirdStore.LoadState) or null)
+                {
+                    if (_store.LoadState is LoadState.Loaded or LoadState.Failed)
+            {
+                        _store.PropertyChanged -= OnChanged;
+                tcs.TrySetResult();
+            }
+                }
+            }
+
+            _store.PropertyChanged += OnChanged;
+
+            if (_store.LoadState is LoadState.Loaded or LoadState.Failed)
+            {
+                _store.PropertyChanged -= OnChanged;
                 tcs.TrySetResult();
             }
 
-            _store.StoreLoaded += OnLoaded;
-
-            // Cancelation support
+            if (cancellationToken.CanBeCanceled)
             cancellationToken.Register(() =>
             {
-                _store.StoreLoaded -= OnLoaded;
-                tcs.TrySetCanceled();
+                    _store.PropertyChanged -= OnChanged;
+                    tcs.TrySetCanceled(cancellationToken);
             });
 
             return tcs.Task;
