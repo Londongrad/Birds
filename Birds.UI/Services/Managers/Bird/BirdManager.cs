@@ -58,6 +58,10 @@ namespace Birds.UI.Services.Managers.Bird
                 await WaitUntilStoreLoadedAsync(cancellationToken);
             }
 
+            // Check if loading was successful after reload, otherwise fail the operation
+            if (_store.LoadState is not LoadState.Loaded)
+                return Result<BirdDTO>.Failure("Bird store cannot be loaded.");
+
             Result<BirdDTO> result = await _mediator.Send(
                 new CreateBirdCommand(
                     newBird.Name,
