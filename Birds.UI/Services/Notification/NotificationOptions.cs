@@ -6,12 +6,10 @@
     /// </summary>
     /// <param name="Type">The type of notification (success, error, warning, information).</param>
     /// <param name="Duration">The duration of the notification display.</param>
-    /// <param name="ShowCloseButton">Indicates whether to show the close button.</param>
     /// <param name="Title">An optional notification title.</param>
     public record NotificationOptions(
         NotificationType Type = NotificationType.Info,
         TimeSpan Duration = default,
-        bool ShowCloseButton = true,
         string? Title = null
     )
     {
