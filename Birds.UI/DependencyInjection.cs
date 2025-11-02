@@ -1,8 +1,12 @@
 ﻿using Birds.UI.Services.Factories.BirdViewModelFactory;
 using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Navigation;
+using Birds.UI.Services.Navigation.Interfaces;
 using Birds.UI.Services.Notification;
+using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.Services.Stores.BirdStore;
+using Birds.UI.Threading;
+using Birds.UI.Threading.Abstractions;
 using Birds.UI.ViewModels;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +30,8 @@ namespace Birds.UI
             services.AddSingleton<IBirdStore, BirdStore>();
             services.AddSingleton<BirdStoreInitializer>();
             services.AddSingleton<IBirdManager, BirdManager>();
+            services.AddSingleton<IUiDispatcher, WpfUiDispatcher>();
+            services.AddSingleton<INotificationManager, NotificationManager>();
 
             // MediatR notification Handlers
             services.AddSingleton<INotificationHandler<NavigatedEvent>>(sp =>
