@@ -1,14 +1,14 @@
 ﻿using Birds.UI.Services.Navigation;
-using Birds.UI.Services.Notification.Birds.UI.Services.Notification;
-using Birds.UI.Views.Windows;
+using Birds.UI.Services.Notification.Interfaces;
 using MediatR;
 using System.Windows;
 
 namespace Birds.UI.Services.Notification
 {
-    public class NotificationService : INotificationService, INotificationHandler<NavigatedEvent>
+    public class NotificationService(INotificationManager notificationManager) : INotificationService, INotificationHandler<NavigatedEvent>
     {
         private Window? _parent;
+        private readonly INotificationManager _notificationManager = notificationManager;
 
         /// <summary>
         /// Attaches the notification service to the specified window.
@@ -33,7 +33,7 @@ namespace Birds.UI.Services.Notification
             if (_parent == null)
                 throw new InvalidOperationException("The notification service is not attached to any window.");
 
-            NotificationManager.ShowNotification(message, options ?? new NotificationOptions(), _parent);
+            _notificationManager.ShowNotification(message, options ?? new NotificationOptions(), _parent);
         }
 
         /// <inheritdoc/>
