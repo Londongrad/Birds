@@ -6,9 +6,10 @@ using Birds.Application.DTOs;
 using Birds.Application.DTOs.Helpers;
 using Birds.UI.Enums;
 using Birds.UI.Extensions;
-using Birds.UI.Services.Notification;
 using Birds.UI.Services.Stores.BirdStore;
+using Birds.UI.Threading.Abstractions;
 using MediatR;
+using System.ComponentModel;
 
 namespace Birds.UI.Services.Managers.Bird
 {
@@ -16,15 +17,15 @@ namespace Birds.UI.Services.Managers.Bird
                        IBirdStore store,
                        BirdStoreInitializer initializer,
                        IMediator mediator,
-                       INotificationService notification
-        ) : IBirdManager
+                       IUiDispatcher uiDispatcher)
+        : IBirdManager
     {
         #region [ Fields ]
 
         private readonly IBirdStore _store = store;
         private readonly BirdStoreInitializer _initializer = initializer;
         private readonly IMediator _mediator = mediator;
-        private readonly INotificationService _notification = notification;
+        private readonly IUiDispatcher _uiDispatcher = uiDispatcher;
 
         #endregion [ Fields ]
 
@@ -46,16 +47,14 @@ namespace Birds.UI.Services.Managers.Bird
         public async Task<Result<BirdDTO>> AddAsync(BirdCreateDTO newBird, CancellationToken cancellationToken)
         {
             // Handle "uninitialized" or "failed" states
-            if (_store.LoadState == LoadState.Uninitialized || _store.LoadState == LoadState.Failed)
+            if (_store.LoadState is LoadState.Uninitialized or LoadState.Failed)
             {
-                _notification.ShowInfo("Connection restored. Reloading bird data...");
                 await ReloadAsync(cancellationToken);   // Force reload
-                await WaitUntilStoreLoadedAsync(cancellationToken); // Wait for successful reload
             }
-            else if (_store.LoadState == LoadState.Loading)
+            else if (_store.LoadState is LoadState.Loading)
             {
                 // Just wait for the initial load to complete
-                await WaitUntilStoreLoadedAsync(cancellationToken);
+                await WaitUntilLoadedOrFailedAsync(cancellationToken);
             }
 
             // Check if loading was successful after reload, otherwise fail the operation
@@ -71,10 +70,9 @@ namespace Birds.UI.Services.Managers.Bird
                     newBird.IsAlive
                     ), cancellationToken);
 
-            if (!result.IsSuccess)
-                return result;
+            if (result.IsSuccess)
+                await AddBirdToStore(result.Value);
 
-            await AddBirdToStore(result.Value);
             return result;
         }
 
@@ -118,7 +116,7 @@ namespace Birds.UI.Services.Managers.Bird
         /// <param name="action">The action to execute on the UI thread.</param>
         private async Task ExecuteOnUiAsync(Action action)
         {
-            await System.Windows.Application.Current.Dispatcher.InvokeOnUiAsync(action);
+            await _uiDispatcher.InvokeAsync(action);
         }
 
         /// <summary>
@@ -192,10 +190,10 @@ namespace Birds.UI.Services.Managers.Bird
                 if (e.PropertyName is nameof(IBirdStore.LoadState) or null)
                 {
                     if (_store.LoadState is LoadState.Loaded or LoadState.Failed)
-            {
+                    {
                         _store.PropertyChanged -= OnChanged;
-                tcs.TrySetResult();
-            }
+                        tcs.TrySetResult();
+                    }
                 }
             }
 
@@ -208,11 +206,11 @@ namespace Birds.UI.Services.Managers.Bird
             }
 
             if (cancellationToken.CanBeCanceled)
-            cancellationToken.Register(() =>
-            {
+                cancellationToken.Register(() =>
+                {
                     _store.PropertyChanged -= OnChanged;
                     tcs.TrySetCanceled(cancellationToken);
-            });
+                });
 
             return tcs.Task;
         }
