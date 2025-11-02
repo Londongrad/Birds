@@ -111,7 +111,6 @@
         <Setter Property="Margin" Value="0,4,0,0" />
     </Style>
 
-
     <!-- =========================== -->
     <!-- Template for normal buttons -->
     <!-- =========================== -->

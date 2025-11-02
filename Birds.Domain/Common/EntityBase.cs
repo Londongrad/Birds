@@ -12,7 +12,8 @@
 
         #region [ Ctors ]
 
-        protected EntityBase() { }
+        protected EntityBase()
+        { }
 
         protected EntityBase(Guid id)
         {

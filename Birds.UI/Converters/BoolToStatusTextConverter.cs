@@ -8,7 +8,7 @@ namespace Birds.UI.Converters
     /// </summary>
     /// <remarks>
     /// Used for displaying text in <c>TextBlock</c> or <c>ToggleButton.Content</c>.
-    /// 
+    ///
     /// - <c>true</c> → "Alive"
     /// - <c>false</c> → "Dead"
     /// </remarks>
@@ -46,5 +46,4 @@ namespace Birds.UI.Converters
             return Binding.DoNothing;
         }
     }
-
 }

@@ -68,5 +68,4 @@
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Foreground" Value="White" />
     </Style>
-
 </ResourceDictionary>

@@ -37,7 +37,8 @@ namespace Birds.UI.Converters
         /// Explicitly defined here, although not strictly necessary. The main requirement is to have a parameterless constructor.
         /// </para>
         /// </summary>
-        public BirdVmConverter() { }
+        public BirdVmConverter()
+        { }
 
         /// <summary>
         /// Converts a <see cref="BirdDTO"/> to a <see cref="BirdViewModel"/>.

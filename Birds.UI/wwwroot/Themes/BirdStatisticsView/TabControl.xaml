@@ -45,7 +45,6 @@
         </Setter>
     </Style>
 
-
     <!-- ====== TAB CONTROL STYLE ====== -->
     <Style TargetType="TabControl">
         <Setter Property="Background" Value="Transparent" />

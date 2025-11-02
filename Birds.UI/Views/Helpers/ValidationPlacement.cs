@@ -29,7 +29,7 @@ namespace Birds.UI.Views.Helpers
         /// </summary>
         /// <remarks>
         /// The default value is <see cref="PlacementMode.Right"/>.
-        /// 
+        ///
         /// <para>
         /// When the value changes, the property automatically updates
         /// the applied error template by setting the corresponding resource
@@ -196,5 +196,4 @@ namespace Birds.UI.Views.Helpers
         Left,
         Top
     }
-
 }

@@ -51,8 +51,6 @@
                                        UpdateSourceTrigger=PropertyChanged}"
                 Style="{StaticResource DatePickerAdd}" />
 
-
-
             <TextBlock
                 Style="{StaticResource TextBlockAdd}"
                 Text="Is one time bird?" />

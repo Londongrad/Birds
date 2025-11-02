@@ -120,10 +120,8 @@
                 <Setter TargetName="errors" Property="DockPanel.Dock" Value="Top" />
                 <Setter TargetName="errors" Property="Margin" Value="0,0,0,4" />
             </DataTrigger>
-
         </ControlTemplate.Triggers>
     </ControlTemplate>
-
 
     <!-- ====================================================================================== -->
     <!-- Apply the empty ErrorTemplate globally to remove the red control border -->

@@ -14,6 +14,7 @@
         Grosbeak = 9,
         Dead = 10
     }
+
     public record FilterOption(BirdFilter Filter, string Display)
     {
         public override string ToString() => Display;

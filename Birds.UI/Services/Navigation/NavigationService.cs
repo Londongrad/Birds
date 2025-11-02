@@ -1,11 +1,11 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Birds.UI.Services.Navigation.Interfaces;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using System.Windows;
 
 namespace Birds.UI.Services.Navigation
 {
-
     public class NavigationService : ObservableObject, INavigationService
     {
         #region [ Fields ]

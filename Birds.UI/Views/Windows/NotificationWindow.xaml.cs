@@ -25,14 +25,17 @@ namespace Birds.UI.Views.Windows
                     RootBorder.Background = Brushes.Green;
                     IconImage.Source = (ImageSource)FindResource("SuccessIconSource");
                     break;
+
                 case NotificationType.Error:
                     RootBorder.Background = Brushes.Red;
                     IconImage.Source = (ImageSource)FindResource("ErrorIconSource");
                     break;
+
                 case NotificationType.Info:
                     RootBorder.Background = Brushes.Blue;
                     IconImage.Source = (ImageSource)FindResource("InfoIconSource");
                     break;
+
                 case NotificationType.Warning:
                     RootBorder.Background = Brushes.Orange;
                     IconImage.Source = (ImageSource)FindResource("WarningIconSource");
