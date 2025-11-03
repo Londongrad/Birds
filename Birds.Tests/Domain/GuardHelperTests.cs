@@ -17,13 +17,15 @@ namespace Birds.Tests.Domain
             string emptyString = "";
             string whitespaceString = "   ";
 
-            // Act & Assert
-            Assert.Throws<DomainValidationException>(() => 
-                GuardHelper.AgainstNullOrEmpty(nullString, "testArg"));
-            Assert.Throws<DomainValidationException>(() => 
-                GuardHelper.AgainstNullOrEmpty(emptyString, "testArg"));
-            Assert.Throws<DomainValidationException>(() => 
-                GuardHelper.AgainstNullOrEmpty(whitespaceString, "testArg"));
+            // Act
+            Action act1 = () => GuardHelper.AgainstNullOrEmpty(nullString, "testArg");
+            Action act2 = () => GuardHelper.AgainstNullOrEmpty(emptyString, "testArg");
+            Action act3 = () => GuardHelper.AgainstNullOrEmpty(whitespaceString, "testArg");
+
+            // Assert
+            act1.Should().Throw<DomainValidationException>().WithMessage("*testArg*");
+            act2.Should().Throw<DomainValidationException>().WithMessage("*testArg*");
+            act3.Should().Throw<DomainValidationException>().WithMessage("*testArg*");
         }
 
         [Fact]
@@ -51,13 +53,15 @@ namespace Birds.Tests.Domain
             DateOnly futureDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1));
             DateOnly pastDate = DateOnly.FromDateTime(new DateTime(2019, 12, 31));
 
-            // Act & Assert
-            Assert.Throws<DomainValidationException>(() => 
-                GuardHelper.AgainstInvalidDateOnly(defaultDate, "testDate"));
-            Assert.Throws<DomainValidationException>(() => 
-                GuardHelper.AgainstInvalidDateOnly(futureDate, "testDate"));
-            Assert.Throws<DomainValidationException>(() => 
-                GuardHelper.AgainstInvalidDateOnly(pastDate, "testDate"));
+            // Act
+            Action act1 = () => GuardHelper.AgainstInvalidDateOnly(defaultDate, "testDate");
+            Action act2 = () => GuardHelper.AgainstInvalidDateOnly(futureDate, "testDate");
+            Action act3 = () => GuardHelper.AgainstInvalidDateOnly(pastDate, "testDate");
+
+            // Assert
+            act1.Should().Throw<DomainValidationException>().WithMessage("*testDate*");
+            act2.Should().Throw<DomainValidationException>().WithMessage("*testDate*");
+            act3.Should().Throw<DomainValidationException>().WithMessage("*testDate*");
         }
 
         [Fact]
@@ -92,15 +96,17 @@ namespace Birds.Tests.Domain
             DateTime pastDate = new(2019, 12, 31);
             DateTime nowNoUTC = DateTime.Now;
 
-            // Act & Assert
-            Assert.Throws<DomainValidationException>(() => 
-                GuardHelper.AgainstInvalidDateTime(defaultDate, "testDateTime"));
-            Assert.Throws<DomainValidationException>(() => 
-                GuardHelper.AgainstInvalidDateTime(futureDate, "testDateTime"));
-            Assert.Throws<DomainValidationException>(() => 
-                GuardHelper.AgainstInvalidDateTime(pastDate, "testDateTime"));
-            Assert.Throws<DomainValidationException>(() => 
-                GuardHelper.AgainstInvalidDateTime(nowNoUTC, "testDateTime"));
+            // Act
+            Action act1 = () => GuardHelper.AgainstInvalidDateTime(defaultDate, "testDateTime");
+            Action act2 = () => GuardHelper.AgainstInvalidDateTime(futureDate, "testDateTime");
+            Action act3 = () => GuardHelper.AgainstInvalidDateTime(pastDate, "testDateTime");
+            Action act4 = () => GuardHelper.AgainstInvalidDateTime(nowNoUTC, "testDateTime");
+
+            // Assert
+            act1.Should().Throw<DomainValidationException>().WithMessage("*testDateTime*");
+            act2.Should().Throw<DomainValidationException>().WithMessage("*testDateTime*");
+            act3.Should().Throw<DomainValidationException>().WithMessage("*testDateTime*");
+            act4.Should().Throw<DomainValidationException>().WithMessage("*testDateTime*");
         }
 
         [Fact]
@@ -132,9 +138,11 @@ namespace Birds.Tests.Domain
             // Arrange
             Guid emptyGuid = Guid.Empty;
 
-            // Act & Assert
-            Assert.Throws<DomainValidationException>(() => 
-                GuardHelper.AgainstEmptyGuid(emptyGuid, "testGuid"));
+            // Act
+            Action act = () => GuardHelper.AgainstEmptyGuid(emptyGuid, "testGuid");
+
+            // Assert
+            act.Should().Throw<DomainValidationException>().WithMessage("*testGuid*");
         }
 
         [Fact]
@@ -160,9 +168,11 @@ namespace Birds.Tests.Domain
             // Arrange
             object? nullObject = null;
 
-            // Act & Assert
-            Assert.Throws<DomainValidationException>(() => 
-                GuardHelper.AgainstNull(nullObject, "testObject"));
+            // Act
+            Action act = () => GuardHelper.AgainstNull(nullObject, "testObject");
+
+            // Assert
+            act.Should().Throw<DomainValidationException>().WithMessage("*testObject*");
         }
 
         [Fact]
@@ -188,9 +198,11 @@ namespace Birds.Tests.Domain
             // Arrange
             var invalidEnumValue = (BirdsName)999;
 
-            // Act & Assert
-            Assert.Throws<DomainValidationException>(() => 
-                GuardHelper.AgainstInvalidEnum(invalidEnumValue, "testEnum"));
+            // Act
+            Action act = () => GuardHelper.AgainstInvalidEnum(invalidEnumValue, "testEnum");
+
+            // Assert
+            act.Should().Throw<DomainValidationException>().WithMessage("*testEnum*");
         }
 
         [Fact]
@@ -216,9 +228,11 @@ namespace Birds.Tests.Domain
             // Arrange
             var invalidString = "InvalidBird";
 
-            // Act & Assert
-            Assert.Throws<DomainValidationException>(() => 
-                GuardHelper.AgainstInvalidStringToEnum<BirdsName>(invalidString, "testEnum"));
+            // Act
+            Action act = () => GuardHelper.AgainstInvalidStringToEnum<BirdsName>(invalidString, "testEnum");
+
+            // Assert
+            act.Should().Throw<DomainValidationException>().WithMessage("*testEnum*");
         }
 
         [Fact]
@@ -246,11 +260,13 @@ namespace Birds.Tests.Domain
             DateOnly? endDate = DateOnly.FromDateTime(new DateTime(2021, 12, 31));
             DateOnly defaultDate = default;
 
-            // Act & Assert
-            Assert.Throws<DomainValidationException>(() => 
-                GuardHelper.AgainstInvalidDateRange(startDate, endDate));
-            Assert.Throws<DomainValidationException>(() =>
-                GuardHelper.AgainstInvalidDateRange(defaultDate, endDate));
+            // Act
+            Action act1 = () => GuardHelper.AgainstInvalidDateRange(startDate, endDate);
+            Action act2 = () => GuardHelper.AgainstInvalidDateRange(defaultDate, endDate);
+
+            // Assert
+            act1.Should().Throw<DomainValidationException>();
+            act2.Should().Throw<DomainValidationException>();
         }
 
         [Fact]
@@ -281,9 +297,11 @@ namespace Birds.Tests.Domain
             bool isAlive = false;
             DateOnly? departure = default;
 
-            // Act & Assert
-            Assert.Throws<DomainValidationException>(() => 
-                GuardHelper.AgainstInvalidStatusUpdate(departure, isAlive, "test"));
+            // Act
+            Action act = () => GuardHelper.AgainstInvalidStatusUpdate(departure, isAlive, "test");
+
+            // Assert
+            act.Should().Throw<DomainValidationException>().WithMessage("*test*");
         }
 
         [Fact]
@@ -306,5 +324,50 @@ namespace Birds.Tests.Domain
         }
 
         #endregion [ AgainstInvalidStatusUpdate ]
+
+        #region [ AgainstNonPositiveNumber ]
+
+        [Fact]
+        public void AgainstNonPositiveNumber_ShouldThrowException_ForZeroOrNegativeValues()
+        {
+            // Arrange
+            int zero = 0;
+            int negative = -5;
+            decimal zeroDecimal = 0m;
+            double negativeDouble = -2.5;
+
+            // Act
+            Action act1 = () => GuardHelper.AgainstNonPositiveNumber(zero, "intValue");
+            Action act2 = () => GuardHelper.AgainstNonPositiveNumber(negative, "intValue");
+            Action act3 = () => GuardHelper.AgainstNonPositiveNumber(zeroDecimal, "decimalValue");
+            Action act4 = () => GuardHelper.AgainstNonPositiveNumber(negativeDouble, "doubleValue");
+
+            // Assert
+            act1.Should().Throw<DomainValidationException>().WithMessage("*should be positive*");
+            act2.Should().Throw<DomainValidationException>().WithMessage("*should be positive*");
+            act3.Should().Throw<DomainValidationException>().WithMessage("*should be positive*");
+            act4.Should().Throw<DomainValidationException>().WithMessage("*should be positive*");
+        }
+
+        [Fact]
+        public void AgainstNonPositiveNumber_ShouldNotThrow_ForPositiveValues()
+        {
+            // Arrange
+            int positiveInt = 10;
+            decimal positiveDecimal = 5.5m;
+            double positiveDouble = 0.0001;
+
+            // Act
+            Action actInt = () => GuardHelper.AgainstNonPositiveNumber(positiveInt, "intValue");
+            Action actDecimal = () => GuardHelper.AgainstNonPositiveNumber(positiveDecimal, "decimalValue");
+            Action actDouble = () => GuardHelper.AgainstNonPositiveNumber(positiveDouble, "doubleValue");
+
+            // Assert
+            actInt.Should().NotThrow();
+            actDecimal.Should().NotThrow();
+            actDouble.Should().NotThrow();
+        }
+
+        #endregion [ AgainstNonPositiveNumber ]
     }
 }
