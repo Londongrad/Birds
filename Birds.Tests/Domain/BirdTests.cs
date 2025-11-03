@@ -1,5 +1,4 @@
-﻿using Birds.Domain.Common.Exceptions;
-using Birds.Domain.Entities;
+﻿using Birds.Domain.Entities;
 using Birds.Domain.Enums;
 using FluentAssertions;
 
