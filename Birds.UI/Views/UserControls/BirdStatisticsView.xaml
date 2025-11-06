@@ -87,6 +87,14 @@
                             <TextBlock
                                 FontSize="14"
                                 Foreground="#E3C87C"
+                                Text="{Binding TopMonth,
+                                               StringFormat=Самый продуктивный месяц: {0}}" />
+                        </Border>
+
+                        <Border Style="{StaticResource MetricCardBorder}">
+                            <TextBlock
+                                FontSize="14"
+                                Foreground="#E3C87C"
                                 Text="{Binding TopWeek,
                                                StringFormat=Самая продуктивная неделя: {0}}" />
                         </Border>
@@ -114,64 +122,72 @@
 
                     <!-- Species -->
                     <TabItem Header="По видам">
-                        <ItemsControl
-                            Margin="0,8,0,0"
-                            ItemsSource="{Binding SpeciesStats}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border
-                                        Margin="0,0,0,6"
-                                        Padding="10"
-                                        Background="#333344"
-                                        CornerRadius="8">
-                                        <DockPanel LastChildFill="True">
-                                            <TextBlock
-                                                Margin="0,0,10,0"
-                                                DockPanel.Dock="Left"
-                                                FontSize="14"
-                                                Foreground="White"
-                                                Text="{Binding Label}" />
-                                            <TextBlock
-                                                DockPanel.Dock="Right"
-                                                FontSize="14"
-                                                Foreground="#C0C3C8"
-                                                Text="{Binding Count}" />
-                                        </DockPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <ScrollViewer
+                            HorizontalScrollBarVisibility="Disabled"
+                            VerticalScrollBarVisibility="Auto">
+                            <ItemsControl
+                                Margin="0,8,0,0"
+                                ItemsSource="{Binding SpeciesStats}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border
+                                            Margin="0,0,0,6"
+                                            Padding="10"
+                                            Background="#333344"
+                                            CornerRadius="8">
+                                            <DockPanel LastChildFill="True">
+                                                <TextBlock
+                                                    Margin="0,0,10,0"
+                                                    DockPanel.Dock="Left"
+                                                    FontSize="14"
+                                                    Foreground="White"
+                                                    Text="{Binding Label}" />
+                                                <TextBlock
+                                                    DockPanel.Dock="Right"
+                                                    FontSize="14"
+                                                    Foreground="#C0C3C8"
+                                                    Text="{Binding Count}" />
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
                     </TabItem>
 
                     <!-- By year -->
                     <TabItem Header="По годам">
-                        <ItemsControl
-                            Margin="0,8,0,0"
-                            ItemsSource="{Binding YearStats}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border
-                                        Margin="0,0,0,6"
-                                        Padding="10"
-                                        Background="#333344"
-                                        CornerRadius="8">
-                                        <DockPanel LastChildFill="True">
-                                            <TextBlock
-                                                Margin="0,0,10,0"
-                                                DockPanel.Dock="Left"
-                                                FontSize="14"
-                                                Foreground="White"
-                                                Text="{Binding Label}" />
-                                            <TextBlock
-                                                DockPanel.Dock="Right"
-                                                FontSize="14"
-                                                Foreground="#C0C3C8"
-                                                Text="{Binding Count}" />
-                                        </DockPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <ScrollViewer
+                            HorizontalScrollBarVisibility="Disabled"
+                            VerticalScrollBarVisibility="Auto">
+                            <ItemsControl
+                                Margin="0,8,0,0"
+                                ItemsSource="{Binding YearStats}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border
+                                            Margin="0,0,0,6"
+                                            Padding="10"
+                                            Background="#333344"
+                                            CornerRadius="8">
+                                            <DockPanel LastChildFill="True">
+                                                <TextBlock
+                                                    Margin="0,0,10,0"
+                                                    DockPanel.Dock="Left"
+                                                    FontSize="14"
+                                                    Foreground="White"
+                                                    Text="{Binding Label}" />
+                                                <TextBlock
+                                                    DockPanel.Dock="Right"
+                                                    FontSize="14"
+                                                    Foreground="#C0C3C8"
+                                                    Text="{Binding Count}" />
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
                     </TabItem>
 
                     <!-- By month -->

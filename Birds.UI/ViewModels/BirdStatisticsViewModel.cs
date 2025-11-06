@@ -21,6 +21,7 @@ namespace Birds.UI.ViewModels
         [ObservableProperty] private int releasedCount;
         [ObservableProperty] private int killCount;
 
+        [ObservableProperty] private string? topMonth;
         [ObservableProperty] private string? topWeek;
         [ObservableProperty] private string? topDay;
         [ObservableProperty] private string? longestBreak;
@@ -179,7 +180,7 @@ namespace Birds.UI.ViewModels
                 .ThenByDescending(g => g.Key.Month))
             {
                 var firstOfMonth = new DateOnly(g.Key.Year, g.Key.Month, 1);
-                var label = firstOfMonth.ToString("MMM yyyy", Ru); // «окт 2024»
+                var label = firstOfMonth.ToString("MMM yyyy", Ru);
                 MonthStats.Add(new StatItem(label, g.Count()));
             }
         }
@@ -197,6 +198,23 @@ namespace Birds.UI.ViewModels
             {
                 TopWeek = TopDay = LongestBreak = "—";
                 return;
+            }
+
+            // The most productive month
+            var topMonthGroup = filteredBirds
+                .GroupBy(b => new { b.Arrival.Year, b.Arrival.Month })
+                .OrderByDescending(g => g.Count())
+                .FirstOrDefault();
+
+            if (topMonthGroup is not null)
+            {
+                var firstOfMonth = new DateOnly(topMonthGroup.Key.Year, topMonthGroup.Key.Month, 1);
+                var label = firstOfMonth.ToString("MMMM yyyy", Ru);
+                TopMonth = $"{label}: {topMonthGroup.Count()} птиц";
+            }
+            else
+            {
+                TopMonth = "—";
             }
 
             // The most productive week
