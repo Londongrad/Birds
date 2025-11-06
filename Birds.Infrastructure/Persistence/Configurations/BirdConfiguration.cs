@@ -29,6 +29,13 @@ namespace Birds.Infrastructure.Persistence.Configurations
             builder.Property(b => b.IsAlive)
                 .IsRequired()
                 .HasDefaultValue(true);
+
+            builder.Property(b => b.CreatedAt)
+                .IsRequired()
+                .HasColumnType("timestamp without time zone");
+
+            builder.Property(b => b.UpdatedAt)
+                .HasColumnType("timestamp without time zone");
         }
     }
 }
