@@ -196,7 +196,7 @@ namespace Birds.UI.ViewModels
         {
             if (filteredBirds.Count == 0)
             {
-                TopWeek = TopDay = LongestBreak = "—";
+                TopMonth = TopWeek = TopDay = LongestBreak = "—";
                 return;
             }
 
@@ -210,7 +210,7 @@ namespace Birds.UI.ViewModels
             {
                 var firstOfMonth = new DateOnly(topMonthGroup.Key.Year, topMonthGroup.Key.Month, 1);
                 var label = firstOfMonth.ToString("MMMM yyyy", Ru);
-                TopMonth = $"{label}: {topMonthGroup.Count()} птиц";
+                TopMonth = $"{label} — {topMonthGroup.Count()} птиц";
             }
             else
             {
@@ -250,7 +250,7 @@ namespace Birds.UI.ViewModels
                 .FirstOrDefault();
 
             TopDay = topDayGroup != null
-                ? $"{topDayGroup.Key:dd.MM.yyyy}: {topDayGroup.Count()} птиц"
+                ? $"{topDayGroup.Key:dd MMMM yyyy} — {topDayGroup.Count()} птиц"
                 : "—";
 
             // The most prolong break
