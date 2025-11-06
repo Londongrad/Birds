@@ -50,7 +50,7 @@ namespace Birds.Tests.Domain
         {
             // Arrange
             DateOnly defaultDate = default;
-            DateOnly futureDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1));
+            DateOnly futureDate = DateOnly.FromDateTime(DateTime.Now.AddDays(1));
             DateOnly pastDate = DateOnly.FromDateTime(new DateTime(2019, 12, 31));
 
             // Act
@@ -69,8 +69,8 @@ namespace Birds.Tests.Domain
         {
             // Arrange
             DateOnly validPastDate = DateOnly.FromDateTime(new DateTime(2021, 6, 15));
-            DateOnly validFutureDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(10));
-            DateOnly now = DateOnly.FromDateTime(DateTime.UtcNow);
+            DateOnly validFutureDate = DateOnly.FromDateTime(DateTime.Now.AddDays(10));
+            DateOnly now = DateOnly.FromDateTime(DateTime.Now);
 
             // Act
             Action actPast = () => GuardHelper.AgainstInvalidDateOnly(validPastDate, "testDate");
@@ -92,15 +92,15 @@ namespace Birds.Tests.Domain
         {
             // Arrange
             DateTime defaultDate = default;
-            DateTime futureDate = DateTime.UtcNow.AddDays(1);
+            DateTime futureDate = DateTime.Now.AddDays(1);
             DateTime pastDate = new(2019, 12, 31);
-            DateTime nowNoUTC = DateTime.Now;
+            DateTime nowDate = DateTime.Now;
 
             // Act
             Action act1 = () => GuardHelper.AgainstInvalidDateTime(defaultDate, "testDateTime");
             Action act2 = () => GuardHelper.AgainstInvalidDateTime(futureDate, "testDateTime");
             Action act3 = () => GuardHelper.AgainstInvalidDateTime(pastDate, "testDateTime");
-            Action act4 = () => GuardHelper.AgainstInvalidDateTime(nowNoUTC, "testDateTime");
+            Action act4 = () => GuardHelper.AgainstInvalidDateTime(nowDate, "testDateTime");
 
             // Assert
             act1.Should().Throw<DomainValidationException>().WithMessage("*testDateTime*");
@@ -114,8 +114,8 @@ namespace Birds.Tests.Domain
         {
             // Arrange
             DateTime validPastDate = new(2021, 6, 15);
-            DateTime validFutureDate = DateTime.UtcNow.AddDays(10);
-            DateTime now = DateTime.UtcNow;
+            DateTime validFutureDate = DateTime.Now.AddDays(10);
+            DateTime now = DateTime.Now;
 
             // Act
             Action actPast = () => GuardHelper.AgainstInvalidDateTime(validPastDate, "testDateTime");

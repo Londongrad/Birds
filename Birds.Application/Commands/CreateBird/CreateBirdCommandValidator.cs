@@ -7,7 +7,7 @@ namespace Birds.Application.Commands.CreateBird
         public CreateBirdCommandValidator()
         {
             RuleFor(x => x.Arrival)
-                .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow))
+                .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.Now))
                 .WithMessage("Arrival date cannot be in the future")
 
                 .GreaterThanOrEqualTo(new DateOnly(2020, 01, 01))

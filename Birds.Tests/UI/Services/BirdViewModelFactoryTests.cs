@@ -32,10 +32,10 @@ namespace Birds.Tests.UI.Services
                 Id: Guid.NewGuid(),
                 Name: "Sparrow",
                 Description: "desc",
-                Arrival: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-2)),
+                Arrival: DateOnly.FromDateTime(DateTime.Now.AddDays(-2)),
                 Departure: null,
                 IsAlive: true,
-                CreatedAt: DateTime.UtcNow.AddDays(-2),
+                CreatedAt: DateTime.Now.AddDays(-2),
                 UpdatedAt: null);
 
             var vm = factory.Create(dto);

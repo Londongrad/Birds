@@ -17,7 +17,7 @@
 
         protected EntityBase(Guid id)
         {
-            CreatedAt = DateTime.UtcNow;
+            CreatedAt = DateTime.Now;
             Id = id;
         }
 
@@ -28,7 +28,7 @@
         /// <summary>Method for updating the entity's last modified time.</summary>
         protected void UpdateTimestamp()
         {
-            UpdatedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.Now;
         }
 
         #endregion [ Methods ]

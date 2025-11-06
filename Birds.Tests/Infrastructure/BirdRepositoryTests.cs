@@ -28,7 +28,7 @@ namespace Birds.Tests.Infrastructure
             var bird = Bird.Create(
                 name: BirdsName.Воробей,
                 description: "sparrow",
-                arrival: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-3)));
+                arrival: DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
 
             // Act
             await repo.AddAsync(bird);
@@ -62,8 +62,8 @@ namespace Birds.Tests.Infrastructure
             var repo = new BirdRepository(ctx);
 
             // Act
-            var b1 = Bird.Create(BirdsName.Гайка, "tit", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-5)));
-            var b2 = Bird.Create(BirdsName.Воробей, "sparrow", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-4)));
+            var b1 = Bird.Create(BirdsName.Гайка, "tit", DateOnly.FromDateTime(DateTime.Now.AddDays(-5)));
+            var b2 = Bird.Create(BirdsName.Воробей, "sparrow", DateOnly.FromDateTime(DateTime.Now.AddDays(-4)));
             await repo.AddAsync(b1);
             await repo.AddAsync(b2);
 
@@ -84,7 +84,7 @@ namespace Birds.Tests.Infrastructure
             var repo = new BirdRepository(ctx);
 
             // Act
-            var bird = Bird.Create(BirdsName.Воробей, "old", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-10)));
+            var bird = Bird.Create(BirdsName.Воробей, "old", DateOnly.FromDateTime(DateTime.Now.AddDays(-10)));
             await repo.AddAsync(bird);
 
             bird.Update(BirdsName.Большак, "new", bird.Arrival, bird.Departure, true);
@@ -108,7 +108,7 @@ namespace Birds.Tests.Infrastructure
             var repo = new BirdRepository(ctx);
 
             // Act
-            var bird = Bird.Create(BirdsName.Воробей, "to delete", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-2)));
+            var bird = Bird.Create(BirdsName.Воробей, "to delete", DateOnly.FromDateTime(DateTime.Now.AddDays(-2)));
             await repo.AddAsync(bird);
             await repo.RemoveAsync(bird);
             Func<Task> act = async () => await repo.GetByIdAsync(bird.Id);

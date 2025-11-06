@@ -22,7 +22,7 @@ namespace Birds.Tests.Application.Commands.UpdateBird
             // Arrange
             var id = Guid.NewGuid();
             var existing = Bird.Restore(id, BirdsName.Воробей, "old",
-                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-30)), null, true);
+                DateOnly.FromDateTime(DateTime.Now.AddDays(-30)), null, true);
 
             _repo.Setup(r => r.GetByIdAsync(id, It.IsAny<CancellationToken>()))
                  .ReturnsAsync(existing);
@@ -31,7 +31,7 @@ namespace Birds.Tests.Application.Commands.UpdateBird
                 Id: id,
                 Name: BirdsName.Гайка,
                 Description: "new",
-                Arrival: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-20)),
+                Arrival: DateOnly.FromDateTime(DateTime.Now.AddDays(-20)),
                 Departure: null,
                 IsAlive: true
             );
@@ -99,7 +99,7 @@ namespace Birds.Tests.Application.Commands.UpdateBird
                 Id: id,
                 Name: BirdsName.Дубонос,
                 Description: "new",
-                Arrival: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-20)),
+                Arrival: DateOnly.FromDateTime(DateTime.Now.AddDays(-20)),
                 Departure: null,
                 IsAlive: true
             );

@@ -48,7 +48,7 @@ namespace Birds.Tests.UI.Services
             store.CompleteLoading(); // Loaded
             var mediator = new Mock<IMediator>();
             var created = new BirdDTO(Guid.NewGuid(), "Воробей", "desc",
-                DateOnly.FromDateTime(DateTime.UtcNow), null, true, null, null);
+                DateOnly.FromDateTime(DateTime.Now), null, true, null, null);
 
             mediator.Setup(m => m.Send(It.IsAny<CreateBirdCommand>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(Result<BirdDTO>.Success(created));
@@ -57,7 +57,7 @@ namespace Birds.Tests.UI.Services
             var sut = MakeManager(store, init, mediator.Object);
 
             var dto = new BirdCreateDTO(BirdsName.Воробей, "desc",
-                DateOnly.FromDateTime(DateTime.UtcNow), null, true);
+                DateOnly.FromDateTime(DateTime.Now), null, true);
 
             // Act
             var result = await sut.AddAsync(dto, CancellationToken.None);
@@ -80,7 +80,7 @@ namespace Birds.Tests.UI.Services
                     .ReturnsAsync(Result<IReadOnlyList<BirdDTO>>.Success(Array.Empty<BirdDTO>()));
 
             var created = new BirdDTO(Guid.NewGuid(), "Гайка", null,
-                DateOnly.FromDateTime(DateTime.UtcNow), null, true, null, null);
+                DateOnly.FromDateTime(DateTime.Now), null, true, null, null);
 
             mediator.Setup(m => m.Send(It.IsAny<CreateBirdCommand>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(Result<BirdDTO>.Success(created));
@@ -89,7 +89,7 @@ namespace Birds.Tests.UI.Services
             var sut = MakeManager(store, init, mediator.Object);
 
             var dto = new BirdCreateDTO(BirdsName.Гайка, null,
-                DateOnly.FromDateTime(DateTime.UtcNow), null, true);
+                DateOnly.FromDateTime(DateTime.Now), null, true);
 
             // Act
             var result = await sut.AddAsync(dto, CancellationToken.None);
@@ -117,7 +117,7 @@ namespace Birds.Tests.UI.Services
             var sut = MakeManager(store, init, mediator.Object);
 
             var dto = new BirdCreateDTO(BirdsName.Воробей, "x",
-                DateOnly.FromDateTime(DateTime.UtcNow), null, true);
+                DateOnly.FromDateTime(DateTime.Now), null, true);
 
             // Act
             var result = await sut.AddAsync(dto, CancellationToken.None);
@@ -138,7 +138,7 @@ namespace Birds.Tests.UI.Services
             var mediator = new Mock<IMediator>();
 
             var created = new BirdDTO(Guid.NewGuid(), "Воробей", null,
-                DateOnly.FromDateTime(DateTime.UtcNow), null, true, null, null);
+                DateOnly.FromDateTime(DateTime.Now), null, true, null, null);
 
             mediator.Setup(m => m.Send(It.IsAny<CreateBirdCommand>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(Result<BirdDTO>.Success(created));
@@ -154,7 +154,7 @@ namespace Birds.Tests.UI.Services
             });
 
             var dto = new BirdCreateDTO(BirdsName.Воробей, null,
-                DateOnly.FromDateTime(DateTime.UtcNow), null, true);
+                DateOnly.FromDateTime(DateTime.Now), null, true);
 
             // Act
             var result = await sut.AddAsync(dto, CancellationToken.None);
@@ -174,10 +174,10 @@ namespace Birds.Tests.UI.Services
 
             var id = Guid.NewGuid();
             store.Birds.Add(new BirdDTO(id, "Воробей", "old",
-                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)), null, true, null, null));
+                DateOnly.FromDateTime(DateTime.Now.AddDays(-1)), null, true, null, null));
 
             var updated = new BirdDTO(id, "Синица", "new",
-                DateOnly.FromDateTime(DateTime.UtcNow), null, true, null, null);
+                DateOnly.FromDateTime(DateTime.Now), null, true, null, null);
 
             mediator.Setup(m => m.Send(It.IsAny<UpdateBirdCommand>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(Result<BirdDTO>.Success(updated));
@@ -186,7 +186,7 @@ namespace Birds.Tests.UI.Services
             var sut = MakeManager(store, init, mediator.Object);
 
             var dto = new BirdUpdateDTO(id, "Синица", "new",
-                DateOnly.FromDateTime(DateTime.UtcNow), null, true);
+                DateOnly.FromDateTime(DateTime.Now), null, true);
 
             // Act
             var result = await sut.UpdateAsync(dto, CancellationToken.None);
@@ -206,7 +206,7 @@ namespace Birds.Tests.UI.Services
 
             var id = Guid.NewGuid();
             var original = new BirdDTO(id, "Воробей", "old",
-                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)), null, true, null, null);
+                DateOnly.FromDateTime(DateTime.Now.AddDays(-1)), null, true, null, null);
             store.Birds.Add(original);
 
             mediator.Setup(m => m.Send(It.IsAny<UpdateBirdCommand>(), It.IsAny<CancellationToken>()))
@@ -216,7 +216,7 @@ namespace Birds.Tests.UI.Services
             var sut = MakeManager(store, init, mediator.Object);
 
             var dto = new BirdUpdateDTO(id, "Синица", "new",
-                DateOnly.FromDateTime(DateTime.UtcNow), null, true);
+                DateOnly.FromDateTime(DateTime.Now), null, true);
 
             // Act
             var result = await sut.UpdateAsync(dto, CancellationToken.None);
@@ -236,7 +236,7 @@ namespace Birds.Tests.UI.Services
 
             var id = Guid.NewGuid();
             store.Birds.Add(new BirdDTO(id, "Воробей", null,
-                DateOnly.FromDateTime(DateTime.UtcNow), null, true, null, null));
+                DateOnly.FromDateTime(DateTime.Now), null, true, null, null));
 
             mediator.Setup(m => m.Send(It.IsAny<DeleteBirdCommand>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(Result.Success());
@@ -262,7 +262,7 @@ namespace Birds.Tests.UI.Services
 
             var id = Guid.NewGuid();
             store.Birds.Add(new BirdDTO(id, "Воробей", null,
-                DateOnly.FromDateTime(DateTime.UtcNow), null, true, null, null));
+                DateOnly.FromDateTime(DateTime.Now), null, true, null, null));
 
             mediator.Setup(m => m.Send(It.IsAny<DeleteBirdCommand>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(Result.Failure("nope"));

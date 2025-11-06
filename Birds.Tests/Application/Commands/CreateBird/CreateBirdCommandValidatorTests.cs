@@ -14,7 +14,7 @@ namespace Birds.Tests.Application.Commands.CreateBird
             var command = new CreateBirdCommand(
                 BirdsName.Воробей,
                 "Test bird",
-                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1))
+                DateOnly.FromDateTime(DateTime.Now.AddDays(1))
             );
 
             var result = _validator.TestValidate(command);
@@ -44,7 +44,7 @@ namespace Birds.Tests.Application.Commands.CreateBird
             var command = new CreateBirdCommand(
                 BirdsName.Воробей,
                 new string('A', 101),
-                DateOnly.FromDateTime(DateTime.UtcNow)
+                DateOnly.FromDateTime(DateTime.Now)
             );
 
             var result = _validator.TestValidate(command);
@@ -59,7 +59,7 @@ namespace Birds.Tests.Application.Commands.CreateBird
             var command = new CreateBirdCommand(
                 BirdsName.Воробей,
                 "Healthy sparrow",
-                DateOnly.FromDateTime(DateTime.UtcNow)
+                DateOnly.FromDateTime(DateTime.Now)
             );
 
             var result = _validator.TestValidate(command);

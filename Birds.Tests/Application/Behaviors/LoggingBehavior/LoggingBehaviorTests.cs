@@ -20,7 +20,7 @@ namespace Birds.Tests.Application.Behaviors.LoggingBehavior
             var cmd = new CreateBirdCommand(
                 BirdsName.Воробей,
                 "ok",
-                DateOnly.FromDateTime(DateTime.UtcNow)
+                DateOnly.FromDateTime(DateTime.Now)
             );
 
             RequestHandlerDelegate<string> next = (cancellationToken) => Task.FromResult("OK");
@@ -67,7 +67,7 @@ namespace Birds.Tests.Application.Behaviors.LoggingBehavior
             var cmd = new CreateBirdCommand(
                 BirdsName.Воробей,
                 "ok",
-                DateOnly.FromDateTime(DateTime.UtcNow)
+                DateOnly.FromDateTime(DateTime.Now)
             );
 
             RequestHandlerDelegate<string> next = (cancellationToken) => throw new InvalidOperationException("boom");

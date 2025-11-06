@@ -24,7 +24,7 @@ namespace Birds.Domain.Common
         /// </summary>
         /// <param name="value">The date to validate.</param>
         /// <param name="argumentName">The name of the argument being validated.</param>
-        /// <param name="allowFuture">If false, disallows dates later than the current UTC date.</param>
+        /// <param name="allowFuture">If false, disallows dates later than the current local date.</param>
         /// <exception cref="DomainValidationException">Thrown when the date is default, in the future, or too far in the past.</exception>
         public static void AgainstInvalidDateOnly(DateOnly? value, string argumentName, bool allowFuture = false)
         {
@@ -34,7 +34,7 @@ namespace Birds.Domain.Common
             if (value.Value == default)
                 throw new DomainValidationException($"{argumentName} cannot be default");
 
-            if (!allowFuture && value > DateOnly.FromDateTime(DateTime.UtcNow))
+            if (!allowFuture && value > DateOnly.FromDateTime(DateTime.Now))
                 throw new DomainValidationException($"{argumentName} cannot be in the future");
 
             if (value < DateOnly.FromDateTime(new DateTime(2020, 1, 1)))
@@ -60,16 +60,16 @@ namespace Birds.Domain.Common
         /// <summary>
         /// Ensures that the given <see cref="DateTime"/> value is valid, not default, and within allowed bounds.
         /// </summary>
-        /// <param name="value">The date to validate in UTC format.</param>
+        /// <param name="value">The date to validate in Local format.</param>
         /// <param name="argumentName">The name of the argument being validated.</param>
-        /// <param name="allowFuture">If false, disallows future dates beyond the current UTC time.</param>
+        /// <param name="allowFuture">If false, disallows future dates beyond the current local time.</param>
         /// <exception cref="DomainValidationException">Thrown when the date is default, in the future, or too far in the past.</exception>
         public static void AgainstInvalidDateTime(DateTime value, string argumentName, bool allowFuture = false)
         {
             if (value == default)
                 throw new DomainValidationException($"{argumentName} cannot be default");
 
-            if (!allowFuture && value > DateTime.UtcNow)
+            if (!allowFuture && value > DateTime.Now)
                 throw new DomainValidationException($"{argumentName} cannot be in the future");
 
             if (value < new DateTime(2020, 1, 1))

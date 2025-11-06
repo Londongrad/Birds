@@ -21,7 +21,7 @@ namespace Birds.Infrastructure.Seeding
 
             if (!await context.Birds.AnyAsync(cancellationToken))
             {
-                var now = DateOnly.FromDateTime(DateTime.UtcNow);
+                var now = DateOnly.FromDateTime(DateTime.Now);
                 var random = Random.Shared;
                 var counters = Enum.GetValues<BirdsName>()
                     .ToDictionary(x => x, _ => 0);

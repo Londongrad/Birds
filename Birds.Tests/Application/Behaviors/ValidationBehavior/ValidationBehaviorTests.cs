@@ -21,7 +21,7 @@ namespace Birds.Tests.Application.Behaviors.ValidationBehavior
             var cmd = new CreateBirdCommand(
                 BirdsName.Воробей,
                 "ok",
-                DateOnly.FromDateTime(DateTime.UtcNow));
+                DateOnly.FromDateTime(DateTime.Now));
 
             var nextCalled = false;
             RequestHandlerDelegate<Result<BirdDTO>> next = (cancellationToken) =>
@@ -49,7 +49,7 @@ namespace Birds.Tests.Application.Behaviors.ValidationBehavior
             var invalid = new CreateBirdCommand(
                 BirdsName.Воробей,
                 new string('x', 101),                         // слишком длинно
-                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)) // будущее
+                DateOnly.FromDateTime(DateTime.Now.AddDays(1)) // будущее
             );
 
             var nextCalled = false;
@@ -75,7 +75,7 @@ namespace Birds.Tests.Application.Behaviors.ValidationBehavior
             // Arrange
             var behavior = new ValidationBehavior<CreateBirdCommand, Result<BirdDTO>>(Enumerable.Empty<IValidator<CreateBirdCommand>>());
 
-            var cmd = new CreateBirdCommand(BirdsName.Воробей, null, DateOnly.FromDateTime(DateTime.UtcNow));
+            var cmd = new CreateBirdCommand(BirdsName.Воробей, null, DateOnly.FromDateTime(DateTime.Now));
 
             var nextCalled = false;
             RequestHandlerDelegate<Result<BirdDTO>> next = (cancellationToken) =>

@@ -19,7 +19,7 @@ namespace Birds.Tests.Application.Commands.DeleteBird
             // Arrange
             var id = Guid.NewGuid();
             var stored = Bird.Restore(id, BirdsName.Воробей, "desc",
-                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-10)), null, true);
+                DateOnly.FromDateTime(DateTime.Now.AddDays(-10)), null, true);
 
             _repo.Setup(r => r.GetByIdAsync(id, It.IsAny<CancellationToken>()))
                  .ReturnsAsync(stored);

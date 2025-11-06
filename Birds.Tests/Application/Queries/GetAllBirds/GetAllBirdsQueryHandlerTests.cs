@@ -22,9 +22,9 @@ namespace Birds.Tests.Application.Queries.GetAllBirds
             var birds = new List<Bird>
         {
             Bird.Restore(Guid.NewGuid(), BirdsName.Воробей, "sparrow",
-                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-10)), null, true),
+                DateOnly.FromDateTime(DateTime.Now.AddDays(-10)), null, true),
             Bird.Restore(Guid.NewGuid(), BirdsName.Большак, "tit",
-                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-20)), null, true),
+                DateOnly.FromDateTime(DateTime.Now.AddDays(-20)), null, true),
         }.AsReadOnly();
 
             _repo.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))

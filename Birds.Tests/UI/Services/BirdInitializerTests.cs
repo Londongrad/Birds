@@ -28,8 +28,8 @@ namespace Birds.Tests.UI.Services
             var notify = new Mock<INotificationService>();
 
             var birds = new List<BirdDTO> {
-                new(Guid.NewGuid(), "Sparrow", "d", DateOnly.FromDateTime(DateTime.UtcNow), null, true, null, null),
-                new(Guid.NewGuid(), "Tit", "d", DateOnly.FromDateTime(DateTime.UtcNow), null, true, null, null)
+                new(Guid.NewGuid(), "Sparrow", "d", DateOnly.FromDateTime(DateTime.Now), null, true, null, null),
+                new(Guid.NewGuid(), "Tit", "d", DateOnly.FromDateTime(DateTime.Now), null, true, null, null)
             }.AsReadOnly();
 
             mediator.Setup(m => m.Send(It.IsAny<GetAllBirdsQuery>(), It.IsAny<CancellationToken>()))
@@ -90,7 +90,7 @@ namespace Birds.Tests.UI.Services
             var notify = new Mock<INotificationService>();
 
             var birds = new List<BirdDTO> {
-                new(Guid.NewGuid(), "Sparrow", null, DateOnly.FromDateTime(DateTime.UtcNow), null, true, null, null)
+                new(Guid.NewGuid(), "Sparrow", null, DateOnly.FromDateTime(DateTime.Now), null, true, null, null)
             }.AsReadOnly();
 
             mediator.SetupSequence(m => m.Send(It.IsAny<GetAllBirdsQuery>(), It.IsAny<CancellationToken>()))

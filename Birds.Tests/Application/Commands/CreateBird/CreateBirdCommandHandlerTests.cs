@@ -22,7 +22,7 @@ namespace Birds.Tests.Application.Commands.CreateBird
             var command = new CreateBirdCommand(
                 BirdsName.Воробей,
                 "Nice bird",
-                DateOnly.FromDateTime(DateTime.UtcNow)
+                DateOnly.FromDateTime(DateTime.Now)
             );
 
             var bird = Bird.Create(command.Name, command.Description, command.Arrival, command.Departure, command.IsAlive);
