@@ -94,7 +94,7 @@ namespace Birds.UI.Services.Stores.BirdStore
             if (cancellationToken.IsCancellationRequested)
                 return;
 
-            await _ui.InvokeAsync(() =>
+            await InvokeAsync(() =>
             {
                 _birdStore.Birds.Clear();
                 foreach (BirdDTO bird in result.Value)
@@ -102,8 +102,14 @@ namespace Birds.UI.Services.Stores.BirdStore
             }, cancellationToken);
 
             _notificationService.ShowInfo(InfoMessages.LoadedSuccessfully);
-            _birdStore.CompleteLoading(); // mark as successfully loaded and fire an event
+
+            _birdStore.CompleteLoading(); // mark as successfully loaded
             _logger.LogInformation(LogMessages.LoadedSuccessfully, _birdStore.Birds.Count);
+        }
+
+        private async Task InvokeAsync(Action action, CancellationToken cancellationToken)
+        {
+            await _ui.InvokeAsync(action, cancellationToken);
         }
     }
 }
