@@ -1,0 +1,164 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Dark colors -->
+    <SolidColorBrush
+        x:Key="BtnBg"
+        Color="#2C2F3A" />
+    <SolidColorBrush
+        x:Key="BtnBgHover"
+        Color="#383C4A" />
+    <SolidColorBrush
+        x:Key="BtnBgPressed"
+        Color="#20232B" />
+    <SolidColorBrush
+        x:Key="BtnBorder"
+        Color="#4A4F5E" />
+    <SolidColorBrush
+        x:Key="BtnFg"
+        Color="#FFFFFF" />
+    <SolidColorBrush
+        x:Key="BtnFgMuted"
+        Color="#AAFFFFFF" />
+
+    <!-- Reload Button: text + icon Segoe MDL2, CornerRadius -->
+    <Style
+        x:Key="ReloadButtonStyle"
+        TargetType="Button">
+        <Setter Property="Height" Value="35" />
+        <Setter Property="MinWidth" Value="110" />
+        <Setter Property="Padding" Value="14,0" />
+        <Setter Property="Foreground" Value="{StaticResource BtnFg}" />
+        <Setter Property="Background" Value="{StaticResource BtnBg}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BtnBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Margin" Value="10 0 0 0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border
+                        x:Name="root"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="8"
+                        SnapsToDevicePixels="True">
+                        <Grid Margin="6,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Icon ↻ from Segoe MDL2 -->
+                            <TextBlock
+                                x:Name="icon"
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="16"
+                                Foreground="{TemplateBinding Foreground}"
+                                Text="&#xE72C;">
+                                <TextBlock.RenderTransform>
+                                    <RotateTransform Angle="0" />
+                                </TextBlock.RenderTransform>
+                            </TextBlock>
+
+                            <ContentPresenter
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
+                                RecognizesAccessKey="True"
+                                TextElement.Foreground="{TemplateBinding Foreground}" />
+                        </Grid>
+                    </Border>
+
+                    <!-- State -->
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="root" Property="Background" Value="{StaticResource BtnBgHover}" />
+                            <Setter Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect
+                                        BlurRadius="8"
+                                        Opacity="0.25"
+                                        ShadowDepth="0"
+                                        Color="#000000" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="root" Property="Background" Value="{StaticResource BtnBgPressed}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource BtnFgMuted}" />
+                            <Setter TargetName="root" Property="Opacity" Value="0.7" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style
+        x:Key="IconOnlyButtonStyle"
+        BasedOn="{StaticResource ReloadButtonStyle}"
+        TargetType="Button">
+        <Setter Property="MinWidth" Value="35" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border
+                        x:Name="root"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="8">
+                        <Grid>
+                            <TextBlock
+                                x:Name="icon"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="16"
+                                Foreground="{TemplateBinding Foreground}"
+                                Text="&#xE72C;">
+                                <TextBlock.RenderTransform>
+                                    <RotateTransform Angle="0" />
+                                </TextBlock.RenderTransform>
+                            </TextBlock>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="root" Property="Background" Value="{StaticResource BtnBgHover}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="root" Property="Background" Value="{StaticResource BtnBgPressed}" />
+                        </Trigger>
+                        <DataTrigger
+                            Binding="{Binding IsLoading}"
+                            Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard x:Name="spin2">
+                                    <Storyboard RepeatBehavior="Forever">
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="icon"
+                                            Storyboard.TargetProperty="(TextBlock.RenderTransform).(RotateTransform.Angle)"
+                                            From="0"
+                                            To="360"
+                                            Duration="0:0:1.2" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="spin2" />
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

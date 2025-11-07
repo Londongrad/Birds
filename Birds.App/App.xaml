@@ -32,6 +32,7 @@
                 <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdListView/ComboBoxSortFilter.xaml" />
                 <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdListView/ToggleButton.xaml" />
                 <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdListView/Ellipse.xaml" />
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdListView/ReloadButton.xaml" />
 
                 <!-- ============= -->
                 <!-- Add Bird View -->
