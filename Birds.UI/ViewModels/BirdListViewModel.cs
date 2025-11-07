@@ -5,6 +5,7 @@ using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Stores.BirdStore;
 using Birds.UI.Views.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Data;
@@ -42,10 +43,16 @@ namespace Birds.UI.ViewModels
             };
             SelectedFilter = Filters.First();
 
+            // Subscribe to store property changes to update loading state
             birdManager.Store.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(birdManager.Store.LoadState))
+                {
+                    // Reflect store state in dependent properties
                     OnPropertyChanged(nameof(IsLoading));
+                    OnPropertyChanged(nameof(IsFailed));
+                    ReloadBirdsCommand.NotifyCanExecuteChanged();
+                }
             };
         }
 
@@ -63,6 +70,9 @@ namespace Birds.UI.ViewModels
 
         /// <summary>Data loading indicator from BirdStore.</summary>
         public bool IsLoading => _birdManager.Store.LoadState == LoadState.Loading;
+
+        /// <summary>True when loading failed and a retry could be useful.</summary>
+        public bool IsFailed => _birdManager.Store.LoadState == LoadState.Failed;
 
         public List<FilterOption> Filters { get; } =
         [
@@ -162,5 +172,15 @@ namespace Birds.UI.ViewModels
         }
 
         #endregion [ Methods ]
+
+        #region [ Commmands ]
+
+        [RelayCommand]
+        private async Task ReloadBirdsAsync()
+        {
+            await _birdManager.ReloadAsync(CancellationToken.None);
+        }
+
+        #endregion [ Commmands ]
     }
 }

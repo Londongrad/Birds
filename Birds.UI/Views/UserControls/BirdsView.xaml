@@ -43,6 +43,14 @@
                         SelectedItem="{Binding SelectedFilter,
                                                Mode=OneWayToSource}"
                         Style="{StaticResource FilterComboBoxStyle}" />
+
+                    <Button
+                        Height="40"
+                        Command="{Binding ReloadBirdsCommand}"
+                        Content="Reload"
+                        Style="{StaticResource ReloadButtonStyle}"
+                        Visibility="{Binding IsFailed,
+                                             Converter={StaticResource BoolToVisibilityConverter}}" />
                 </StackPanel>
 
                 <!-- List of birds -->
