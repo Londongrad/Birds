@@ -1,6 +1,4 @@
-﻿using static System.Net.Mime.MediaTypeNames;
-
-namespace Birds.Shared.Constants
+﻿namespace Birds.Shared.Constants
 {
     public static class LogMessages
     {
@@ -30,5 +28,7 @@ namespace Birds.Shared.Constants
 
         public const string EFCoreException = "Ignored EF Core connecting-state dispose: {Message}";
         public const string DisposeError = "Error during Dispose";
+
+        public const string AutoExportFailed = "Auto-export failed";
     }
 }

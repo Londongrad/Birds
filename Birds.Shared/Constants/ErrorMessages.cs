@@ -6,21 +6,27 @@
             "\nPlease check your connection or restart the application.";
 
         public const string UnknownError = "Unknown error.";
+        public const string UnexpectedError = "Unexpected error.";
 
         public const string CannotSaveBird = "Unable to save bird!";
         public const string CannotDeleteBird = "Unable to delete bird!";
         public const string CannotUpdateBird = "Unable to update bird!";
 
-        public const string InvalidOperationException = "ExceptionHandlingBehavior can only handle responses of type Result or Result<T>. " +
-                "Actual type: {0}";
-
         public const string RequestCannotBeNull = "Request cannot be null.";
         public const string QueryCannotBeNull = "Query cannot be null.";
-
-        public const string NotFoundException = "{0} with key '{1}' was not found.";
 
         public const string NoBirdsFound = "No birds found.";
 
         public const string ConnectionStringNotFound = "Database connection string not found.";
+
+        public const string FailedToDisplayErrorNotification = "Failed to display error notification";
+
+        public const string StartupErrorTitle = "Startup error";
+        public static string StartupError(string message)
+            => $"An error occurred during application startup: \n{message}";
+
+        public const string ShotdownWarningTitle = "Shutdown Warning";
+        public static string ShotdownError(string message)
+            => $"Error during application shutdown:\n{message}";
     }
 }
