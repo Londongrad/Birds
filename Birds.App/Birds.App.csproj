@@ -16,21 +16,52 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Include="appsettings.json">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
+		<Compile Update="App.SingleInstance.cs">
+			<DependentUpon>App.xaml</DependentUpon>
+		</Compile>
+
+		<Compile Update="App.Bootstrap.cs">
+			<DependentUpon>App.xaml</DependentUpon>
+		</Compile>
+
+		<Compile Update="App.Exceptions.cs">
+			<DependentUpon>App.xaml</DependentUpon>
+		</Compile>
+
+		<Compile Update="App.Host.cs">
+			<DependentUpon>App.xaml</DependentUpon>
+		</Compile>
+
+		<Compile Update="App.Background.cs">
+			<DependentUpon>App.xaml</DependentUpon>
+		</Compile>
+		
+		<Compile Update="App.Helpers.cs">
+			<DependentUpon>App.xaml</DependentUpon>
+		</Compile>
+
+		<Compile Update="App.Serilog.cs">
+			<DependentUpon>App.xaml</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="appsettings.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="DotNetEnv" Version="3.1.1" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.20">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9" />
 		<PackageReference Include="Serilog" Version="4.3.0" />
 		<PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
 		<PackageReference Include="Serilog.Settings.Configuration" Version="9.0.0" />
+		<PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
 		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
 	</ItemGroup>
 
@@ -39,6 +70,10 @@
 		<ProjectReference Include="..\Birds.UI\Birds.UI.csproj" />
 	</ItemGroup>
 
-	<ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
+	<ProjectExtensions>
+		<VisualStudio>
+			<UserProperties />
+		</VisualStudio>
+	</ProjectExtensions>
 
 </Project>
