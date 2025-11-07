@@ -2,6 +2,7 @@
 using Birds.Application.DTOs;
 using Birds.Application.Queries.GetAllBirds;
 using Birds.Shared.Constants;
+using Birds.UI.Services.Export.Interfaces;
 using Birds.UI.Services.Notification;
 using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.Threading.Abstractions;
@@ -34,15 +35,25 @@ namespace Birds.UI.Services.Stores.BirdStore
         IMediator mediator,
         ILogger<BirdStoreInitializer> logger,
         INotificationService notificationService,
+
+        // Export services
+        IExportService exportService,
+        IExportPathProvider exportPathProvider,
+
         IUiDispatcher uiDispatcher,
+
         // This parameter is optional and mainly for testing purposes in unit tests
         IAsyncPolicy<Result<IReadOnlyList<BirdDTO>>>? retryPolicy = null)
     {
+        #region [ Fields ]
+
         private readonly IBirdStore _birdStore = birdStore;
         private readonly IMediator _mediator = mediator;
         private readonly ILogger<BirdStoreInitializer> _logger = logger;
         private readonly INotificationService _notificationService = notificationService;
         private readonly IUiDispatcher _ui = uiDispatcher;
+        private readonly IExportService _export = exportService;
+        private readonly IExportPathProvider _paths = exportPathProvider;
 
         // Define a retry policy: retry if the Result is not successful
         private readonly IAsyncPolicy<Result<IReadOnlyList<BirdDTO>>> _policy =
@@ -60,6 +71,8 @@ namespace Birds.UI.Services.Stores.BirdStore
                             delay.TotalSeconds,
                             outcome.Result?.Error ?? ErrorMessages.UnknownError);
                     });
+
+        #endregion [ Fields ]
 
         /// <summary>
         /// Called when the application starts.
@@ -94,6 +107,9 @@ namespace Birds.UI.Services.Stores.BirdStore
             if (cancellationToken.IsCancellationRequested)
                 return;
 
+            // Fire-and-forget export of loaded data
+            var snapshot = result.Value.ToList();
+
             await InvokeAsync(() =>
             {
                 _birdStore.Birds.Clear();
@@ -101,15 +117,32 @@ namespace Birds.UI.Services.Stores.BirdStore
                     _birdStore.Birds.Add(bird);
             }, cancellationToken);
 
+            // Start export in background
+            FireAndForgetExport(snapshot);
+
             _notificationService.ShowInfo(InfoMessages.LoadedSuccessfully);
 
             _birdStore.CompleteLoading(); // mark as successfully loaded
             _logger.LogInformation(LogMessages.LoadedSuccessfully, _birdStore.Birds.Count);
         }
 
+        private void FireAndForgetExport(IReadOnlyList<BirdDTO> items)
+        {
+            var path = _paths.GetLatestPath("birds");
+            _ = Task.Run(async () =>
+            {
+                try { await _export.ExportAsync(items, path, CancellationToken.None); }
+                catch (Exception ex) { _logger.LogError(ex, LogMessages.AutoExportFailed); }
+            });
+        }
+
+        #region [ Private Helper Methods ]
+
         private async Task InvokeAsync(Action action, CancellationToken cancellationToken)
         {
             await _ui.InvokeAsync(action, cancellationToken);
         }
+
+        #endregion [ Private Helper Methods ]
     }
 }

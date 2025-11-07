@@ -1,4 +1,6 @@
-﻿using Birds.UI.Services.Factories.BirdViewModelFactory;
+﻿using Birds.UI.Services.Export;
+using Birds.UI.Services.Export.Interfaces;
+using Birds.UI.Services.Factories.BirdViewModelFactory;
 using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Navigation;
 using Birds.UI.Services.Navigation.Interfaces;
@@ -15,7 +17,7 @@ namespace Birds.UI
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddUI(this IServiceCollection services)
+        public static void AddUI(this IServiceCollection services)
         {
             // ViewModels
             services.AddSingleton<BirdListViewModel>();
@@ -33,11 +35,12 @@ namespace Birds.UI
             services.AddSingleton<IUiDispatcher, WpfUiDispatcher>();
             services.AddSingleton<INotificationManager, NotificationManager>();
 
+            // Export Services
+            services.AddSingleton<IExportService, JsonExportService>();
+
             // MediatR notification Handlers
             services.AddSingleton<INotificationHandler<NavigatedEvent>>(sp =>
                 (NotificationService)sp.GetRequiredService<INotificationService>());
-
-            return services;
         }
     }
 }
