@@ -9,7 +9,7 @@ namespace Birds.Application
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddApplication(this IServiceCollection services)
+        public static void AddApplication(this IServiceCollection services)
         {
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
@@ -24,8 +24,6 @@ namespace Birds.Application
             {
                 cfg.RegisterServicesFromAssembly(typeof(CreateBirdCommandHandler).Assembly);
             });
-
-            return services;
         }
     }
 }

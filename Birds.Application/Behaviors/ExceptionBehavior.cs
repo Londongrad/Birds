@@ -74,7 +74,7 @@ namespace Birds.Application.Behaviors
 
             // Case 3: Anything else → throw, because it’s not a Result
             throw new InvalidOperationException(
-                string.Format(ErrorMessages.InvalidOperationException, responseType.Name));
+                string.Format(ExceptionMessages.InvalidOperation, responseType.Name));
         }
     }
 }
