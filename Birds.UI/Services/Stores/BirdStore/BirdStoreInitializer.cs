@@ -61,18 +61,27 @@ namespace Birds.UI.Services.Stores.BirdStore
             ?? Policy
                 .HandleResult<Result<IReadOnlyList<BirdDTO>>>(r => !r.IsSuccess)
                 .WaitAndRetryAsync(
-                    retryCount: 4,
-                    sleepDurationProvider: attempt => TimeSpan.FromSeconds(attempt * 2), // 2, 4, 6, 8 seconds
-                    onRetry: (outcome, delay, attempt, context) =>
+                    sleepDurations: RetryDelays, // 2, 4, 6, 8 seconds
+                    onRetryAsync: async (outcome, delay, attempt, context) =>
                     {
                         logger.LogWarning(
                             LogMessages.LoadFailed,
                             attempt,
                             delay.TotalSeconds,
                             outcome.Result?.Error ?? ErrorMessages.UnknownError);
+
+                        await uiDispatcher.InvokeAsync(() =>
+                        {
+                            notificationService.ShowWarning(string.Format(
+                                InfoMessages.LoadFailed,
+                                attempt,
+                                delay.TotalSeconds));
+                        }, CancellationToken.None);
                     });
 
         #endregion [ Fields ]
+
+        #region [ Methods ]
 
         /// <summary>
         /// Called when the application starts.
@@ -80,12 +89,14 @@ namespace Birds.UI.Services.Stores.BirdStore
         /// </summary>
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            if (cancellationToken.IsCancellationRequested)
-                return;
+            cancellationToken.ThrowIfCancellationRequested();
 
-            _birdStore.BeginLoading();
-
-            _notificationService.ShowInfo(InfoMessages.LoadingBirdData);
+            // Begin loading indication
+            await InvokeAsync(() => 
+            {
+                _birdStore.BeginLoading();
+                _notificationService.ShowInfo(InfoMessages.LoadingBirdData);
+            }, cancellationToken);
 
             // Execute the query through the retry policy
             var result = await _policy.ExecuteAsync(async ct =>
@@ -95,34 +106,35 @@ namespace Birds.UI.Services.Stores.BirdStore
             {
                 _logger.LogError(LogMessages.Error, result.Error);
 
-                _birdStore.FailLoading(); // mark as failed
+                // Loading failed after all retries
+                await InvokeAsync(() =>
+                {
+                    _birdStore.FailLoading(); // mark as failed
 
-                _notificationService.Show(
-                    ErrorMessages.BirdLoadFailed,
-                    new NotificationOptions(NotificationType.Error, TimeSpan.FromSeconds(7)));
+                    _notificationService.Show(
+                        ErrorMessages.BirdLoadFailed,
+                        new NotificationOptions(NotificationType.Error, TimeSpan.FromSeconds(7)));
+                }, cancellationToken);
 
                 return;
             }
 
-            if (cancellationToken.IsCancellationRequested)
-                return;
+            cancellationToken.ThrowIfCancellationRequested();
 
-            // Fire-and-forget export of loaded data
-            var snapshot = result.Value.ToList();
+            // Start Fire-and-forget export of loaded data in the background
+            FireAndForgetExport(result.Value.ToList());
 
+            // Populate the bird store on the UI thread and mark as loaded
             await InvokeAsync(() =>
             {
                 _birdStore.Birds.Clear();
                 foreach (BirdDTO bird in result.Value)
                     _birdStore.Birds.Add(bird);
+
+                _notificationService.ShowInfo(InfoMessages.LoadedSuccessfully);
+                _birdStore.CompleteLoading(); // mark as successfully loaded
             }, cancellationToken);
 
-            // Start export in background
-            FireAndForgetExport(snapshot);
-
-            _notificationService.ShowInfo(InfoMessages.LoadedSuccessfully);
-
-            _birdStore.CompleteLoading(); // mark as successfully loaded
             _logger.LogInformation(LogMessages.LoadedSuccessfully, _birdStore.Birds.Count);
         }
 
@@ -131,12 +143,34 @@ namespace Birds.UI.Services.Stores.BirdStore
             var path = _paths.GetLatestPath("birds");
             _ = Task.Run(async () =>
             {
-                try { await _export.ExportAsync(items, path, CancellationToken.None); }
+                try 
+                { 
+                    await _export.ExportAsync(items, path, CancellationToken.None); 
+                    _logger.LogInformation(LogMessages.AutoExportSucceeded, path);
+
+                    await InvokeAsync(() =>
+                    {
+                        _notificationService.ShowInfo(string.Format(
+                            InfoMessages.AutoExportSucceeded,
+                            path));
+                    }, CancellationToken.None);
+                }
                 catch (Exception ex) { _logger.LogError(ex, LogMessages.AutoExportFailed); }
             });
         }
 
+        #endregion [ Methods ]
+
         #region [ Private Helper Methods ]
+
+        // Retry delays for Polly policy
+        private static readonly TimeSpan[] RetryDelays = new[]
+        {
+            TimeSpan.FromSeconds(2),
+            TimeSpan.FromSeconds(4),
+            TimeSpan.FromSeconds(6),
+            TimeSpan.FromSeconds(8)
+        };
 
         private async Task InvokeAsync(Action action, CancellationToken cancellationToken)
         {
