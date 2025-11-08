@@ -30,5 +30,6 @@
         public const string DisposeError = "Error during Dispose";
 
         public const string AutoExportFailed = "Auto-export failed";
+        public const string AutoExportSucceeded = "Auto-export succeeded. Path: {Path}";
     }
 }

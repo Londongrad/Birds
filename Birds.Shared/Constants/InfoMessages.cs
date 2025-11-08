@@ -19,5 +19,9 @@
         public const string BirdAdded = "Bird added successfully!";
 
         public const string ToThisDay = "to this day";
+
+        public const string LoadFailed = "Attempt {0} to load birds failed. Retrying in {1}s.";
+
+        public const string AutoExportSucceeded = "Auto-export succeeded. Path: {0}";
     }
 }

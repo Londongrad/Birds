@@ -10,6 +10,7 @@ namespace Birds.Infrastructure
     {
         public static void AddInfrastructure(this IServiceCollection services, string connectionString)
         {
+            // Register DbContext with Singleton lifetime and disable retry on failure
             services.AddDbContext<BirdDbContext>(options =>
                 options.UseNpgsql(connectionString, n => n.EnableRetryOnFailure(0)), ServiceLifetime.Singleton);
 

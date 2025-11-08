@@ -31,7 +31,8 @@ namespace Birds.UI.Services.Export
         public async Task ExportAsync(IEnumerable<BirdDTO> birds, string path, CancellationToken ct)
         {
             ArgumentNullException.ThrowIfNull(birds);
-            if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Path must be a non-empty absolute path.", nameof(path));
+            if (string.IsNullOrWhiteSpace(path)) 
+                throw new ArgumentException("Path must be a non-empty absolute path.", nameof(path));
 
             // Ensure target directory exists
             var dir = Path.GetDirectoryName(path)!;
@@ -48,7 +49,7 @@ namespace Birds.UI.Services.Export
                 var envelope = new
                 {
                     version = 1,
-                    exportedAt = DateTimeOffset.UtcNow,
+                    exportedAt = DateTime.Now,
                     items = birds.ToList()
                 };
 

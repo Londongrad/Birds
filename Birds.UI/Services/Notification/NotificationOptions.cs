@@ -16,7 +16,7 @@
         /// <summary>
         /// The default duration (2 seconds), used if <see cref="Duration"/> is set to its default value.
         /// </summary>
-        public static readonly TimeSpan DefaultDuration = TimeSpan.FromSeconds(2);
+        public static readonly TimeSpan DefaultDuration = TimeSpan.FromSeconds(3);
 
         /// <summary>
         /// Returns the effective duration (uses <see cref="DefaultDuration"/> if not explicitly set).

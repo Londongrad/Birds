@@ -7,6 +7,9 @@ using Microsoft.Extensions.Hosting;
 
 namespace Birds.Infrastructure.Seeding
 {
+    /// <summary>
+    /// For demo purposes only. Not intended for production use.
+    /// </summary>
     public class BirdSeeder(IServiceProvider services) : IHostedService
     {
         private readonly IServiceProvider _services = services;
@@ -26,6 +29,7 @@ namespace Birds.Infrastructure.Seeding
                 var counters = Enum.GetValues<BirdsName>()
                     .ToDictionary(x => x, _ => 0);
 
+                // Generate 3000 birds in batches of 400
                 const int total = 3000;
                 const int batchSize = 400;
                 var birds = new List<Bird>(batchSize);
