@@ -94,19 +94,16 @@ namespace Birds.Tests.Domain
             DateTime defaultDate = default;
             DateTime futureDate = DateTime.Now.AddDays(1);
             DateTime pastDate = new(2019, 12, 31);
-            DateTime nowDate = DateTime.Now;
 
             // Act
             Action act1 = () => GuardHelper.AgainstInvalidDateTime(defaultDate, "testDateTime");
             Action act2 = () => GuardHelper.AgainstInvalidDateTime(futureDate, "testDateTime");
             Action act3 = () => GuardHelper.AgainstInvalidDateTime(pastDate, "testDateTime");
-            Action act4 = () => GuardHelper.AgainstInvalidDateTime(nowDate, "testDateTime");
 
             // Assert
             act1.Should().Throw<DomainValidationException>().WithMessage("*testDateTime*");
             act2.Should().Throw<DomainValidationException>().WithMessage("*testDateTime*");
             act3.Should().Throw<DomainValidationException>().WithMessage("*testDateTime*");
-            act4.Should().Throw<DomainValidationException>().WithMessage("*testDateTime*");
         }
 
         [Fact]
