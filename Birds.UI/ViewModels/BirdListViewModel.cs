@@ -157,7 +157,7 @@ namespace Birds.UI.ViewModels
             return SelectedFilter.Filter switch
             {
                 BirdFilter.All => true,
-                BirdFilter.Alive => bird.IsAlive,
+                BirdFilter.Alive => bird.IsAlive && bird.Departure is null,
                 BirdFilter.Dead => !bird.IsAlive,
                 BirdFilter.DepartedButAlive => bird.IsAlive && bird.Departure is not null,
                 BirdFilter.Amadin => bird.Name == "Амадин",
