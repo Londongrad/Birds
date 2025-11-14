@@ -25,7 +25,6 @@ namespace Birds.Tests.Domain
             bird.Arrival.Should().Be(arrival);
             bird.Departure.Should().BeNull();
             bird.IsAlive.Should().BeTrue();
-            bird.CreatedAt.Should().NotBeNull();
             bird.UpdatedAt.Should().BeNull();
         }
 

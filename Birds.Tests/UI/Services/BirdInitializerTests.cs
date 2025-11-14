@@ -80,19 +80,22 @@ namespace Birds.Tests.UI.Services
         }
 
         [Fact]
-        public async Task StartAsync_CanceledEarly_DoesNothing()
+        public async Task StartAsync_CanceledEarly_ThrowsException()
         {
             // Arrange
             var store = new BirdStore();
             var mediator = new Mock<IMediator>();
-            var cts = new CancellationTokenSource(); cts.Cancel();
+            var cts = new CancellationTokenSource();
+
+            cts.Cancel();
 
             var sut = TestHelpers.MakeInitializer(store, mediator.Object, out var notify, out _);
 
             // Act
-            await sut.StartAsync(cts.Token);
+            Func<Task> act = async () => await sut.StartAsync(cts.Token);
 
             // Assert
+            await act.Should().ThrowAsync<OperationCanceledException>();
             store.LoadState.Should().Be(LoadState.Uninitialized);
             mediator.VerifyNoOtherCalls();
             notify.VerifyNoOtherCalls();
