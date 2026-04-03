@@ -1,6 +1,7 @@
-﻿using Birds.Application.Common.Models;
+using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
 using Birds.Application.Queries.GetAllBirds;
+using Birds.Shared.Constants;
 using Birds.UI.Enums;
 using Birds.UI.Services.Notification;
 using Birds.UI.Services.Stores.BirdStore;
@@ -77,6 +78,28 @@ namespace Birds.Tests.UI.Services
             store.LoadState.Should().Be(LoadState.Loaded);
             store.Birds.Should().HaveCount(1);
             mediator.Verify(m => m.Send(It.IsAny<GetAllBirdsQuery>(), It.IsAny<CancellationToken>()), Times.Exactly(3));
+        }
+
+        [Fact]
+        public async Task StartAsync_When_Database_Is_Empty_Loads_Empty_State_Without_Retrying()
+        {
+            // Arrange
+            var store = new BirdStore();
+            var mediator = new Mock<IMediator>();
+            mediator.SetupGetAllBirdsSuccess(Array.Empty<BirdDTO>());
+
+            var sut = TestHelpers.MakeInitializer(store, mediator.Object, out var notify, out _);
+
+            // Act
+            await sut.StartAsync(CancellationToken.None);
+
+            // Assert
+            store.LoadState.Should().Be(LoadState.Loaded);
+            store.Birds.Should().BeEmpty();
+
+            mediator.Verify(m => m.Send(It.IsAny<GetAllBirdsQuery>(), It.IsAny<CancellationToken>()), Times.Once);
+            notify.Verify(n => n.ShowInfo(InfoMessages.NoBirdRecordsYet), Times.Once);
+            notify.Verify(n => n.Show(It.IsAny<string>(), It.IsAny<NotificationOptions>()), Times.Never);
         }
 
         [Fact]
