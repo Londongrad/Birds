@@ -1,4 +1,4 @@
-﻿using Birds.Application.Exceptions;
+using Birds.Application.Exceptions;
 using Birds.Domain.Entities;
 using Birds.Domain.Enums;
 using Birds.Infrastructure.Repositories;
@@ -22,8 +22,7 @@ namespace Birds.Tests.Infrastructure
         public async Task Add_Then_GetById_Should_Return_Same_Entity()
         {
             // Arrange
-            var ctx = _db.CreateContext();
-            var repo = new BirdRepository(ctx);
+            var repo = new BirdRepository(_db.CreateFactory());
 
             var bird = Bird.Create(
                 name: BirdsName.Воробей,
@@ -43,8 +42,7 @@ namespace Birds.Tests.Infrastructure
         public async Task GetById_When_NotExists_Should_Throw_NotFound()
         {
             // Arrange
-            var ctx = _db.CreateContext();
-            var repo = new BirdRepository(ctx);
+            var repo = new BirdRepository(_db.CreateFactory());
 
             // Act
             Func<Task> act = async () => await repo.GetByIdAsync(Guid.NewGuid());
@@ -59,7 +57,7 @@ namespace Birds.Tests.Infrastructure
         {
             // Arrange
             var ctx = _db.CreateContext();
-            var repo = new BirdRepository(ctx);
+            var repo = new BirdRepository(_db.CreateFactory());
 
             // Act
             var b1 = Bird.Create(BirdsName.Гайка, "tit", DateOnly.FromDateTime(DateTime.Now.AddDays(-5)));
@@ -80,8 +78,7 @@ namespace Birds.Tests.Infrastructure
         public async Task Update_Should_Persist_Changes()
         {
             // Arrange
-            var ctx = _db.CreateContext();
-            var repo = new BirdRepository(ctx);
+            var repo = new BirdRepository(_db.CreateFactory());
 
             // Act
             var bird = Bird.Create(BirdsName.Воробей, "old", DateOnly.FromDateTime(DateTime.Now.AddDays(-10)));
@@ -90,9 +87,8 @@ namespace Birds.Tests.Infrastructure
             bird.Update(BirdsName.Большак, "new", bird.Arrival, bird.Departure, true);
             await repo.UpdateAsync(bird);
 
-            // Use new context to verify detached behavior
-            using var ctx2 = _db.CreateContext();
-            var repo2 = new BirdRepository(ctx2);
+            // Use a fresh repository call to verify persistence across independent contexts.
+            var repo2 = new BirdRepository(_db.CreateFactory());
             var again = await repo2.GetByIdAsync(bird.Id);
 
             // Assert
@@ -104,8 +100,7 @@ namespace Birds.Tests.Infrastructure
         public async Task Remove_Should_Delete_Row()
         {
             // Arrange
-            var ctx = _db.CreateContext();
-            var repo = new BirdRepository(ctx);
+            var repo = new BirdRepository(_db.CreateFactory());
 
             // Act
             var bird = Bird.Create(BirdsName.Воробей, "to delete", DateOnly.FromDateTime(DateTime.Now.AddDays(-2)));

@@ -1,4 +1,4 @@
-﻿using Birds.Infrastructure.Persistence;
+using Birds.Infrastructure.Persistence;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,8 +22,19 @@ namespace Birds.Tests.Infrastructure
             ctx.Database.EnsureCreated();
         }
 
-        public BirdDbContext CreateContext() => new BirdDbContext(_options);
+        public BirdDbContext CreateContext() => new(_options);
+
+        public IDbContextFactory<BirdDbContext> CreateFactory() => new TestBirdDbContextFactory(_options);
 
         public async ValueTask DisposeAsync() => await _conn.DisposeAsync();
+
+        private sealed class TestBirdDbContextFactory(DbContextOptions<BirdDbContext> options)
+            : IDbContextFactory<BirdDbContext>
+        {
+            public BirdDbContext CreateDbContext() => new(options);
+
+            public ValueTask<BirdDbContext> CreateDbContextAsync(CancellationToken cancellationToken = default)
+                => ValueTask.FromResult(CreateDbContext());
+        }
     }
 }
