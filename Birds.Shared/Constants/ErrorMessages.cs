@@ -15,8 +15,6 @@
         public const string RequestCannotBeNull = "Request cannot be null.";
         public const string QueryCannotBeNull = "Query cannot be null.";
 
-        public const string NoBirdsFound = "No birds found.";
-
         public const string ConnectionStringNotFound = "Database connection string not found.";
 
         public const string FailedToDisplayErrorNotification = "Failed to display error notification";

@@ -5,6 +5,7 @@
         public const string LoadingBirdData = "Loading bird data...";
 
         public const string LoadedSuccessfully = "Bird data loaded successfully.";
+        public const string NoBirdRecordsYet = "No bird records yet. Add your first bird to get started.";
 
         public const string ReloadingBirdData = "Reloading bird data...";
 

@@ -121,17 +121,22 @@ namespace Birds.UI.Services.Stores.BirdStore
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            var loadedBirds = result.Value ?? Array.Empty<BirdDTO>();
+
             // Start Fire-and-forget export of loaded data in the background
-            FireAndForgetExport(result.Value.ToList());
+            FireAndForgetExport(loadedBirds.ToList());
 
             // Populate the bird store on the UI thread and mark as loaded
             await InvokeAsync(() =>
             {
                 _birdStore.Birds.Clear();
-                foreach (BirdDTO bird in result.Value)
+                foreach (BirdDTO bird in loadedBirds)
                     _birdStore.Birds.Add(bird);
 
-                _notificationService.ShowInfo(InfoMessages.LoadedSuccessfully);
+                _notificationService.ShowInfo(
+                    loadedBirds.Count == 0
+                        ? InfoMessages.NoBirdRecordsYet
+                        : InfoMessages.LoadedSuccessfully);
                 _birdStore.CompleteLoading(); // mark as successfully loaded
             }, cancellationToken);
 

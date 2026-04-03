@@ -17,8 +17,11 @@ namespace Birds.Application.Queries.GetAllBirds
 
             var birds = await repository.GetAllAsync(cancellationToken);
 
-            if (birds is null || birds.Count == 0)
-                return Result<IReadOnlyList<BirdDTO>>.Failure(ErrorMessages.NoBirdsFound);
+            if (birds is null)
+                return Result<IReadOnlyList<BirdDTO>>.Failure(ErrorMessages.UnexpectedError);
+
+            if (birds.Count == 0)
+                return Result<IReadOnlyList<BirdDTO>>.Success(Array.Empty<BirdDTO>());
 
             var mapped = mapper.Map<IReadOnlyList<BirdDTO>>(birds);
 
