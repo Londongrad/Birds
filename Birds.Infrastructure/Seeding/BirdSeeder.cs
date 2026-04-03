@@ -1,8 +1,7 @@
-﻿using Birds.Domain.Entities;
+using Birds.Domain.Entities;
 using Birds.Domain.Enums;
 using Birds.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace Birds.Infrastructure.Seeding
@@ -10,14 +9,13 @@ namespace Birds.Infrastructure.Seeding
     /// <summary>
     /// For demo purposes only. Not intended for production use.
     /// </summary>
-    public class BirdSeeder(IServiceProvider services) : IHostedService
+    public class BirdSeeder(IDbContextFactory<BirdDbContext> contextFactory) : IHostedService
     {
-        private readonly IServiceProvider _services = services;
+        private readonly IDbContextFactory<BirdDbContext> _contextFactory = contextFactory;
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            using var scope = _services.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<BirdDbContext>();
+            await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
 
             //await context.Database.EnsureDeletedAsync();
             //await context.Database.EnsureCreatedAsync(cancellationToken);
