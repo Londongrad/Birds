@@ -81,7 +81,10 @@ namespace Birds.UI.ViewModels.Base
         /// </summary>
         /// <param name="value">The new value of the <see cref="SelectedBirdName"/> property.</param>
         partial void OnSelectedBirdNameChanged(BirdsName? value)
-            => ValidateProperty(value, nameof(SelectedBirdName));
+        {
+            ValidateProperty(value, nameof(SelectedBirdName));
+            OnSelectedBirdNameChangedCore(value);
+        }
 
         /// <summary>
         /// Automatically triggers property validation when the description changes.
@@ -104,6 +107,12 @@ namespace Birds.UI.ViewModels.Base
         /// Invoked when the arrival date changes (can be overridden in derived classes).
         /// </summary>
         protected virtual void OnArrivalChangedCore(DateOnly value)
+        { }
+
+        /// <summary>
+        /// Invoked when the selected bird species changes (can be overridden in derived classes).
+        /// </summary>
+        protected virtual void OnSelectedBirdNameChangedCore(BirdsName? value)
         { }
 
         #endregion [ Validation ]
