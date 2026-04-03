@@ -43,6 +43,33 @@ namespace Birds.Tests.Domain
 
         #endregion [ AgainstNullOrEmpty ]
 
+        #region [ AgainstExceedsMaxLength ]
+
+        [Fact]
+        public void AgainstExceedsMaxLength_ShouldThrowException_ForTooLongString()
+        {
+            var longValue = new string('A', 6);
+
+            Action act = () => GuardHelper.AgainstExceedsMaxLength(longValue, 5, "testArg");
+
+            act.Should().Throw<DomainValidationException>().WithMessage("*testArg*");
+        }
+
+        [Fact]
+        public void AgainstExceedsMaxLength_ShouldNotThrow_ForNullOrShortString()
+        {
+            string? nullString = null;
+            string shortString = "Bird";
+
+            Action act1 = () => GuardHelper.AgainstExceedsMaxLength(nullString, 5, "testArg");
+            Action act2 = () => GuardHelper.AgainstExceedsMaxLength(shortString, 5, "testArg");
+
+            act1.Should().NotThrow();
+            act2.Should().NotThrow();
+        }
+
+        #endregion [ AgainstExceedsMaxLength ]
+
         #region [ AgainstInvalidDateOnly ]
 
         [Fact]
