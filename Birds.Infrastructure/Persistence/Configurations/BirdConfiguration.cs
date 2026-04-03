@@ -1,4 +1,5 @@
-﻿using Birds.Domain.Entities;
+using Birds.Domain.Entities;
+using Birds.Shared.Constants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -11,11 +12,11 @@ namespace Birds.Infrastructure.Persistence.Configurations
             builder.HasKey(b => b.Id);
 
             builder.Property(b => b.Name)
-                .HasConversion<string>()  // enum → string
+                .HasConversion<string>()  // enum -> string
                 .IsRequired();
 
             builder.Property(b => b.Description)
-                .HasMaxLength(200)
+                .HasMaxLength(BirdValidationRules.DescriptionMaxLength)
                 .IsRequired(false)
                 .HasDefaultValue(null);
 

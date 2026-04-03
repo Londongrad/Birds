@@ -4,7 +4,7 @@
     {
         public const string UnselectedBird = "No bird selected. Please select a bird from the list.";
 
-        public const string LongDescription = "Description is too long. Maximum length is 100 characters.";
+        public const string LongDescription = "Description is too long. Maximum length is 200 characters.";
 
         public const string DateIsNotSpecified = "Specify the date.";
 

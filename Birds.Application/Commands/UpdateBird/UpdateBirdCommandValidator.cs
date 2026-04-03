@@ -1,11 +1,11 @@
 using Birds.Application.Common.Validation;
 using FluentValidation;
 
-namespace Birds.Application.Commands.CreateBird
+namespace Birds.Application.Commands.UpdateBird
 {
-    public class CreateBirdCommandValidator : AbstractValidator<CreateBirdCommand>
+    public class UpdateBirdCommandValidator : AbstractValidator<UpdateBirdCommand>
     {
-        public CreateBirdCommandValidator()
+        public UpdateBirdCommandValidator()
         {
             RuleFor(x => x.Arrival).ApplyArrivalRules();
 

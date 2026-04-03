@@ -33,9 +33,9 @@ namespace Birds.UI.ViewModels.Base
 
         /// <summary>
         /// The bird description.
-        /// Optional, but limited to 100 characters.
+        /// Optional, but limited to 200 characters.
         /// </summary>
-        [MaxLength(100, ErrorMessage = ValidationMessages.LongDescription)]
+        [MaxLength(BirdValidationRules.DescriptionMaxLength, ErrorMessage = ValidationMessages.LongDescription)]
         [ObservableProperty]
         private string? description;
 
@@ -66,7 +66,7 @@ namespace Birds.UI.ViewModels.Base
             if (value is not DateOnly d)
                 return new ValidationResult(ValidationMessages.DateIsNotSpecified);
 
-            var min = new DateOnly(2020, 1, 1);
+            var min = BirdValidationRules.MinimumArrivalDate;
             var max = DateOnly.FromDateTime(DateTime.Today);
 
             if (d < min || d > max)

@@ -1,4 +1,5 @@
-﻿using Birds.Domain.Common.Exceptions;
+using Birds.Domain.Common.Exceptions;
+using Birds.Shared.Constants;
 
 namespace Birds.Domain.Common
 {
@@ -20,6 +21,20 @@ namespace Birds.Domain.Common
         }
 
         /// <summary>
+        /// Ensures that the provided string does not exceed the allowed length.
+        /// </summary>
+        /// <param name="value">The string to validate.</param>
+        /// <param name="maxLength">The maximum allowed length.</param>
+        /// <param name="argumentName">The name of the argument being validated.</param>
+        /// <exception cref="DomainValidationException">Thrown when the string is longer than <paramref name="maxLength"/>.</exception>
+        public static void AgainstExceedsMaxLength(string? value, int maxLength, string argumentName)
+        {
+            if (value is not null && value.Length > maxLength)
+                throw new DomainValidationException(
+                    $"{argumentName} exceeds the maximum length of {maxLength} characters");
+        }
+
+        /// <summary>
         /// Ensures that the given <see cref="DateOnly"/> value is valid, not default, and within allowed bounds.
         /// </summary>
         /// <param name="value">The date to validate.</param>
@@ -37,7 +52,7 @@ namespace Birds.Domain.Common
             if (!allowFuture && value > DateOnly.FromDateTime(DateTime.Now))
                 throw new DomainValidationException($"{argumentName} cannot be in the future");
 
-            if (value < DateOnly.FromDateTime(new DateTime(2020, 1, 1)))
+            if (value < BirdValidationRules.MinimumArrivalDate)
                 throw new DomainValidationException($"{argumentName} is too far in the past");
         }
 
@@ -72,7 +87,7 @@ namespace Birds.Domain.Common
             if (!allowFuture && value > DateTime.Now)
                 throw new DomainValidationException($"{argumentName} cannot be in the future");
 
-            if (value < new DateTime(2020, 1, 1))
+            if (value < BirdValidationRules.MinimumTimestamp)
                 throw new DomainValidationException($"{argumentName} is too far in the past");
         }
 

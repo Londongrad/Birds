@@ -1,5 +1,6 @@
-﻿using Birds.Domain.Common;
+using Birds.Domain.Common;
 using Birds.Domain.Enums;
+using Birds.Shared.Constants;
 
 namespace Birds.Domain.Entities
 {
@@ -21,18 +22,20 @@ namespace Birds.Domain.Entities
         { }
 
         private Bird(
-            Guid id, 
-            BirdsName name, 
-            string? description, 
-            DateOnly arrival, 
-            DateOnly? departure = null, 
+            Guid id,
+            BirdsName name,
+            string? description,
+            DateOnly arrival,
+            DateOnly? departure = null,
             bool isAlive = true)
             : base(id)
         {
             GuardHelper.AgainstEmptyGuid(id, nameof(id));
             GuardHelper.AgainstInvalidEnum(name, nameof(name));
+            GuardHelper.AgainstExceedsMaxLength(description, BirdValidationRules.DescriptionMaxLength, nameof(description));
             GuardHelper.AgainstInvalidDateOnly(arrival, nameof(arrival));
             GuardHelper.AgainstInvalidDateOnly(departure, nameof(departure));
+            GuardHelper.AgainstInvalidDateRange(arrival, departure);
             GuardHelper.AgainstInvalidStatusUpdate(departure, isAlive, nameof(departure));
 
             Name = name;
@@ -47,20 +50,22 @@ namespace Birds.Domain.Entities
         #region [ Methods ]
 
         /// <summary>
-        /// Factory method to create a new Bird instance
+        /// Factory method to create a new Bird instance.
         /// </summary>
         /// <returns>A newly created <see cref="Bird"/> instance.</returns>
         public static Bird Create(
-            BirdsName name, 
-            string? description, 
-            DateOnly arrival, 
-            DateOnly? departure = null, 
+            BirdsName name,
+            string? description,
+            DateOnly arrival,
+            DateOnly? departure = null,
             bool isAlive = true)
         {
-            // Validate inputs (duplicate validation as in constructor)
             GuardHelper.AgainstInvalidEnum(name, nameof(name));
+            GuardHelper.AgainstExceedsMaxLength(description, BirdValidationRules.DescriptionMaxLength, nameof(description));
             GuardHelper.AgainstInvalidDateOnly(arrival, nameof(arrival));
             GuardHelper.AgainstInvalidDateOnly(departure, nameof(departure));
+            GuardHelper.AgainstInvalidDateRange(arrival, departure);
+            GuardHelper.AgainstInvalidStatusUpdate(departure, isAlive, nameof(departure));
 
             return new Bird(Guid.NewGuid(), name, description, arrival, departure, isAlive);
         }
@@ -72,27 +77,29 @@ namespace Birds.Domain.Entities
         /// Used to restore a previously created bird from persistent storage or an update command.
         /// </remarks>
         /// <param name="id">The unique identifier of the existing bird.</param>
-        /// <param name="name">The bird’s name.</param>
+        /// <param name="name">The bird's name.</param>
         /// <returns>A reconstructed <see cref="Bird"/> instance.</returns>
         public static Bird Restore(
-            Guid id, 
-            BirdsName name, 
-            string? description, 
-            DateOnly arrival, 
+            Guid id,
+            BirdsName name,
+            string? description,
+            DateOnly arrival,
             DateOnly? departure,
             bool isAlive)
         {
-            // Validate inputs (duplicate validation as in constructor)
             GuardHelper.AgainstInvalidEnum(name, nameof(name));
+            GuardHelper.AgainstExceedsMaxLength(description, BirdValidationRules.DescriptionMaxLength, nameof(description));
             GuardHelper.AgainstInvalidDateOnly(arrival, nameof(arrival));
             GuardHelper.AgainstInvalidDateOnly(departure, nameof(departure));
+            GuardHelper.AgainstInvalidDateRange(arrival, departure);
+            GuardHelper.AgainstInvalidStatusUpdate(departure, isAlive, nameof(departure));
             GuardHelper.AgainstEmptyGuid(id, nameof(id));
 
             return new Bird(id, name, description, arrival, departure, isAlive);
         }
 
         /// <summary>
-        /// Updates the bird’s state by replacing all its core attributes at once.
+        /// Updates the bird's state by replacing all its core attributes at once.
         /// </summary>
         /// <remarks>
         /// Intended for full entity updates when all fields are known and validated externally.
@@ -100,8 +107,10 @@ namespace Birds.Domain.Entities
         public void Update(BirdsName name, string? description, DateOnly arrival, DateOnly? departure, bool isAlive)
         {
             GuardHelper.AgainstInvalidEnum(name, nameof(name));
+            GuardHelper.AgainstExceedsMaxLength(description, BirdValidationRules.DescriptionMaxLength, nameof(description));
             GuardHelper.AgainstInvalidDateOnly(arrival, nameof(arrival));
             GuardHelper.AgainstInvalidDateOnly(departure, nameof(departure));
+            GuardHelper.AgainstInvalidDateRange(arrival, departure);
             GuardHelper.AgainstInvalidStatusUpdate(departure, isAlive, nameof(departure));
 
             Name = name;
