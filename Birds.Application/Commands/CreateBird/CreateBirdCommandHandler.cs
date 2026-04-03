@@ -1,16 +1,13 @@
-﻿using AutoMapper;
 using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
 using Birds.Application.Interfaces;
-using Birds.Domain.Entities;
+using Birds.Application.Mappings;
 using Birds.Shared.Constants;
 using MediatR;
 
 namespace Birds.Application.Commands.CreateBird
 {
-    public class CreateBirdCommandHandler(
-        IBirdRepository birdRepository,
-        IMapper mapper)
+    public class CreateBirdCommandHandler(IBirdRepository birdRepository)
         : IRequestHandler<CreateBirdCommand, Result<BirdDTO>>
     {
         public async Task<Result<BirdDTO>> Handle(CreateBirdCommand request, CancellationToken cancellationToken)
@@ -18,11 +15,11 @@ namespace Birds.Application.Commands.CreateBird
             if (request == null)
                 return Result<BirdDTO>.Failure(ErrorMessages.RequestCannotBeNull);
 
-            var bird = mapper.Map<Bird>(request);
+            var bird = request.ToEntity();
 
             await birdRepository.AddAsync(bird, cancellationToken);
 
-            var birdDTO = mapper.Map<BirdDTO>(bird);
+            var birdDTO = bird.ToDto();
 
             return Result<BirdDTO>.Success(birdDTO);
         }

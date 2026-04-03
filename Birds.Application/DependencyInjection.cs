@@ -18,8 +18,6 @@ namespace Birds.Application
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ExceptionHandlingBehavior<,>));
 
-            services.AddAutoMapper(cfg => { }, Assembly.GetExecutingAssembly());
-
             services.AddMediatR(cfg =>
             {
                 cfg.RegisterServicesFromAssembly(typeof(CreateBirdCommandHandler).Assembly);
