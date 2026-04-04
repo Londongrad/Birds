@@ -1,4 +1,5 @@
-﻿using Birds.Shared.Constants;
+using Birds.App.Services;
+using Birds.Shared.Constants;
 using Birds.UI.Services.Stores.BirdStore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,9 +10,8 @@ namespace Birds.App;
 public partial class App
 {
     /// <summary>
-    /// Starts, on a background thread, the bird data bootstrap for the application:
-    /// resolves and invokes <see cref="BirdStoreInitializer"/> to load the shared bird
-    /// collection and, on application start, perform a JSON data export.
+    /// Starts, on a background thread, the full data bootstrap for the application:
+    /// prepares the database and then loads the shared bird collection for the UI.
     /// </summary>
     /// <param name="host">
     /// The fully built <see cref="IHost"/> used to resolve services required by the
@@ -24,13 +24,16 @@ public partial class App
     /// </remarks>
     internal void StartBackgroundInitialization(IHost host)
     {
+        var birdStore = host.Services.GetRequiredService<IBirdStore>();
+        birdStore.BeginLoading();
+
         _ = Task.Run(async () =>
         {
             var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
-            var initializer = host.Services.GetRequiredService<BirdStoreInitializer>();
+            var coordinator = host.Services.GetRequiredService<StartupDataCoordinator>();
             try
             {
-                await initializer.StartAsync(lifetime.ApplicationStopping);
+                await coordinator.InitializeAsync(lifetime.ApplicationStopping);
             }
             catch (OperationCanceledException)
             {
@@ -38,7 +41,7 @@ public partial class App
             }
             catch (Exception ex)
             {
-                Log.Error(ex, LogMessages.UnhandledExceptionInSource, initializer.GetType().Name);
+                Log.Error(ex, LogMessages.UnhandledExceptionInSource, coordinator.GetType().Name);
             }
         });
     }
