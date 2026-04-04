@@ -3,7 +3,6 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:Birds.UI.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="clr-namespace:Birds.UI.ViewModels"
     d:DataContext="{d:DesignInstance Type=viewmodels:AddBirdViewModel}"
@@ -12,82 +11,115 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
-        <Style
-            x:Key="AddBirdLabel"
-            TargetType="TextBlock">
+        <Style x:Key="CardTitleStyle" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="Foreground" Value="#111827" />
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style x:Key="CardSubtitleStyle" TargetType="TextBlock">
+            <Setter Property="Margin" Value="0,10,0,0" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="Foreground" Value="#5B6473" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
+        <Style x:Key="FieldLabelStyle" TargetType="TextBlock">
             <Setter Property="Margin" Value="0,0,0,8" />
             <Setter Property="HorizontalAlignment" Value="Left" />
-            <Setter Property="Foreground" Value="#D8DEE7" />
+            <Setter Property="Foreground" Value="#111827" />
             <Setter Property="FontSize" Value="13" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
 
-        <Style
-            x:Key="AddBirdInputTextBox"
-            BasedOn="{StaticResource TextBoxAdd}"
-            TargetType="TextBox">
-            <Setter Property="Width" Value="Auto" />
-            <Setter Property="Height" Value="46" />
+        <Style x:Key="FieldHintStyle" TargetType="TextBlock">
+            <Setter Property="Margin" Value="0,8,0,0" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="Foreground" Value="#6B7280" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
+        <Style x:Key="ErrorTextStyle" TargetType="TextBlock">
+            <Setter Property="Margin" Value="0,8,0,0" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="Foreground" Value="#B42318" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Visibility" Value="Collapsed" />
+        </Style>
+
+        <Style x:Key="FormTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
+            <Setter Property="MinHeight" Value="38" />
+            <Setter Property="Padding" Value="10,8" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="FontSize" Value="15" />
-            <Setter Property="Padding" Value="12,8" />
-            <Setter Property="BorderBrush" Value="#39424D" />
-            <Setter Property="Foreground" Value="#F3F5F7" />
-            <Setter Property="CaretBrush" Value="#F3F5F7" />
-            <Setter Property="Background" Value="#151A20" />
+            <Setter Property="Foreground" Value="#111827" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Style.Triggers>
+                <Trigger Property="Validation.HasError" Value="True">
+                    <Setter Property="BorderBrush" Value="#D92D20" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <Style
-            x:Key="AddBirdDescriptionTextBox"
-            BasedOn="{StaticResource AddBirdInputTextBox}"
+            x:Key="DescriptionTextBoxStyle"
+            BasedOn="{StaticResource FormTextBoxStyle}"
             TargetType="TextBox">
-            <Setter Property="Height" Value="120" />
-            <Setter Property="VerticalContentAlignment" Value="Top" />
-            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="MinHeight" Value="112" />
             <Setter Property="AcceptsReturn" Value="True" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="VerticalContentAlignment" Value="Top" />
             <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
         </Style>
 
-        <Style
-            x:Key="AddBirdComboBox"
-            BasedOn="{StaticResource ComboBox}"
-            TargetType="ComboBox">
-            <Setter Property="Width" Value="Auto" />
-            <Setter Property="Height" Value="46" />
+        <Style x:Key="FormComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
+            <Setter Property="MinHeight" Value="38" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="FontSize" Value="15" />
-            <Setter Property="Padding" Value="12,8" />
-            <Setter Property="BorderBrush" Value="#39424D" />
-            <Setter Property="Foreground" Value="#F3F5F7" />
-            <Setter Property="Background" Value="#151A20" />
+            <Setter Property="Foreground" Value="#111827" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Style.Triggers>
+                <Trigger Property="Validation.HasError" Value="True">
+                    <Setter Property="BorderBrush" Value="#D92D20" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
-        <Style
-            x:Key="AddBirdDatePicker"
-            BasedOn="{StaticResource DatePickerAdd}"
-            TargetType="DatePicker">
-            <Setter Property="Width" Value="Auto" />
-            <Setter Property="Height" Value="46" />
+        <Style x:Key="FormDatePickerStyle" TargetType="DatePicker">
+            <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
+            <Setter Property="MinHeight" Value="38" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="FontSize" Value="15" />
-            <Setter Property="BorderBrush" Value="#39424D" />
-            <Setter Property="Background" Value="#151A20" />
+            <Setter Property="Foreground" Value="#111827" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Style.Triggers>
+                <Trigger Property="Validation.HasError" Value="True">
+                    <Setter Property="BorderBrush" Value="#D92D20" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
-        <Style
-            x:Key="AddBirdPrimaryButton"
-            TargetType="Button">
-            <Setter Property="Height" Value="46" />
-            <Setter Property="MinWidth" Value="180" />
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="40" />
+            <Setter Property="MinWidth" Value="170" />
             <Setter Property="Padding" Value="18,0" />
             <Setter Property="HorizontalAlignment" Value="Right" />
-            <Setter Property="Background" Value="#E7ECF2" />
-            <Setter Property="Foreground" Value="#11161C" />
-            <Setter Property="BorderBrush" Value="#E7ECF2" />
+            <Setter Property="Background" Value="#111827" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderBrush" Value="#111827" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="FontSize" Value="14" />
             <Setter Property="FontWeight" Value="SemiBold" />
@@ -100,7 +132,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="8">
+                            CornerRadius="10">
                             <ContentPresenter
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center" />
@@ -110,7 +142,7 @@
                                 <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.92" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.82" />
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.84" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.45" />
@@ -122,181 +154,208 @@
         </Style>
     </UserControl.Resources>
 
-    <Border Style="{StaticResource ViewsBorder}">
-        <Grid Margin="8">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-
-            <StackPanel>
-                <TextBlock
-                    HorizontalAlignment="Left"
-                    FontSize="26"
-                    FontWeight="SemiBold"
-                    Foreground="White"
-                    Text="Новая запись" />
-                <TextBlock
-                    Margin="0,10,0,0"
-                    HorizontalAlignment="Left"
-                    FontSize="14"
-                    Foreground="#8E98A6"
-                    Text="Заполните основные сведения о птице. Форма собрана в один спокойный сценарий без лишних элементов." />
-            </StackPanel>
-
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="24,12,24,24">
             <Border
-                Grid.Row="1"
-                Margin="0,22,0,0"
-                Padding="14"
-                Background="#171B21"
-                BorderBrush="#252B33"
+                MaxWidth="560"
+                Padding="32"
+                HorizontalAlignment="Left"
+                Background="#F7F8FA"
+                BorderBrush="#D7DCE4"
                 BorderThickness="1"
-                CornerRadius="10">
-                <TextBlock
-                    HorizontalAlignment="Left"
-                    FontSize="13"
-                    Foreground="#B7C0CB"
-                    Text="Если птица содержалась один день, включите режим разового содержания — дата выбытия будет проставлена автоматически." />
-            </Border>
-
-            <Border
-                Grid.Row="2"
-                Margin="0,22,0,0"
-                Padding="22"
-                Background="#13181E"
-                BorderBrush="#252B33"
-                BorderThickness="1"
-                CornerRadius="12">
-                <Grid MaxWidth="760">
+                CornerRadius="16">
+                <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="24" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Row="0" Grid.Column="0">
+                    <StackPanel Grid.Row="0" HorizontalAlignment="Stretch">
                         <TextBlock
-                            Style="{StaticResource AddBirdLabel}"
-                            Text="Вид птицы" />
+                            Style="{StaticResource CardTitleStyle}"
+                            Text="Новая запись" />
+                        <TextBlock
+                            Style="{StaticResource CardSubtitleStyle}"
+                            Text="Короткая спокойная форма без лишних декоративных блоков." />
+                    </StackPanel>
+
+                    <Grid Grid.Row="1" Margin="0,28,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Вид птицы" />
                         <ComboBox
+                            x:Name="BirdNameField"
+                            Grid.Row="1"
                             IsEditable="False"
                             ItemsSource="{Binding BirdNames}"
                             SelectedItem="{Binding SelectedBirdName,
                                                    Mode=TwoWay,
                                                    ValidatesOnNotifyDataErrors=True,
                                                    UpdateSourceTrigger=PropertyChanged}"
-                            Style="{StaticResource AddBirdComboBox}" />
-                    </StackPanel>
-
-                    <StackPanel Grid.Row="0" Grid.Column="2">
+                            Style="{StaticResource FormComboBoxStyle}" />
                         <TextBlock
-                            Style="{StaticResource AddBirdLabel}"
-                            Text="Дата прибытия" />
+                            Grid.Row="2"
+                            Text="{Binding ElementName=BirdNameField, Path=(Validation.Errors)[0].ErrorContent}">
+                            <TextBlock.Style>
+                                <Style
+                                    BasedOn="{StaticResource ErrorTextStyle}"
+                                    TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ElementName=BirdNameField, Path=(Validation.HasError)}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <TextBlock Grid.Row="3" Margin="0,20,0,8" Style="{StaticResource FieldLabelStyle}" Text="Дата прибытия" />
                         <DatePicker
-                            CalendarStyle="{DynamicResource DarkCalendarStyle}"
+                            x:Name="ArrivalField"
+                            Grid.Row="4"
                             SelectedDate="{Binding Arrival,
                                                    Mode=TwoWay,
                                                    Converter={StaticResource DateOnlyConverter},
                                                    ValidatesOnNotifyDataErrors=True,
                                                    UpdateSourceTrigger=PropertyChanged}"
-                            Style="{StaticResource AddBirdDatePicker}" />
-                    </StackPanel>
-
-                    <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Margin="0,20,0,0">
+                            Style="{StaticResource FormDatePickerStyle}" />
                         <TextBlock
-                            Style="{StaticResource AddBirdLabel}"
-                            Text="Описание" />
+                            Grid.Row="5"
+                            Text="{Binding ElementName=ArrivalField, Path=(Validation.Errors)[0].ErrorContent}">
+                            <TextBlock.Style>
+                                <Style
+                                    BasedOn="{StaticResource ErrorTextStyle}"
+                                    TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ElementName=ArrivalField, Path=(Validation.HasError)}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <TextBlock Grid.Row="6" Margin="0,20,0,8" Style="{StaticResource FieldLabelStyle}" Text="Описание" />
                         <TextBox
-                            Style="{StaticResource AddBirdDescriptionTextBox}"
+                            x:Name="DescriptionField"
+                            Grid.Row="7"
+                            MaxLength="200"
+                            Style="{StaticResource DescriptionTextBoxStyle}"
                             Text="{Binding Description,
                                            Mode=TwoWay,
                                            ValidatesOnNotifyDataErrors=True,
                                            UpdateSourceTrigger=PropertyChanged}" />
-                    </StackPanel>
+                    </Grid>
 
-                    <Border
-                        Grid.Row="2"
-                        Grid.ColumnSpan="3"
-                        Margin="0,20,0,0"
-                        Padding="14"
-                        Background="#161C23"
-                        BorderBrush="#252B33"
-                        BorderThickness="1"
-                        CornerRadius="10">
-                        <Grid>
+                    <Grid Grid.Row="2" Margin="0,16,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock
+                            Grid.Row="0"
+                            Style="{StaticResource FieldHintStyle}"
+                            Text="Описание необязательно. До 200 символов." />
+                        <TextBlock
+                            Grid.Row="1"
+                            Text="{Binding ElementName=DescriptionField, Path=(Validation.Errors)[0].ErrorContent}">
+                            <TextBlock.Style>
+                                <Style
+                                    BasedOn="{StaticResource ErrorTextStyle}"
+                                    TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ElementName=DescriptionField, Path=(Validation.HasError)}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <Border
+                            Grid.Row="2"
+                            Margin="0,24,0,0"
+                            Padding="16"
+                            Background="White"
+                            BorderBrush="#D7DCE4"
+                            BorderThickness="1"
+                            CornerRadius="12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <CheckBox
+                                    Grid.Column="0"
+                                    Margin="0,2,12,0"
+                                    IsChecked="{Binding IsOneTime, Mode=TwoWay}"
+                                    VerticalAlignment="Top" />
+
+                                <StackPanel Grid.Column="1" HorizontalAlignment="Stretch">
+                                    <TextBlock
+                                        HorizontalAlignment="Left"
+                                        Foreground="#111827"
+                                        FontSize="13"
+                                        FontWeight="SemiBold"
+                                        Text="Разовое содержание" />
+                                    <TextBlock
+                                        Margin="0,6,0,0"
+                                        HorizontalAlignment="Left"
+                                        Foreground="#5B6473"
+                                        FontSize="12"
+                                        Text="Если птица прибыла и выбыла в один день, дата выбытия заполнится автоматически." />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Grid Grid.Row="3" Margin="0,28,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <StackPanel>
-                                <TextBlock
-                                    HorizontalAlignment="Left"
-                                    FontSize="13"
-                                    FontWeight="SemiBold"
-                                    Foreground="#D8DEE7"
-                                    Text="Разовое содержание" />
-                                <TextBlock
-                                    Margin="0,6,0,0"
-                                    HorizontalAlignment="Left"
-                                    FontSize="13"
-                                    Foreground="#8E98A6"
-                                    Text="Используйте этот режим, если птица прибыла и выбыла в один день." />
-                            </StackPanel>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Left"
+                                Foreground="#6B7280"
+                                FontSize="12"
+                                Text="После сохранения можно сразу добавить следующую запись." />
 
-                            <CheckBox
+                            <Button
                                 Grid.Column="1"
-                                Margin="20,0,0,0"
-                                IsChecked="{Binding IsOneTime, Mode=TwoWay}"
-                                Style="{StaticResource ToggleButton}" />
+                                Command="{Binding SaveCommand}">
+                                <Button.Style>
+                                    <Style
+                                        BasedOn="{StaticResource PrimaryButtonStyle}"
+                                        TargetType="Button">
+                                        <Setter Property="Content" Value="Сохранить запись" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                                                <Setter Property="Content" Value="Сохранение..." />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
                         </Grid>
-                    </Border>
-                </Grid>
-            </Border>
-
-            <Border
-                Grid.Row="3"
-                Margin="0,22,0,0"
-                Padding="0"
-                Background="Transparent">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Left"
-                        FontSize="13"
-                        Foreground="#8E98A6"
-                        Text="После сохранения описание очистится, и можно будет сразу добавить следующую запись." />
-
-                    <Button
-                        Grid.Column="1"
-                        Command="{Binding SaveCommand}">
-                        <Button.Style>
-                            <Style
-                                BasedOn="{StaticResource AddBirdPrimaryButton}"
-                                TargetType="Button">
-                                <Setter Property="Content" Value="Сохранить запись" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsBusy}" Value="True">
-                                        <Setter Property="Content" Value="Сохранение..." />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                    </Grid>
                 </Grid>
             </Border>
         </Grid>
-    </Border>
+    </ScrollViewer>
 </UserControl>
