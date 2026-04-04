@@ -27,11 +27,5 @@ jobs:
             Directory.Packages.props
             **/*.csproj
 
-      - name: Restore
-        run: dotnet restore Birds.sln
-
-      - name: Build
-        run: dotnet build Birds.sln --configuration Release --no-restore
-
       - name: Test
-        run: dotnet test Birds.Tests/Birds.Tests.csproj --configuration Release --no-build --verbosity minimal
+        run: dotnet test Birds.Tests/Birds.Tests.csproj --verbosity minimal
