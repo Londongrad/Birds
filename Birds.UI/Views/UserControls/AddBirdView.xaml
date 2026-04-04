@@ -11,9 +11,24 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
+        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#1B212A" />
+        <SolidColorBrush x:Key="CardBorderBrush" Color="#2B3441" />
+        <SolidColorBrush x:Key="InsetBackgroundBrush" Color="#161C24" />
+        <SolidColorBrush x:Key="FieldBackgroundBrush" Color="#11161D" />
+        <SolidColorBrush x:Key="FieldBorderBrush" Color="#313B48" />
+        <SolidColorBrush x:Key="FieldBorderHoverBrush" Color="#425060" />
+        <SolidColorBrush x:Key="FieldBorderFocusBrush" Color="#7C8EA3" />
+        <SolidColorBrush x:Key="FieldBorderErrorBrush" Color="#C97A7A" />
+        <SolidColorBrush x:Key="PrimaryTextBrush" Color="#F3F6FA" />
+        <SolidColorBrush x:Key="SecondaryTextBrush" Color="#A3AFBD" />
+        <SolidColorBrush x:Key="MutedTextBrush" Color="#7E8A98" />
+        <SolidColorBrush x:Key="ErrorTextBrush" Color="#E49999" />
+        <SolidColorBrush x:Key="AccentButtonBrush" Color="#EBEEF3" />
+        <SolidColorBrush x:Key="AccentButtonTextBrush" Color="#121720" />
+
         <Style x:Key="CardTitleStyle" TargetType="TextBlock">
             <Setter Property="HorizontalAlignment" Value="Left" />
-            <Setter Property="Foreground" Value="#111827" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
             <Setter Property="FontSize" Value="24" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
@@ -21,7 +36,7 @@
         <Style x:Key="CardSubtitleStyle" TargetType="TextBlock">
             <Setter Property="Margin" Value="0,10,0,0" />
             <Setter Property="HorizontalAlignment" Value="Left" />
-            <Setter Property="Foreground" Value="#5B6473" />
+            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
             <Setter Property="FontSize" Value="14" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
@@ -29,7 +44,7 @@
         <Style x:Key="FieldLabelStyle" TargetType="TextBlock">
             <Setter Property="Margin" Value="0,0,0,8" />
             <Setter Property="HorizontalAlignment" Value="Left" />
-            <Setter Property="Foreground" Value="#111827" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
             <Setter Property="FontSize" Value="13" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
@@ -37,7 +52,7 @@
         <Style x:Key="FieldHintStyle" TargetType="TextBlock">
             <Setter Property="Margin" Value="0,8,0,0" />
             <Setter Property="HorizontalAlignment" Value="Left" />
-            <Setter Property="Foreground" Value="#6B7280" />
+            <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
             <Setter Property="FontSize" Value="12" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
@@ -45,7 +60,7 @@
         <Style x:Key="ErrorTextStyle" TargetType="TextBlock">
             <Setter Property="Margin" Value="0,8,0,0" />
             <Setter Property="HorizontalAlignment" Value="Left" />
-            <Setter Property="Foreground" Value="#B42318" />
+            <Setter Property="Foreground" Value="{StaticResource ErrorTextBrush}" />
             <Setter Property="FontSize" Value="12" />
             <Setter Property="TextWrapping" Value="Wrap" />
             <Setter Property="Visibility" Value="Collapsed" />
@@ -53,73 +68,333 @@
 
         <Style x:Key="FormTextBoxStyle" TargetType="TextBox">
             <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
-            <Setter Property="MinHeight" Value="38" />
-            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="MinHeight" Value="46" />
+            <Setter Property="Padding" Value="14,11" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="Foreground" Value="#111827" />
-            <Setter Property="Background" Value="White" />
-            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+            <Setter Property="Background" Value="{StaticResource FieldBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Style.Triggers>
-                <Trigger Property="Validation.HasError" Value="True">
-                    <Setter Property="BorderBrush" Value="#D92D20" />
-                </Trigger>
-            </Style.Triggers>
+            <Setter Property="CaretBrush" Value="{StaticResource PrimaryTextBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border
+                            x:Name="FieldBorder"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="10">
+                            <ScrollViewer x:Name="PART_ContentHost" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderFocusBrush}" />
+                            </Trigger>
+                            <Trigger Property="Validation.HasError" Value="True">
+                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderErrorBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="FieldBorder" Property="Opacity" Value="0.55" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style
             x:Key="DescriptionTextBoxStyle"
             BasedOn="{StaticResource FormTextBoxStyle}"
             TargetType="TextBox">
-            <Setter Property="MinHeight" Value="112" />
+            <Setter Property="MinHeight" Value="128" />
+            <Setter Property="Padding" Value="14,12" />
             <Setter Property="AcceptsReturn" Value="True" />
             <Setter Property="TextWrapping" Value="Wrap" />
             <Setter Property="VerticalContentAlignment" Value="Top" />
             <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
         </Style>
 
+        <Style x:Key="FormComboBoxItemStyle" TargetType="ComboBoxItem">
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="14,10" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border
+                            x:Name="ItemBorder"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="8">
+                            <ContentPresenter
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#1A2028" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#232C37" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="FormComboBoxStyle" TargetType="ComboBox">
             <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
-            <Setter Property="MinHeight" Value="38" />
+            <Setter Property="MinHeight" Value="46" />
+            <Setter Property="Padding" Value="14,0,42,0" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="Foreground" Value="#111827" />
-            <Setter Property="Background" Value="White" />
-            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+            <Setter Property="Background" Value="{StaticResource FieldBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Style.Triggers>
-                <Trigger Property="Validation.HasError" Value="True">
-                    <Setter Property="BorderBrush" Value="#D92D20" />
-                </Trigger>
-            </Style.Triggers>
+            <Setter Property="ItemContainerStyle" Value="{StaticResource FormComboBoxItemStyle}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border
+                                x:Name="FieldBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10" />
+
+                            <ContentPresenter
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Content="{TemplateBinding SelectionBoxItem}"
+                                ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                IsHitTestVisible="False" />
+
+                            <Path
+                                Width="11"
+                                Height="7"
+                                Margin="0,0,16,0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Data="M 0 0 L 5.5 5.5 L 11 0"
+                                Stroke="#96A3B3"
+                                StrokeThickness="1.6" />
+
+                            <ToggleButton
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Focusable="False"
+                                IsChecked="{Binding IsDropDownOpen,
+                                                    Mode=TwoWay,
+                                                    RelativeSource={RelativeSource TemplatedParent}}"
+                                Opacity="0" />
+
+                            <Popup
+                                x:Name="PART_Popup"
+                                AllowsTransparency="True"
+                                Focusable="False"
+                                IsOpen="{TemplateBinding IsDropDownOpen}"
+                                Placement="Bottom"
+                                PopupAnimation="Fade">
+                                <Border
+                                    Margin="0,6,0,0"
+                                    MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                    MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                    Background="{StaticResource InsetBackgroundBrush}"
+                                    BorderBrush="{StaticResource FieldBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="10">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained" />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderFocusBrush}" />
+                            </Trigger>
+                            <Trigger Property="Validation.HasError" Value="True">
+                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderErrorBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="FieldBorder" Property="Opacity" Value="0.55" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DatePickerTextStyle" TargetType="DatePickerTextBox">
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="14,0,0,0" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePickerTextBox">
+                        <Border Background="Transparent">
+                            <ScrollViewer
+                                x:Name="PART_ContentHost"
+                                HorizontalScrollBarVisibility="Hidden"
+                                VerticalScrollBarVisibility="Hidden" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="FormDatePickerStyle" TargetType="DatePicker">
             <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
-            <Setter Property="MinHeight" Value="38" />
+            <Setter Property="MinHeight" Value="46" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="Foreground" Value="#111827" />
-            <Setter Property="Background" Value="White" />
-            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+            <Setter Property="Background" Value="{StaticResource FieldBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Style.Triggers>
-                <Trigger Property="Validation.HasError" Value="True">
-                    <Setter Property="BorderBrush" Value="#D92D20" />
-                </Trigger>
-            </Style.Triggers>
+            <Setter Property="SelectedDateFormat" Value="Short" />
+            <Setter Property="Language" Value="ru-RU" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePicker">
+                        <Grid>
+                            <Border
+                                x:Name="FieldBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="44" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <DatePickerTextBox
+                                        x:Name="PART_TextBox"
+                                        Style="{StaticResource DatePickerTextStyle}" />
+
+                                    <Button
+                                        x:Name="PART_Button"
+                                        Grid.Column="1"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Content="▾"
+                                        Cursor="Hand"
+                                        Focusable="False"
+                                        FontSize="15"
+                                        Foreground="#96A3B3" />
+                                </Grid>
+                            </Border>
+
+                            <Popup
+                                x:Name="PART_Popup"
+                                AllowsTransparency="True"
+                                Focusable="False"
+                                IsOpen="{Binding IsDropDownOpen,
+                                                 RelativeSource={RelativeSource TemplatedParent}}"
+                                Placement="Bottom"
+                                PopupAnimation="Fade"
+                                StaysOpen="False">
+                                <Border
+                                    Margin="0,6,0,0"
+                                    Background="{StaticResource InsetBackgroundBrush}"
+                                    BorderBrush="{StaticResource FieldBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="10">
+                                    <Calendar
+                                        x:Name="PART_Calendar"
+                                        CalendarStyle="{DynamicResource DarkCalendarStyle}" />
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderFocusBrush}" />
+                            </Trigger>
+                            <Trigger Property="Validation.HasError" Value="True">
+                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderErrorBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="FieldBorder" Property="Opacity" Value="0.55" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CheckBoxMarkStyle" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <BulletDecorator Background="Transparent">
+                            <BulletDecorator.Bullet>
+                                <Border
+                                    x:Name="CheckBorder"
+                                    Width="18"
+                                    Height="18"
+                                    Margin="0,2,12,0"
+                                    Background="Transparent"
+                                    BorderBrush="{StaticResource FieldBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="4">
+                                    <Path
+                                        x:Name="CheckMark"
+                                        Data="M 2 9 L 7 14 L 16 4"
+                                        Stroke="{StaticResource PrimaryTextBrush}"
+                                        StrokeThickness="1.7"
+                                        Stretch="Uniform"
+                                        Visibility="Collapsed" />
+                                </Border>
+                            </BulletDecorator.Bullet>
+                            <ContentPresenter VerticalAlignment="Top" />
+                        </BulletDecorator>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CheckBorder" Property="BorderBrush" Value="{StaticResource FieldBorderFocusBrush}" />
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="CheckBorder" Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-            <Setter Property="Height" Value="40" />
+            <Setter Property="Height" Value="42" />
             <Setter Property="MinWidth" Value="170" />
             <Setter Property="Padding" Value="18,0" />
             <Setter Property="HorizontalAlignment" Value="Right" />
-            <Setter Property="Background" Value="#111827" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="BorderBrush" Value="#111827" />
+            <Setter Property="Background" Value="{StaticResource AccentButtonBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource AccentButtonTextBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource AccentButtonBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="FontSize" Value="14" />
             <Setter Property="FontWeight" Value="SemiBold" />
@@ -139,13 +414,13 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.92" />
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.93" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.84" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.45" />
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.38" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -160,8 +435,8 @@
                 MaxWidth="560"
                 Padding="32"
                 HorizontalAlignment="Left"
-                Background="#F7F8FA"
-                BorderBrush="#D7DCE4"
+                Background="{StaticResource CardBackgroundBrush}"
+                BorderBrush="{StaticResource CardBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="16">
                 <Grid>
@@ -290,8 +565,8 @@
                             Grid.Row="2"
                             Margin="0,24,0,0"
                             Padding="16"
-                            Background="White"
-                            BorderBrush="#D7DCE4"
+                            Background="{StaticResource InsetBackgroundBrush}"
+                            BorderBrush="{StaticResource FieldBorderBrush}"
                             BorderThickness="1"
                             CornerRadius="12">
                             <Grid>
@@ -304,19 +579,20 @@
                                     Grid.Column="0"
                                     Margin="0,2,12,0"
                                     IsChecked="{Binding IsOneTime, Mode=TwoWay}"
+                                    Style="{StaticResource CheckBoxMarkStyle}"
                                     VerticalAlignment="Top" />
 
                                 <StackPanel Grid.Column="1" HorizontalAlignment="Stretch">
                                     <TextBlock
                                         HorizontalAlignment="Left"
-                                        Foreground="#111827"
+                                        Foreground="{StaticResource PrimaryTextBrush}"
                                         FontSize="13"
                                         FontWeight="SemiBold"
                                         Text="Разовое содержание" />
                                     <TextBlock
                                         Margin="0,6,0,0"
                                         HorizontalAlignment="Left"
-                                        Foreground="#5B6473"
+                                        Foreground="{StaticResource SecondaryTextBrush}"
                                         FontSize="12"
                                         Text="Если птица прибыла и выбыла в один день, дата выбытия заполнится автоматически." />
                                 </StackPanel>
@@ -332,7 +608,7 @@
                             <TextBlock
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Left"
-                                Foreground="#6B7280"
+                                Foreground="{StaticResource MutedTextBrush}"
                                 FontSize="12"
                                 Text="После сохранения можно сразу добавить следующую запись." />
 
