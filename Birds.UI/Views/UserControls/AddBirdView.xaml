@@ -397,9 +397,16 @@
                                             <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="#F3F6FA" />
                                             <SolidColorBrush x:Key="{x:Static SystemColors.GrayTextBrushKey}" Color="#7E8A98" />
 
+                                            <Style TargetType="{x:Type CalendarItem}">
+                                                <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+                                                <Setter Property="Background" Value="#161C24" />
+                                                <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}" />
+                                                <Setter Property="BorderThickness" Value="0" />
+                                            </Style>
+
                                             <Style TargetType="{x:Type CalendarDayButton}">
                                                 <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
-                                                <Setter Property="Background" Value="Transparent" />
+                                                <Setter Property="Background" Value="#11161D" />
                                                 <Setter Property="BorderBrush" Value="Transparent" />
                                                 <Setter Property="BorderThickness" Value="1" />
                                                 <Setter Property="Template">
@@ -438,7 +445,7 @@
 
                                             <Style TargetType="{x:Type CalendarButton}">
                                                 <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
-                                                <Setter Property="Background" Value="Transparent" />
+                                                <Setter Property="Background" Value="#11161D" />
                                                 <Setter Property="BorderBrush" Value="Transparent" />
                                                 <Setter Property="BorderThickness" Value="0" />
                                                 <Setter Property="Template">
