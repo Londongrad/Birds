@@ -297,7 +297,7 @@
                                         Grid.Column="1"
                                         Background="Transparent"
                                         BorderThickness="0"
-                                        Content="▾"
+                                        Content="v"
                                         Cursor="Hand"
                                         Focusable="False"
                                         FontSize="15"
@@ -323,7 +323,7 @@
                                     Padding="10">
                                     <Calendar
                                         x:Name="PART_Calendar"
-                                        CalendarStyle="{DynamicResource DarkCalendarStyle}" />
+                                        Style="{DynamicResource DarkCalendarStyle}" />
                                 </Border>
                             </Popup>
                         </Grid>
