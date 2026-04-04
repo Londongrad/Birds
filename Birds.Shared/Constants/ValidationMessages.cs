@@ -2,18 +2,18 @@
 {
     public class ValidationMessages
     {
-        public const string UnselectedBird = "No bird selected. Please select a bird from the list.";
+        public const string UnselectedBird = "Выберите вид птицы из списка.";
 
-        public const string LongDescription = "Description is too long. Maximum length is 200 characters.";
+        public const string LongDescription = "Описание слишком длинное. Максимум 200 символов.";
 
-        public const string DateIsNotSpecified = "Specify the date.";
+        public const string DateIsNotSpecified = "Укажите дату.";
 
-        public const string InvalidDateRange = "Date must be between {0:dd-MM-yyyy} and {1:dd-MM-yyyy}";
+        public const string InvalidDateRange = "Дата должна быть в диапазоне от {0:dd-MM-yyyy} до {1:dd-MM-yyyy}.";
 
-        public const string DateIsNotValid = "Please specify a valid date.";
+        public const string DateIsNotValid = "Укажите корректную дату.";
 
-        public const string DateCannotBeInTheFuture = "The date cannot be in the future (no later than {0:dd-MM-yyyy}).";
+        public const string DateCannotBeInTheFuture = "Дата не может быть из будущего (не позже {0:dd-MM-yyyy}).";
 
-        public const string DepartureLaterThenArrival = "Departure date cannot be earlier than arrival date ({0:dd-MM-yyyy}).";
+        public const string DepartureLaterThenArrival = "Дата выбытия не может быть раньше даты прибытия ({0:dd-MM-yyyy}).";
     }
 }
