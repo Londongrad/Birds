@@ -1,22 +1,22 @@
-﻿namespace Birds.UI.Enums
+using Birds.Domain.Enums;
+using Birds.Domain.Extensions;
+
+namespace Birds.UI.Enums
 {
     public enum BirdFilter
     {
         All = 0,
         Alive = 1,
         DepartedButAlive = 2,
-        Amadin = 3,
-        Sparrow = 4,
-        GreatTit = 5,
-        Chickadee = 6,
-        Goldfinch = 7,
-        Nuthatch = 8,
-        Grosbeak = 9,
-        Dead = 10
+        BySpecies = 3,
+        Dead = 4
     }
 
-    public record FilterOption(BirdFilter Filter, string Display)
+    public record FilterOption(BirdFilter Filter, string Display, BirdsName? Species = null)
     {
+        public static FilterOption SpeciesFilter(BirdsName species) =>
+            new(BirdFilter.BySpecies, species.ToDisplayName(), species);
+
         public override string ToString() => Display;
     }
 }
