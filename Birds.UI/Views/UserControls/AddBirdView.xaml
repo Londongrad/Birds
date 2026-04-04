@@ -25,6 +25,110 @@
         <SolidColorBrush x:Key="ErrorTextBrush" Color="#E49999" />
         <SolidColorBrush x:Key="AccentButtonBrush" Color="#2D3744" />
         <SolidColorBrush x:Key="AccentButtonTextBrush" Color="#F3F6FA" />
+        <SolidColorBrush x:Key="InsetBorderHoverBrush" Color="#425060" />
+
+        <Style x:Key="AnimatedCardStyle" TargetType="Border">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <TranslateTransform Y="18" />
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetProperty="Opacity"
+                                To="1"
+                                Duration="0:0:0.32">
+                                <DoubleAnimation.EasingFunction>
+                                    <QuadraticEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation
+                                Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                To="0"
+                                Duration="0:0:0.34">
+                                <DoubleAnimation.EasingFunction>
+                                    <QuadraticEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="RevealSectionStyle" TargetType="Grid">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <TranslateTransform Y="10" />
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetProperty="Opacity"
+                                BeginTime="0:0:0.08"
+                                To="1"
+                                Duration="0:0:0.24">
+                                <DoubleAnimation.EasingFunction>
+                                    <QuadraticEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation
+                                Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                BeginTime="0:0:0.08"
+                                To="0"
+                                Duration="0:0:0.28">
+                                <DoubleAnimation.EasingFunction>
+                                    <QuadraticEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="RevealSectionDelayedStyle" TargetType="Grid">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <TranslateTransform Y="12" />
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetProperty="Opacity"
+                                BeginTime="0:0:0.16"
+                                To="1"
+                                Duration="0:0:0.24">
+                                <DoubleAnimation.EasingFunction>
+                                    <QuadraticEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation
+                                Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                BeginTime="0:0:0.16"
+                                To="0"
+                                Duration="0:0:0.28">
+                                <DoubleAnimation.EasingFunction>
+                                    <QuadraticEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Style.Triggers>
+        </Style>
 
         <Style x:Key="CardTitleStyle" TargetType="TextBlock">
             <Setter Property="HorizontalAlignment" Value="Left" />
@@ -255,6 +359,52 @@
             <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}" />
         </Style>
 
+        <Style x:Key="InsetPanelStyle" TargetType="Border">
+            <Setter Property="Padding" Value="16" />
+            <Setter Property="Background" Value="{StaticResource InsetBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <TranslateTransform Y="0" />
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="{StaticResource InsetBorderHoverBrush}" />
+                    <Trigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation
+                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                    To="-2"
+                                    Duration="0:0:0.18">
+                                    <DoubleAnimation.EasingFunction>
+                                        <QuadraticEase EasingMode="EaseOut" />
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.EnterActions>
+                    <Trigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation
+                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                    To="0"
+                                    Duration="0:0:0.18">
+                                    <DoubleAnimation.EasingFunction>
+                                        <QuadraticEase EasingMode="EaseOut" />
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.ExitActions>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
         <Style x:Key="CheckBoxMarkStyle" TargetType="CheckBox">
             <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
             <Setter Property="Template">
@@ -313,20 +463,117 @@
                     <ControlTemplate TargetType="Button">
                         <Border
                             x:Name="ButtonBorder"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
+                            RenderTransformOrigin="0.5,0.5"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="10">
+                            <Border.Background>
+                                <SolidColorBrush x:Name="ButtonBackgroundBrush" Color="#2D3744" />
+                            </Border.Background>
+                            <Border.BorderBrush>
+                                <SolidColorBrush x:Name="ButtonBorderBrush" Color="#2D3744" />
+                            </Border.BorderBrush>
+                            <Border.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform x:Name="ButtonScaleTransform" ScaleX="1" ScaleY="1" />
+                                    <TranslateTransform x:Name="ButtonTranslateTransform" Y="0" />
+                                </TransformGroup>
+                            </Border.RenderTransform>
                             <ContentPresenter
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.93" />
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="ButtonScaleTransform"
+                                                Storyboard.TargetProperty="ScaleX"
+                                                To="1.02"
+                                                Duration="0:0:0.18">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <QuadraticEase EasingMode="EaseOut" />
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="ButtonScaleTransform"
+                                                Storyboard.TargetProperty="ScaleY"
+                                                To="1.02"
+                                                Duration="0:0:0.18">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <QuadraticEase EasingMode="EaseOut" />
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="ButtonTranslateTransform"
+                                                Storyboard.TargetProperty="Y"
+                                                To="-1"
+                                                Duration="0:0:0.18">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <QuadraticEase EasingMode="EaseOut" />
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <ColorAnimation
+                                                Storyboard.TargetName="ButtonBackgroundBrush"
+                                                Storyboard.TargetProperty="Color"
+                                                To="#374353"
+                                                Duration="0:0:0.18" />
+                                            <ColorAnimation
+                                                Storyboard.TargetName="ButtonBorderBrush"
+                                                Storyboard.TargetProperty="Color"
+                                                To="#425061"
+                                                Duration="0:0:0.18" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="ButtonScaleTransform"
+                                                Storyboard.TargetProperty="ScaleX"
+                                                To="1"
+                                                Duration="0:0:0.18">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <QuadraticEase EasingMode="EaseOut" />
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="ButtonScaleTransform"
+                                                Storyboard.TargetProperty="ScaleY"
+                                                To="1"
+                                                Duration="0:0:0.18">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <QuadraticEase EasingMode="EaseOut" />
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="ButtonTranslateTransform"
+                                                Storyboard.TargetProperty="Y"
+                                                To="0"
+                                                Duration="0:0:0.18">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <QuadraticEase EasingMode="EaseOut" />
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <ColorAnimation
+                                                Storyboard.TargetName="ButtonBackgroundBrush"
+                                                Storyboard.TargetProperty="Color"
+                                                To="#2D3744"
+                                                Duration="0:0:0.18" />
+                                            <ColorAnimation
+                                                Storyboard.TargetName="ButtonBorderBrush"
+                                                Storyboard.TargetProperty="Color"
+                                                To="#2D3744"
+                                                Duration="0:0:0.18" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.84" />
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.95" />
+                                <Setter TargetName="ButtonTranslateTransform" Property="Y" Value="0" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.38" />
@@ -341,6 +588,7 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid Margin="24,12,24,24">
             <Border
+                Style="{StaticResource AnimatedCardStyle}"
                 Width="760"
                 MaxWidth="760"
                 Padding="32"
@@ -366,7 +614,7 @@
                             Text="Короткая спокойная форма без лишних декоративных блоков." />
                     </StackPanel>
 
-                    <Grid Grid.Row="1" Margin="0,28,0,0">
+                    <Grid Grid.Row="1" Margin="0,28,0,0" Style="{StaticResource RevealSectionStyle}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -443,7 +691,7 @@
                                            UpdateSourceTrigger=PropertyChanged}" />
                     </Grid>
 
-                    <Grid Grid.Row="2" Margin="0,16,0,0">
+                    <Grid Grid.Row="2" Margin="0,16,0,0" Style="{StaticResource RevealSectionDelayedStyle}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -474,11 +722,7 @@
                         <Border
                             Grid.Row="2"
                             Margin="0,24,0,0"
-                            Padding="16"
-                            Background="{StaticResource InsetBackgroundBrush}"
-                            BorderBrush="{StaticResource FieldBorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="12">
+                            Style="{StaticResource InsetPanelStyle}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
