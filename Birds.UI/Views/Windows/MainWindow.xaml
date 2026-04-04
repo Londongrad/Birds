@@ -1,78 +1,135 @@
-﻿<Window
+<Window
     x:Class="Birds.UI.Views.Windows.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:Birds.UI.ViewModels"
-    Width="1400"
-    MinWidth="1000"
-    MinHeight="650"
+    Title="Birds"
+    Width="1360"
+    Height="840"
+    MinWidth="1080"
+    MinHeight="700"
     d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
-    Background="Transparent"
-    MouseLeftButtonDown="Window_MouseLeftButtonDown"
+    Background="#161A20"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
-    <Border Background="#272544">
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
+    <Grid Background="#161A20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="240" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-            <StackPanel
-                Grid.Row="1"
-                HorizontalAlignment="Left">
+        <Border
+            Grid.Column="0"
+            Background="#101318"
+            BorderBrush="#252B33"
+            BorderThickness="0,0,1,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-                <RadioButton
-                    Command="{Binding Path=Navigation.NavigateToTypeCommand,
-                                      Mode=OneWay}"
-                    CommandParameter="{x:Type vm:AddBirdViewModel}"
-                    IsChecked="True"
-                    Style="{StaticResource MenuButtonTheme}">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Add bird" />
-                        <Image
-                            Width="20"
-                            Margin="4,2,4,0"
-                            Source="/Birds.UI;component/wwwroot/Images/add.png" />
+                <StackPanel Margin="24,28,24,20">
+                    <TextBlock
+                        HorizontalAlignment="Left"
+                        FontSize="26"
+                        FontWeight="SemiBold"
+                        Foreground="White"
+                        Text="Birds" />
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        HorizontalAlignment="Left"
+                        FontSize="13"
+                        Foreground="#8E98A6"
+                        Text="Desktop registry" />
+                </StackPanel>
+
+                <StackPanel
+                    Grid.Row="1"
+                    Margin="14,0,14,0"
+                    VerticalAlignment="Top">
+                    <RadioButton
+                        Command="{Binding Path=Navigation.NavigateToTypeCommand, Mode=OneWay}"
+                        CommandParameter="{x:Type vm:AddBirdViewModel}"
+                        IsChecked="True"
+                        Style="{StaticResource MenuButtonTheme}">
+                        <TextBlock Text="Добавить птицу" />
+                    </RadioButton>
+
+                    <RadioButton
+                        Command="{Binding Path=Navigation.NavigateToTypeCommand, Mode=OneWay}"
+                        CommandParameter="{x:Type vm:BirdListViewModel}"
+                        Style="{StaticResource MenuButtonTheme}">
+                        <TextBlock Text="Архив" />
+                    </RadioButton>
+
+                    <RadioButton
+                        Command="{Binding Path=Navigation.NavigateToTypeCommand, Mode=OneWay}"
+                        CommandParameter="{x:Type vm:BirdStatisticsViewModel}"
+                        Style="{StaticResource MenuButtonTheme}">
+                        <TextBlock Text="Статистика" />
+                    </RadioButton>
+                </StackPanel>
+
+                <Border
+                    Grid.Row="2"
+                    Margin="16,0,16,16"
+                    Padding="14"
+                    Background="#171B21"
+                    BorderBrush="#252B33"
+                    BorderThickness="1"
+                    CornerRadius="10">
+                    <StackPanel>
+                        <TextBlock
+                            HorizontalAlignment="Left"
+                            FontSize="12"
+                            Foreground="#8E98A6"
+                            Text="Интерфейс" />
+                        <TextBlock
+                            Margin="0,6,0,0"
+                            HorizontalAlignment="Left"
+                            FontSize="13"
+                            Foreground="#D5DBE3"
+                            Text="Чистый shell без перегруженных элементов." />
                     </StackPanel>
-                </RadioButton>
+                </Border>
+            </Grid>
+        </Border>
 
-                <RadioButton
-                    Command="{Binding Path=Navigation.NavigateToTypeCommand,
-                                      Mode=OneWay}"
-                    CommandParameter="{x:Type vm:BirdListViewModel}"
-                    Style="{StaticResource MenuButtonTheme}">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Birds" />
-                        <Image
-                            Width="20"
-                            Margin="4,2,4,0"
-                            Source="/Birds.UI;component/wwwroot/Images/list.png" />
-                    </StackPanel>
-                </RadioButton>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-                <RadioButton
-                    Command="{Binding Path=Navigation.NavigateToTypeCommand,
-                                      Mode=OneWay}"
-                    CommandParameter="{x:Type vm:BirdStatisticsViewModel}"
-                    Style="{StaticResource MenuButtonTheme}">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Stats" />
-                        <Image
-                            Width="20"
-                            Margin="4,2,4,0"
-                            Source="/Birds.UI;component/wwwroot/Images/chart.png" />
-                    </StackPanel>
-                </RadioButton>
-            </StackPanel>
+            <Border
+                Margin="28,26,28,0"
+                Padding="0,0,0,18"
+                BorderBrush="#252B33"
+                BorderThickness="0,0,0,1">
+                <StackPanel>
+                    <TextBlock
+                        HorizontalAlignment="Left"
+                        FontSize="30"
+                        FontWeight="SemiBold"
+                        Foreground="White"
+                        Text="{Binding HeaderTitle}" />
+                    <TextBlock
+                        Margin="0,10,0,0"
+                        HorizontalAlignment="Left"
+                        FontSize="14"
+                        Foreground="#8E98A6"
+                        Text="{Binding HeaderSubtitle}" />
+                </StackPanel>
+            </Border>
 
             <ContentControl
                 Grid.Row="1"
-                Grid.Column="1"
-                Margin="20"
+                Margin="24"
                 Content="{Binding Path=Navigation.Current}" />
         </Grid>
-    </Border>
+    </Grid>
 </Window>

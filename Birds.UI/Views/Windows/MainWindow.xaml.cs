@@ -1,5 +1,4 @@
-﻿using System.Windows;
-using System.Windows.Input;
+using System.Windows;
 
 namespace Birds.UI.Views.Windows
 {
@@ -8,11 +7,6 @@ namespace Birds.UI.Views.Windows
         public MainWindow()
         {
             InitializeComponent();
-        }
-
-        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            DragMove();
         }
     }
 }
