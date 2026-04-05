@@ -8,27 +8,35 @@
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Foreground" Value="#B5BDC8" />
         <Setter Property="FontSize" Value="15" />
-        <Setter Property="Margin" Value="0,0,0,10" />
+        <Setter Property="Width" Value="182" />
+        <Setter Property="Margin" Value="0,0,0,12" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <TranslateTransform Y="0" />
+            </Setter.Value>
+        </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
                     <Border
                         x:Name="ButtonBorder"
                         Background="{TemplateBinding Background}"
-                        BorderBrush="#252B33"
+                        BorderBrush="#27303A"
                         BorderThickness="1"
-                        CornerRadius="10">
+                        CornerRadius="12">
                         <Grid>
                             <Border
                                 x:Name="AccentBar"
                                 Width="3"
-                                Margin="0,10,0,10"
+                                Margin="0,12,0,12"
                                 HorizontalAlignment="Left"
-                                Background="Transparent"
+                                Opacity="0"
+                                Background="#6D7E91"
                                 CornerRadius="2" />
                             <ContentPresenter
-                                Margin="18,14,16,14"
+                                Margin="18,16,18,16"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 Content="{TemplateBinding Content}"
@@ -36,14 +44,46 @@
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ButtonBorder" Property="Background" Value="#141A21" />
+                            <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#33404D" />
+                            <Setter TargetName="AccentBar" Property="Opacity" Value="0.5" />
+                            <Setter TargetName="AccentBar" Property="Background" Value="#536171" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                            To="-1"
+                                            Duration="0:0:0.16">
+                                            <DoubleAnimation.EasingFunction>
+                                                <QuadraticEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                            To="0"
+                                            Duration="0:0:0.16">
+                                            <DoubleAnimation.EasingFunction>
+                                                <QuadraticEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
                         <Trigger Property="IsChecked" Value="True">
                             <Setter Property="Foreground" Value="White" />
-                            <Setter TargetName="ButtonBorder" Property="Background" Value="#191E25" />
-                            <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#323B46" />
-                            <Setter TargetName="AccentBar" Property="Background" Value="#7C8EA3" />
-                        </Trigger>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ButtonBorder" Property="Background" Value="#151A20" />
+                            <Setter TargetName="ButtonBorder" Property="Background" Value="#181F27" />
+                            <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#3A4655" />
+                            <Setter TargetName="AccentBar" Property="Opacity" Value="1" />
+                            <Setter TargetName="AccentBar" Property="Background" Value="#91A4BA" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
