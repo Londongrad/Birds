@@ -588,12 +588,12 @@
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Grid Margin="24,12,24,40">
+        <Grid Margin="24,12,24,24">
             <Border
                 Style="{StaticResource AnimatedCardStyle}"
                 Width="760"
                 MaxWidth="760"
-                Padding="32,32,32,40"
+                Padding="32,28,32,24"
                 HorizontalAlignment="Center"
                 Background="{StaticResource CardBackgroundBrush}"
                 BorderBrush="{StaticResource CardBorderBrush}"
@@ -607,16 +607,7 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <StackPanel Grid.Row="0" HorizontalAlignment="Stretch">
-                        <TextBlock
-                            Style="{StaticResource CardTitleStyle}"
-                            Text="Новая запись" />
-                        <TextBlock
-                            Style="{StaticResource CardSubtitleStyle}"
-                            Text="Короткая спокойная форма без лишних декоративных блоков." />
-                    </StackPanel>
-
-                    <Grid Grid.Row="1" Margin="0,28,0,0" Style="{StaticResource RevealSectionStyle}">
+                    <Grid Grid.Row="1" Margin="0,0,0,0" Style="{StaticResource RevealSectionStyle}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -755,7 +746,7 @@
                             </Grid>
                         </Border>
 
-                        <Grid Grid.Row="3" Margin="0,32,0,8">
+                        <Grid Grid.Row="3" Margin="0,24,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="24" />
