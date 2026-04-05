@@ -224,12 +224,6 @@
                                 FontWeight="SemiBold"
                                 Foreground="White"
                                 Text="Birds" />
-                            <TextBlock
-                                Margin="0,8,0,0"
-                                HorizontalAlignment="Left"
-                                FontSize="13"
-                                Foreground="#8E98A6"
-                                Text="Desktop registry" />
                         </StackPanel>
 
                         <StackPanel
