@@ -694,15 +694,19 @@
         </Style>
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Grid Margin="24,12,24,24" VerticalAlignment="Top">
+    <ScrollViewer
+        x:Name="FormScrollViewer"
+        VerticalScrollBarVisibility="Auto">
+        <Grid
+            Margin="24,12,24,24"
+            MinHeight="{Binding ElementName=FormScrollViewer, Path=ViewportHeight}">
             <Border
                 Style="{StaticResource AnimatedCardStyle}"
                 Width="760"
                 MaxWidth="760"
                 Padding="32,28,32,10"
                 HorizontalAlignment="Center"
-                VerticalAlignment="Top"
+                VerticalAlignment="Center"
                 Background="{StaticResource CardBackgroundBrush}"
                 BorderBrush="{StaticResource CardBorderBrush}"
                 BorderThickness="1"
