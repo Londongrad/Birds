@@ -408,6 +408,113 @@
             </Style.Triggers>
         </Style>
 
+        <Style x:Key="ToggleSwitchStyle" TargetType="CheckBox">
+            <Setter Property="Width" Value="46" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Grid
+                            Width="{TemplateBinding Width}"
+                            Height="{TemplateBinding Height}"
+                            Background="Transparent">
+                            <Border
+                                x:Name="TrackBorder"
+                                CornerRadius="13"
+                                BorderThickness="1">
+                                <Border.Background>
+                                    <SolidColorBrush x:Name="TrackBackgroundBrush" Color="#0F141B" />
+                                </Border.Background>
+                                <Border.BorderBrush>
+                                    <SolidColorBrush x:Name="TrackBorderBrush" Color="#334050" />
+                                </Border.BorderBrush>
+                            </Border>
+
+                            <Ellipse
+                                x:Name="Thumb"
+                                Width="20"
+                                Height="20"
+                                Margin="3"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Fill="#F3F6FA"
+                                RenderTransformOrigin="0.5,0.5">
+                                <Ellipse.RenderTransform>
+                                    <TransformGroup>
+                                        <TranslateTransform x:Name="ThumbTransform" X="0" />
+                                        <ScaleTransform x:Name="ThumbScaleTransform" ScaleX="1" ScaleY="1" />
+                                    </TransformGroup>
+                                </Ellipse.RenderTransform>
+                            </Ellipse>
+
+                            <Path
+                                x:Name="CheckGlyph"
+                                Width="8"
+                                Height="6"
+                                Margin="11,0,0,0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Data="M 0 3 L 2.5 5.5 L 8 0"
+                                Stroke="#11161D"
+                                StrokeEndLineCap="Round"
+                                StrokeLineJoin="Round"
+                                StrokeStartLineCap="Round"
+                                StrokeThickness="1.4"
+                                Visibility="Collapsed" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TrackBorder" Property="BorderBrush" Value="#4E5F74" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="TrackBorder" Property="Background" Value="#2E5B86" />
+                                <Setter TargetName="TrackBorder" Property="BorderBrush" Value="#8EC7FF" />
+                                <Setter TargetName="CheckGlyph" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="False">
+                                <Setter TargetName="CheckGlyph" Property="Visibility" Value="Collapsed" />
+                            </Trigger>
+                            <EventTrigger RoutedEvent="ToggleButton.Checked">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="ThumbTransform"
+                                            Storyboard.TargetProperty="X"
+                                            To="20"
+                                            Duration="0:0:0.18">
+                                            <DoubleAnimation.EasingFunction>
+                                                <QuadraticEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                            <EventTrigger RoutedEvent="ToggleButton.Unchecked">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="ThumbTransform"
+                                            Storyboard.TargetProperty="X"
+                                            To="0"
+                                            Duration="0:0:0.18">
+                                            <DoubleAnimation.EasingFunction>
+                                                <QuadraticEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="CheckBoxMarkStyle" TargetType="CheckBox">
             <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
             <Setter Property="Template">
@@ -593,7 +700,7 @@
                 Style="{StaticResource AnimatedCardStyle}"
                 Width="760"
                 MaxWidth="760"
-                Padding="32,28,32,24"
+                Padding="32,28,32,16"
                 HorizontalAlignment="Center"
                 Background="{StaticResource CardBackgroundBrush}"
                 BorderBrush="{StaticResource CardBorderBrush}"
@@ -724,9 +831,9 @@
 
                                 <CheckBox
                                     Grid.Column="0"
-                                    Margin="0,2,12,0"
+                                    Margin="0,2,14,0"
                                     IsChecked="{Binding IsOneTime, Mode=TwoWay}"
-                                    Style="{StaticResource CheckBoxMarkStyle}"
+                                    Style="{StaticResource ToggleSwitchStyle}"
                                     VerticalAlignment="Top" />
 
                                 <StackPanel Grid.Column="1" HorizontalAlignment="Stretch">
@@ -746,7 +853,7 @@
                             </Grid>
                         </Border>
 
-                        <Grid Grid.Row="3" Margin="0,24,0,0">
+                        <Grid Grid.Row="3" Margin="0,16,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="24" />
