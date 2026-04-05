@@ -51,14 +51,18 @@ namespace Birds.UI.Views.Windows
 
         private void UpdateWindowStateGlyph()
         {
-            if (MaximizeRestoreGlyph == null)
+            if (MaximizeGlyph == null || RestoreGlyph == null)
             {
                 return;
             }
 
-            MaximizeRestoreGlyph.Text = WindowState == WindowState.Maximized
-                ? "❐"
-                : "□";
+            var isMaximized = WindowState == WindowState.Maximized;
+            MaximizeGlyph.Visibility = isMaximized
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+            RestoreGlyph.Visibility = isMaximized
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
     }
 }

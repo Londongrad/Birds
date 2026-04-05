@@ -114,31 +114,21 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel
+                    <Border
+                        Width="16"
+                        Height="16"
                         VerticalAlignment="Center"
-                        Orientation="Horizontal">
-                        <Border
-                            Width="16"
-                            Height="16"
-                            Margin="0,0,10,0"
-                            Background="#202733"
-                            BorderBrush="#2C3642"
-                            BorderThickness="1"
-                            CornerRadius="4">
-                            <TextBlock
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                FontSize="9"
-                                Foreground="#DDE4EC"
-                                Text="B" />
-                        </Border>
+                        Background="#202733"
+                        BorderBrush="#2C3642"
+                        BorderThickness="1"
+                        CornerRadius="4">
                         <TextBlock
+                            HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            FontSize="13"
-                            FontWeight="SemiBold"
-                            Foreground="#E8EDF4"
-                            Text="Birds" />
-                    </StackPanel>
+                            FontSize="9"
+                            Foreground="#DDE4EC"
+                            Text="B" />
+                    </Border>
 
                     <StackPanel
                         Grid.Column="1"
@@ -147,30 +137,62 @@
                         <Button
                             Click="OnMinimizeClick"
                             Style="{StaticResource TitleBarButtonStyle}">
-                            <TextBlock
-                                Margin="0,-6,0,0"
-                                FontSize="14"
-                                Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                Text="—" />
+                            <Grid
+                                Width="10"
+                                Height="10"
+                                SnapsToDevicePixels="True">
+                                <Border
+                                    Height="1.4"
+                                    VerticalAlignment="Center"
+                                    Background="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" />
+                            </Grid>
                         </Button>
 
                         <Button
                             Click="OnMaximizeRestoreClick"
                             Style="{StaticResource TitleBarButtonStyle}">
-                            <TextBlock
-                                x:Name="MaximizeRestoreGlyph"
-                                FontSize="12"
-                                Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                Text="□" />
+                            <Grid
+                                Width="12"
+                                Height="12"
+                                SnapsToDevicePixels="True">
+                                <Rectangle
+                                    x:Name="MaximizeGlyph"
+                                    Stroke="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                                    StrokeThickness="1.2" />
+                                <Grid x:Name="RestoreGlyph" Visibility="Collapsed">
+                                    <Rectangle
+                                        Width="8"
+                                        Height="8"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Top"
+                                        Stroke="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                                        StrokeThickness="1.1" />
+                                    <Rectangle
+                                        Width="8"
+                                        Height="8"
+                                        Margin="0,3,3,0"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Bottom"
+                                        Stroke="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                                        StrokeThickness="1.1" />
+                                </Grid>
+                            </Grid>
                         </Button>
 
                         <Button
                             Click="OnCloseClick"
                             Style="{StaticResource CloseTitleBarButtonStyle}">
-                            <TextBlock
-                                FontSize="12"
-                                Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                Text="✕" />
+                            <Grid
+                                Width="11"
+                                Height="11"
+                                SnapsToDevicePixels="True">
+                                <Path
+                                    Stroke="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                                    StrokeStartLineCap="Round"
+                                    StrokeEndLineCap="Round"
+                                    StrokeThickness="1.5"
+                                    Data="M 1 1 L 10 10 M 10 1 L 1 10" />
+                            </Grid>
                         </Button>
                     </StackPanel>
                 </Grid>
