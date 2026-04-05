@@ -215,7 +215,6 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <StackPanel Margin="24,24,24,20">
@@ -259,29 +258,6 @@
                                 <TextBlock Text="Статистика" />
                             </RadioButton>
                         </StackPanel>
-
-                        <Border
-                            Grid.Row="2"
-                            Margin="16,0,16,16"
-                            Padding="14"
-                            Background="#171B21"
-                            BorderBrush="#252B33"
-                            BorderThickness="1"
-                            CornerRadius="10">
-                            <StackPanel>
-                                <TextBlock
-                                    HorizontalAlignment="Left"
-                                    FontSize="12"
-                                    Foreground="#8E98A6"
-                                    Text="Интерфейс" />
-                                <TextBlock
-                                    Margin="0,6,0,0"
-                                    HorizontalAlignment="Left"
-                                    FontSize="13"
-                                    Foreground="#D5DBE3"
-                                    Text="Чистый shell без перегруженных элементов." />
-                            </StackPanel>
-                        </Border>
                     </Grid>
                 </Border>
 
@@ -299,6 +275,16 @@
                         Padding="0,0,0,18"
                         BorderBrush="#252B33"
                         BorderThickness="0,0,0,1">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HeaderTitle}" Value="Добавление птицы">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
                         <StackPanel HorizontalAlignment="Center">
                             <TextBlock
                                 HorizontalAlignment="Center"
