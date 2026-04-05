@@ -34,6 +34,9 @@ namespace Birds.UI.ViewModels
         [ObservableProperty]
         private string headerSubtitle = "Новая запись с базовой валидацией и чистой формой ввода.";
 
+        [ObservableProperty]
+        private bool showContentHeader;
+
         private void OnNavigationPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName != nameof(INavigationService.Current))
@@ -47,18 +50,22 @@ namespace Birds.UI.ViewModels
             switch (currentViewModelType?.Name)
             {
                 case nameof(AddBirdViewModel):
+                    ShowContentHeader = false;
                     HeaderTitle = "Добавление птицы";
                     HeaderSubtitle = "Новая запись с базовой валидацией и чистой формой ввода.";
                     break;
                 case nameof(BirdListViewModel):
+                    ShowContentHeader = false;
                     HeaderTitle = "Архив птиц";
                     HeaderSubtitle = "Поиск, фильтрация и редактирование существующих записей.";
                     break;
                 case nameof(BirdStatisticsViewModel):
+                    ShowContentHeader = true;
                     HeaderTitle = "Статистика";
                     HeaderSubtitle = "Сводка по видам, датам и ключевым метрикам.";
                     break;
                 default:
+                    ShowContentHeader = true;
                     HeaderTitle = "Birds";
                     HeaderSubtitle = "Рабочее пространство приложения.";
                     break;

@@ -19,12 +19,14 @@
 
     <Border
         MinHeight="100"
-        Margin="30,10,20,10"
+        Margin="0,0,0,12"
         Padding="20"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Center"
-        Background="#2D2D3D"
-        CornerRadius="10">
+        Background="#171D25"
+        BorderBrush="#2B3441"
+        BorderThickness="1"
+        CornerRadius="14">
 
         <Grid VerticalAlignment="Center">
             <Grid.ColumnDefinitions>

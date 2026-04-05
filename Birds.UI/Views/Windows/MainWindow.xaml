@@ -271,10 +271,10 @@
                         BorderThickness="0,0,0,1">
                         <Border.Style>
                             <Style TargetType="Border">
-                                <Setter Property="Visibility" Value="Visible" />
+                                <Setter Property="Visibility" Value="Collapsed" />
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HeaderTitle}" Value="Добавление птицы">
-                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    <DataTrigger Binding="{Binding ShowContentHeader}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
