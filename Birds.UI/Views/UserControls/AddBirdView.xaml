@@ -695,18 +695,19 @@
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Grid Margin="24,12,24,24">
+        <Grid Margin="24,12,24,24" VerticalAlignment="Top">
             <Border
                 Style="{StaticResource AnimatedCardStyle}"
                 Width="760"
                 MaxWidth="760"
                 Padding="32,28,32,10"
                 HorizontalAlignment="Center"
+                VerticalAlignment="Top"
                 Background="{StaticResource CardBackgroundBrush}"
                 BorderBrush="{StaticResource CardBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="16">
-                <Grid>
+                <Grid VerticalAlignment="Top">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
