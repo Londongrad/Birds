@@ -4,132 +4,296 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
     xmlns:vm="clr-namespace:Birds.UI.ViewModels"
     Title="Birds"
     Width="1360"
     Height="840"
     MinWidth="1080"
     MinHeight="700"
-    d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
     Background="#161A20"
+    ResizeMode="CanResize"
     WindowStartupLocation="CenterScreen"
+    WindowStyle="None"
+    d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
     mc:Ignorable="d">
-    <Grid Background="#161A20">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="240" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome
+            CaptionHeight="0"
+            CornerRadius="0"
+            GlassFrameThickness="0"
+            ResizeBorderThickness="6"
+            UseAeroCaptionButtons="False" />
+    </shell:WindowChrome.WindowChrome>
 
-        <Border
-            Grid.Column="0"
-            Background="#101318"
-            BorderBrush="#252B33"
-            BorderThickness="0,0,1,0">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+    <Window.Resources>
+        <Style x:Key="TitleBarButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="44" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="#C8D0DA" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="ButtonSurface"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="8">
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonSurface" Property="Background" Value="#202733" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonSurface" Property="Background" Value="#2B3442" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-                <StackPanel Margin="24,28,24,20">
-                    <TextBlock
-                        HorizontalAlignment="Left"
-                        FontSize="26"
-                        FontWeight="SemiBold"
-                        Foreground="White"
-                        Text="Birds" />
-                    <TextBlock
-                        Margin="0,8,0,0"
-                        HorizontalAlignment="Left"
-                        FontSize="13"
-                        Foreground="#8E98A6"
-                        Text="Desktop registry" />
-                </StackPanel>
+        <Style
+            x:Key="CloseTitleBarButtonStyle"
+            BasedOn="{StaticResource TitleBarButtonStyle}"
+            TargetType="Button">
+            <Setter Property="Foreground" Value="#F4F7FB" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="ButtonSurface"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="8">
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonSurface" Property="Background" Value="#B24A4A" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonSurface" Property="Background" Value="#943C3C" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
 
-                <StackPanel
-                    Grid.Row="1"
-                    Margin="14,0,14,0"
-                    VerticalAlignment="Top">
-                    <RadioButton
-                        Command="{Binding Path=Navigation.NavigateToTypeCommand, Mode=OneWay}"
-                        CommandParameter="{x:Type vm:AddBirdViewModel}"
-                        IsChecked="True"
-                        Style="{StaticResource MenuButtonTheme}">
-                        <TextBlock Text="Добавить птицу" />
-                    </RadioButton>
-
-                    <RadioButton
-                        Command="{Binding Path=Navigation.NavigateToTypeCommand, Mode=OneWay}"
-                        CommandParameter="{x:Type vm:BirdListViewModel}"
-                        Style="{StaticResource MenuButtonTheme}">
-                        <TextBlock Text="Архив" />
-                    </RadioButton>
-
-                    <RadioButton
-                        Command="{Binding Path=Navigation.NavigateToTypeCommand, Mode=OneWay}"
-                        CommandParameter="{x:Type vm:BirdStatisticsViewModel}"
-                        Style="{StaticResource MenuButtonTheme}">
-                        <TextBlock Text="Статистика" />
-                    </RadioButton>
-                </StackPanel>
-
-                <Border
-                    Grid.Row="2"
-                    Margin="16,0,16,16"
-                    Padding="14"
-                    Background="#171B21"
-                    BorderBrush="#252B33"
-                    BorderThickness="1"
-                    CornerRadius="10">
-                    <StackPanel>
-                        <TextBlock
-                            HorizontalAlignment="Left"
-                            FontSize="12"
-                            Foreground="#8E98A6"
-                            Text="Интерфейс" />
-                        <TextBlock
-                            Margin="0,6,0,0"
-                            HorizontalAlignment="Left"
-                            FontSize="13"
-                            Foreground="#D5DBE3"
-                            Text="Чистый shell без перегруженных элементов." />
-                    </StackPanel>
-                </Border>
-            </Grid>
-        </Border>
-
-        <Grid Grid.Column="1">
+    <Border
+        Background="#161A20"
+        BorderBrush="#252B33"
+        BorderThickness="1">
+        <Grid Background="#161A20">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="46" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
             <Border
-                Margin="28,26,28,0"
-                Padding="0,0,0,18"
+                Grid.Row="0"
+                Background="#0F1318"
                 BorderBrush="#252B33"
-                BorderThickness="0,0,0,1">
-                <StackPanel>
-                    <TextBlock
-                        HorizontalAlignment="Left"
-                        FontSize="30"
-                        FontWeight="SemiBold"
-                        Foreground="White"
-                        Text="{Binding HeaderTitle}" />
-                    <TextBlock
-                        Margin="0,10,0,0"
-                        HorizontalAlignment="Left"
-                        FontSize="14"
-                        Foreground="#8E98A6"
-                        Text="{Binding HeaderSubtitle}" />
-                </StackPanel>
+                BorderThickness="0,0,0,1"
+                MouseLeftButtonDown="OnTitleBarMouseLeftButtonDown">
+                <Grid Margin="12,0,8,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
+                        <Border
+                            Width="16"
+                            Height="16"
+                            Margin="0,0,10,0"
+                            Background="#202733"
+                            BorderBrush="#2C3642"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="9"
+                                Foreground="#DDE4EC"
+                                Text="B" />
+                        </Border>
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Foreground="#E8EDF4"
+                            Text="Birds" />
+                    </StackPanel>
+
+                    <StackPanel
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
+                        <Button
+                            Click="OnMinimizeClick"
+                            Style="{StaticResource TitleBarButtonStyle}">
+                            <TextBlock
+                                Margin="0,-6,0,0"
+                                FontSize="14"
+                                Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                                Text="—" />
+                        </Button>
+
+                        <Button
+                            Click="OnMaximizeRestoreClick"
+                            Style="{StaticResource TitleBarButtonStyle}">
+                            <TextBlock
+                                x:Name="MaximizeRestoreGlyph"
+                                FontSize="12"
+                                Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                                Text="□" />
+                        </Button>
+
+                        <Button
+                            Click="OnCloseClick"
+                            Style="{StaticResource CloseTitleBarButtonStyle}">
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                                Text="✕" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
             </Border>
 
-            <ContentControl
-                Grid.Row="1"
-                Margin="24"
-                Content="{Binding Path=Navigation.Current}" />
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="240" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border
+                    Grid.Column="0"
+                    Background="#101318"
+                    BorderBrush="#252B33"
+                    BorderThickness="0,0,1,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Margin="24,24,24,20">
+                            <TextBlock
+                                HorizontalAlignment="Left"
+                                FontSize="26"
+                                FontWeight="SemiBold"
+                                Foreground="White"
+                                Text="Birds" />
+                            <TextBlock
+                                Margin="0,8,0,0"
+                                HorizontalAlignment="Left"
+                                FontSize="13"
+                                Foreground="#8E98A6"
+                                Text="Desktop registry" />
+                        </StackPanel>
+
+                        <StackPanel
+                            Grid.Row="1"
+                            Margin="14,0,14,0"
+                            VerticalAlignment="Top">
+                            <RadioButton
+                                Command="{Binding Path=Navigation.NavigateToTypeCommand, Mode=OneWay}"
+                                CommandParameter="{x:Type vm:AddBirdViewModel}"
+                                IsChecked="True"
+                                Style="{StaticResource MenuButtonTheme}">
+                                <TextBlock Text="Добавить птицу" />
+                            </RadioButton>
+
+                            <RadioButton
+                                Command="{Binding Path=Navigation.NavigateToTypeCommand, Mode=OneWay}"
+                                CommandParameter="{x:Type vm:BirdListViewModel}"
+                                Style="{StaticResource MenuButtonTheme}">
+                                <TextBlock Text="Архив" />
+                            </RadioButton>
+
+                            <RadioButton
+                                Command="{Binding Path=Navigation.NavigateToTypeCommand, Mode=OneWay}"
+                                CommandParameter="{x:Type vm:BirdStatisticsViewModel}"
+                                Style="{StaticResource MenuButtonTheme}">
+                                <TextBlock Text="Статистика" />
+                            </RadioButton>
+                        </StackPanel>
+
+                        <Border
+                            Grid.Row="2"
+                            Margin="16,0,16,16"
+                            Padding="14"
+                            Background="#171B21"
+                            BorderBrush="#252B33"
+                            BorderThickness="1"
+                            CornerRadius="10">
+                            <StackPanel>
+                                <TextBlock
+                                    HorizontalAlignment="Left"
+                                    FontSize="12"
+                                    Foreground="#8E98A6"
+                                    Text="Интерфейс" />
+                                <TextBlock
+                                    Margin="0,6,0,0"
+                                    HorizontalAlignment="Left"
+                                    FontSize="13"
+                                    Foreground="#D5DBE3"
+                                    Text="Чистый shell без перегруженных элементов." />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Border
+                        Margin="28,26,28,0"
+                        Padding="0,0,0,18"
+                        BorderBrush="#252B33"
+                        BorderThickness="0,0,0,1">
+                        <StackPanel>
+                            <TextBlock
+                                HorizontalAlignment="Left"
+                                FontSize="30"
+                                FontWeight="SemiBold"
+                                Foreground="White"
+                                Text="{Binding HeaderTitle}" />
+                            <TextBlock
+                                Margin="0,10,0,0"
+                                HorizontalAlignment="Left"
+                                FontSize="14"
+                                Foreground="#8E98A6"
+                                Text="{Binding HeaderSubtitle}" />
+                        </StackPanel>
+                    </Border>
+
+                    <ContentControl
+                        Grid.Row="1"
+                        Margin="24"
+                        Content="{Binding Path=Navigation.Current}" />
+                </Grid>
+            </Grid>
         </Grid>
-    </Grid>
+    </Border>
 </Window>
