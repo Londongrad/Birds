@@ -63,6 +63,7 @@
         <Style x:Key="ArchiveFilterItemStyle" TargetType="ComboBoxItem">
             <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
             <Setter Property="Background" Value="Transparent" />
+            <Setter Property="FontSize" Value="15" />
             <Setter Property="Padding" Value="14,10" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />
             <Setter Property="Template">
@@ -92,6 +93,8 @@
 
         <Style x:Key="ArchiveFilterComboBoxStyle" TargetType="ComboBox">
             <Setter Property="MinHeight" Value="46" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="MaxDropDownHeight" Value="340" />
             <Setter Property="Padding" Value="14,0,42,0" />
             <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
             <Setter Property="Background" Value="{StaticResource FieldBackgroundBrush}" />
@@ -149,11 +152,15 @@
                                     Margin="0,6,0,0"
                                     MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
                                     MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                    Padding="8,8,6,8"
                                     Background="{StaticResource InsetBackgroundBrush}"
                                     BorderBrush="{StaticResource FieldBorderBrush}"
                                     BorderThickness="1"
                                     CornerRadius="10">
-                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <ScrollViewer
+                                        CanContentScroll="False"
+                                        HorizontalScrollBarVisibility="Disabled"
+                                        VerticalScrollBarVisibility="Auto">
                                         <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained" />
                                     </ScrollViewer>
                                 </Border>
@@ -275,15 +282,19 @@
                             <Border
                                 Grid.Column="1"
                                 Margin="0,0,14,0"
-                                Padding="14,10"
+                                MinHeight="46"
+                                MinWidth="96"
+                                Padding="18,10"
                                 VerticalAlignment="Center"
                                 Background="{StaticResource InsetBackgroundBrush}"
                                 BorderBrush="{StaticResource FieldBorderBrush}"
                                 BorderThickness="1"
                                 CornerRadius="10">
                                 <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
                                     Foreground="{StaticResource PrimaryTextBrush}"
-                                    FontSize="13"
+                                    FontSize="15"
                                     FontWeight="SemiBold"
                                     Text="{Binding BirdsView.Count, StringFormat=Птиц: {0}}" />
                             </Border>
