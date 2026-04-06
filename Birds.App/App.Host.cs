@@ -24,7 +24,7 @@ namespace Birds.App
         /// </summary>
         /// <returns>A fully built <see cref="IHost"/>.</returns>
         /// <exception cref="ConfigurationErrorsException">
-        /// Thrown if the configured database provider or connection string is missing.
+        /// Thrown if the configured database provider, seeding mode, or connection string is invalid.
         /// </exception>
         internal IHost BuildHost()
         {
@@ -48,9 +48,10 @@ namespace Birds.App
 
                     var provider = ResolveDatabaseProvider(context.Configuration);
                     var connectionString = ResolveConnectionString(context.Configuration, provider);
+                    var seedingOptions = ResolveSeedingOptions(context.Configuration);
 
                     // Register the Infrastructure layer (EF Core, DbContext, repositories, etc.)
-                    services.AddInfrastructure(provider, connectionString);
+                    services.AddInfrastructure(provider, connectionString, seedingOptions);
 
                     // Register the UI layer (ViewModels, stores, navigation, etc.)
                     services.AddUI();
@@ -90,6 +91,22 @@ namespace Birds.App
             }
 
             throw new ConfigurationErrorsException(ErrorMessages.ConnectionStringNotFoundFor(candidateNames));
+        }
+
+        private static DatabaseSeedingOptions ResolveSeedingOptions(IConfiguration configuration)
+        {
+            var configuredMode = configuration["Seeding:Mode"];
+            var mode = string.IsNullOrWhiteSpace(configuredMode)
+                ? DatabaseSeedingMode.None
+                : Enum.TryParse<DatabaseSeedingMode>(configuredMode, ignoreCase: true, out var parsedMode)
+                    ? parsedMode
+                    : throw new ConfigurationErrorsException(ErrorMessages.InvalidDatabaseSeedingMode(configuredMode));
+
+            var recordCount = Math.Max(0, configuration.GetValue<int?>("Seeding:RecordCount") ?? 20_000);
+            var batchSize = Math.Max(1, configuration.GetValue<int?>("Seeding:BatchSize") ?? 500);
+            var randomSeed = Math.Max(0, configuration.GetValue<int?>("Seeding:RandomSeed") ?? 42);
+
+            return new DatabaseSeedingOptions(mode, recordCount, batchSize, randomSeed);
         }
     }
 }

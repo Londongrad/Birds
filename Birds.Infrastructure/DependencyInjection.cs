@@ -2,6 +2,7 @@ using Birds.Application.Interfaces;
 using Birds.Infrastructure.Configuration;
 using Birds.Infrastructure.Persistence;
 using Birds.Infrastructure.Repositories;
+using Birds.Infrastructure.Seeding;
 using Birds.Infrastructure.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +14,8 @@ namespace Birds.Infrastructure
     {
         public static void AddInfrastructure(this IServiceCollection services,
                                              DatabaseProvider provider,
-                                             string connectionString)
+                                             string connectionString,
+                                             DatabaseSeedingOptions seedingOptions)
         {
             var normalizedConnectionString = provider switch
             {
@@ -22,6 +24,7 @@ namespace Birds.Infrastructure
             };
 
             services.AddSingleton(new DatabaseRuntimeOptions(provider, normalizedConnectionString));
+            services.AddSingleton(seedingOptions);
 
             // Register a factory so each repository call can create its own short-lived DbContext.
             services.AddDbContextFactory<BirdDbContext>(options =>
@@ -38,6 +41,7 @@ namespace Birds.Infrastructure
                 }
             });
 
+            services.AddSingleton<BirdSeeder>();
             services.AddHostedService<DatabaseInitializerHostedService>();
             services.AddSingleton<IBirdRepository, BirdRepository>();
         }

@@ -22,6 +22,9 @@
         public static string InvalidDatabaseProvider(string provider)
             => $"Unsupported database provider '{provider}'. Use 'Sqlite' or 'Postgres'.";
 
+        public static string InvalidDatabaseSeedingMode(string mode)
+            => $"Unsupported database seeding mode '{mode}'. Use 'None', 'SeedIfEmpty' or 'RecreateAndSeed'.";
+
         public const string FailedToDisplayErrorNotification = "Failed to display error notification";
 
         public const string StartupErrorTitle = "Startup error";
