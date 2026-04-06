@@ -1,4 +1,4 @@
-﻿using Birds.UI.Services.Export;
+using Birds.UI.Services.Export;
 using Birds.UI.Services.Export.Interfaces;
 using Birds.UI.Services.Factories.BirdViewModelFactory;
 using Birds.UI.Services.Managers.Bird;
@@ -10,7 +10,6 @@ using Birds.UI.Services.Stores.BirdStore;
 using Birds.UI.Threading;
 using Birds.UI.Threading.Abstractions;
 using Birds.UI.ViewModels;
-using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Birds.UI
@@ -37,10 +36,6 @@ namespace Birds.UI
 
             // Export Services
             services.AddSingleton<IExportService, JsonExportService>();
-
-            // MediatR notification Handlers
-            services.AddSingleton<INotificationHandler<NavigatedEvent>>(sp =>
-                (NotificationService)sp.GetRequiredService<INotificationService>());
         }
     }
 }

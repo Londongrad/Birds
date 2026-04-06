@@ -1,5 +1,9 @@
 using Birds.UI.Services.Navigation.Interfaces;
+using Birds.UI.Services.Notification;
+using Birds.UI.Services.Notification.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 
 namespace Birds.UI.ViewModels
@@ -7,13 +11,16 @@ namespace Birds.UI.ViewModels
     public partial class MainViewModel : ObservableObject
     {
         private readonly INavigationService _navigation;
+        private readonly INotificationManager _notificationManager;
 
         public MainViewModel(INavigationService navigation,
+                             INotificationManager notificationManager,
                              BirdListViewModel birdsVM,
                              AddBirdViewModel addBirdVM,
                              BirdStatisticsViewModel birdStatistics)
         {
             _navigation = navigation;
+            _notificationManager = notificationManager;
 
             _navigation.AddCreator<BirdListViewModel>(() => birdsVM);
             _navigation.AddCreator<AddBirdViewModel>(() => addBirdVM);
@@ -28,6 +35,8 @@ namespace Birds.UI.ViewModels
 
         public INavigationService Navigation => _navigation;
 
+        public ReadOnlyObservableCollection<NotificationToast> Notifications => _notificationManager.ActiveNotifications;
+
         [ObservableProperty]
         private string headerTitle = "Добавление птицы";
 
@@ -36,6 +45,15 @@ namespace Birds.UI.ViewModels
 
         [ObservableProperty]
         private bool showContentHeader;
+
+        [RelayCommand]
+        private void DismissNotification(NotificationToast? notification)
+        {
+            if (notification is null)
+                return;
+
+            _notificationManager.DismissNotification(notification);
+        }
 
         private void OnNavigationPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {

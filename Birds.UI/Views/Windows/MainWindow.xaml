@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:notify="clr-namespace:Birds.UI.Services.Notification"
     xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
     xmlns:vm="clr-namespace:Birds.UI.ViewModels"
     Title="Birds"
@@ -84,6 +85,38 @@
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="ButtonSurface" Property="Background" Value="#943C3C" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ToastCloseButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="26" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="#A8B4C4" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="CloseButtonSurface"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="8">
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="CloseButtonSurface" Property="Background" Value="#212936" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="CloseButtonSurface" Property="Background" Value="#2A3442" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -301,6 +334,148 @@
                         Grid.Row="1"
                         Margin="24"
                         Content="{Binding Path=Navigation.Current}" />
+
+                    <ItemsControl
+                        Grid.RowSpan="2"
+                        Margin="0,14,18,18"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        ItemsSource="{Binding Notifications}"
+                        Panel.ZIndex="20">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemContainerStyle>
+                            <Style TargetType="ContentPresenter">
+                                <Setter Property="Margin" Value="0,0,0,12" />
+                                <Setter Property="HorizontalAlignment" Value="Right" />
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type notify:NotificationToast}">
+                                <Border
+                                    x:Name="ToastCard"
+                                    Width="340"
+                                    Background="#171D25"
+                                    BorderBrush="#2E3947"
+                                    BorderThickness="1"
+                                    CornerRadius="14"
+                                    Opacity="0">
+                                    <Border.RenderTransform>
+                                        <TranslateTransform X="18" />
+                                    </Border.RenderTransform>
+                                    <Border.Triggers>
+                                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation
+                                                        Storyboard.TargetProperty="Opacity"
+                                                        Duration="0:0:0.18"
+                                                        To="1" />
+                                                    <DoubleAnimation
+                                                        Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                                        Duration="0:0:0.18"
+                                                        To="0" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </Border.Triggers>
+
+                                    <Grid ClipToBounds="True">
+                                        <Border
+                                            x:Name="AccentBar"
+                                            Width="4"
+                                            HorizontalAlignment="Left"
+                                            Background="#7C8EA3"
+                                            CornerRadius="14,0,0,14" />
+
+                                        <Grid Margin="16,14,14,14">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <Border
+                                                x:Name="BadgeSurface"
+                                                Width="28"
+                                                Height="28"
+                                                Margin="0,0,12,0"
+                                                VerticalAlignment="Top"
+                                                Background="#233041"
+                                                CornerRadius="14">
+                                                <TextBlock
+                                                    x:Name="BadgeText"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="10"
+                                                    FontWeight="Bold"
+                                                    Foreground="#DDE6F1"
+                                                    Text="i" />
+                                            </Border>
+
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                FontSize="13"
+                                                FontWeight="SemiBold"
+                                                Foreground="#F3F6FA"
+                                                Text="{Binding Title}" />
+
+                                            <Button
+                                                Grid.Column="2"
+                                                Command="{Binding DataContext.DismissNotificationCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource ToastCloseButtonStyle}">
+                                                <Path
+                                                    Stroke="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                                                    StrokeStartLineCap="Round"
+                                                    StrokeEndLineCap="Round"
+                                                    StrokeThickness="1.4"
+                                                    Data="M 1 1 L 9 9 M 9 1 L 1 9" />
+                                            </Button>
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Grid.ColumnSpan="2"
+                                                Margin="0,8,0,0"
+                                                FontSize="13"
+                                                Foreground="#A9B5C3"
+                                                Text="{Binding Message}"
+                                                TextWrapping="Wrap" />
+                                        </Grid>
+                                    </Grid>
+                                </Border>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding Type}" Value="{x:Static notify:NotificationType.Success}">
+                                        <Setter TargetName="AccentBar" Property="Background" Value="#48A975" />
+                                        <Setter TargetName="BadgeSurface" Property="Background" Value="#163124" />
+                                        <Setter TargetName="BadgeText" Property="Text" Value="OK" />
+                                        <Setter TargetName="BadgeText" Property="Foreground" Value="#BCEFCF" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Type}" Value="{x:Static notify:NotificationType.Warning}">
+                                        <Setter TargetName="AccentBar" Property="Background" Value="#D38E4A" />
+                                        <Setter TargetName="BadgeSurface" Property="Background" Value="#392615" />
+                                        <Setter TargetName="BadgeText" Property="Text" Value="!" />
+                                        <Setter TargetName="BadgeText" Property="Foreground" Value="#FFD6A5" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Type}" Value="{x:Static notify:NotificationType.Error}">
+                                        <Setter TargetName="AccentBar" Property="Background" Value="#C76363" />
+                                        <Setter TargetName="BadgeSurface" Property="Background" Value="#3B1C1C" />
+                                        <Setter TargetName="BadgeText" Property="Text" Value="!" />
+                                        <Setter TargetName="BadgeText" Property="Foreground" Value="#FFC4C4" />
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </Grid>
             </Grid>
         </Grid>
