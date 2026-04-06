@@ -8,6 +8,7 @@ using Birds.UI.Services.Stores.BirdStore;
 using FluentAssertions;
 using MediatR;
 using Moq;
+using System.Collections.Specialized;
 
 namespace Birds.Tests.UI.Services
 {
@@ -19,6 +20,13 @@ namespace Birds.Tests.UI.Services
             // Arrange
             var store = new BirdStore();
             var mediator = new Mock<IMediator>();
+            var collectionChangedCount = 0;
+            store.Birds.CollectionChanged += (_, e) =>
+            {
+                if (e.Action == NotifyCollectionChangedAction.Reset)
+                    collectionChangedCount++;
+            };
+
             mediator.SetupGetAllBirdsSuccess(TestHelpers.Birds(
                 TestHelpers.Bird(name: "Sparrow", desc: "d"),
                 TestHelpers.Bird(name: "Tit", desc: "d")
@@ -32,6 +40,7 @@ namespace Birds.Tests.UI.Services
             // Assert
             store.LoadState.Should().Be(LoadState.Loaded);
             store.Birds.Should().HaveCount(2);
+            collectionChangedCount.Should().Be(1);
             notify.Verify(n => n.ShowInfo(It.IsAny<string>()), Times.AtLeast(2)); // Loading..., LoadedSuccessfully
         }
 
