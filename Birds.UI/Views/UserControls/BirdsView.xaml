@@ -224,7 +224,7 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
-            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
         </Style>
 
         <Style x:Key="ArchiveListBoxItemStyle" TargetType="ListBoxItem">
@@ -242,161 +242,157 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid>
-        <ScrollViewer
-            x:Name="ArchiveScrollViewer"
-            VerticalScrollBarVisibility="Auto">
-            <Grid
-                Margin="24,12,24,24"
-                MinHeight="{Binding ElementName=ArchiveScrollViewer, Path=ViewportHeight}">
+    <Grid Margin="24,12,24,24">
+        <Border
+            Width="980"
+            MaxWidth="980"
+            Padding="28"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Stretch"
+            Background="{StaticResource CardBackgroundBrush}"
+            BorderBrush="{StaticResource CardBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="16">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="240" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox
+                        Grid.Column="0"
+                        Margin="0,0,14,0"
+                        Style="{StaticResource ArchiveSearchBoxStyle}"
+                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <Border
+                        Grid.Column="1"
+                        Margin="0,0,14,0"
+                        MinHeight="46"
+                        MinWidth="96"
+                        Padding="18,10"
+                        VerticalAlignment="Center"
+                        Background="{StaticResource InsetBackgroundBrush}"
+                        BorderBrush="{StaticResource FieldBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10">
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Foreground="{StaticResource PrimaryTextBrush}"
+                            FontSize="15"
+                            FontWeight="SemiBold"
+                            Text="{Binding BirdsView.Count, StringFormat=Птиц: {0}}" />
+                    </Border>
+
+                    <ComboBox
+                        Grid.Column="2"
+                        DisplayMemberPath="Display"
+                        ItemsSource="{Binding Filters}"
+                        SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
+                        Style="{StaticResource ArchiveFilterComboBoxStyle}" />
+
+                    <Button
+                        Grid.Column="3"
+                        Margin="14,0,0,0"
+                        Command="{Binding ReloadBirdsCommand}"
+                        Content="Повторить"
+                        Style="{StaticResource ArchiveRetryButtonStyle}"
+                        Visibility="{Binding IsFailed, Converter={StaticResource BoolToVisibilityConverter}}" />
+                </Grid>
+
                 <Border
-                    Width="980"
-                    MaxWidth="980"
-                    Padding="28"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Background="{StaticResource CardBackgroundBrush}"
-                    BorderBrush="{StaticResource CardBorderBrush}"
+                    Grid.Row="1"
+                    Margin="0,22,0,0"
+                    Padding="12,14,12,6"
+                    MinHeight="340"
+                    Background="{StaticResource InsetBackgroundBrush}"
+                    BorderBrush="{StaticResource FieldBorderBrush}"
                     BorderThickness="1"
-                    CornerRadius="16">
+                    CornerRadius="14">
                     <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <Grid Grid.Row="0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="240" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <TextBox
-                                Grid.Column="0"
-                                Margin="0,0,14,0"
-                                Style="{StaticResource ArchiveSearchBoxStyle}"
-                                Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
-
-                            <Border
-                                Grid.Column="1"
-                                Margin="0,0,14,0"
-                                MinHeight="46"
-                                MinWidth="96"
-                                Padding="18,10"
-                                VerticalAlignment="Center"
-                                Background="{StaticResource InsetBackgroundBrush}"
-                                BorderBrush="{StaticResource FieldBorderBrush}"
-                                BorderThickness="1"
-                                CornerRadius="10">
-                                <TextBlock
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    Foreground="{StaticResource PrimaryTextBrush}"
-                                    FontSize="15"
-                                    FontWeight="SemiBold"
-                                    Text="{Binding BirdsView.Count, StringFormat=Птиц: {0}}" />
-                            </Border>
-
-                            <ComboBox
-                                Grid.Column="2"
-                                DisplayMemberPath="Display"
-                                ItemsSource="{Binding Filters}"
-                                SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
-                                Style="{StaticResource ArchiveFilterComboBoxStyle}" />
-
-                            <Button
-                                Grid.Column="3"
-                                Margin="14,0,0,0"
-                                Command="{Binding ReloadBirdsCommand}"
-                                Content="Повторить"
-                                Style="{StaticResource ArchiveRetryButtonStyle}"
-                                Visibility="{Binding IsFailed, Converter={StaticResource BoolToVisibilityConverter}}" />
-                        </Grid>
-
-                        <Border
-                            Grid.Row="1"
-                            Margin="0,22,0,0"
-                            Padding="12,14,12,6"
-                            Background="{StaticResource InsetBackgroundBrush}"
-                            BorderBrush="{StaticResource FieldBorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="14">
-                            <Grid>
-                                <ListBox
-                                    ItemContainerStyle="{StaticResource ArchiveListBoxItemStyle}"
-                                    ItemsSource="{Binding BirdsView}">
-                                    <ListBox.Style>
-                                        <Style BasedOn="{StaticResource ArchiveListBoxStyle}" TargetType="ListBox">
-                                            <Setter Property="Visibility" Value="Visible" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding BirdsView.Count}" Value="0">
-                                                    <Setter Property="Visibility" Value="Collapsed" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </ListBox.Style>
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate DataType="{x:Type dto:BirdDTO}">
-                                            <local:BirdItemControl DataContext="{Binding Converter={StaticResource BirdVmConverter}}" />
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>
-
-                                <StackPanel
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center">
-                                    <StackPanel.Style>
-                                        <Style TargetType="StackPanel">
+                        <ListBox
+                            ItemContainerStyle="{StaticResource ArchiveListBoxItemStyle}"
+                            ItemsSource="{Binding BirdsView}">
+                            <ListBox.Style>
+                                <Style BasedOn="{StaticResource ArchiveListBoxStyle}" TargetType="ListBox">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding BirdsView.Count}" Value="0">
                                             <Setter Property="Visibility" Value="Collapsed" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding BirdsView.Count}" Value="0">
-                                                    <Setter Property="Visibility" Value="Visible" />
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding IsLoading}" Value="True">
-                                                    <Setter Property="Visibility" Value="Collapsed" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </StackPanel.Style>
-                                    <TextBlock
-                                        HorizontalAlignment="Center"
-                                        Foreground="{StaticResource PrimaryTextBrush}"
-                                        FontSize="18"
-                                        FontWeight="SemiBold"
-                                        Text="Ничего не найдено" />
-                                    <TextBlock
-                                        Margin="0,8,0,0"
-                                        HorizontalAlignment="Center"
-                                        Foreground="{StaticResource SecondaryTextBrush}"
-                                        FontSize="13"
-                                        Text="Попробуйте изменить поиск или фильтр." />
-                                </StackPanel>
-                            </Grid>
-                        </Border>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ListBox.Style>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type dto:BirdDTO}">
+                                    <local:BirdItemControl DataContext="{Binding Converter={StaticResource BirdVmConverter}}" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <StackPanel
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding BirdsView.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                Foreground="{StaticResource PrimaryTextBrush}"
+                                FontSize="18"
+                                FontWeight="SemiBold"
+                                Text="Ничего не найдено" />
+                            <TextBlock
+                                Margin="0,8,0,0"
+                                HorizontalAlignment="Center"
+                                Foreground="{StaticResource SecondaryTextBrush}"
+                                FontSize="13"
+                                Text="Попробуйте изменить поиск или фильтр." />
+                        </StackPanel>
+
+                        <Grid
+                            Background="#9A10161D"
+                            Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <StackPanel
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+                                <ProgressBar
+                                    Width="180"
+                                    Height="8"
+                                    IsIndeterminate="True" />
+                                <TextBlock
+                                    Margin="0,12,0,0"
+                                    HorizontalAlignment="Center"
+                                    Foreground="{StaticResource PrimaryTextBrush}"
+                                    FontSize="14"
+                                    Text="Загрузка архива..." />
+                            </StackPanel>
+                        </Grid>
                     </Grid>
                 </Border>
             </Grid>
-        </ScrollViewer>
-
-        <Grid
-            Background="#9A10161D"
-            Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
-            <StackPanel
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center">
-                <ProgressBar
-                    Width="180"
-                    Height="8"
-                    IsIndeterminate="True" />
-                <TextBlock
-                    Margin="0,12,0,0"
-                    HorizontalAlignment="Center"
-                    Foreground="{StaticResource PrimaryTextBrush}"
-                    FontSize="14"
-                    Text="Загрузка архива..." />
-            </StackPanel>
-        </Grid>
+        </Border>
     </Grid>
 </UserControl>
