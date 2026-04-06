@@ -100,6 +100,7 @@
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Foreground" Value="#A8B4C4" />
+            <Setter Property="Opacity" Value="0.78" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -114,6 +115,7 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="CloseButtonSurface" Property="Background" Value="#212936" />
+                                <Setter Property="Opacity" Value="1" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="CloseButtonSurface" Property="Background" Value="#2A3442" />
@@ -337,7 +339,7 @@
 
                     <ItemsControl
                         Grid.RowSpan="2"
-                        Margin="0,14,18,18"
+                        Margin="0,16,20,18"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Top"
                         ItemsSource="{Binding Notifications}"
@@ -349,7 +351,7 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemContainerStyle>
                             <Style TargetType="ContentPresenter">
-                                <Setter Property="Margin" Value="0,0,0,12" />
+                                <Setter Property="Margin" Value="0,0,0,14" />
                                 <Setter Property="HorizontalAlignment" Value="Right" />
                             </Style>
                         </ItemsControl.ItemContainerStyle>
@@ -357,14 +359,25 @@
                             <DataTemplate DataType="{x:Type notify:NotificationToast}">
                                 <Border
                                     x:Name="ToastCard"
-                                    Width="340"
-                                    Background="#171D25"
-                                    BorderBrush="#2E3947"
+                                    Width="356"
+                                    Background="#151B23"
+                                    BorderBrush="#2F3946"
                                     BorderThickness="1"
-                                    CornerRadius="14"
+                                    CornerRadius="16"
                                     Opacity="0">
+                                    <Border.Effect>
+                                        <DropShadowEffect
+                                            BlurRadius="24"
+                                            Color="#000000"
+                                            Direction="270"
+                                            Opacity="0.28"
+                                            ShadowDepth="10" />
+                                    </Border.Effect>
                                     <Border.RenderTransform>
-                                        <TranslateTransform X="18" />
+                                        <TransformGroup>
+                                            <ScaleTransform ScaleX="0.985" ScaleY="0.985" />
+                                            <TranslateTransform X="18" />
+                                        </TransformGroup>
                                     </Border.RenderTransform>
                                     <Border.Triggers>
                                         <EventTrigger RoutedEvent="FrameworkElement.Loaded">
@@ -372,12 +385,20 @@
                                                 <Storyboard>
                                                     <DoubleAnimation
                                                         Storyboard.TargetProperty="Opacity"
-                                                        Duration="0:0:0.18"
+                                                        Duration="0:0:0.2"
                                                         To="1" />
                                                     <DoubleAnimation
-                                                        Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
-                                                        Duration="0:0:0.18"
+                                                        Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.X)"
+                                                        Duration="0:0:0.2"
                                                         To="0" />
+                                                    <DoubleAnimation
+                                                        Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
+                                                        Duration="0:0:0.2"
+                                                        To="1" />
+                                                    <DoubleAnimation
+                                                        Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
+                                                        Duration="0:0:0.2"
+                                                        To="1" />
                                                 </Storyboard>
                                             </BeginStoryboard>
                                         </EventTrigger>
@@ -386,12 +407,12 @@
                                     <Grid ClipToBounds="True">
                                         <Border
                                             x:Name="AccentBar"
-                                            Width="4"
+                                            Width="5"
                                             HorizontalAlignment="Left"
                                             Background="#7C8EA3"
-                                            CornerRadius="14,0,0,14" />
+                                            CornerRadius="16,0,0,16" />
 
-                                        <Grid Margin="16,14,14,14">
+                                        <Grid Margin="18,16,16,16">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="*" />
@@ -404,12 +425,12 @@
 
                                             <Border
                                                 x:Name="BadgeSurface"
-                                                Width="28"
-                                                Height="28"
-                                                Margin="0,0,12,0"
+                                                Width="30"
+                                                Height="30"
+                                                Margin="0,0,14,0"
                                                 VerticalAlignment="Top"
                                                 Background="#233041"
-                                                CornerRadius="14">
+                                                CornerRadius="15">
                                                 <TextBlock
                                                     x:Name="BadgeText"
                                                     HorizontalAlignment="Center"
@@ -421,14 +442,17 @@
                                             </Border>
 
                                             <TextBlock
+                                                x:Name="ToastTitle"
                                                 Grid.Column="1"
                                                 VerticalAlignment="Center"
                                                 FontSize="13"
                                                 FontWeight="SemiBold"
                                                 Foreground="#F3F6FA"
+                                                TextWrapping="Wrap"
                                                 Text="{Binding Title}" />
 
                                             <Button
+                                                x:Name="ToastCloseButton"
                                                 Grid.Column="2"
                                                 Command="{Binding DataContext.DismissNotificationCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                 CommandParameter="{Binding}"
@@ -442,35 +466,45 @@
                                             </Button>
 
                                             <TextBlock
+                                                x:Name="ToastMessage"
                                                 Grid.Row="1"
                                                 Grid.Column="1"
                                                 Grid.ColumnSpan="2"
-                                                Margin="0,8,0,0"
+                                                Margin="0,9,0,0"
                                                 FontSize="13"
-                                                Foreground="#A9B5C3"
+                                                Foreground="#AEB9C7"
+                                                LineHeight="19"
                                                 Text="{Binding Message}"
                                                 TextWrapping="Wrap" />
                                         </Grid>
                                     </Grid>
                                 </Border>
                                 <DataTemplate.Triggers>
+                                    <Trigger SourceName="ToastCard" Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="ToastCard" Property="BorderBrush" Value="#415063" />
+                                        <Setter TargetName="ToastCard" Property="Background" Value="#18202A" />
+                                        <Setter TargetName="ToastCloseButton" Property="Opacity" Value="1" />
+                                    </Trigger>
                                     <DataTrigger Binding="{Binding Type}" Value="{x:Static notify:NotificationType.Success}">
                                         <Setter TargetName="AccentBar" Property="Background" Value="#48A975" />
                                         <Setter TargetName="BadgeSurface" Property="Background" Value="#163124" />
                                         <Setter TargetName="BadgeText" Property="Text" Value="OK" />
                                         <Setter TargetName="BadgeText" Property="Foreground" Value="#BCEFCF" />
+                                        <Setter TargetName="ToastTitle" Property="Foreground" Value="#F2FAF5" />
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding Type}" Value="{x:Static notify:NotificationType.Warning}">
                                         <Setter TargetName="AccentBar" Property="Background" Value="#D38E4A" />
                                         <Setter TargetName="BadgeSurface" Property="Background" Value="#392615" />
                                         <Setter TargetName="BadgeText" Property="Text" Value="!" />
                                         <Setter TargetName="BadgeText" Property="Foreground" Value="#FFD6A5" />
+                                        <Setter TargetName="ToastTitle" Property="Foreground" Value="#FFF6E8" />
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding Type}" Value="{x:Static notify:NotificationType.Error}">
                                         <Setter TargetName="AccentBar" Property="Background" Value="#C76363" />
                                         <Setter TargetName="BadgeSurface" Property="Background" Value="#3B1C1C" />
                                         <Setter TargetName="BadgeText" Property="Text" Value="!" />
                                         <Setter TargetName="BadgeText" Property="Foreground" Value="#FFC4C4" />
+                                        <Setter TargetName="ToastTitle" Property="Foreground" Value="#FFF0F0" />
                                     </DataTrigger>
                                 </DataTemplate.Triggers>
                             </DataTemplate>
