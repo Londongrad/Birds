@@ -16,6 +16,11 @@
         public const string QueryCannotBeNull = "Query cannot be null.";
 
         public const string ConnectionStringNotFound = "Database connection string not found.";
+        public static string ConnectionStringNotFoundFor(params string[] names)
+            => $"Database connection string not found. Expected one of: {string.Join(", ", names)}.";
+
+        public static string InvalidDatabaseProvider(string provider)
+            => $"Unsupported database provider '{provider}'. Use 'Sqlite' or 'Postgres'.";
 
         public const string FailedToDisplayErrorNotification = "Failed to display error notification";
 

@@ -1,6 +1,7 @@
-﻿using Birds.App.Services;
+using Birds.App.Services;
 using Birds.Application;
 using Birds.Infrastructure;
+using Birds.Infrastructure.Configuration;
 using Birds.Shared.Constants;
 using Birds.UI;
 using Birds.UI.Services.Export.Interfaces;
@@ -23,7 +24,7 @@ namespace Birds.App
         /// </summary>
         /// <returns>A fully built <see cref="IHost"/>.</returns>
         /// <exception cref="ConfigurationErrorsException">
-        /// Thrown if the "DefaultConnection" connection string is missing.
+        /// Thrown if the configured database provider or connection string is missing.
         /// </exception>
         internal IHost BuildHost()
         {
@@ -45,20 +46,50 @@ namespace Birds.App
                     // Register the Application layer (CQRS, Mediator, validators, etc.)
                     services.AddApplication();
 
-                    // Get the raw connection string (may contain ${VAR} placeholders)
-                    var rawConnection = context.Configuration.GetConnectionString("DefaultConnection")
-                        ?? throw new ConfigurationErrorsException(ErrorMessages.ConnectionStringNotFound);
-
-                    // Replace ${VAR} placeholders with environment variable values
-                    var connectionString = ReplaceEnvPlaceholders(rawConnection);
+                    var provider = ResolveDatabaseProvider(context.Configuration);
+                    var connectionString = ResolveConnectionString(context.Configuration, provider);
 
                     // Register the Infrastructure layer (EF Core, DbContext, repositories, etc.)
-                    services.AddInfrastructure(connectionString);
+                    services.AddInfrastructure(provider, connectionString);
 
                     // Register the UI layer (ViewModels, stores, navigation, etc.)
                     services.AddUI();
                 })
                 .Build();
+        }
+
+        private static DatabaseProvider ResolveDatabaseProvider(IConfiguration configuration)
+        {
+            var configuredProvider = configuration["Database:Provider"];
+            if (string.IsNullOrWhiteSpace(configuredProvider))
+                return DatabaseProvider.Sqlite;
+
+            if (Enum.TryParse<DatabaseProvider>(configuredProvider, ignoreCase: true, out var provider))
+                return provider;
+
+            throw new ConfigurationErrorsException(ErrorMessages.InvalidDatabaseProvider(configuredProvider));
+        }
+
+        private static string ResolveConnectionString(IConfiguration configuration, DatabaseProvider provider)
+        {
+            var configuredConnectionName = configuration["Database:ConnectionStringName"];
+            string[] candidateNames = string.IsNullOrWhiteSpace(configuredConnectionName)
+                ? provider switch
+                {
+                    DatabaseProvider.Sqlite => ["Sqlite", "DefaultConnection"],
+                    DatabaseProvider.Postgres => ["Postgres", "DefaultConnection"],
+                    _ => ["DefaultConnection"]
+                }
+                : [configuredConnectionName];
+
+            foreach (var name in candidateNames)
+            {
+                var rawConnection = configuration.GetConnectionString(name);
+                if (!string.IsNullOrWhiteSpace(rawConnection))
+                    return ReplaceEnvPlaceholders(rawConnection);
+            }
+
+            throw new ConfigurationErrorsException(ErrorMessages.ConnectionStringNotFoundFor(candidateNames));
         }
     }
 }
