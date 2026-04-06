@@ -1,4 +1,4 @@
-﻿using Birds.Application.DTOs;
+using Birds.Application.DTOs;
 using Birds.UI.Enums;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -28,6 +28,11 @@ namespace Birds.UI.Services.Stores.BirdStore
         /// Updates the store state when a new loading operation begins.
         /// </summary>
         void BeginLoading();
+
+        /// <summary>
+        /// Replaces the current bird collection with a new snapshot in a single collection notification.
+        /// </summary>
+        void ReplaceBirds(IEnumerable<BirdDTO> birds);
 
         /// <summary>
         /// Updates the store state when loading completes successfully.

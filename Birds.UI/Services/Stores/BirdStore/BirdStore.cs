@@ -1,4 +1,4 @@
-﻿using Birds.Application.DTOs;
+using Birds.Application.DTOs;
 using Birds.UI.Enums;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
@@ -14,11 +14,16 @@ namespace Birds.UI.Services.Stores.BirdStore
         [ObservableProperty]
         private LoadState loadState = LoadState.Uninitialized;
 
+        private readonly RangeObservableCollection<BirdDTO> _birds = [];
+
         /// <inheritdoc/>
-        public ObservableCollection<BirdDTO> Birds { get; } = [];
+        public ObservableCollection<BirdDTO> Birds => _birds;
 
         /// <inheritdoc/>
         public void BeginLoading() => LoadState = LoadState.Loading;
+
+        /// <inheritdoc/>
+        public void ReplaceBirds(IEnumerable<BirdDTO> birds) => _birds.ReplaceAll(birds);
 
         /// <inheritdoc/>
         public void CompleteLoading() => LoadState = LoadState.Loaded;

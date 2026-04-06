@@ -129,10 +129,7 @@ namespace Birds.UI.Services.Stores.BirdStore
             // Populate the bird store on the UI thread and mark as loaded
             await InvokeAsync(() =>
             {
-                _birdStore.Birds.Clear();
-                foreach (BirdDTO bird in loadedBirds)
-                    _birdStore.Birds.Add(bird);
-
+                _birdStore.ReplaceBirds(loadedBirds);
                 _notificationService.ShowInfo(
                     loadedBirds.Count == 0
                         ? InfoMessages.NoBirdRecordsYet
