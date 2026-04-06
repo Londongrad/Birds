@@ -1,14 +1,36 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+
 namespace Birds.UI.Services.Notification
 {
-    public sealed class NotificationToast(Guid id, string title, string message, NotificationType type)
+    public partial class NotificationToast : ObservableObject
     {
-        public Guid Id { get; } = id;
+        public NotificationToast(Guid id,
+                                 string title,
+                                 string message,
+                                 NotificationType type,
+                                 DateTimeOffset createdAt,
+                                 bool isRead)
+        {
+            Id = id;
+            Title = title;
+            Message = message;
+            Type = type;
+            CreatedAt = createdAt;
+            IsRead = isRead;
+        }
 
-        public string Title { get; } = title;
+        public Guid Id { get; }
 
-        public string Message { get; } = message;
+        public string Title { get; }
 
-        public NotificationType Type { get; } = type;
+        public string Message { get; }
+
+        public NotificationType Type { get; }
+
+        public DateTimeOffset CreatedAt { get; }
+
+        [ObservableProperty]
+        private bool isRead;
 
         public static NotificationToast Create(string message, NotificationOptions options)
         {
@@ -16,7 +38,9 @@ namespace Birds.UI.Services.Notification
                 Guid.NewGuid(),
                 ResolveTitle(options.Title, options.Type),
                 message,
-                options.Type);
+                options.Type,
+                DateTimeOffset.Now,
+                isRead: false);
         }
 
         public static string ResolveTitle(string? title, NotificationType type)

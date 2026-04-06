@@ -1,17 +1,23 @@
 using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.Threading.Abstractions;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
 
 namespace Birds.UI.Services.Notification
 {
-    public sealed class NotificationManager : INotificationManager
+    public partial class NotificationManager : ObservableObject, INotificationManager
     {
-        private const int MaxVisibleNotifications = 4;
+        private const int MaxHistoryNotifications = 80;
 
         private readonly IUiDispatcher _uiDispatcher;
         private readonly ObservableCollection<NotificationToast> _activeNotifications = [];
         private readonly ReadOnlyObservableCollection<NotificationToast> _activeNotificationsView;
-        private readonly Dictionary<Guid, CancellationTokenSource> _lifetimes = [];
+
+        [ObservableProperty]
+        private int unreadCount;
+
+        [ObservableProperty]
+        private bool hasNotifications;
 
         public NotificationManager(IUiDispatcher uiDispatcher)
         {
@@ -34,84 +40,65 @@ namespace Birds.UI.Services.Notification
             if (notification is null)
                 return;
 
-            _ = RemoveNotificationAsync(notification.Id);
+            _ = _uiDispatcher.InvokeAsync(() => RemoveNotification(notification.Id));
+        }
+
+        public void ClearNotifications()
+        {
+            _ = _uiDispatcher.InvokeAsync(() =>
+            {
+                _activeNotifications.Clear();
+                RefreshCounters();
+            });
+        }
+
+        public void MarkAllAsRead()
+        {
+            _ = _uiDispatcher.InvokeAsync(() =>
+            {
+                foreach (var item in _activeNotifications.Where(x => !x.IsRead))
+                    item.IsRead = true;
+
+                RefreshCounters();
+            });
         }
 
         private async Task ShowInternalAsync(string message, NotificationOptions options)
         {
-            NotificationToast? toast = null;
-            var effectiveTitle = NotificationToast.ResolveTitle(options.Title, options.Type);
-
             await _uiDispatcher.InvokeAsync(() =>
             {
-                var existing = _activeNotifications.LastOrDefault(x =>
+                var title = NotificationToast.ResolveTitle(options.Title, options.Type);
+                var existing = _activeNotifications.FirstOrDefault(x =>
                     x.Type == options.Type
-                    && x.Title == effectiveTitle
+                    && x.Title == title
                     && x.Message == message);
 
                 if (existing is not null)
-                {
-                    CancelLifetime(existing.Id);
                     _activeNotifications.Remove(existing);
-                    _activeNotifications.Add(existing);
-                    toast = existing;
-                    return;
-                }
 
-                while (_activeNotifications.Count >= MaxVisibleNotifications)
-                    RemoveNotificationCore(_activeNotifications[0].Id);
+                _activeNotifications.Insert(0, NotificationToast.Create(message, options));
 
-                toast = NotificationToast.Create(message, options);
-                _activeNotifications.Add(toast);
+                while (_activeNotifications.Count > MaxHistoryNotifications)
+                    _activeNotifications.RemoveAt(_activeNotifications.Count - 1);
+
+                RefreshCounters();
             });
-
-            if (toast is null)
-                return;
-
-            var duration = options.EffectiveDuration;
-            if (duration == Timeout.InfiniteTimeSpan)
-                return;
-
-            var cts = new CancellationTokenSource();
-            RegisterLifetime(toast.Id, cts);
-
-            try
-            {
-                await Task.Delay(duration, cts.Token);
-                await RemoveNotificationAsync(toast.Id);
-            }
-            catch (OperationCanceledException)
-            {
-            }
         }
 
-        private async Task RemoveNotificationAsync(Guid id)
+        private void RemoveNotification(Guid id)
         {
-            await _uiDispatcher.InvokeAsync(() => RemoveNotificationCore(id));
-        }
-
-        private void RemoveNotificationCore(Guid id)
-        {
-            CancelLifetime(id);
-
             var notification = _activeNotifications.FirstOrDefault(x => x.Id == id);
-            if (notification is not null)
-                _activeNotifications.Remove(notification);
-        }
-
-        private void RegisterLifetime(Guid id, CancellationTokenSource cts)
-        {
-            CancelLifetime(id);
-            _lifetimes[id] = cts;
-        }
-
-        private void CancelLifetime(Guid id)
-        {
-            if (!_lifetimes.Remove(id, out var cts))
+            if (notification is null)
                 return;
 
-            cts.Cancel();
-            cts.Dispose();
+            _activeNotifications.Remove(notification);
+            RefreshCounters();
+        }
+
+        private void RefreshCounters()
+        {
+            HasNotifications = _activeNotifications.Count > 0;
+            UnreadCount = _activeNotifications.Count(x => !x.IsRead);
         }
     }
 }

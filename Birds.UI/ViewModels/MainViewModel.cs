@@ -4,6 +4,7 @@ using Birds.UI.Services.Notification.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 
 namespace Birds.UI.ViewModels
@@ -29,6 +30,12 @@ namespace Birds.UI.ViewModels
             if (_navigation is INotifyPropertyChanged navigationNotify)
                 navigationNotify.PropertyChanged += OnNavigationPropertyChanged;
 
+            if (_notificationManager is INotifyPropertyChanged notificationNotify)
+                notificationNotify.PropertyChanged += OnNotificationManagerPropertyChanged;
+
+            if (_notificationManager.ActiveNotifications is INotifyCollectionChanged notificationsChanged)
+                notificationsChanged.CollectionChanged += OnNotificationsCollectionChanged;
+
             _navigation.NavigateTo(addBirdVM);
             UpdateHeader(addBirdVM.GetType());
         }
@@ -36,6 +43,12 @@ namespace Birds.UI.ViewModels
         public INavigationService Navigation => _navigation;
 
         public ReadOnlyObservableCollection<NotificationToast> Notifications => _notificationManager.ActiveNotifications;
+
+        public int UnreadNotificationCount => _notificationManager.UnreadCount;
+
+        public bool HasNotifications => _notificationManager.HasNotifications;
+
+        public bool HasUnreadNotifications => UnreadNotificationCount > 0;
 
         [ObservableProperty]
         private string headerTitle = "Добавление птицы";
@@ -46,6 +59,18 @@ namespace Birds.UI.ViewModels
         [ObservableProperty]
         private bool showContentHeader;
 
+        [ObservableProperty]
+        private bool isNotificationCenterOpen;
+
+        [RelayCommand]
+        private void ToggleNotificationCenter()
+        {
+            IsNotificationCenterOpen = !IsNotificationCenterOpen;
+
+            if (IsNotificationCenterOpen)
+                _notificationManager.MarkAllAsRead();
+        }
+
         [RelayCommand]
         private void DismissNotification(NotificationToast? notification)
         {
@@ -55,12 +80,37 @@ namespace Birds.UI.ViewModels
             _notificationManager.DismissNotification(notification);
         }
 
+        [RelayCommand]
+        private void ClearNotifications()
+        {
+            _notificationManager.ClearNotifications();
+        }
+
         private void OnNavigationPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName != nameof(INavigationService.Current))
                 return;
 
             UpdateHeader(_navigation.Current?.GetType());
+        }
+
+        private void OnNotificationManagerPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName is nameof(INotificationManager.UnreadCount) or nameof(INotificationManager.HasNotifications))
+            {
+                OnPropertyChanged(nameof(UnreadNotificationCount));
+                OnPropertyChanged(nameof(HasUnreadNotifications));
+                OnPropertyChanged(nameof(HasNotifications));
+            }
+        }
+
+        private void OnNotificationsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (IsNotificationCenterOpen)
+                _notificationManager.MarkAllAsRead();
+
+            OnPropertyChanged(nameof(Notifications));
+            OnPropertyChanged(nameof(HasNotifications));
         }
 
         private void UpdateHeader(Type? currentViewModelType)
