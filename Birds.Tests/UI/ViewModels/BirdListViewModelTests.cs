@@ -64,6 +64,25 @@ namespace Birds.Tests.UI.ViewModels
             sut.FilterBirds(secondSparrow).Should().BeFalse();
         }
 
+        [Fact]
+        public void BirdCount_Should_Track_Filtered_View()
+        {
+            var sparrow = CreateBird((BirdsName)1, desc: "forest visitor");
+            var chickadee = CreateBird((BirdsName)6, desc: "city bird");
+            var sut = CreateViewModel(sparrow, chickadee);
+
+            sut.BirdCount.Should().Be(2);
+
+            sut.SelectedFilter = sut.Filters.Single(x => x.Filter == BirdFilter.BySpecies && x.Species == (BirdsName)6);
+            sut.BirdCount.Should().Be(1);
+
+            sut.SearchText = "city";
+            sut.BirdCount.Should().Be(1);
+
+            sut.SearchText = "forest";
+            sut.BirdCount.Should().Be(0);
+        }
+
         private static BirdListViewModel CreateViewModel(params BirdDTO[] birds)
         {
             var store = new BirdStore();
