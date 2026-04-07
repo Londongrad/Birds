@@ -16,6 +16,7 @@
         public const string HandlingRequest = "Handling {RequestType}.";
         public const string HandledRequest = "Handled {RequestType}.";
 
+        public const string LogsDirectoryResolved = "Logs directory resolved to {LogsDirectory}.";
         public const string AppStarting = "\n\n\n\tApplication starting...";
 
         public const string HostStarted = "Host started successfully.";

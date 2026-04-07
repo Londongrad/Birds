@@ -34,6 +34,7 @@ namespace Birds.App
                 // 4) Build the Host (configuration, DI, Serilog from appsettings).
                 _host = BuildHost();
 
+                Log.Information(LogMessages.LogsDirectoryResolved, SerilogSetup.CurrentLogsDirectory);
                 Log.Information(LogMessages.AppStarting);
 
                 // 5) Start the Host (background services etc.).
