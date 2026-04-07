@@ -303,7 +303,7 @@ namespace Birds.Shared.Localization
             ["BirdName.Амадин"] = "Amadin",
             ["BirdName.Дубонос"] = "Hawfinch",
             ["BirdName.Большак"] = "Great tit",
-            ["BirdName.Гайка"] = "Marsh tit",
+            ["BirdName.Гайка"] = "Black-capped chickadee",
             ["BirdName.Поползень"] = "Nuthatch",
             ["BirdName.Unknown"] = "Unknown"
         };
