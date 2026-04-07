@@ -1,6 +1,7 @@
 using Birds.UI.Services.Navigation.Interfaces;
 using Birds.UI.Services.Notification;
 using Birds.UI.Services.Notification.Interfaces;
+using Birds.UI.Services.Preferences.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
@@ -13,25 +14,33 @@ namespace Birds.UI.ViewModels
     {
         private readonly INavigationService _navigation;
         private readonly INotificationManager _notificationManager;
+        private readonly IAppPreferencesService _appPreferences;
 
         public MainViewModel(INavigationService navigation,
                              INotificationManager notificationManager,
+                             IAppPreferencesService appPreferences,
                              BirdListViewModel birdsVM,
                              AddBirdViewModel addBirdVM,
-                             BirdStatisticsViewModel birdStatistics)
+                             BirdStatisticsViewModel birdStatistics,
+                             SettingsViewModel settingsViewModel)
         {
             _navigation = navigation;
             _notificationManager = notificationManager;
+            _appPreferences = appPreferences;
 
             _navigation.AddCreator<BirdListViewModel>(() => birdsVM);
             _navigation.AddCreator<AddBirdViewModel>(() => addBirdVM);
             _navigation.AddCreator<BirdStatisticsViewModel>(() => birdStatistics);
+            _navigation.AddCreator<SettingsViewModel>(() => settingsViewModel);
 
             if (_navigation is INotifyPropertyChanged navigationNotify)
                 navigationNotify.PropertyChanged += OnNavigationPropertyChanged;
 
             if (_notificationManager is INotifyPropertyChanged notificationNotify)
                 notificationNotify.PropertyChanged += OnNotificationManagerPropertyChanged;
+
+            if (_appPreferences is INotifyPropertyChanged preferencesNotify)
+                preferencesNotify.PropertyChanged += OnPreferencesPropertyChanged;
 
             if (_notificationManager.ActiveNotifications is INotifyCollectionChanged notificationsChanged)
                 notificationsChanged.CollectionChanged += OnNotificationsCollectionChanged;
@@ -49,6 +58,8 @@ namespace Birds.UI.ViewModels
         public bool HasNotifications => _notificationManager.HasNotifications;
 
         public bool HasUnreadNotifications => UnreadNotificationCount > 0;
+
+        public bool ShouldShowNotificationBadge => _appPreferences.ShowNotificationBadge && HasUnreadNotifications;
 
         [ObservableProperty]
         private string headerTitle = "Добавление птицы";
@@ -101,7 +112,14 @@ namespace Birds.UI.ViewModels
                 OnPropertyChanged(nameof(UnreadNotificationCount));
                 OnPropertyChanged(nameof(HasUnreadNotifications));
                 OnPropertyChanged(nameof(HasNotifications));
+                OnPropertyChanged(nameof(ShouldShowNotificationBadge));
             }
+        }
+
+        private void OnPreferencesPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(IAppPreferencesService.ShowNotificationBadge))
+                OnPropertyChanged(nameof(ShouldShowNotificationBadge));
         }
 
         private void OnNotificationsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -111,6 +129,7 @@ namespace Birds.UI.ViewModels
 
             OnPropertyChanged(nameof(Notifications));
             OnPropertyChanged(nameof(HasNotifications));
+            OnPropertyChanged(nameof(ShouldShowNotificationBadge));
         }
 
         private void UpdateHeader(Type? currentViewModelType)
@@ -131,6 +150,11 @@ namespace Birds.UI.ViewModels
                     ShowContentHeader = true;
                     HeaderTitle = "Статистика";
                     HeaderSubtitle = "Сводка по видам, датам и ключевым метрикам.";
+                    break;
+                case nameof(SettingsViewModel):
+                    ShowContentHeader = false;
+                    HeaderTitle = "Настройки";
+                    HeaderSubtitle = "Пользовательские предпочтения интерфейса и поведения приложения.";
                     break;
                 default:
                     ShowContentHeader = true;

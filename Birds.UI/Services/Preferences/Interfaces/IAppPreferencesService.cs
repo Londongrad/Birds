@@ -1,0 +1,15 @@
+using System.ComponentModel;
+
+namespace Birds.UI.Services.Preferences.Interfaces
+{
+    public interface IAppPreferencesService : INotifyPropertyChanged
+    {
+        string SelectedLanguage { get; set; }
+
+        bool ShowNotificationBadge { get; set; }
+
+        bool ReduceMotion { get; set; }
+
+        void ResetToDefaults();
+    }
+}

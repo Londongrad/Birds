@@ -6,6 +6,8 @@ using Birds.UI.Services.Navigation;
 using Birds.UI.Services.Navigation.Interfaces;
 using Birds.UI.Services.Notification;
 using Birds.UI.Services.Notification.Interfaces;
+using Birds.UI.Services.Preferences;
+using Birds.UI.Services.Preferences.Interfaces;
 using Birds.UI.Services.Stores.BirdStore;
 using Birds.UI.Threading;
 using Birds.UI.Threading.Abstractions;
@@ -23,6 +25,7 @@ namespace Birds.UI
             services.AddSingleton<AddBirdViewModel>();
             services.AddSingleton<MainViewModel>();
             services.AddSingleton<BirdStatisticsViewModel>();
+            services.AddSingleton<SettingsViewModel>();
 
             // Services
             services.AddSingleton<INavigationService, NavigationService>();
@@ -33,6 +36,8 @@ namespace Birds.UI
             services.AddSingleton<IBirdManager, BirdManager>();
             services.AddSingleton<IUiDispatcher, WpfUiDispatcher>();
             services.AddSingleton<INotificationManager, NotificationManager>();
+            services.AddSingleton<IAppPreferencesPathProvider, LocalAppPreferencesPathProvider>();
+            services.AddSingleton<IAppPreferencesService, JsonAppPreferencesService>();
 
             // Export Services
             services.AddSingleton<IExportService, JsonExportService>();

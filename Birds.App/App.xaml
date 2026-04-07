@@ -71,6 +71,10 @@
             <DataTemplate DataType="{x:Type vm:BirdStatisticsViewModel}">
                 <v:BirdStatisticsView />
             </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+                <v:SettingsView />
+            </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

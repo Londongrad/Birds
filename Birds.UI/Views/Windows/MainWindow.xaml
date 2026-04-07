@@ -94,7 +94,7 @@
                                 <Setter Property="Foreground" Value="#EEF3F8" />
                             </DataTrigger>
                             <DataTrigger
-                                Binding="{Binding DataContext.HasUnreadNotifications, RelativeSource={RelativeSource AncestorType=Window}}"
+                                Binding="{Binding DataContext.ShouldShowNotificationBadge, RelativeSource={RelativeSource AncestorType=Window}}"
                                 Value="True">
                                 <Setter Property="Foreground" Value="#EEF5FD" />
                             </DataTrigger>
@@ -273,7 +273,7 @@
                                 BorderBrush="#0F1318"
                                 BorderThickness="1"
                                 CornerRadius="8"
-                                Visibility="{Binding HasUnreadNotifications, Converter={StaticResource BoolToVisibilityConverter}}">
+                                Visibility="{Binding ShouldShowNotificationBadge, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
@@ -403,6 +403,13 @@
                                 CommandParameter="{x:Type vm:BirdStatisticsViewModel}"
                                 Style="{StaticResource MenuButtonTheme}">
                                 <TextBlock Text="Статистика" />
+                            </RadioButton>
+
+                            <RadioButton
+                                Command="{Binding Path=Navigation.NavigateToTypeCommand, Mode=OneWay}"
+                                CommandParameter="{x:Type vm:SettingsViewModel}"
+                                Style="{StaticResource MenuButtonTheme}">
+                                <TextBlock Text="Настройки" />
                             </RadioButton>
                         </StackPanel>
                     </Grid>
