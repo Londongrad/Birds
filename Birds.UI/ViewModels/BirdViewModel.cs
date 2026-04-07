@@ -1,13 +1,16 @@
-﻿using Birds.Application.Common.Models;
+using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
 using Birds.Application.DTOs.Helpers;
+using Birds.Domain.Extensions;
 using Birds.Shared.Constants;
+using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.ViewModels.Base;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 
 namespace Birds.UI.ViewModels
 {
@@ -20,14 +23,22 @@ namespace Birds.UI.ViewModels
         #region [ Fields ]
 
         private readonly IBirdManager _birdManager;
+        private readonly ILocalizationService _localization;
         private readonly INotificationService _notificationService;
 
         #endregion [ Fields ]
 
-        public BirdViewModel(BirdDTO dto, IBirdManager birdManager, INotificationService notificationService)
+        public BirdViewModel(
+            BirdDTO dto,
+            IBirdManager birdManager,
+            ILocalizationService localization,
+            INotificationService notificationService)
         {
             _birdManager = birdManager;
+            _localization = localization;
             _notificationService = notificationService;
+
+            _localization.LanguageChanged += OnLanguageChanged;
 
             ApplyDto(dto);
         }
@@ -60,6 +71,18 @@ namespace Birds.UI.ViewModels
         private string name = string.Empty;
 
         /// <summary>
+        /// The localized display name of the bird.
+        /// </summary>
+        [ObservableProperty]
+        private string displayName = string.Empty;
+
+        /// <summary>
+        /// A culture-aware arrival date string.
+        /// </summary>
+        [ObservableProperty]
+        private string arrivalDisplay = string.Empty;
+
+        /// <summary>
         /// The departure date of the bird (if it has left the record).
         /// </summary>
         [CustomValidation(typeof(BirdViewModel), nameof(ValidateDeparture))]
@@ -82,7 +105,7 @@ namespace Birds.UI.ViewModels
         /// A textual representation of the departure date (or “to this day” if none).
         /// </summary>
         [ObservableProperty]
-        private string? departureDisplay;
+        private string departureDisplay = string.Empty;
 
         /// <summary>
         /// Determines whether delete confirmation buttons are visible.
@@ -102,6 +125,18 @@ namespace Birds.UI.ViewModels
         [ObservableProperty]
         private DateTime? localUpdatedAt;
 
+        /// <summary>
+        /// Bird's creation date formatted for the current UI culture.
+        /// </summary>
+        [ObservableProperty]
+        private string localCreatedAtDisplay = string.Empty;
+
+        /// <summary>
+        /// Bird's last updated date formatted for the current UI culture.
+        /// </summary>
+        [ObservableProperty]
+        private string localUpdatedAtDisplay = string.Empty;
+
         #endregion [ ObservableProperties ]
 
         #region [ Commands ]
@@ -112,14 +147,14 @@ namespace Birds.UI.ViewModels
         [RelayCommand]
         private async Task DeleteAsync()
         {
-            _notificationService.ShowInfo(InfoMessages.DeletingBird);
+            _notificationService.ShowInfoLocalized("Info.DeletingBird");
 
             Result result = await _birdManager.DeleteAsync(Id, CancellationToken.None);
 
             if (result.IsSuccess)
-                _notificationService.ShowSuccess(InfoMessages.DeletedBird);
+                _notificationService.ShowSuccessLocalized("Info.DeletedBird");
             else
-                _notificationService.ShowError(ErrorMessages.CannotDeleteBird);
+                _notificationService.ShowErrorLocalized("Error.CannotDeleteBird");
 
             IsConfirmingDelete = false;
         }
@@ -148,7 +183,6 @@ namespace Birds.UI.ViewModels
         [RelayCommand]
         private void CancelEdit()
         {
-            // Restore the last persisted state.
             ApplyDto(Dto);
             IsEditing = false;
         }
@@ -156,14 +190,6 @@ namespace Birds.UI.ViewModels
         /// <summary>
         /// Command that validates user input and updates the bird through <see cref="IBirdManager"/>.
         /// </summary>
-        /// <remarks>
-        /// If validation passes, the method sends an update request via <see cref="IBirdManager"/>.
-        /// Upon completion, a success or error notification is displayed to the user using
-        /// <see cref="INotificationService"/>.
-        ///
-        /// After a successful update, calculated fields (e.g. days in stock and departure display)
-        /// are refreshed, and edit mode is turned off.
-        /// </remarks>
         [RelayCommand]
         private async Task SaveAsync()
         {
@@ -177,7 +203,7 @@ namespace Birds.UI.ViewModels
                 return;
             }
 
-            _notificationService.ShowInfo(InfoMessages.UpdatingBird);
+            _notificationService.ShowInfoLocalized("Info.UpdatingBird");
 
             Result<BirdDTO> result = await _birdManager.UpdateAsync(
                 new BirdUpdateDTO(
@@ -191,12 +217,12 @@ namespace Birds.UI.ViewModels
             if (result.IsSuccess)
             {
                 ApplyDto(result.Value);
-                _notificationService.ShowSuccess(InfoMessages.UpdatedBird);
+                _notificationService.ShowSuccessLocalized("Info.UpdatedBird");
             }
             else
             {
                 CancelEdit();
-                _notificationService.ShowError(ErrorMessages.CannotUpdateBird);
+                _notificationService.ShowErrorLocalized("Error.CannotUpdateBird");
             }
 
             IsEditing = false;
@@ -216,13 +242,19 @@ namespace Birds.UI.ViewModels
         #region [ Private helpers ]
 
         /// <summary>
-        /// Updates calculated fields (<see cref="DepartureDisplay"/> and <see cref="DaysInStock"/>).
+        /// Updates calculated fields and all culture-aware display values.
         /// </summary>
         private void UpdateCalculatedFields()
         {
+            var culture = _localization.CurrentCulture;
+
+            DisplayName = ResolveDisplayName();
+            ArrivalDisplay = Arrival.ToString("d", culture);
             DepartureDisplay = Departure.HasValue
-                ? Departure.Value.ToString("dd.MM.yyyy")
-                : InfoMessages.ToThisDay;
+                ? Departure.Value.ToString("d", culture)
+                : _localization.GetString("Info.ToThisDay");
+            LocalCreatedAtDisplay = FormatDateTime(LocalCreatedAt, culture);
+            LocalUpdatedAtDisplay = FormatDateTime(LocalUpdatedAt, culture);
 
             var endDate = Departure?.ToDateTime(TimeOnly.MinValue) ?? DateTime.Now;
             DaysInStock = (int)(endDate - Arrival.ToDateTime(TimeOnly.MinValue)).TotalDays;
@@ -247,6 +279,25 @@ namespace Birds.UI.ViewModels
             UpdateCalculatedFields();
         }
 
+        private string ResolveDisplayName()
+        {
+            if (SelectedBirdName is { } selectedBirdName)
+                return selectedBirdName.ToDisplayName(_localization.CurrentCulture);
+
+            return BirdEnumHelper.ParseBirdName(Name)?.ToDisplayName(_localization.CurrentCulture)
+                ?? Name;
+        }
+
+        private static string FormatDateTime(DateTime? value, CultureInfo culture)
+            => value.HasValue
+                ? value.Value.ToString("g", culture)
+                : "\u2014";
+
+        private void OnLanguageChanged(object? sender, EventArgs e)
+        {
+            UpdateCalculatedFields();
+        }
+
         /// <summary>
         /// Automatically invoked when the departure date changes (partial method generated by the Toolkit).
         /// </summary>
@@ -261,7 +312,6 @@ namespace Birds.UI.ViewModels
         /// </summary>
         protected override void OnArrivalChangedCore(DateOnly value)
         {
-            // When Arrival changes, revalidate Departure since its rule depends on Arrival
             ValidateProperty(Departure, nameof(Departure));
             UpdateCalculatedFields();
         }
@@ -273,6 +323,8 @@ namespace Birds.UI.ViewModels
         {
             if (value is { } selectedBirdName)
                 Name = selectedBirdName.ToString();
+
+            UpdateCalculatedFields();
         }
 
         #endregion [ Private helpers ]
@@ -282,10 +334,6 @@ namespace Birds.UI.ViewModels
         /// <summary>
         /// Validates the departure date.
         /// Allows null, disallows future dates and dates earlier than Arrival.
-        ///
-        /// <para>
-        /// Moved from <see cref="BirdValidationBaseViewModel"/> since it is only required in this ViewModel.
-        /// </para>
         /// </summary>
         public static ValidationResult? ValidateDeparture(object? value, ValidationContext ctx)
         {
@@ -303,7 +351,6 @@ namespace Birds.UI.ViewModels
                 return new ValidationResult(
                     string.Format(ValidationMessages.DateCannotBeInTheFuture, today));
 
-            // Access Arrival via context (BirdViewModel inherits from the base class)
             if (ctx.ObjectInstance is BirdValidationBaseViewModel vm && d < vm.Arrival)
                 return new ValidationResult(
                     string.Format(ValidationMessages.DepartureLaterThenArrival, vm.Arrival));
@@ -313,7 +360,6 @@ namespace Birds.UI.ViewModels
 
         partial void OnIsAliveChanged(bool value)
         {
-            // If the bird is marked as dead — validate the Departure date
             ValidateProperty(Departure, nameof(Departure));
         }
 

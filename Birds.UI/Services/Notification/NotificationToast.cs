@@ -7,17 +7,25 @@ namespace Birds.UI.Services.Notification
     public partial class NotificationToast : ObservableObject
     {
         private readonly string? _customTitle;
+        private readonly string? _message;
+        private readonly string? _messageKey;
+        private readonly object[] _messageArguments;
 
-        public NotificationToast(Guid id,
-                                 string? customTitle,
-                                 string message,
-                                 NotificationType type,
-                                 DateTimeOffset createdAt,
-                                 bool isRead)
+        private NotificationToast(
+            Guid id,
+            string? customTitle,
+            string? message,
+            string? messageKey,
+            object[] messageArguments,
+            NotificationType type,
+            DateTimeOffset createdAt,
+            bool isRead)
         {
             Id = id;
             _customTitle = customTitle;
-            Message = message;
+            _message = message;
+            _messageKey = messageKey;
+            _messageArguments = messageArguments;
             Type = type;
             CreatedAt = createdAt;
             IsRead = isRead;
@@ -29,7 +37,10 @@ namespace Birds.UI.Services.Notification
 
         public string Title => ResolveTitle(_customTitle, Type);
 
-        public string Message { get; }
+        public string Message =>
+            _messageKey is not null
+                ? AppText.Format(LocalizationService.Instance.CurrentCulture, _messageKey, _messageArguments)
+                : _message ?? string.Empty;
 
         public NotificationType Type { get; }
 
@@ -46,10 +57,37 @@ namespace Birds.UI.Services.Notification
                 Guid.NewGuid(),
                 options.Title,
                 message,
+                messageKey: null,
+                messageArguments: Array.Empty<object>(),
                 options.Type,
                 DateTimeOffset.Now,
                 isRead: false);
         }
+
+        public static NotificationToast CreateLocalized(string messageKey, NotificationOptions options, params object[] args)
+        {
+            return new NotificationToast(
+                Guid.NewGuid(),
+                options.Title,
+                message: null,
+                messageKey,
+                args?.ToArray() ?? Array.Empty<object>(),
+                options.Type,
+                DateTimeOffset.Now,
+                isRead: false);
+        }
+
+        public bool Matches(string message, NotificationOptions options)
+            => _messageKey is null
+               && Type == options.Type
+               && Title == ResolveTitle(options.Title, options.Type)
+               && string.Equals(_message, message, StringComparison.Ordinal);
+
+        public bool MatchesLocalized(string messageKey, NotificationOptions options, params object[] args)
+            => string.Equals(_messageKey, messageKey, StringComparison.Ordinal)
+               && Type == options.Type
+               && Title == ResolveTitle(options.Title, options.Type)
+               && _messageArguments.SequenceEqual(args ?? Array.Empty<object>());
 
         public static string ResolveTitle(string? title, NotificationType type)
         {
@@ -77,6 +115,7 @@ namespace Birds.UI.Services.Notification
         private void OnLanguageChanged(object? sender, EventArgs e)
         {
             OnPropertyChanged(nameof(Title));
+            OnPropertyChanged(nameof(Message));
             OnPropertyChanged(nameof(TypeLabel));
         }
     }

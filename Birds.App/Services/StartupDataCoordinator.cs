@@ -38,8 +38,8 @@ namespace Birds.App.Services
                 await _uiDispatcher.InvokeAsync(() =>
                 {
                     _birdStore.FailLoading();
-                    _notificationService.Show(
-                        ErrorMessages.BirdLoadFailed,
+                    _notificationService.ShowLocalized(
+                        "Error.BirdLoadFailed",
                         new NotificationOptions(NotificationType.Error, TimeSpan.FromSeconds(7)));
                 }, CancellationToken.None);
 

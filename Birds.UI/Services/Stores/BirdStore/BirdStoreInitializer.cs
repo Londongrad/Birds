@@ -72,10 +72,10 @@ namespace Birds.UI.Services.Stores.BirdStore
 
                         await uiDispatcher.InvokeAsync(() =>
                         {
-                            notificationService.ShowWarning(string.Format(
-                                InfoMessages.LoadFailed,
+                            notificationService.ShowWarningLocalized(
+                                "Info.LoadFailed",
                                 attempt,
-                                delay.TotalSeconds));
+                                delay.TotalSeconds);
                         }, CancellationToken.None);
                     });
 
@@ -95,7 +95,7 @@ namespace Birds.UI.Services.Stores.BirdStore
             await InvokeAsync(() => 
             {
                 _birdStore.BeginLoading();
-                _notificationService.ShowInfo(InfoMessages.LoadingBirdData);
+                _notificationService.ShowInfoLocalized("Info.LoadingBirdData");
             }, cancellationToken);
 
             // Execute the query through the retry policy
@@ -111,8 +111,8 @@ namespace Birds.UI.Services.Stores.BirdStore
                 {
                     _birdStore.FailLoading(); // mark as failed
 
-                    _notificationService.Show(
-                        ErrorMessages.BirdLoadFailed,
+                    _notificationService.ShowLocalized(
+                        "Error.BirdLoadFailed",
                         new NotificationOptions(NotificationType.Error, TimeSpan.FromSeconds(7)));
                 }, cancellationToken);
 
@@ -130,10 +130,10 @@ namespace Birds.UI.Services.Stores.BirdStore
             await InvokeAsync(() =>
             {
                 _birdStore.ReplaceBirds(loadedBirds);
-                _notificationService.ShowInfo(
-                    loadedBirds.Count == 0
-                        ? InfoMessages.NoBirdRecordsYet
-                        : InfoMessages.LoadedSuccessfully);
+                if (loadedBirds.Count == 0)
+                    _notificationService.ShowInfoLocalized("Info.NoBirdRecordsYet");
+                else
+                    _notificationService.ShowInfoLocalized("Info.LoadedSuccessfully");
                 _birdStore.CompleteLoading(); // mark as successfully loaded
             }, cancellationToken);
 
@@ -152,9 +152,9 @@ namespace Birds.UI.Services.Stores.BirdStore
 
                     await InvokeAsync(() =>
                     {
-                        _notificationService.ShowInfo(string.Format(
-                            InfoMessages.AutoExportSucceeded,
-                            path));
+                        _notificationService.ShowInfoLocalized(
+                            "Info.AutoExportSucceeded",
+                            path);
                     }, CancellationToken.None);
                 }
                 catch (Exception ex) { _logger.LogError(ex, LogMessages.AutoExportFailed); }

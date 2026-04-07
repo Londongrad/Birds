@@ -8,7 +8,7 @@
     xmlns:notify="clr-namespace:Birds.UI.Services.Notification"
     xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
     xmlns:vm="clr-namespace:Birds.UI.ViewModels"
-    Title="Birds"
+    Title="{loc:Loc Key=Main.Header.Default.Title}"
     Width="1360"
     Height="840"
     MinWidth="1080"

@@ -14,6 +14,8 @@ namespace Birds.UI.Services.Notification.Interfaces
 
         void ShowNotification(string message, NotificationOptions options);
 
+        void ShowLocalizedNotification(string messageKey, NotificationOptions options, params object[] args);
+
         void DismissNotification(NotificationToast notification);
 
         void ClearNotifications();

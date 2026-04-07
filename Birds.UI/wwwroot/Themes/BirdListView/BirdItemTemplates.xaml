@@ -38,7 +38,7 @@
                 HorizontalAlignment="Left"
                 FontSize="24"
                 FontWeight="Bold"
-                Text="{Binding Name}"
+                Text="{Binding DisplayName}"
                 TextTrimming="CharacterEllipsis" />
 
             <!-- Description -->
@@ -73,8 +73,7 @@
                     Grid.Column="0"
                     Margin="0,0,8,0"
                     FontSize="20"
-                    Text="{Binding Arrival,
-                                   StringFormat={}{0:dd.MM.yyyy}}" />
+                    Text="{Binding ArrivalDisplay}" />
 
                 <TextBlock
                     Grid.Column="1"

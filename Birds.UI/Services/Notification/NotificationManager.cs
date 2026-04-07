@@ -32,7 +32,25 @@ namespace Birds.UI.Services.Notification
             if (string.IsNullOrWhiteSpace(message))
                 return;
 
-            _ = ShowInternalAsync(message.Trim(), options);
+            var normalizedMessage = message.Trim();
+            _ = ShowInternalAsync(
+                options,
+                toast => toast.Matches(normalizedMessage, options),
+                () => NotificationToast.Create(normalizedMessage, options));
+        }
+
+        public void ShowLocalizedNotification(string messageKey, NotificationOptions options, params object[] args)
+        {
+            if (string.IsNullOrWhiteSpace(messageKey))
+                return;
+
+            var normalizedKey = messageKey.Trim();
+            var normalizedArgs = args?.ToArray() ?? Array.Empty<object>();
+
+            _ = ShowInternalAsync(
+                options,
+                toast => toast.MatchesLocalized(normalizedKey, options, normalizedArgs),
+                () => NotificationToast.CreateLocalized(normalizedKey, options, normalizedArgs));
         }
 
         public void DismissNotification(NotificationToast notification)
@@ -63,23 +81,21 @@ namespace Birds.UI.Services.Notification
             });
         }
 
-        private async Task ShowInternalAsync(string message, NotificationOptions options)
+        private async Task ShowInternalAsync(
+            NotificationOptions options,
+            Func<NotificationToast, bool> matchPredicate,
+            Func<NotificationToast> notificationFactory)
         {
             await _uiDispatcher.InvokeAsync(() =>
             {
                 if (ShouldCoalesce(options))
                 {
-                    var title = NotificationToast.ResolveTitle(options.Title, options.Type);
-                    var existing = _activeNotifications.FirstOrDefault(x =>
-                        x.Type == options.Type
-                        && x.Title == title
-                        && x.Message == message);
-
+                    var existing = _activeNotifications.FirstOrDefault(matchPredicate);
                     if (existing is not null)
                         _activeNotifications.Remove(existing);
                 }
 
-                _activeNotifications.Insert(0, NotificationToast.Create(message, options));
+                _activeNotifications.Insert(0, notificationFactory());
 
                 while (_activeNotifications.Count > MaxHistoryNotifications)
                     _activeNotifications.RemoveAt(_activeNotifications.Count - 1);

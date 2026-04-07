@@ -78,7 +78,7 @@ namespace Birds.UI.ViewModels
             Result<BirdDTO> result;
             SaveCommand.NotifyCanExecuteChanged();
 
-            _notification.ShowInfo(InfoMessages.AddingBird);
+            _notification.ShowInfoLocalized("Info.AddingBird");
 
             var dto = new BirdCreateDTO(
                 SelectedBirdName ?? default,
@@ -100,12 +100,12 @@ namespace Birds.UI.ViewModels
 
             if (result.IsSuccess)
             {
-                _notification.ShowSuccess(InfoMessages.BirdAdded);
+                _notification.ShowSuccessLocalized("Info.BirdAdded");
                 // Reset the description after successful save
                 Description = string.Empty;
             }
             else
-                _notification.ShowError(ErrorMessages.CannotSaveBird);
+                _notification.ShowErrorLocalized("Error.CannotSaveBird");
         }
 
         #endregion [ Commands ]

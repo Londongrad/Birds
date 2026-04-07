@@ -1,46 +1,28 @@
-﻿namespace Birds.UI.Services.Notification.Interfaces
+namespace Birds.UI.Services.Notification.Interfaces
 {
     /// <summary>
-    /// Service for displaying popup notifications (toasts) in the user interface.
-    /// Provides a simple API for showing messages of different types with default parameters,
-    /// as well as a universal <see cref="Show"/> method for custom configuration.
+    /// Service for displaying notifications in the user interface.
     /// </summary>
     public interface INotificationService
     {
-        /// <summary>
-        /// Displays a notification with the specified message and options.
-        /// If <paramref name="options"/> is not provided, default values are used.
-        /// </summary>
-        /// <param name="message">The message text to display.</param>
-        /// <param name="options">Additional notification options (type and duration).</param>
         void Show(string message, NotificationOptions? options = null);
 
-        /// <summary>
-        /// Displays a success notification.
-        /// Uses predefined parameters (green theme, auto-close after 3 seconds).
-        /// </summary>
-        /// <param name="message">The message text to display.</param>
+        void ShowLocalized(string messageKey, NotificationOptions? options = null, params object[] args);
+
         void ShowSuccess(string message);
 
-        /// <summary>
-        /// Displays an error notification.
-        /// Uses predefined parameters (red theme, auto-close after 3 seconds).
-        /// </summary>
-        /// <param name="message">The message text to display.</param>
+        void ShowSuccessLocalized(string messageKey, params object[] args);
+
         void ShowError(string message);
 
-        /// <summary>
-        /// Displays an informational notification.
-        /// Uses predefined parameters (blue theme, auto-close after 3 seconds).
-        /// </summary>
-        /// <param name="message">The message text to display.</param>
+        void ShowErrorLocalized(string messageKey, params object[] args);
+
         void ShowInfo(string message);
 
-        /// <summary>
-        /// Displays a warning notification.
-        /// Uses predefined parameters (orange theme, auto-close after 3 seconds).
-        /// </summary>
-        /// <param name="message">The message text to display.</param>
+        void ShowInfoLocalized(string messageKey, params object[] args);
+
         void ShowWarning(string message);
+
+        void ShowWarningLocalized(string messageKey, params object[] args);
     }
 }

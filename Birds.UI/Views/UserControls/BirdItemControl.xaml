@@ -102,10 +102,10 @@
                 <ToolTipService.ToolTip>
                     <TextBlock>
                         <Run Text="{loc:Loc Key=Bird.CreatedLabel}" />
-                        <Run Text="{Binding LocalCreatedAt, Mode=OneWay, StringFormat={}{0:dd.MM.yyyy HH:mm}}" />
+                        <Run Text="{Binding LocalCreatedAtDisplay, Mode=OneWay}" />
                         <LineBreak />
                         <Run Text="{loc:Loc Key=Bird.UpdatedLabel}" />
-                        <Run Text="{Binding LocalUpdatedAt, Mode=OneWay, StringFormat={}{0:dd.MM.yyyy HH:mm}}" />
+                        <Run Text="{Binding LocalUpdatedAtDisplay, Mode=OneWay}" />
                     </TextBlock>
                 </ToolTipService.ToolTip>
 
