@@ -1,4 +1,6 @@
+using Birds.Shared.Localization;
 using Birds.Tests.Helpers;
+using Birds.UI.Services.Localization;
 using Birds.UI.Services.Notification;
 using FluentAssertions;
 
@@ -23,6 +25,21 @@ namespace Birds.Tests.UI.Services
         }
 
         [Fact]
+        public async Task ShowLocalizedNotification_WhenSameToastRepeated_Should_CoalesceIntoSingleEntry()
+        {
+            var sut = new NotificationManager(new InlineUiDispatcher());
+            var options = new NotificationOptions(NotificationType.Info, Timeout.InfiniteTimeSpan);
+
+            sut.ShowLocalizedNotification("Info.LoadingBirdData", options);
+            sut.ShowLocalizedNotification("Info.LoadingBirdData", options);
+
+            await Task.Delay(10);
+
+            sut.ActiveNotifications.Should().HaveCount(1);
+            sut.UnreadCount.Should().Be(1);
+        }
+
+        [Fact]
         public async Task ShowNotification_WhenSameSuccessRepeated_Should_KeepSeparateEntries()
         {
             var sut = new NotificationManager(new InlineUiDispatcher());
@@ -35,6 +52,38 @@ namespace Birds.Tests.UI.Services
 
             sut.ActiveNotifications.Should().HaveCount(2);
             sut.UnreadCount.Should().Be(2);
+        }
+
+        [Fact]
+        public async Task LocalizedNotification_Should_Update_Message_When_Language_Changes()
+        {
+            var sut = new NotificationManager(new InlineUiDispatcher());
+            var localization = LocalizationService.Instance;
+            var previousLanguage = localization.CurrentLanguage;
+
+            try
+            {
+                localization.ApplyLanguage(AppLanguages.Russian);
+                sut.ShowLocalizedNotification(
+                    "Info.LoadFailed",
+                    new NotificationOptions(NotificationType.Warning, Timeout.InfiniteTimeSpan),
+                    2,
+                    4);
+
+                await Task.Delay(10);
+
+                sut.ActiveNotifications.Should().ContainSingle();
+                sut.ActiveNotifications[0].Message.Should().Be(AppText.Format(localization.CurrentCulture, "Info.LoadFailed", 2, 4));
+
+                localization.ApplyLanguage(AppLanguages.English);
+
+                sut.ActiveNotifications[0].Message.Should().Be(AppText.Format(localization.CurrentCulture, "Info.LoadFailed", 2, 4));
+                sut.ActiveNotifications[0].TypeLabel.Should().Be(AppText.Get("Notification.Type.Warning", localization.CurrentCulture));
+            }
+            finally
+            {
+                localization.ApplyLanguage(previousLanguage);
+            }
         }
 
         [Fact]

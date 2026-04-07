@@ -41,7 +41,7 @@ namespace Birds.Tests.UI.Services
             store.LoadState.Should().Be(LoadState.Loaded);
             store.Birds.Should().HaveCount(2);
             collectionChangedCount.Should().Be(1);
-            notify.Verify(n => n.ShowInfo(It.IsAny<string>()), Times.AtLeast(2)); // Loading..., LoadedSuccessfully
+            notify.Verify(n => n.ShowInfoLocalized(It.IsAny<string>(), It.IsAny<object[]>()), Times.AtLeast(2)); // Loading..., LoadedSuccessfully
         }
 
         [Fact]
@@ -62,7 +62,7 @@ namespace Birds.Tests.UI.Services
             store.Birds.Should().BeEmpty();
 
             mediator.Verify(m => m.Send(It.IsAny<GetAllBirdsQuery>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
-            notify.Verify(n => n.Show(It.IsAny<string>(), It.IsAny<NotificationOptions>()), Times.Once);
+            notify.Verify(n => n.ShowLocalized(It.IsAny<string>(), It.IsAny<NotificationOptions>(), It.IsAny<object[]>()), Times.Once);
         }
 
         [Fact]
@@ -107,8 +107,8 @@ namespace Birds.Tests.UI.Services
             store.Birds.Should().BeEmpty();
 
             mediator.Verify(m => m.Send(It.IsAny<GetAllBirdsQuery>(), It.IsAny<CancellationToken>()), Times.Once);
-            notify.Verify(n => n.ShowInfo(InfoMessages.NoBirdRecordsYet), Times.Once);
-            notify.Verify(n => n.Show(It.IsAny<string>(), It.IsAny<NotificationOptions>()), Times.Never);
+            notify.Verify(n => n.ShowInfoLocalized("Info.NoBirdRecordsYet", It.IsAny<object[]>()), Times.Once);
+            notify.Verify(n => n.ShowLocalized("Error.BirdLoadFailed", It.IsAny<NotificationOptions>(), It.IsAny<object[]>()), Times.Never);
         }
 
         [Fact]

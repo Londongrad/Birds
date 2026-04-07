@@ -71,9 +71,10 @@ namespace Birds.Tests.App.Services
             birdStore.LoadState.Should().Be(LoadState.Failed);
             mediator.VerifyNoOtherCalls();
             notificationService.Verify(
-                x => x.Show(
-                    ErrorMessages.BirdLoadFailed,
-                    It.Is<NotificationOptions>(o => o.Type == NotificationType.Error)),
+                x => x.ShowLocalized(
+                    "Error.BirdLoadFailed",
+                    It.Is<NotificationOptions>(o => o.Type == NotificationType.Error),
+                    It.IsAny<object[]>()),
                 Times.Once);
         }
     }
