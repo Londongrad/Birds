@@ -16,6 +16,7 @@ namespace Birds.Tests.UI.Services
                 var sut = new JsonAppPreferencesService(new TestPreferencesPathProvider(tempDirectory));
 
                 sut.SelectedLanguage.Should().Be(AppPreferencesState.DefaultLanguage);
+                sut.SelectedTheme.Should().Be(AppPreferencesState.DefaultTheme);
                 sut.ShowNotificationBadge.Should().BeTrue();
                 sut.ReduceMotion.Should().BeFalse();
             }
@@ -36,6 +37,7 @@ namespace Birds.Tests.UI.Services
                 var sut = new JsonAppPreferencesService(provider)
                 {
                     SelectedLanguage = "English",
+                    SelectedTheme = "Сталь",
                     ShowNotificationBadge = false,
                     ReduceMotion = true
                 };
@@ -43,6 +45,7 @@ namespace Birds.Tests.UI.Services
                 var reloaded = new JsonAppPreferencesService(provider);
 
                 reloaded.SelectedLanguage.Should().Be("English");
+                reloaded.SelectedTheme.Should().Be("Сталь");
                 reloaded.ShowNotificationBadge.Should().BeFalse();
                 reloaded.ReduceMotion.Should().BeTrue();
             }
