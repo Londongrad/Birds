@@ -10,6 +10,7 @@ using Birds.UI.Views.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Windows.Data;
 
@@ -46,6 +47,9 @@ namespace Birds.UI.ViewModels
                 }
             };
 
+            if (Birds is INotifyCollectionChanged birdsChanged)
+                birdsChanged.CollectionChanged += OnBirdsCollectionChanged;
+
             _localization.LanguageChanged += OnLanguageChanged;
         }
 
@@ -57,6 +61,8 @@ namespace Birds.UI.ViewModels
 
         public bool IsFailed => _birdManager.Store.LoadState == LoadState.Failed;
 
+        public int BirdCount => BirdsView.Cast<object>().Count();
+
         [ObservableProperty]
         private IReadOnlyList<FilterOption> filters = Array.Empty<FilterOption>();
 
@@ -66,11 +72,13 @@ namespace Birds.UI.ViewModels
         partial void OnSelectedFilterChanged(FilterOption value)
         {
             BirdsView.Refresh();
+            OnPropertyChanged(nameof(BirdCount));
         }
 
         partial void OnSearchTextChanged(string? value)
         {
             BirdsView.Refresh();
+            OnPropertyChanged(nameof(BirdCount));
         }
 
         public bool FilterBirds(object obj)
@@ -110,6 +118,7 @@ namespace Birds.UI.ViewModels
                 ?? Filters[0];
 
             BirdsView.Refresh();
+            OnPropertyChanged(nameof(BirdCount));
         }
 
         private static IReadOnlyList<FilterOption> CreateFilters()
@@ -141,6 +150,11 @@ namespace Birds.UI.ViewModels
                 || (bird.Arrival.ToString().Contains(text, StringComparison.CurrentCultureIgnoreCase) == true)
                 || (bird.Departure?.ToString().Contains(text, StringComparison.CurrentCultureIgnoreCase) == true)
                 || (bird.Description?.Contains(text, StringComparison.CurrentCultureIgnoreCase) == true);
+        }
+
+        private void OnBirdsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(BirdCount));
         }
     }
 }

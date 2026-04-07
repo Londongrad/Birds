@@ -292,7 +292,7 @@
                             FontSize="15"
                             FontWeight="SemiBold">
                             <Run Text="{loc:Loc Key=BirdList.CountLabel}" />
-                            <Run Text="{Binding BirdsView.Count}" />
+                            <Run Text="{Binding BirdCount}" />
                         </TextBlock>
                     </Border>
 
