@@ -4,6 +4,7 @@ using Birds.Application.Interfaces;
 using Birds.Domain.Entities;
 using Birds.Domain.Enums;
 using Birds.Domain.Extensions;
+using Birds.Shared.Constants;
 using FluentAssertions;
 using Moq;
 
@@ -67,7 +68,7 @@ namespace Birds.Tests.Application.Commands.CreateBird
             var result = await handler.Handle(null!, default);
 
             result.IsSuccess.Should().BeFalse();
-            result.Error.Should().Be("Request cannot be null.");
+            result.Error.Should().Be(ErrorMessages.RequestCannotBeNull);
         }
     }
 }

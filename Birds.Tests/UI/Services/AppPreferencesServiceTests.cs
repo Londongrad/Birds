@@ -1,5 +1,7 @@
+using Birds.Shared.Localization;
 using Birds.UI.Services.Preferences;
 using Birds.UI.Services.Preferences.Interfaces;
+using Birds.UI.Services.Theming;
 using FluentAssertions;
 
 namespace Birds.Tests.UI.Services
@@ -36,18 +38,47 @@ namespace Birds.Tests.UI.Services
                 var provider = new TestPreferencesPathProvider(tempDirectory);
                 var sut = new JsonAppPreferencesService(provider)
                 {
-                    SelectedLanguage = "English",
-                    SelectedTheme = "Сталь",
+                    SelectedLanguage = AppLanguages.English,
+                    SelectedTheme = ThemeKeys.Steel,
                     ShowNotificationBadge = false,
                     ReduceMotion = true
                 };
 
                 var reloaded = new JsonAppPreferencesService(provider);
 
-                reloaded.SelectedLanguage.Should().Be("English");
-                reloaded.SelectedTheme.Should().Be("Сталь");
+                reloaded.SelectedLanguage.Should().Be(AppLanguages.English);
+                reloaded.SelectedTheme.Should().Be(ThemeKeys.Steel);
                 reloaded.ShowNotificationBadge.Should().BeFalse();
                 reloaded.ReduceMotion.Should().BeTrue();
+            }
+            finally
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        [Fact]
+        public void Constructor_WhenLegacyRussianThemeIsPersisted_Should_NormalizeToStableThemeCode()
+        {
+            var tempDirectory = CreateTempDirectory();
+
+            try
+            {
+                var provider = new TestPreferencesPathProvider(tempDirectory);
+                File.WriteAllText(
+                    provider.GetPreferencesPath(),
+                    """
+                    {
+                      "selectedLanguage": "ru-RU",
+                      "selectedTheme": "Сталь",
+                      "showNotificationBadge": true,
+                      "reduceMotion": false
+                    }
+                    """);
+
+                var sut = new JsonAppPreferencesService(provider);
+
+                sut.SelectedTheme.Should().Be(ThemeKeys.Steel);
             }
             finally
             {

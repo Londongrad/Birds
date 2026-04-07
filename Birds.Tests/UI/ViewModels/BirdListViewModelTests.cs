@@ -3,6 +3,7 @@ using Birds.Domain.Enums;
 using Birds.Domain.Extensions;
 using Birds.Tests.UI.Services;
 using Birds.UI.Enums;
+using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Stores.BirdStore;
 using Birds.UI.ViewModels;
@@ -73,8 +74,9 @@ namespace Birds.Tests.UI.ViewModels
 
             var manager = new Mock<IBirdManager>();
             manager.SetupGet(x => x.Store).Returns(store);
+            var localization = new Mock<ILocalizationService>();
 
-            return new BirdListViewModel(manager.Object);
+            return new BirdListViewModel(manager.Object, localization.Object);
         }
 
         private static BirdDTO CreateBird(BirdsName species, string? desc = null) =>
