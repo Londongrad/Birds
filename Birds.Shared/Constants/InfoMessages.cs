@@ -1,28 +1,30 @@
-﻿namespace Birds.Shared.Constants
+using Birds.Shared.Localization;
+
+namespace Birds.Shared.Constants
 {
     public static class InfoMessages
     {
-        public const string LoadingBirdData = "Loading bird data...";
+        public static string LoadingBirdData => AppText.Get("Info.LoadingBirdData");
 
-        public const string LoadedSuccessfully = "Bird data loaded successfully.";
-        public const string NoBirdRecordsYet = "No bird records yet. Add your first bird to get started.";
+        public static string LoadedSuccessfully => AppText.Get("Info.LoadedSuccessfully");
+        public static string NoBirdRecordsYet => AppText.Get("Info.NoBirdRecordsYet");
 
-        public const string ReloadingBirdData = "Reloading bird data...";
+        public static string ReloadingBirdData => AppText.Get("Info.ReloadingBirdData");
 
-        public const string AddingBird = "Adding bird...";
+        public static string AddingBird => AppText.Get("Info.AddingBird");
 
-        public const string UpdatingBird = "Updating bird...";
-        public const string UpdatedBird = "Bird updated successfully!";
+        public static string UpdatingBird => AppText.Get("Info.UpdatingBird");
+        public static string UpdatedBird => AppText.Get("Info.UpdatedBird");
 
-        public const string DeletingBird = "Deleting bird...";
-        public const string DeletedBird = "Bird deleted successfully!";
+        public static string DeletingBird => AppText.Get("Info.DeletingBird");
+        public static string DeletedBird => AppText.Get("Info.DeletedBird");
 
-        public const string BirdAdded = "Bird added successfully!";
+        public static string BirdAdded => AppText.Get("Info.BirdAdded");
 
-        public const string ToThisDay = "to this day";
+        public static string ToThisDay => AppText.Get("Info.ToThisDay");
 
-        public const string LoadFailed = "Attempt {0} to load birds failed. Retrying in {1}s.";
+        public static string LoadFailed => AppText.Get("Info.LoadFailed");
 
-        public const string AutoExportSucceeded = "Auto-export succeeded. Path: {0}";
+        public static string AutoExportSucceeded => AppText.Get("Info.AutoExportSucceeded");
     }
 }

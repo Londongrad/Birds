@@ -6,6 +6,8 @@ using Birds.UI.Services.Navigation;
 using Birds.UI.Services.Navigation.Interfaces;
 using Birds.UI.Services.Notification;
 using Birds.UI.Services.Notification.Interfaces;
+using Birds.UI.Services.Localization;
+using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Preferences;
 using Birds.UI.Services.Preferences.Interfaces;
 using Birds.UI.Services.Stores.BirdStore;
@@ -38,6 +40,7 @@ namespace Birds.UI
             services.AddSingleton<IBirdManager, BirdManager>();
             services.AddSingleton<IUiDispatcher, WpfUiDispatcher>();
             services.AddSingleton<INotificationManager, NotificationManager>();
+            services.AddSingleton<ILocalizationService>(_ => LocalizationService.Instance);
             services.AddSingleton<IAppPreferencesPathProvider, LocalAppPreferencesPathProvider>();
             services.AddSingleton<IAppPreferencesService, JsonAppPreferencesService>();
             services.AddSingleton<IThemeService, ThemeService>();

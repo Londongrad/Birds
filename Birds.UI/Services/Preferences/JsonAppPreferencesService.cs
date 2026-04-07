@@ -1,4 +1,6 @@
+using Birds.Shared.Localization;
 using Birds.UI.Services.Preferences.Interfaces;
+using Birds.UI.Services.Theming;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.IO;
 using System.Text.Json;
@@ -9,6 +11,7 @@ namespace Birds.UI.Services.Preferences
     {
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
+            PropertyNameCaseInsensitive = true,
             WriteIndented = true
         };
 
@@ -31,8 +34,8 @@ namespace Birds.UI.Services.Preferences
             _pathProvider = pathProvider;
 
             var state = LoadState();
-            selectedLanguage = state.SelectedLanguage;
-            selectedTheme = state.SelectedTheme;
+            selectedLanguage = AppLanguages.Normalize(state.SelectedLanguage);
+            selectedTheme = ThemeKeys.Normalize(state.SelectedTheme);
             showNotificationBadge = state.ShowNotificationBadge;
             reduceMotion = state.ReduceMotion;
         }
@@ -47,7 +50,11 @@ namespace Birds.UI.Services.Preferences
 
         partial void OnSelectedLanguageChanged(string value) => SaveState();
 
-        partial void OnSelectedThemeChanged(string value) => SaveState();
+        partial void OnSelectedThemeChanged(string value)
+        {
+            selectedTheme = ThemeKeys.Normalize(value);
+            SaveState();
+        }
 
         partial void OnShowNotificationBadgeChanged(bool value) => SaveState();
 
@@ -62,7 +69,7 @@ namespace Birds.UI.Services.Preferences
                     return new AppPreferencesState();
 
                 var json = File.ReadAllText(path);
-                return JsonSerializer.Deserialize<AppPreferencesState>(json) ?? new AppPreferencesState();
+                return JsonSerializer.Deserialize<AppPreferencesState>(json, JsonOptions) ?? new AppPreferencesState();
             }
             catch
             {
@@ -84,7 +91,7 @@ namespace Birds.UI.Services.Preferences
                     new AppPreferencesState
                     {
                         SelectedLanguage = SelectedLanguage,
-                        SelectedTheme = SelectedTheme,
+                        SelectedTheme = ThemeKeys.Normalize(SelectedTheme),
                         ShowNotificationBadge = ShowNotificationBadge,
                         ReduceMotion = ReduceMotion
                     },

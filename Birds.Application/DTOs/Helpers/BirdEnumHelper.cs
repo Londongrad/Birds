@@ -1,4 +1,7 @@
-﻿using Birds.Domain.Enums;
+using Birds.Domain.Enums;
+using Birds.Domain.Extensions;
+using Birds.Shared.Localization;
+using System.Globalization;
 
 namespace Birds.Application.DTOs.Helpers
 {
@@ -26,7 +29,19 @@ namespace Birds.Application.DTOs.Helpers
             if (string.IsNullOrWhiteSpace(name))
                 return null;
 
-            return Enum.TryParse<BirdsName>(name, out var result) ? result : null;
+            if (Enum.TryParse<BirdsName>(name, out var result))
+                return result;
+
+            foreach (var bird in Enum.GetValues<BirdsName>())
+            {
+                if (string.Equals(name, bird.ToDisplayName(CultureInfo.GetCultureInfo(AppLanguages.Russian)), StringComparison.CurrentCultureIgnoreCase)
+                    || string.Equals(name, bird.ToDisplayName(CultureInfo.GetCultureInfo(AppLanguages.English)), StringComparison.CurrentCultureIgnoreCase))
+                {
+                    return bird;
+                }
+            }
+
+            return null;
         }
     }
 }

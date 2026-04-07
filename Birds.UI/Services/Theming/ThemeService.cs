@@ -11,13 +11,13 @@ namespace Birds.UI.Services.Theming
 
         private static readonly IReadOnlyDictionary<string, string> ThemeSources = new Dictionary<string, string>
         {
-            [AppPreferencesState.DefaultTheme] = $"{PalettePrefix}GraphiteTheme.xaml",
-            ["Сталь"] = $"{PalettePrefix}SteelTheme.xaml"
+            [ThemeKeys.Graphite] = $"{PalettePrefix}GraphiteTheme.xaml",
+            [ThemeKeys.Steel] = $"{PalettePrefix}SteelTheme.xaml"
         };
 
         public ThemeService()
         {
-            AvailableThemes = new ReadOnlyCollection<string>(ThemeSources.Keys.ToList());
+            AvailableThemes = new ReadOnlyCollection<string>(ThemeKeys.SupportedThemes.ToList());
         }
 
         public ReadOnlyCollection<string> AvailableThemes { get; }
@@ -26,6 +26,8 @@ namespace Birds.UI.Services.Theming
         {
             if (System.Windows.Application.Current is null)
                 return;
+
+            themeName = ThemeKeys.Normalize(themeName);
 
             if (!ThemeSources.TryGetValue(themeName, out var source))
                 source = ThemeSources[AppPreferencesState.DefaultTheme];

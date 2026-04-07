@@ -1,4 +1,5 @@
-﻿using Birds.Shared.Constants;
+using Birds.Shared.Constants;
+using Birds.UI.Services.Localization;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using System.Windows;
@@ -19,8 +20,9 @@ namespace Birds.App
                 return;
             }
 
-            // 2) Bootstrap logger 
+            // 2) Bootstrap logger.
             SerilogSetup.InitBootstrapLogger();
+            LocalizationService.Instance.LoadSavedLanguage();
 
             base.OnStartup(e);
 

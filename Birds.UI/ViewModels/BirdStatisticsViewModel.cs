@@ -1,5 +1,9 @@
-﻿using Birds.Application.DTOs;
+using Birds.Application.DTOs;
+using Birds.Application.DTOs.Helpers;
+using Birds.Domain.Extensions;
+using Birds.Shared.Localization;
 using Birds.UI.Enums;
+using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Stores.BirdStore;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -9,14 +13,10 @@ using System.Globalization;
 
 namespace Birds.UI.ViewModels
 {
-    /// <summary>UI-friendly statistic item.</summary>
     public record StatItem(string Label, int Count);
 
     public partial class BirdStatisticsViewModel : ObservableObject
     {
-        #region [ Observable Properties ]
-
-        // Top metric cards (recomputed with filter applied)
         [ObservableProperty] private int totalBirds;
         [ObservableProperty] private int releasedCount;
         [ObservableProperty] private int killCount;
@@ -26,56 +26,37 @@ namespace Birds.UI.ViewModels
         [ObservableProperty] private string? topDay;
         [ObservableProperty] private string? longestBreak;
 
-        // Filter state
         [ObservableProperty] private int? selectedYear;
         [ObservableProperty] private IReadOnlyCollection<int> availableYears = Array.Empty<int>();
 
-        #endregion [ Observable Properties ]
-
-        #region [ Properties ]
-
-        // Shared UI collection
         public ObservableCollection<BirdDTO> Birds { get; }
-
-        // UI lists
         public ObservableCollection<StatItem> SpeciesStats { get; } = new();
         public ObservableCollection<StatItem> YearStats { get; } = new();
         public ObservableCollection<StatItem> MonthStats { get; } = new();
         public ObservableCollection<StatItem> LongestKeepingStats { get; } = new();
 
-        /// </summary>
-        /// <summary>Data loading indicator from BirdStore.</summary>
         public bool IsLoading => _birdStore.LoadState == LoadState.Loading;
 
-        #endregion [ Properties ]
-
-        #region [ Fields ]
-
         private readonly IBirdStore _birdStore;
-        private static readonly CultureInfo Ru = CultureInfo.GetCultureInfo("ru-RU");
+        private readonly ILocalizationService _localization;
 
-        #endregion [ Fields ]
-
-        public BirdStatisticsViewModel(IBirdStore birdStore)
+        public BirdStatisticsViewModel(IBirdStore birdStore, ILocalizationService localization)
         {
             _birdStore = birdStore;
+            _localization = localization;
             Birds = birdStore.Birds;
 
-            // React on collection changes
             Birds.CollectionChanged += OnBirdsChanged;
-
-            // Initial fill
             Recalculate();
 
-            // Subscribe to store property changes to update the UI when IsLoading changes.
             _birdStore.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(_birdStore.LoadState))
                     OnPropertyChanged(nameof(IsLoading));
             };
-        }
 
-        #region [ Events ]
+            _localization.LanguageChanged += (_, _) => Recalculate();
+        }
 
         private void OnBirdsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
@@ -84,44 +65,20 @@ namespace Birds.UI.ViewModels
 
         partial void OnSelectedYearChanged(int? value) => Recalculate();
 
-        #endregion [ Events ]
-
-        #region [ Commands ]
-
         [RelayCommand] private void ClearYearFilter() => SelectedYear = null;
-
-        #endregion [ Commands ]
-
-        #region [ Methods ]
 
         private void Recalculate()
         {
-            // 1) Data filtering
             var filteredBirds = FilterBirdsByYear();
-
-            // 2) Calculation of main counts
             CalculateCounts(filteredBirds);
-
-            // 3) Grouping by species
             UpdateSpeciesStats(filteredBirds);
-
-            // 4) Grouping by years
             UpdateYearStats();
-
-            // 5) Grouping by months
             UpdateMonthStats(filteredBirds);
-
-            // 6) List of available years
             UpdateAvailableYears();
-
-            // 7) Additional metrics
             CalculateAdditionalMetrics(filteredBirds);
-
-            // 8) The most prolonged keeping by species
             CalculateLongestKeeping(filteredBirds);
         }
 
-        /// <summary> Data filtering </summary>
         private IList<BirdDTO> FilterBirdsByYear()
         {
             IEnumerable<BirdDTO> q = Birds;
@@ -132,7 +89,6 @@ namespace Birds.UI.ViewModels
             return q as IList<BirdDTO> ?? q.ToList();
         }
 
-        /// <summary> Calculation of main counts </summary>
         private void CalculateCounts(IList<BirdDTO> filteredBirds)
         {
             int total = 0, released = 0, killed = 0;
@@ -141,9 +97,9 @@ namespace Birds.UI.ViewModels
             {
                 total++;
 
-                if (b.Departure != null && b.IsAlive is true)
+                if (b.Departure != null && b.IsAlive)
                     released++;
-                else if (b.IsAlive is false)
+                else if (!b.IsAlive)
                     killed++;
             }
 
@@ -152,17 +108,16 @@ namespace Birds.UI.ViewModels
             KillCount = killed;
         }
 
-        /// <summary> Grouping by species </summary>
         private void UpdateSpeciesStats(IList<BirdDTO> filteredBirds)
         {
-            var byName = filteredBirds.ToLookup(b => b.Name);
+            var byName = filteredBirds
+                .GroupBy(b => BirdEnumHelper.ParseBirdName(b.Name)?.ToDisplayName() ?? b.Name);
 
             SpeciesStats.Clear();
             foreach (var group in byName.OrderByDescending(g => g.Count()))
                 SpeciesStats.Add(new StatItem(group.Key, group.Count()));
         }
 
-        /// <summary> Grouping by years </summary>
         private void UpdateYearStats()
         {
             YearStats.Clear();
@@ -170,7 +125,6 @@ namespace Birds.UI.ViewModels
                 YearStats.Add(new StatItem(g.Key.ToString(), g.Count()));
         }
 
-        /// <summary> Grouping by months </summary>
         private void UpdateMonthStats(IList<BirdDTO> filteredBirds)
         {
             MonthStats.Clear();
@@ -180,18 +134,16 @@ namespace Birds.UI.ViewModels
                 .ThenByDescending(g => g.Key.Month))
             {
                 var firstOfMonth = new DateOnly(g.Key.Year, g.Key.Month, 1);
-                var label = firstOfMonth.ToString("MMM yyyy", Ru);
+                var label = firstOfMonth.ToString("MMM yyyy", CultureInfo.CurrentCulture);
                 MonthStats.Add(new StatItem(label, g.Count()));
             }
         }
 
-        /// <summary> List of available years </summary>
         private void UpdateAvailableYears()
         {
             AvailableYears = new SortedSet<int>(Birds.Select(b => b.Arrival.Year));
         }
 
-        /// <summary> Additional metrics (week, day, break) </summary>
         private void CalculateAdditionalMetrics(IList<BirdDTO> filteredBirds)
         {
             if (filteredBirds.Count == 0)
@@ -200,7 +152,8 @@ namespace Birds.UI.ViewModels
                 return;
             }
 
-            // The most productive month
+            var culture = CultureInfo.CurrentCulture;
+
             var topMonthGroup = filteredBirds
                 .GroupBy(b => new { b.Arrival.Year, b.Arrival.Month })
                 .OrderByDescending(g => g.Count())
@@ -209,15 +162,14 @@ namespace Birds.UI.ViewModels
             if (topMonthGroup is not null)
             {
                 var firstOfMonth = new DateOnly(topMonthGroup.Key.Year, topMonthGroup.Key.Month, 1);
-                var label = firstOfMonth.ToString("MMMM yyyy", Ru);
-                TopMonth = $"{label} — {topMonthGroup.Count()} птиц";
+                var label = firstOfMonth.ToString("MMMM yyyy", culture);
+                TopMonth = $"{label} — {AppText.Format("Statistics.CountBirds", topMonthGroup.Count())}";
             }
             else
             {
                 TopMonth = "—";
             }
 
-            // The most productive week
             var topWeekGroup = filteredBirds
                 .GroupBy(b =>
                 {
@@ -236,28 +188,25 @@ namespace Birds.UI.ViewModels
                 int year = topWeekGroup.Key.Year;
                 int week = topWeekGroup.Key.Week;
                 string range = FormatIsoWeekRange(year, week);
-                TopWeek = $"{range} — {topWeekGroup.Count()} птиц";
+                TopWeek = $"{range} — {AppText.Format("Statistics.CountBirds", topWeekGroup.Count())}";
             }
             else
             {
                 TopWeek = "—";
             }
 
-            // The most productive day
             var topDayGroup = filteredBirds
                 .GroupBy(b => b.Arrival)
                 .OrderByDescending(g => g.Count())
                 .FirstOrDefault();
 
             TopDay = topDayGroup != null
-                ? $"{topDayGroup.Key:dd MMMM yyyy} — {topDayGroup.Count()} птиц"
+                ? $"{topDayGroup.Key.ToString("dd MMMM yyyy", culture)} — {AppText.Format("Statistics.CountBirds", topDayGroup.Count())}"
                 : "—";
 
-            // The most prolong break
             CalculateLongestBreak(filteredBirds);
         }
 
-        /// <summary> Submethod for calculating the most prolong break </summary>
         private void CalculateLongestBreak(IList<BirdDTO> filteredBirds)
         {
             var orderedDates = filteredBirds
@@ -288,14 +237,19 @@ namespace Birds.UI.ViewModels
                 }
             }
 
-            LongestBreak = $"{maxGap.TotalDays - 1} дней без поимок (между {start:dd.MM.yyyy} и {end:dd.MM.yyyy})";
+            var culture = CultureInfo.CurrentCulture;
+            LongestBreak = AppText.Format(
+                culture,
+                "Statistics.LongestBreakValue",
+                maxGap.TotalDays - 1,
+                start?.ToString("d", culture) ?? "—",
+                end?.ToString("d", culture) ?? "—");
         }
 
-        /// <summary> The most prolonged keeping by species </summary>
         private void CalculateLongestKeeping(IList<BirdDTO> filteredBirds)
         {
             var today = DateOnly.FromDateTime(DateTime.Today);
-            var byName = filteredBirds.ToLookup(b => b.Name);
+            var byName = filteredBirds.GroupBy(b => BirdEnumHelper.ParseBirdName(b.Name)?.ToDisplayName() ?? b.Name);
 
             LongestKeepingStats.Clear();
 
@@ -314,23 +268,19 @@ namespace Birds.UI.ViewModels
             }
         }
 
-        /// <summary>
-        /// ISO week range formatting helper
-        /// </summary>
         private static string FormatIsoWeekRange(int isoYear, int isoWeek)
         {
             var start = ISOWeek.ToDateTime(isoYear, isoWeek, DayOfWeek.Monday);
             var end = ISOWeek.ToDateTime(isoYear, isoWeek, DayOfWeek.Sunday);
+            var culture = CultureInfo.CurrentCulture;
 
             if (start.Year != end.Year)
-                return $"{start:dd MMM yyyy}—{end:dd MMM yyyy}";
+                return $"{start.ToString("dd MMM yyyy", culture)}—{end.ToString("dd MMM yyyy", culture)}";
 
             if (start.Month != end.Month)
-                return $"{start:dd MMM}-{end:dd MMM yyyy}";
+                return $"{start.ToString("dd MMM", culture)}-{end.ToString("dd MMM yyyy", culture)}";
 
-            return $"{start:dd}-{end:dd} {start.ToString("MMMM yyyy", Ru)}";
+            return $"{start:dd}-{end:dd} {start.ToString("MMMM yyyy", culture)}";
         }
-
-        #endregion [ Methods ]
     }
 }

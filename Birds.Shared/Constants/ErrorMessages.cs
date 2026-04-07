@@ -1,38 +1,43 @@
-﻿namespace Birds.Shared.Constants
+using Birds.Shared.Localization;
+
+namespace Birds.Shared.Constants
 {
     public static class ErrorMessages
     {
-        public const string BirdLoadFailed = "Failed to load bird data from the database. " +
-            "\nPlease check your connection or restart the application.";
+        public static string BirdLoadFailed => AppText.Get("Error.BirdLoadFailed");
 
-        public const string UnknownError = "Unknown error.";
-        public const string UnexpectedError = "Unexpected error.";
+        public static string UnknownError => AppText.Get("Error.UnknownError");
+        public static string UnexpectedError => AppText.Get("Error.UnexpectedError");
 
-        public const string CannotSaveBird = "Unable to save bird!";
-        public const string CannotDeleteBird = "Unable to delete bird!";
-        public const string CannotUpdateBird = "Unable to update bird!";
+        public static string CannotSaveBird => AppText.Get("Error.CannotSaveBird");
+        public static string CannotDeleteBird => AppText.Get("Error.CannotDeleteBird");
+        public static string CannotUpdateBird => AppText.Get("Error.CannotUpdateBird");
 
-        public const string RequestCannotBeNull = "Request cannot be null.";
-        public const string QueryCannotBeNull = "Query cannot be null.";
+        public static string RequestCannotBeNull => AppText.Get("Error.RequestCannotBeNull");
+        public static string QueryCannotBeNull => AppText.Get("Error.QueryCannotBeNull");
 
-        public const string ConnectionStringNotFound = "Database connection string not found.";
+        public static string ConnectionStringNotFound => AppText.Get("Error.ConnectionStringNotFound");
+
         public static string ConnectionStringNotFoundFor(params string[] names)
-            => $"Database connection string not found. Expected one of: {string.Join(", ", names)}.";
+            => AppText.Format("Error.ConnectionStringNotFoundFor", string.Join(", ", names));
 
         public static string InvalidDatabaseProvider(string provider)
-            => $"Unsupported database provider '{provider}'. Use 'Sqlite' or 'Postgres'.";
+            => AppText.Format("Error.InvalidDatabaseProvider", provider);
 
         public static string InvalidDatabaseSeedingMode(string mode)
-            => $"Unsupported database seeding mode '{mode}'. Use 'None', 'SeedIfEmpty' or 'RecreateAndSeed'.";
+            => AppText.Format("Error.InvalidDatabaseSeedingMode", mode);
 
-        public const string FailedToDisplayErrorNotification = "Failed to display error notification";
+        public static string FailedToDisplayErrorNotification
+            => AppText.Get("Error.FailedToDisplayErrorNotification");
 
-        public const string StartupErrorTitle = "Startup error";
+        public static string StartupErrorTitle => AppText.Get("Error.StartupErrorTitle");
+
         public static string StartupError(string message)
-            => $"An error occurred during application startup: \n{message}";
+            => AppText.Format("Error.StartupError", message);
 
-        public const string ShotdownWarningTitle = "Shutdown Warning";
+        public static string ShotdownWarningTitle => AppText.Get("Error.ShutdownWarningTitle");
+
         public static string ShotdownError(string message)
-            => $"Error during application shutdown:\n{message}";
+            => AppText.Format("Error.ShutdownError", message);
     }
 }

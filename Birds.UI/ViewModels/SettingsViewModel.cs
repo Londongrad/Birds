@@ -1,5 +1,10 @@
+using Birds.Shared.Localization;
+using Birds.UI.Services.Localization;
+using Birds.UI.Services.Localization.Interfaces;
+using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Preferences;
 using Birds.UI.Services.Preferences.Interfaces;
+using Birds.UI.Services.Theming;
 using Birds.UI.Services.Theming.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -13,23 +18,44 @@ namespace Birds.UI.ViewModels
     {
         private readonly IAppPreferencesService _preferences;
         private readonly IThemeService _themeService;
+        private readonly ILocalizationService _localization;
+        private readonly IBirdManager _birdManager;
+
+        private ReadOnlyCollection<LanguageOption> _availableLanguages =
+            new(new List<LanguageOption>());
+
+        private ReadOnlyCollection<ThemeOption> _availableThemes =
+            new(new List<ThemeOption>());
 
         public SettingsViewModel(IAppPreferencesService preferences,
-                                 IThemeService themeService)
+                                 IThemeService themeService,
+                                 ILocalizationService localization,
+                                 IBirdManager birdManager)
         {
             _preferences = preferences;
             _themeService = themeService;
-            AvailableLanguages = new ReadOnlyCollection<string>(
-                new List<string> { "Русский", "English" });
-            AvailableThemes = _themeService.AvailableThemes;
+            _localization = localization;
+            _birdManager = birdManager;
 
+            BuildAvailableLanguages();
+            BuildAvailableThemes();
             ReloadFromPreferences();
+
             _preferences.PropertyChanged += OnPreferencesChanged;
+            _localization.LanguageChanged += OnLanguageChanged;
         }
 
-        public ReadOnlyCollection<string> AvailableLanguages { get; }
+        public ReadOnlyCollection<LanguageOption> AvailableLanguages
+        {
+            get => _availableLanguages;
+            private set => SetProperty(ref _availableLanguages, value);
+        }
 
-        public ReadOnlyCollection<string> AvailableThemes { get; }
+        public ReadOnlyCollection<ThemeOption> AvailableThemes
+        {
+            get => _availableThemes;
+            private set => SetProperty(ref _availableThemes, value);
+        }
 
         [ObservableProperty]
         private string selectedLanguage = AppPreferencesState.DefaultLanguage;
@@ -44,24 +70,24 @@ namespace Birds.UI.ViewModels
         private bool reduceMotion;
 
         public string LanguageHint =>
-            SelectedLanguage == "Русский"
-                ? "Пока язык сохраняется как предпочтение и готовит основу под будущую локализацию."
-                : "Выбор языка уже сохраняется, а полноценный перевод интерфейса можно будет подключить позже.";
+            SelectedLanguage == AppLanguages.Russian
+                ? AppText.Get("Settings.LanguageHint.Russian")
+                : AppText.Get("Settings.LanguageHint.English");
 
         public string ThemeHint =>
-            SelectedTheme == AppPreferencesState.DefaultTheme
-                ? "Строгая графитовая палитра с нейтральным акцентом."
-                : "Более холодная стальная палитра с мягким синим оттенком.";
+            SelectedTheme == ThemeKeys.Graphite
+                ? AppText.Get("Settings.ThemeHint.Graphite")
+                : AppText.Get("Settings.ThemeHint.Steel");
 
         public string NotificationsHint =>
             ShowNotificationBadge
-                ? "Индикатор новых уведомлений будет показываться рядом с кнопкой центра уведомлений."
-                : "Красный индикатор скрыт, но сама история уведомлений остаётся доступной.";
+                ? AppText.Get("Settings.NotificationsHint.Enabled")
+                : AppText.Get("Settings.NotificationsHint.Disabled");
 
         public string MotionHint =>
             ReduceMotion
-                ? "Сдержанный режим анимации сохранён как предпочтение и готов для будущих экранов."
-                : "Сейчас приложение использует стандартные мягкие анимации интерфейса.";
+                ? AppText.Get("Settings.MotionHint.Enabled")
+                : AppText.Get("Settings.MotionHint.Disabled");
 
         [RelayCommand]
         private void ResetPreferences()
@@ -72,18 +98,23 @@ namespace Birds.UI.ViewModels
 
         partial void OnSelectedLanguageChanged(string value)
         {
-            if (_preferences.SelectedLanguage != value)
-                _preferences.SelectedLanguage = value;
+            var normalized = AppLanguages.Normalize(value);
+            if (_preferences.SelectedLanguage != normalized)
+                _preferences.SelectedLanguage = normalized;
+
+            if (_localization.ApplyLanguage(normalized))
+                _ = _birdManager.ReloadAsync(CancellationToken.None);
 
             OnPropertyChanged(nameof(LanguageHint));
         }
 
         partial void OnSelectedThemeChanged(string value)
         {
-            if (_preferences.SelectedTheme != value)
-                _preferences.SelectedTheme = value;
+            var normalized = ThemeKeys.Normalize(value);
+            if (_preferences.SelectedTheme != normalized)
+                _preferences.SelectedTheme = normalized;
 
-            _themeService.ApplyTheme(value);
+            _themeService.ApplyTheme(normalized);
             OnPropertyChanged(nameof(ThemeHint));
         }
 
@@ -114,10 +145,38 @@ namespace Birds.UI.ViewModels
             }
         }
 
+        private void OnLanguageChanged(object? sender, EventArgs e)
+        {
+            BuildAvailableLanguages();
+            BuildAvailableThemes();
+            OnPropertyChanged(nameof(LanguageHint));
+            OnPropertyChanged(nameof(ThemeHint));
+            OnPropertyChanged(nameof(NotificationsHint));
+            OnPropertyChanged(nameof(MotionHint));
+        }
+
+        private void BuildAvailableLanguages()
+        {
+            AvailableLanguages = new ReadOnlyCollection<LanguageOption>(
+                new List<LanguageOption>
+                {
+                    new(AppLanguages.Russian, AppText.Get("Language.Russian")),
+                    new(AppLanguages.English, AppText.Get("Language.English"))
+                });
+        }
+
+        private void BuildAvailableThemes()
+        {
+            AvailableThemes = new ReadOnlyCollection<ThemeOption>(
+                _themeService.AvailableThemes
+                    .Select(theme => new ThemeOption(theme, AppText.Get($"Settings.Theme.{theme}")))
+                    .ToList());
+        }
+
         private void ReloadFromPreferences()
         {
-            SelectedLanguage = _preferences.SelectedLanguage;
-            SelectedTheme = _preferences.SelectedTheme;
+            SelectedLanguage = AppLanguages.Normalize(_preferences.SelectedLanguage);
+            SelectedTheme = ThemeKeys.Normalize(_preferences.SelectedTheme);
             ShowNotificationBadge = _preferences.ShowNotificationBadge;
             ReduceMotion = _preferences.ReduceMotion;
 

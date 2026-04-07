@@ -1,9 +1,11 @@
 using Birds.Application.DTOs;
 using Birds.Application.DTOs.Helpers;
 using Birds.Domain.Enums;
+using Birds.Domain.Extensions;
+using Birds.Shared.Localization;
 using Birds.UI.Enums;
+using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Managers.Bird;
-using Birds.UI.Services.Stores.BirdStore;
 using Birds.UI.Views.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -13,27 +15,15 @@ using System.Windows.Data;
 
 namespace Birds.UI.ViewModels
 {
-    /// <summary>
-    /// ViewModel responsible for displaying and filtering the bird collection in the UI.
-    ///
-    /// <para>
-    /// This ViewModel does not perform any data loading or modification itself.
-    /// Instead, it uses the shared <see cref="IBirdManager"/> and its <see cref="IBirdStore"/>
-    /// to access the observable bird collection for presentation.
-    /// </para>
-    ///
-    /// <para>
-    /// It provides sorting, filtering, and search capabilities for the existing collection,
-    /// while all CRUD operations and reloading logic are handled in <see cref="IBirdManager"/>.
-    /// </para>
-    /// </summary>
     public partial class BirdListViewModel : ObservableObject
     {
         private readonly IBirdManager _birdManager;
+        private readonly ILocalizationService _localization;
 
-        public BirdListViewModel(IBirdManager birdManager)
+        public BirdListViewModel(IBirdManager birdManager, ILocalizationService localization)
         {
             _birdManager = birdManager;
+            _localization = localization;
 
             Birds = birdManager.Store.Birds;
             Filters = CreateFilters();
@@ -55,19 +45,20 @@ namespace Birds.UI.ViewModels
                     ReloadBirdsCommand.NotifyCanExecuteChanged();
                 }
             };
+
+            _localization.LanguageChanged += OnLanguageChanged;
         }
 
         public ObservableCollection<BirdDTO> Birds { get; }
         public static Array BirdNames => Enum.GetValues(typeof(BirdsName));
         public ICollectionView BirdsView { get; }
 
-        /// <summary>Data loading indicator from BirdStore.</summary>
         public bool IsLoading => _birdManager.Store.LoadState == LoadState.Loading;
 
-        /// <summary>True when loading failed and a retry could be useful.</summary>
         public bool IsFailed => _birdManager.Store.LoadState == LoadState.Failed;
 
-        public IReadOnlyList<FilterOption> Filters { get; }
+        [ObservableProperty]
+        private IReadOnlyList<FilterOption> filters = Array.Empty<FilterOption>();
 
         [ObservableProperty] private FilterOption selectedFilter = null!;
         [ObservableProperty] private string? searchText;
@@ -82,11 +73,6 @@ namespace Birds.UI.ViewModels
             BirdsView.Refresh();
         }
 
-        /// <summary>
-        /// Filters the bird collection according to the selected filter and search text.
-        /// </summary>
-        /// <param name="obj">The object to be checked against the current filter.</param>
-        /// <returns><see langword="true"/> if the bird matches the filter and search criteria; otherwise, <see langword="false"/>.</returns>
         public bool FilterBirds(object obj)
         {
             if (obj is not BirdDTO bird)
@@ -115,14 +101,25 @@ namespace Birds.UI.ViewModels
             await _birdManager.ReloadAsync(CancellationToken.None);
         }
 
+        private void OnLanguageChanged(object? sender, EventArgs e)
+        {
+            var selectedFilter = SelectedFilter;
+
+            Filters = CreateFilters();
+            SelectedFilter = Filters.FirstOrDefault(x => x.Filter == selectedFilter.Filter && x.Species == selectedFilter.Species)
+                ?? Filters[0];
+
+            BirdsView.Refresh();
+        }
+
         private static IReadOnlyList<FilterOption> CreateFilters()
         {
             var filters = new List<FilterOption>
             {
-                new(BirdFilter.All, "Показать всех"),
-                new(BirdFilter.Alive, "Показать только живых"),
-                new(BirdFilter.Dead, "Только мертвые"),
-                new(BirdFilter.DepartedButAlive, "Отпущенные")
+                new(BirdFilter.All, AppText.Get("BirdList.Filter.All")),
+                new(BirdFilter.Alive, AppText.Get("BirdList.Filter.Alive")),
+                new(BirdFilter.Dead, AppText.Get("BirdList.Filter.Dead")),
+                new(BirdFilter.DepartedButAlive, AppText.Get("BirdList.Filter.Released"))
             };
 
             filters.AddRange(Enum.GetValues<BirdsName>().Select(FilterOption.SpeciesFilter));
@@ -136,8 +133,11 @@ namespace Birds.UI.ViewModels
                 return true;
 
             var text = SearchText.Trim();
+            var species = BirdEnumHelper.ParseBirdName(bird.Name);
+            var localizedName = species?.ToDisplayName() ?? bird.Name;
 
-            return (bird.Name?.Contains(text, StringComparison.CurrentCultureIgnoreCase) == true)
+            return localizedName.Contains(text, StringComparison.CurrentCultureIgnoreCase)
+                || (bird.Name?.Contains(text, StringComparison.CurrentCultureIgnoreCase) == true)
                 || (bird.Arrival.ToString().Contains(text, StringComparison.CurrentCultureIgnoreCase) == true)
                 || (bird.Departure?.ToString().Contains(text, StringComparison.CurrentCultureIgnoreCase) == true)
                 || (bird.Description?.Contains(text, StringComparison.CurrentCultureIgnoreCase) == true);

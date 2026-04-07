@@ -1,9 +1,12 @@
+using Birds.Shared.Localization;
+using Birds.UI.Services.Theming;
+
 namespace Birds.UI.Services.Preferences
 {
     public sealed record AppPreferencesState
     {
-        public const string DefaultLanguage = "Русский";
-        public const string DefaultTheme = "Графит";
+        public const string DefaultLanguage = AppLanguages.Russian;
+        public const string DefaultTheme = ThemeKeys.Graphite;
 
         public string SelectedLanguage { get; init; } = DefaultLanguage;
 

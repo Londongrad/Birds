@@ -1,0 +1,337 @@
+using System.Globalization;
+
+namespace Birds.Shared.Localization
+{
+    public static class AppText
+    {
+        private static readonly IReadOnlyDictionary<string, string> Russian = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["Language.Russian"] = "Русский",
+            ["Language.English"] = "English",
+
+            ["Nav.AddBird"] = "Добавить птицу",
+            ["Nav.Archive"] = "Архив",
+            ["Nav.Statistics"] = "Статистика",
+            ["Nav.Settings"] = "Настройки",
+
+            ["Main.Header.AddBird.Title"] = "Добавление птицы",
+            ["Main.Header.AddBird.Subtitle"] = "Новая запись с базовой валидацией и чистой формой ввода.",
+            ["Main.Header.Archive.Title"] = "Архив птиц",
+            ["Main.Header.Archive.Subtitle"] = "Поиск, фильтрация и редактирование существующих записей.",
+            ["Main.Header.Statistics.Title"] = "Статистика",
+            ["Main.Header.Statistics.Subtitle"] = "Сводка по видам, датам и ключевым метрикам.",
+            ["Main.Header.Settings.Title"] = "Настройки",
+            ["Main.Header.Settings.Subtitle"] = "Пользовательские предпочтения интерфейса и поведения приложения.",
+            ["Main.Header.Default.Title"] = "Birds",
+            ["Main.Header.Default.Subtitle"] = "Рабочее пространство приложения.",
+
+            ["AddBird.SpeciesLabel"] = "Вид птицы",
+            ["AddBird.ArrivalLabel"] = "Дата прибытия",
+            ["AddBird.DescriptionLabel"] = "Описание",
+            ["AddBird.DescriptionHint"] = "Описание необязательно. До 200 символов.",
+            ["AddBird.OneTimeTitle"] = "Разовое содержание",
+            ["AddBird.OneTimeHint"] = "Если птица прибыла и выбыла в один день, дата выбытия заполнится автоматически.",
+            ["AddBird.Save"] = "Сохранить запись",
+
+            ["Bird.CreatedLabel"] = "Создано: ",
+            ["Bird.UpdatedLabel"] = "Обновлено: ",
+            ["Bird.DaysSuffix"] = "дней",
+            ["Bird.StatusAlive"] = "Жива",
+            ["Bird.StatusDead"] = "Мертва",
+
+            ["BirdList.CountLabel"] = "Птиц: ",
+            ["BirdList.Retry"] = "Повторить",
+            ["BirdList.EmptyTitle"] = "Ничего не найдено",
+            ["BirdList.EmptyDescription"] = "Попробуйте изменить поиск или фильтр.",
+            ["BirdList.Loading"] = "Загрузка архива...",
+            ["BirdList.Filter.All"] = "Показать всех",
+            ["BirdList.Filter.Alive"] = "Показать только живых",
+            ["BirdList.Filter.Dead"] = "Только мертвые",
+            ["BirdList.Filter.Released"] = "Отпущенные",
+
+            ["Statistics.Title"] = "Статистика по птицам",
+            ["Statistics.Year"] = "Год:",
+            ["Statistics.AllYears"] = "Все года",
+            ["Statistics.TotalBirdsLabel"] = "Всего поймано: ",
+            ["Statistics.ReleasedLabel"] = "Отпущено: ",
+            ["Statistics.KilledLabel"] = "Уничтожено: ",
+            ["Statistics.TopMonthLabel"] = "Самый продуктивный месяц: ",
+            ["Statistics.TopWeekLabel"] = "Самая продуктивная неделя: ",
+            ["Statistics.TopDayLabel"] = "Самый продуктивный день: ",
+            ["Statistics.LongestBreakLabel"] = "Самый большой перерыв: ",
+            ["Statistics.Tab.BySpecies"] = "По видам",
+            ["Statistics.Tab.ByYears"] = "По годам",
+            ["Statistics.Tab.ByMonths"] = "По месяцам",
+            ["Statistics.Tab.ByKeepingDuration"] = "По длительности содержания",
+            ["Statistics.Loading"] = "Загрузка...",
+            ["Statistics.CountBirds"] = "{0} птиц",
+            ["Statistics.LongestBreakValue"] = "{0} дней без поимок (между {1} и {2})",
+
+            ["Settings.Title"] = "Настройки",
+            ["Settings.Subtitle"] = "Центр пользовательских предпочтений. Изменения сохраняются автоматически.",
+            ["Settings.Interface.Title"] = "Интерфейс",
+            ["Settings.Interface.Description"] = "Здесь можно управлять языком, темой и базовым поведением интерфейса.",
+            ["Settings.LanguageLabel"] = "Язык интерфейса",
+            ["Settings.ThemeLabel"] = "Тема приложения",
+            ["Settings.Theme.Graphite"] = "Графит",
+            ["Settings.Theme.Steel"] = "Сталь",
+            ["Settings.MotionLabel"] = "Сдержанные анимации",
+            ["Settings.Notifications.Title"] = "Уведомления",
+            ["Settings.Notifications.Description"] = "Можно оставить историю уведомлений и при этом убрать навязчивый индикатор новых событий.",
+            ["Settings.NotificationBadgeLabel"] = "Показывать индикатор новых уведомлений",
+            ["Settings.ResetTitle"] = "Сброс к стандартным значениям",
+            ["Settings.ResetDescription"] = "Полезно, если захочется быстро вернуть базовые параметры интерфейса.",
+            ["Settings.ResetButton"] = "Сбросить",
+            ["Settings.LanguageHint.Russian"] = "Русский язык включен для всего интерфейса, уведомлений и сообщений валидации.",
+            ["Settings.LanguageHint.English"] = "English is now used for the interface, notifications and validation messages.",
+            ["Settings.ThemeHint.Graphite"] = "Строгая графитовая палитра с нейтральным акцентом.",
+            ["Settings.ThemeHint.Steel"] = "Холодная стальная палитра с более выраженным синим тоном.",
+            ["Settings.NotificationsHint.Enabled"] = "Индикатор новых уведомлений будет показываться рядом с кнопкой центра уведомлений.",
+            ["Settings.NotificationsHint.Disabled"] = "Красный индикатор скрыт, но сама история уведомлений остаётся доступной.",
+            ["Settings.MotionHint.Enabled"] = "Сдержанный режим анимации сохранён как предпочтение и готов для будущих экранов.",
+            ["Settings.MotionHint.Disabled"] = "Сейчас приложение использует стандартные мягкие анимации интерфейса.",
+
+            ["Notification.CenterTitle"] = "Уведомления",
+            ["Notification.UnreadLabel"] = "Непрочитано: ",
+            ["Notification.Clear"] = "Очистить",
+            ["Notification.EmptyTitle"] = "Пока пусто",
+            ["Notification.EmptyDescription"] = "Здесь будет история действий и важных сообщений приложения.",
+            ["Notification.New"] = "Новое",
+            ["Notification.Type.Info"] = "Инфо",
+            ["Notification.Type.Success"] = "Успех",
+            ["Notification.Type.Warning"] = "Внимание",
+            ["Notification.Type.Error"] = "Ошибка",
+            ["Notification.Title.Info"] = "Информация",
+            ["Notification.Title.Success"] = "Успешно",
+            ["Notification.Title.Warning"] = "Внимание",
+            ["Notification.Title.Error"] = "Ошибка",
+
+            ["Info.LoadingBirdData"] = "Загрузка данных о птицах...",
+            ["Info.LoadedSuccessfully"] = "Данные о птицах успешно загружены.",
+            ["Info.NoBirdRecordsYet"] = "Записей о птицах пока нет. Добавьте первую птицу, чтобы начать.",
+            ["Info.ReloadingBirdData"] = "Повторная загрузка данных о птицах...",
+            ["Info.AddingBird"] = "Добавление птицы...",
+            ["Info.UpdatingBird"] = "Обновление записи о птице...",
+            ["Info.UpdatedBird"] = "Птица успешно обновлена!",
+            ["Info.DeletingBird"] = "Удаление птицы...",
+            ["Info.DeletedBird"] = "Птица успешно удалена!",
+            ["Info.BirdAdded"] = "Птица успешно добавлена!",
+            ["Info.ToThisDay"] = "по сегодняшний день",
+            ["Info.LoadFailed"] = "Попытка {0} загрузить птиц не удалась. Повтор через {1} с.",
+            ["Info.AutoExportSucceeded"] = "Автоэкспорт выполнен. Путь: {0}",
+
+            ["Error.BirdLoadFailed"] = "Не удалось загрузить данные о птицах из базы данных.\nПроверьте подключение или перезапустите приложение.",
+            ["Error.UnknownError"] = "Неизвестная ошибка.",
+            ["Error.UnexpectedError"] = "Непредвиденная ошибка.",
+            ["Error.CannotSaveBird"] = "Не удалось сохранить птицу!",
+            ["Error.CannotDeleteBird"] = "Не удалось удалить птицу!",
+            ["Error.CannotUpdateBird"] = "Не удалось обновить птицу!",
+            ["Error.RequestCannotBeNull"] = "Запрос не может быть null.",
+            ["Error.QueryCannotBeNull"] = "Query не может быть null.",
+            ["Error.ConnectionStringNotFound"] = "Строка подключения к базе данных не найдена.",
+            ["Error.ConnectionStringNotFoundFor"] = "Строка подключения к базе данных не найдена. Ожидалась одна из: {0}.",
+            ["Error.InvalidDatabaseProvider"] = "Неподдерживаемый провайдер базы данных '{0}'. Используйте 'Sqlite' или 'Postgres'.",
+            ["Error.InvalidDatabaseSeedingMode"] = "Неподдерживаемый режим сидинга '{0}'. Используйте 'None', 'SeedIfEmpty' или 'RecreateAndSeed'.",
+            ["Error.FailedToDisplayErrorNotification"] = "Не удалось показать уведомление об ошибке",
+            ["Error.StartupErrorTitle"] = "Ошибка запуска",
+            ["Error.StartupError"] = "Во время запуска приложения произошла ошибка:\n{0}",
+            ["Error.ShutdownWarningTitle"] = "Предупреждение при завершении",
+            ["Error.ShutdownError"] = "Ошибка при завершении приложения:\n{0}",
+
+            ["Validation.UnselectedBird"] = "Выберите вид птицы из списка.",
+            ["Validation.LongDescription"] = "Описание слишком длинное. Максимум 200 символов.",
+            ["Validation.DateIsNotSpecified"] = "Укажите дату.",
+            ["Validation.InvalidDateRange"] = "Дата должна быть в диапазоне от {0:dd-MM-yyyy} до {1:dd-MM-yyyy}.",
+            ["Validation.DateIsNotValid"] = "Укажите корректную дату.",
+            ["Validation.DateCannotBeInTheFuture"] = "Дата не может быть из будущего (не позже {0:dd-MM-yyyy}).",
+            ["Validation.DepartureLaterThenArrival"] = "Дата выбытия не может быть раньше даты прибытия ({0:dd-MM-yyyy}).",
+
+            ["BirdName.Воробей"] = "Воробей",
+            ["BirdName.Щегол"] = "Щегол",
+            ["BirdName.Амадин"] = "Амадин",
+            ["BirdName.Дубонос"] = "Дубонос",
+            ["BirdName.Большак"] = "Большак",
+            ["BirdName.Гайка"] = "Гайка",
+            ["BirdName.Поползень"] = "Поползень",
+            ["BirdName.Unknown"] = "Неизвестно"
+        };
+
+        private static readonly IReadOnlyDictionary<string, string> English = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["Language.Russian"] = "Russian",
+            ["Language.English"] = "English",
+
+            ["Nav.AddBird"] = "Add bird",
+            ["Nav.Archive"] = "Archive",
+            ["Nav.Statistics"] = "Statistics",
+            ["Nav.Settings"] = "Settings",
+
+            ["Main.Header.AddBird.Title"] = "Add bird",
+            ["Main.Header.AddBird.Subtitle"] = "A new entry with basic validation and a clean input form.",
+            ["Main.Header.Archive.Title"] = "Bird archive",
+            ["Main.Header.Archive.Subtitle"] = "Search, filter and edit existing entries.",
+            ["Main.Header.Statistics.Title"] = "Statistics",
+            ["Main.Header.Statistics.Subtitle"] = "Overview by species, dates and key metrics.",
+            ["Main.Header.Settings.Title"] = "Settings",
+            ["Main.Header.Settings.Subtitle"] = "Preferences for the interface and application behaviour.",
+            ["Main.Header.Default.Title"] = "Birds",
+            ["Main.Header.Default.Subtitle"] = "The application's workspace.",
+
+            ["AddBird.SpeciesLabel"] = "Bird species",
+            ["AddBird.ArrivalLabel"] = "Arrival date",
+            ["AddBird.DescriptionLabel"] = "Description",
+            ["AddBird.DescriptionHint"] = "Description is optional. Up to 200 characters.",
+            ["AddBird.OneTimeTitle"] = "One-time keeping",
+            ["AddBird.OneTimeHint"] = "If the bird arrived and left on the same day, the departure date will be filled automatically.",
+            ["AddBird.Save"] = "Save entry",
+
+            ["Bird.CreatedLabel"] = "Created: ",
+            ["Bird.UpdatedLabel"] = "Updated: ",
+            ["Bird.DaysSuffix"] = "days",
+            ["Bird.StatusAlive"] = "Alive",
+            ["Bird.StatusDead"] = "Dead",
+
+            ["BirdList.CountLabel"] = "Birds: ",
+            ["BirdList.Retry"] = "Retry",
+            ["BirdList.EmptyTitle"] = "Nothing found",
+            ["BirdList.EmptyDescription"] = "Try changing the search or filter.",
+            ["BirdList.Loading"] = "Loading archive...",
+            ["BirdList.Filter.All"] = "Show all",
+            ["BirdList.Filter.Alive"] = "Show alive only",
+            ["BirdList.Filter.Dead"] = "Dead only",
+            ["BirdList.Filter.Released"] = "Released",
+
+            ["Statistics.Title"] = "Bird statistics",
+            ["Statistics.Year"] = "Year:",
+            ["Statistics.AllYears"] = "All years",
+            ["Statistics.TotalBirdsLabel"] = "Captured total: ",
+            ["Statistics.ReleasedLabel"] = "Released: ",
+            ["Statistics.KilledLabel"] = "Destroyed: ",
+            ["Statistics.TopMonthLabel"] = "Most productive month: ",
+            ["Statistics.TopWeekLabel"] = "Most productive week: ",
+            ["Statistics.TopDayLabel"] = "Most productive day: ",
+            ["Statistics.LongestBreakLabel"] = "Longest break: ",
+            ["Statistics.Tab.BySpecies"] = "By species",
+            ["Statistics.Tab.ByYears"] = "By years",
+            ["Statistics.Tab.ByMonths"] = "By months",
+            ["Statistics.Tab.ByKeepingDuration"] = "By keeping duration",
+            ["Statistics.Loading"] = "Loading...",
+            ["Statistics.CountBirds"] = "{0} birds",
+            ["Statistics.LongestBreakValue"] = "{0} days without captures (between {1} and {2})",
+
+            ["Settings.Title"] = "Settings",
+            ["Settings.Subtitle"] = "A hub for user preferences. Changes are saved automatically.",
+            ["Settings.Interface.Title"] = "Interface",
+            ["Settings.Interface.Description"] = "Manage language, theme and the base interaction behaviour here.",
+            ["Settings.LanguageLabel"] = "Interface language",
+            ["Settings.ThemeLabel"] = "Application theme",
+            ["Settings.Theme.Graphite"] = "Graphite",
+            ["Settings.Theme.Steel"] = "Steel",
+            ["Settings.MotionLabel"] = "Reduced motion",
+            ["Settings.Notifications.Title"] = "Notifications",
+            ["Settings.Notifications.Description"] = "You can keep notification history while hiding the distracting unread indicator.",
+            ["Settings.NotificationBadgeLabel"] = "Show unread notification badge",
+            ["Settings.ResetTitle"] = "Reset to defaults",
+            ["Settings.ResetDescription"] = "Useful when you want to quickly return to the default interface settings.",
+            ["Settings.ResetButton"] = "Reset",
+            ["Settings.LanguageHint.Russian"] = "Russian is now used for the interface, notifications and validation messages.",
+            ["Settings.LanguageHint.English"] = "English is now used for the interface, notifications and validation messages.",
+            ["Settings.ThemeHint.Graphite"] = "A restrained graphite palette with a neutral accent.",
+            ["Settings.ThemeHint.Steel"] = "A colder steel palette with a clearer blue tone.",
+            ["Settings.NotificationsHint.Enabled"] = "The unread badge will be shown next to the notification center button.",
+            ["Settings.NotificationsHint.Disabled"] = "The red unread badge is hidden, but the notification history stays available.",
+            ["Settings.MotionHint.Enabled"] = "Reduced motion is saved as a preference and is ready for future screens.",
+            ["Settings.MotionHint.Disabled"] = "The application currently uses the default subtle interface animations.",
+
+            ["Notification.CenterTitle"] = "Notifications",
+            ["Notification.UnreadLabel"] = "Unread: ",
+            ["Notification.Clear"] = "Clear",
+            ["Notification.EmptyTitle"] = "Nothing here yet",
+            ["Notification.EmptyDescription"] = "The history of actions and important application messages will appear here.",
+            ["Notification.New"] = "New",
+            ["Notification.Type.Info"] = "Info",
+            ["Notification.Type.Success"] = "Success",
+            ["Notification.Type.Warning"] = "Warning",
+            ["Notification.Type.Error"] = "Error",
+            ["Notification.Title.Info"] = "Information",
+            ["Notification.Title.Success"] = "Success",
+            ["Notification.Title.Warning"] = "Warning",
+            ["Notification.Title.Error"] = "Error",
+
+            ["Info.LoadingBirdData"] = "Loading bird data...",
+            ["Info.LoadedSuccessfully"] = "Bird data loaded successfully.",
+            ["Info.NoBirdRecordsYet"] = "No bird records yet. Add your first bird to get started.",
+            ["Info.ReloadingBirdData"] = "Reloading bird data...",
+            ["Info.AddingBird"] = "Adding bird...",
+            ["Info.UpdatingBird"] = "Updating bird...",
+            ["Info.UpdatedBird"] = "Bird updated successfully!",
+            ["Info.DeletingBird"] = "Deleting bird...",
+            ["Info.DeletedBird"] = "Bird deleted successfully!",
+            ["Info.BirdAdded"] = "Bird added successfully!",
+            ["Info.ToThisDay"] = "to this day",
+            ["Info.LoadFailed"] = "Attempt {0} to load birds failed. Retrying in {1}s.",
+            ["Info.AutoExportSucceeded"] = "Auto-export succeeded. Path: {0}",
+
+            ["Error.BirdLoadFailed"] = "Failed to load bird data from the database.\nPlease check your connection or restart the application.",
+            ["Error.UnknownError"] = "Unknown error.",
+            ["Error.UnexpectedError"] = "Unexpected error.",
+            ["Error.CannotSaveBird"] = "Unable to save bird!",
+            ["Error.CannotDeleteBird"] = "Unable to delete bird!",
+            ["Error.CannotUpdateBird"] = "Unable to update bird!",
+            ["Error.RequestCannotBeNull"] = "Request cannot be null.",
+            ["Error.QueryCannotBeNull"] = "Query cannot be null.",
+            ["Error.ConnectionStringNotFound"] = "Database connection string not found.",
+            ["Error.ConnectionStringNotFoundFor"] = "Database connection string not found. Expected one of: {0}.",
+            ["Error.InvalidDatabaseProvider"] = "Unsupported database provider '{0}'. Use 'Sqlite' or 'Postgres'.",
+            ["Error.InvalidDatabaseSeedingMode"] = "Unsupported database seeding mode '{0}'. Use 'None', 'SeedIfEmpty' or 'RecreateAndSeed'.",
+            ["Error.FailedToDisplayErrorNotification"] = "Failed to display error notification",
+            ["Error.StartupErrorTitle"] = "Startup error",
+            ["Error.StartupError"] = "An error occurred during application startup:\n{0}",
+            ["Error.ShutdownWarningTitle"] = "Shutdown warning",
+            ["Error.ShutdownError"] = "Error during application shutdown:\n{0}",
+
+            ["Validation.UnselectedBird"] = "Select a bird species from the list.",
+            ["Validation.LongDescription"] = "Description is too long. Maximum is 200 characters.",
+            ["Validation.DateIsNotSpecified"] = "Specify a date.",
+            ["Validation.InvalidDateRange"] = "The date must be between {0:dd-MM-yyyy} and {1:dd-MM-yyyy}.",
+            ["Validation.DateIsNotValid"] = "Specify a valid date.",
+            ["Validation.DateCannotBeInTheFuture"] = "The date cannot be in the future (no later than {0:dd-MM-yyyy}).",
+            ["Validation.DepartureLaterThenArrival"] = "Departure date cannot be earlier than arrival date ({0:dd-MM-yyyy}).",
+
+            ["BirdName.Воробей"] = "Sparrow",
+            ["BirdName.Щегол"] = "Goldfinch",
+            ["BirdName.Амадин"] = "Amadin",
+            ["BirdName.Дубонос"] = "Hawfinch",
+            ["BirdName.Большак"] = "Great tit",
+            ["BirdName.Гайка"] = "Marsh tit",
+            ["BirdName.Поползень"] = "Nuthatch",
+            ["BirdName.Unknown"] = "Unknown"
+        };
+
+        public static string Get(string key, CultureInfo? culture = null)
+        {
+            var dictionary = SelectDictionary(culture);
+            if (dictionary.TryGetValue(key, out var value))
+                return value;
+
+            return Russian.TryGetValue(key, out var fallback)
+                ? fallback
+                : key;
+        }
+
+        public static string Format(string key, params object[] args)
+            => string.Format(CultureInfo.CurrentCulture, Get(key), args);
+
+        public static string Format(CultureInfo? culture, string key, params object[] args)
+        {
+            var actualCulture = culture ?? CultureInfo.CurrentCulture;
+            return string.Format(actualCulture, Get(key, actualCulture), args);
+        }
+
+        private static IReadOnlyDictionary<string, string> SelectDictionary(CultureInfo? culture)
+        {
+            var language = AppLanguages.Normalize(culture?.Name ?? CultureInfo.CurrentUICulture.Name);
+            return language == AppLanguages.English ? English : Russian;
+        }
+    }
+}

@@ -27,7 +27,9 @@ namespace Birds.UI.ViewModels.Base
         /// The selected bird species.
         /// Required; validation will fail if not provided.
         /// </summary>
-        [Required(ErrorMessage = ValidationMessages.UnselectedBird)]
+        [Required(
+            ErrorMessageResourceType = typeof(ValidationMessages),
+            ErrorMessageResourceName = nameof(ValidationMessages.UnselectedBird))]
         [ObservableProperty]
         private BirdsName? selectedBirdName;
 
@@ -35,7 +37,10 @@ namespace Birds.UI.ViewModels.Base
         /// The bird description.
         /// Optional, but limited to 200 characters.
         /// </summary>
-        [MaxLength(BirdValidationRules.DescriptionMaxLength, ErrorMessage = ValidationMessages.LongDescription)]
+        [MaxLength(
+            BirdValidationRules.DescriptionMaxLength,
+            ErrorMessageResourceType = typeof(ValidationMessages),
+            ErrorMessageResourceName = nameof(ValidationMessages.LongDescription))]
         [ObservableProperty]
         private string? description;
 
@@ -44,7 +49,9 @@ namespace Birds.UI.ViewModels.Base
         /// Required and validated by <see cref="ValidateArrival"/>.
         /// </summary>
         [CustomValidation(typeof(BirdValidationBaseViewModel), nameof(ValidateArrival))]
-        [Required(ErrorMessage = ValidationMessages.DateIsNotSpecified)]
+        [Required(
+            ErrorMessageResourceType = typeof(ValidationMessages),
+            ErrorMessageResourceName = nameof(ValidationMessages.DateIsNotSpecified))]
         [ObservableProperty]
         private DateOnly arrival = DateOnly.FromDateTime(DateTime.Now);
 
