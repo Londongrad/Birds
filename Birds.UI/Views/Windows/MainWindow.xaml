@@ -12,7 +12,7 @@
     Height="840"
     MinWidth="1080"
     MinHeight="700"
-    Background="#161A20"
+    Background="{DynamicResource ThemeWindowBackgroundBrush}"
     ResizeMode="CanResize"
     WindowStartupLocation="CenterScreen"
     WindowStyle="None"
@@ -36,7 +36,7 @@
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Foreground" Value="#C8D0DA" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeTitleBarForegroundBrush}" />
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Template">
@@ -52,10 +52,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="#202733" />
+                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeTitleBarButtonHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="#2B3442" />
+                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeTitleBarButtonPressedBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -82,21 +82,21 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="#202733" />
+                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeTitleBarButtonHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="#2B3442" />
+                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeTitleBarButtonPressedBrush}" />
                             </Trigger>
                             <DataTrigger
                                 Binding="{Binding DataContext.IsNotificationCenterOpen, RelativeSource={RelativeSource AncestorType=Window}}"
                                 Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="#202733" />
-                                <Setter Property="Foreground" Value="#EEF3F8" />
+                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeTitleBarButtonHoverBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
                             </DataTrigger>
                             <DataTrigger
                                 Binding="{Binding DataContext.ShouldShowNotificationBadge, RelativeSource={RelativeSource AncestorType=Window}}"
                                 Value="True">
-                                <Setter Property="Foreground" Value="#EEF5FD" />
+                                <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
                             </DataTrigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -108,7 +108,7 @@
             x:Key="CloseTitleBarButtonStyle"
             BasedOn="{StaticResource TitleBarButtonStyle}"
             TargetType="Button">
-            <Setter Property="Foreground" Value="#F4F7FB" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -122,10 +122,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="#B24A4A" />
+                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeCloseHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="#943C3C" />
+                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeClosePressedBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -135,10 +135,10 @@
 
         <Style x:Key="DrawerActionButtonStyle" TargetType="Button">
             <Setter Property="Padding" Value="12,7" />
-            <Setter Property="Background" Value="#1B222C" />
-            <Setter Property="BorderBrush" Value="#2B3542" />
+            <Setter Property="Background" Value="{DynamicResource ThemeAccentButtonBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentButtonBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="#D8E1EB" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
@@ -158,11 +158,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="#212936" />
-                                <Setter TargetName="ButtonSurface" Property="BorderBrush" Value="#3A4758" />
+                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeAccentButtonHoverBrush}" />
+                                <Setter TargetName="ButtonSurface" Property="BorderBrush" Value="{DynamicResource ThemeAccentButtonBorderBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="#26303E" />
+                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeTitleBarButtonPressedBrush}" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.45" />
@@ -180,7 +180,7 @@
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Foreground" Value="#96A3B5" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeMutedTextBrush}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -194,11 +194,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="#202733" />
-                                <Setter Property="Foreground" Value="#E6EEF7" />
+                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeTitleBarButtonHoverBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="#293240" />
+                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeTitleBarButtonPressedBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -208,10 +208,10 @@
     </Window.Resources>
 
     <Border
-        Background="#161A20"
-        BorderBrush="#252B33"
+        Background="{DynamicResource ThemeWindowBackgroundBrush}"
+        BorderBrush="{DynamicResource ThemeShellBorderBrush}"
         BorderThickness="1">
-        <Grid Background="#161A20">
+        <Grid Background="{DynamicResource ThemeWindowBackgroundBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="46" />
                 <RowDefinition Height="*" />
@@ -219,8 +219,8 @@
 
             <Border
                 Grid.Row="0"
-                Background="#0F1318"
-                BorderBrush="#252B33"
+                Background="{DynamicResource ThemeChromeBackgroundBrush}"
+                BorderBrush="{DynamicResource ThemeShellBorderBrush}"
                 BorderThickness="0,0,0,1"
                 MouseLeftButtonDown="OnTitleBarMouseLeftButtonDown">
                 <Grid Margin="10,0,8,0">
@@ -236,15 +236,15 @@
                         Margin="4,0,0,0"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
-                        Background="#202733"
-                        BorderBrush="#2C3642"
+                        Background="{DynamicResource ThemeTitleBarIconBackgroundBrush}"
+                        BorderBrush="{DynamicResource ThemeTitleBarIconBorderBrush}"
                         BorderThickness="1"
                         CornerRadius="4">
                         <TextBlock
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             FontSize="9"
-                            Foreground="#DDE4EC"
+                            Foreground="{DynamicResource ThemeTitleBarIconForegroundBrush}"
                             Text="B" />
                     </Border>
 
@@ -269,8 +269,8 @@
                                 Margin="0,-6,-7,0"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Top"
-                                Background="#5D86C9"
-                                BorderBrush="#0F1318"
+                                Background="{DynamicResource ThemeBadgeBrush}"
+                                BorderBrush="{DynamicResource ThemeChromeBackgroundBrush}"
                                 BorderThickness="1"
                                 CornerRadius="8"
                                 Visibility="{Binding ShouldShowNotificationBadge, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -279,7 +279,7 @@
                                     VerticalAlignment="Center"
                                     FontSize="9"
                                     FontWeight="Bold"
-                                    Foreground="White"
+                                    Foreground="{DynamicResource ThemePrimaryTextBrush}"
                                     Text="{Binding UnreadNotificationCount, Mode=OneWay}" />
                             </Border>
                         </Grid>
@@ -361,8 +361,8 @@
 
                 <Border
                     Grid.Column="0"
-                    Background="#101318"
-                    BorderBrush="#252B33"
+                    Background="{DynamicResource ThemeSidebarBackgroundBrush}"
+                    BorderBrush="{DynamicResource ThemeShellBorderBrush}"
                     BorderThickness="0,0,1,0">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -375,7 +375,7 @@
                                 HorizontalAlignment="Left"
                                 FontSize="26"
                                 FontWeight="SemiBold"
-                                Foreground="White"
+                                Foreground="{DynamicResource ThemePrimaryTextBrush}"
                                 Text="Birds" />
                         </StackPanel>
 
@@ -430,7 +430,7 @@
                         MaxWidth="760"
                         HorizontalAlignment="Center"
                         Padding="0,0,0,18"
-                        BorderBrush="#252B33"
+                        BorderBrush="{DynamicResource ThemeShellBorderBrush}"
                         BorderThickness="0,0,0,1">
                         <Border.Style>
                             <Style TargetType="Border">
@@ -448,14 +448,14 @@
                                 TextAlignment="Center"
                                 FontSize="30"
                                 FontWeight="SemiBold"
-                                Foreground="White"
+                                Foreground="{DynamicResource ThemePrimaryTextBrush}"
                                 Text="{Binding HeaderTitle}" />
                             <TextBlock
                                 Margin="0,10,0,0"
                                 HorizontalAlignment="Center"
                                 TextAlignment="Center"
                                 FontSize="14"
-                                Foreground="#8E98A6"
+                                Foreground="{DynamicResource ThemeSecondaryTextBrush}"
                                 Text="{Binding HeaderSubtitle}" />
                         </StackPanel>
                     </Border>
@@ -471,8 +471,8 @@
                         Grid.RowSpan="2"
                         Width="336"
                         Margin="0,18,24,24"
-                        Background="#10151B"
-                        BorderBrush="#252D37"
+                        Background="{DynamicResource ThemeNotificationPanelBackgroundBrush}"
+                        BorderBrush="{DynamicResource ThemeNotificationPanelBorderBrush}"
                         BorderThickness="1"
                         CornerRadius="20"
                         Visibility="{Binding IsNotificationCenterOpen, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -484,7 +484,7 @@
 
                             <Border
                                 Padding="18,18,18,14"
-                                BorderBrush="#252D37"
+                                BorderBrush="{DynamicResource ThemeNotificationPanelBorderBrush}"
                                 BorderThickness="0,0,0,1">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -496,12 +496,12 @@
                                         <TextBlock
                                             FontSize="18"
                                             FontWeight="SemiBold"
-                                            Foreground="White"
+                                            Foreground="{DynamicResource ThemePrimaryTextBrush}"
                                             Text="Уведомления" />
                                         <TextBlock
                                             Margin="0,6,0,0"
                                             FontSize="12"
-                                            Foreground="#8E98A6">
+                                            Foreground="{DynamicResource ThemeSecondaryTextBrush}">
                                             <Run Text="Непрочитано: " />
                                             <Run Text="{Binding UnreadNotificationCount, Mode=OneWay}" />
                                         </TextBlock>
@@ -526,14 +526,14 @@
                                             HorizontalAlignment="Center"
                                             FontSize="18"
                                             FontWeight="SemiBold"
-                                            Foreground="White"
+                                            Foreground="{DynamicResource ThemePrimaryTextBrush}"
                                             Text="Пока пусто" />
                                         <TextBlock
                                             Margin="0,10,0,0"
                                             HorizontalAlignment="Center"
                                             TextAlignment="Center"
                                             FontSize="13"
-                                            Foreground="#8E98A6"
+                                            Foreground="{DynamicResource ThemeSecondaryTextBrush}"
                                             Text="Здесь будет история действий и важных сообщений приложения." />
                                     </StackPanel>
                                 </Border>
@@ -552,8 +552,8 @@
                                             <DataTemplate DataType="{x:Type notify:NotificationToast}">
                                                 <Border
                                                     x:Name="NotificationCard"
-                                                    Background="#161C24"
-                                                    BorderBrush="#2B3541"
+                                                    Background="{DynamicResource ThemeNotificationCardBackgroundBrush}"
+                                                    BorderBrush="{DynamicResource ThemeNotificationCardBorderBrush}"
                                                     BorderThickness="1"
                                                     CornerRadius="16">
                                                     <Grid ClipToBounds="True">
@@ -561,7 +561,7 @@
                                                             x:Name="NotificationAccent"
                                                             Width="4"
                                                             HorizontalAlignment="Left"
-                                                            Background="#6C7A8D"
+                                                            Background="{DynamicResource ThemeFieldBorderFocusBrush}"
                                                             CornerRadius="16,0,0,16" />
 
                                                         <Grid Margin="16,14,14,14">
@@ -581,7 +581,7 @@
                                                                 VerticalAlignment="Center"
                                                                 FontSize="13"
                                                                 FontWeight="SemiBold"
-                                                                Foreground="#F3F6FA"
+                                                                Foreground="{DynamicResource ThemePrimaryTextBrush}"
                                                                 Text="{Binding Title}"
                                                                 TextWrapping="Wrap" />
 
@@ -590,7 +590,7 @@
                                                                 Margin="12,0,0,0"
                                                                 VerticalAlignment="Center"
                                                                 FontSize="11"
-                                                                Foreground="#7F8A98"
+                                                                Foreground="{DynamicResource ThemeMutedTextBrush}"
                                                                 Text="{Binding CreatedAt, StringFormat={}{0:HH:mm}}" />
 
                                                             <Button
@@ -611,7 +611,7 @@
                                                                 Grid.ColumnSpan="3"
                                                                 Margin="0,10,0,0"
                                                                 FontSize="13"
-                                                                Foreground="#AAB6C5"
+                                                                Foreground="{DynamicResource ThemeSecondaryTextBrush}"
                                                                 LineHeight="19"
                                                                 Text="{Binding Message}"
                                                                 TextWrapping="Wrap" />
@@ -625,25 +625,25 @@
                                                                     x:Name="NotificationTypePill"
                                                                     Margin="0,0,8,0"
                                                                     Padding="8,3"
-                                                                    Background="#1F2A37"
+                                                                    Background="{DynamicResource ThemeNotificationActionBrush}"
                                                                     CornerRadius="10">
                                                                     <TextBlock
                                                                         x:Name="NotificationTypeText"
                                                                         FontSize="10"
                                                                         FontWeight="SemiBold"
-                                                                        Foreground="#DDE6F1"
+                                                                        Foreground="{DynamicResource ThemePrimaryTextBrush}"
                                                                         Text="Инфо" />
                                                                 </Border>
 
                                                                 <Border
-                                                                    Background="#24303E"
+                                                                    Background="{DynamicResource ThemeNotificationActionBrush}"
                                                                     CornerRadius="10"
                                                                     Padding="8,3"
                                                                     Visibility="{Binding IsRead, Converter={StaticResource BoolToVisibilityInverse}}">
                                                                     <TextBlock
                                                                         FontSize="10"
                                                                         FontWeight="SemiBold"
-                                                                        Foreground="#C8D6E7"
+                                                                        Foreground="{DynamicResource ThemeSecondaryTextBrush}"
                                                                         Text="Новое" />
                                                                 </Border>
                                                             </StackPanel>
@@ -652,11 +652,11 @@
                                                 </Border>
                                                 <DataTemplate.Triggers>
                                                     <Trigger SourceName="NotificationCard" Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="NotificationCard" Property="Background" Value="#19212B" />
-                                                        <Setter TargetName="NotificationCard" Property="BorderBrush" Value="#344253" />
+                                                        <Setter TargetName="NotificationCard" Property="Background" Value="{DynamicResource ThemeNotificationCardHoverBrush}" />
+                                                        <Setter TargetName="NotificationCard" Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
                                                     </Trigger>
                                                     <DataTrigger Binding="{Binding IsRead}" Value="False">
-                                                        <Setter TargetName="NotificationCard" Property="BorderBrush" Value="#405064" />
+                                                        <Setter TargetName="NotificationCard" Property="BorderBrush" Value="{DynamicResource ThemeNotificationUnreadBorderBrush}" />
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding Type}" Value="{x:Static notify:NotificationType.Success}">
                                                         <Setter TargetName="NotificationAccent" Property="Background" Value="#48A975" />

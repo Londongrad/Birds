@@ -6,6 +6,8 @@ namespace Birds.UI.Services.Preferences.Interfaces
     {
         string SelectedLanguage { get; set; }
 
+        string SelectedTheme { get; set; }
+
         bool ShowNotificationBadge { get; set; }
 
         bool ReduceMotion { get; set; }

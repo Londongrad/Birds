@@ -1,0 +1,97 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Color x:Key="ThemeWindowBackgroundColor">#141A22</Color>
+    <Color x:Key="ThemeChromeBackgroundColor">#0C1218</Color>
+    <Color x:Key="ThemeSidebarBackgroundColor">#101720</Color>
+    <Color x:Key="ThemeShellBorderColor">#22303C</Color>
+    <Color x:Key="ThemeTitleBarIconBackgroundColor">#1E2A36</Color>
+    <Color x:Key="ThemeTitleBarIconBorderColor">#344658</Color>
+    <Color x:Key="ThemeTitleBarIconForegroundColor">#E4EEF7</Color>
+    <Color x:Key="ThemeTitleBarForegroundColor">#D1DBE6</Color>
+    <Color x:Key="ThemeTitleBarButtonHoverColor">#1C2934</Color>
+    <Color x:Key="ThemeTitleBarButtonPressedColor">#263847</Color>
+    <Color x:Key="ThemeCloseHoverColor">#B45353</Color>
+    <Color x:Key="ThemeClosePressedColor">#954343</Color>
+    <Color x:Key="ThemeBadgeColor">#6FA8DC</Color>
+    <Color x:Key="ThemeCardBackgroundColor">#1B2530</Color>
+    <Color x:Key="ThemeCardBorderColor">#334657</Color>
+    <Color x:Key="ThemeInsetBackgroundColor">#13202A</Color>
+    <Color x:Key="ThemeFieldBackgroundColor">#0E1821</Color>
+    <Color x:Key="ThemeFieldBorderColor">#38506A</Color>
+    <Color x:Key="ThemeFieldBorderHoverColor">#4B6784</Color>
+    <Color x:Key="ThemeFieldBorderFocusColor">#8CB0D4</Color>
+    <Color x:Key="ThemeFieldBorderErrorColor">#D28787</Color>
+    <Color x:Key="ThemePrimaryTextColor">#F2F7FB</Color>
+    <Color x:Key="ThemeSecondaryTextColor">#AFC2D4</Color>
+    <Color x:Key="ThemeMutedTextColor">#8398AA</Color>
+    <Color x:Key="ThemeErrorTextColor">#F0B1B1</Color>
+    <Color x:Key="ThemeAccentButtonColor">#304757</Color>
+    <Color x:Key="ThemeAccentButtonHoverColor">#3D5A6E</Color>
+    <Color x:Key="ThemeAccentButtonBorderColor">#4D6D84</Color>
+    <Color x:Key="ThemeNotificationPanelBackgroundColor">#0F1821</Color>
+    <Color x:Key="ThemeNotificationPanelBorderColor">#263646</Color>
+    <Color x:Key="ThemeNotificationCardBackgroundColor">#15222D</Color>
+    <Color x:Key="ThemeNotificationCardHoverColor">#1A2A36</Color>
+    <Color x:Key="ThemeNotificationCardBorderColor">#334758</Color>
+    <Color x:Key="ThemeNotificationUnreadBorderColor">#557492</Color>
+    <Color x:Key="ThemeNotificationActionColor">#274154</Color>
+    <Color x:Key="ThemeToggleTrackOffColor">#12202A</Color>
+    <Color x:Key="ThemeToggleBorderOffColor">#40596E</Color>
+    <Color x:Key="ThemeToggleTrackOnColor">#2B557A</Color>
+    <Color x:Key="ThemeToggleBorderOnColor">#8CB6DF</Color>
+    <Color x:Key="ThemeOverlayColor">#96121B25</Color>
+    <Color x:Key="ThemeBirdItemBackgroundColor">#17232E</Color>
+    <Color x:Key="ThemeStatsSuccessColor">#88E4B2</Color>
+    <Color x:Key="ThemeStatsInfoColor">#9ED6FF</Color>
+    <Color x:Key="ThemeStatsHighlightColor">#F0D38D</Color>
+    <Color x:Key="ThemeStatsListItemColor">#263847</Color>
+    <Color x:Key="ThemeStatsSecondaryTextColor">#D1D9E2</Color>
+
+    <SolidColorBrush x:Key="ThemeWindowBackgroundBrush" Color="{StaticResource ThemeWindowBackgroundColor}" />
+    <SolidColorBrush x:Key="ThemeChromeBackgroundBrush" Color="{StaticResource ThemeChromeBackgroundColor}" />
+    <SolidColorBrush x:Key="ThemeSidebarBackgroundBrush" Color="{StaticResource ThemeSidebarBackgroundColor}" />
+    <SolidColorBrush x:Key="ThemeShellBorderBrush" Color="{StaticResource ThemeShellBorderColor}" />
+    <SolidColorBrush x:Key="ThemeTitleBarIconBackgroundBrush" Color="{StaticResource ThemeTitleBarIconBackgroundColor}" />
+    <SolidColorBrush x:Key="ThemeTitleBarIconBorderBrush" Color="{StaticResource ThemeTitleBarIconBorderColor}" />
+    <SolidColorBrush x:Key="ThemeTitleBarIconForegroundBrush" Color="{StaticResource ThemeTitleBarIconForegroundColor}" />
+    <SolidColorBrush x:Key="ThemeTitleBarForegroundBrush" Color="{StaticResource ThemeTitleBarForegroundColor}" />
+    <SolidColorBrush x:Key="ThemeTitleBarButtonHoverBrush" Color="{StaticResource ThemeTitleBarButtonHoverColor}" />
+    <SolidColorBrush x:Key="ThemeTitleBarButtonPressedBrush" Color="{StaticResource ThemeTitleBarButtonPressedColor}" />
+    <SolidColorBrush x:Key="ThemeCloseHoverBrush" Color="{StaticResource ThemeCloseHoverColor}" />
+    <SolidColorBrush x:Key="ThemeClosePressedBrush" Color="{StaticResource ThemeClosePressedColor}" />
+    <SolidColorBrush x:Key="ThemeBadgeBrush" Color="{StaticResource ThemeBadgeColor}" />
+    <SolidColorBrush x:Key="ThemeCardBackgroundBrush" Color="{StaticResource ThemeCardBackgroundColor}" />
+    <SolidColorBrush x:Key="ThemeCardBorderBrush" Color="{StaticResource ThemeCardBorderColor}" />
+    <SolidColorBrush x:Key="ThemeInsetBackgroundBrush" Color="{StaticResource ThemeInsetBackgroundColor}" />
+    <SolidColorBrush x:Key="ThemeFieldBackgroundBrush" Color="{StaticResource ThemeFieldBackgroundColor}" />
+    <SolidColorBrush x:Key="ThemeFieldBorderBrush" Color="{StaticResource ThemeFieldBorderColor}" />
+    <SolidColorBrush x:Key="ThemeFieldBorderHoverBrush" Color="{StaticResource ThemeFieldBorderHoverColor}" />
+    <SolidColorBrush x:Key="ThemeFieldBorderFocusBrush" Color="{StaticResource ThemeFieldBorderFocusColor}" />
+    <SolidColorBrush x:Key="ThemeFieldBorderErrorBrush" Color="{StaticResource ThemeFieldBorderErrorColor}" />
+    <SolidColorBrush x:Key="ThemePrimaryTextBrush" Color="{StaticResource ThemePrimaryTextColor}" />
+    <SolidColorBrush x:Key="ThemeSecondaryTextBrush" Color="{StaticResource ThemeSecondaryTextColor}" />
+    <SolidColorBrush x:Key="ThemeMutedTextBrush" Color="{StaticResource ThemeMutedTextColor}" />
+    <SolidColorBrush x:Key="ThemeErrorTextBrush" Color="{StaticResource ThemeErrorTextColor}" />
+    <SolidColorBrush x:Key="ThemeAccentButtonBrush" Color="{StaticResource ThemeAccentButtonColor}" />
+    <SolidColorBrush x:Key="ThemeAccentButtonHoverBrush" Color="{StaticResource ThemeAccentButtonHoverColor}" />
+    <SolidColorBrush x:Key="ThemeAccentButtonBorderBrush" Color="{StaticResource ThemeAccentButtonBorderColor}" />
+    <SolidColorBrush x:Key="ThemeNotificationPanelBackgroundBrush" Color="{StaticResource ThemeNotificationPanelBackgroundColor}" />
+    <SolidColorBrush x:Key="ThemeNotificationPanelBorderBrush" Color="{StaticResource ThemeNotificationPanelBorderColor}" />
+    <SolidColorBrush x:Key="ThemeNotificationCardBackgroundBrush" Color="{StaticResource ThemeNotificationCardBackgroundColor}" />
+    <SolidColorBrush x:Key="ThemeNotificationCardHoverBrush" Color="{StaticResource ThemeNotificationCardHoverColor}" />
+    <SolidColorBrush x:Key="ThemeNotificationCardBorderBrush" Color="{StaticResource ThemeNotificationCardBorderColor}" />
+    <SolidColorBrush x:Key="ThemeNotificationUnreadBorderBrush" Color="{StaticResource ThemeNotificationUnreadBorderColor}" />
+    <SolidColorBrush x:Key="ThemeNotificationActionBrush" Color="{StaticResource ThemeNotificationActionColor}" />
+    <SolidColorBrush x:Key="ThemeToggleTrackOffBrush" Color="{StaticResource ThemeToggleTrackOffColor}" />
+    <SolidColorBrush x:Key="ThemeToggleBorderOffBrush" Color="{StaticResource ThemeToggleBorderOffColor}" />
+    <SolidColorBrush x:Key="ThemeToggleTrackOnBrush" Color="{StaticResource ThemeToggleTrackOnColor}" />
+    <SolidColorBrush x:Key="ThemeToggleBorderOnBrush" Color="{StaticResource ThemeToggleBorderOnColor}" />
+    <SolidColorBrush x:Key="ThemeOverlayBrush" Color="{StaticResource ThemeOverlayColor}" />
+    <SolidColorBrush x:Key="ThemeBirdItemBackgroundBrush" Color="{StaticResource ThemeBirdItemBackgroundColor}" />
+    <SolidColorBrush x:Key="ThemeStatsSuccessBrush" Color="{StaticResource ThemeStatsSuccessColor}" />
+    <SolidColorBrush x:Key="ThemeStatsInfoBrush" Color="{StaticResource ThemeStatsInfoColor}" />
+    <SolidColorBrush x:Key="ThemeStatsHighlightBrush" Color="{StaticResource ThemeStatsHighlightColor}" />
+    <SolidColorBrush x:Key="ThemeStatsListItemBrush" Color="{StaticResource ThemeStatsListItemColor}" />
+    <SolidColorBrush x:Key="ThemeStatsSecondaryTextBrush" Color="{StaticResource ThemeStatsSecondaryTextColor}" />
+</ResourceDictionary>

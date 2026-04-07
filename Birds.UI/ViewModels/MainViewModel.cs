@@ -2,6 +2,7 @@ using Birds.UI.Services.Navigation.Interfaces;
 using Birds.UI.Services.Notification;
 using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.Services.Preferences.Interfaces;
+using Birds.UI.Services.Theming.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
@@ -15,10 +16,12 @@ namespace Birds.UI.ViewModels
         private readonly INavigationService _navigation;
         private readonly INotificationManager _notificationManager;
         private readonly IAppPreferencesService _appPreferences;
+        private readonly IThemeService _themeService;
 
         public MainViewModel(INavigationService navigation,
                              INotificationManager notificationManager,
                              IAppPreferencesService appPreferences,
+                             IThemeService themeService,
                              BirdListViewModel birdsVM,
                              AddBirdViewModel addBirdVM,
                              BirdStatisticsViewModel birdStatistics,
@@ -27,6 +30,7 @@ namespace Birds.UI.ViewModels
             _navigation = navigation;
             _notificationManager = notificationManager;
             _appPreferences = appPreferences;
+            _themeService = themeService;
 
             _navigation.AddCreator<BirdListViewModel>(() => birdsVM);
             _navigation.AddCreator<AddBirdViewModel>(() => addBirdVM);
@@ -45,6 +49,7 @@ namespace Birds.UI.ViewModels
             if (_notificationManager.ActiveNotifications is INotifyCollectionChanged notificationsChanged)
                 notificationsChanged.CollectionChanged += OnNotificationsCollectionChanged;
 
+            _themeService.ApplyTheme(_appPreferences.SelectedTheme);
             _navigation.NavigateTo(addBirdVM);
             UpdateHeader(addBirdVM.GetType());
         }

@@ -11,19 +11,19 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
-        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#1B212A" />
-        <SolidColorBrush x:Key="CardBorderBrush" Color="#2B3441" />
-        <SolidColorBrush x:Key="InsetBackgroundBrush" Color="#161C24" />
-        <SolidColorBrush x:Key="FieldBackgroundBrush" Color="#11161D" />
-        <SolidColorBrush x:Key="FieldBorderBrush" Color="#313B48" />
-        <SolidColorBrush x:Key="FieldBorderHoverBrush" Color="#425060" />
-        <SolidColorBrush x:Key="FieldBorderFocusBrush" Color="#7C8EA3" />
-        <SolidColorBrush x:Key="PrimaryTextBrush" Color="#F3F6FA" />
-        <SolidColorBrush x:Key="SecondaryTextBrush" Color="#A3AFBD" />
-        <SolidColorBrush x:Key="MutedTextBrush" Color="#7E8A98" />
-        <SolidColorBrush x:Key="AccentButtonBrush" Color="#2D3744" />
-        <SolidColorBrush x:Key="AccentButtonHoverBrush" Color="#374353" />
-        <SolidColorBrush x:Key="AccentButtonBorderBrush" Color="#425061" />
+        <SolidColorBrush x:Key="CardBackgroundBrush" Color="{DynamicResource ThemeCardBackgroundColor}" />
+        <SolidColorBrush x:Key="CardBorderBrush" Color="{DynamicResource ThemeCardBorderColor}" />
+        <SolidColorBrush x:Key="InsetBackgroundBrush" Color="{DynamicResource ThemeInsetBackgroundColor}" />
+        <SolidColorBrush x:Key="FieldBackgroundBrush" Color="{DynamicResource ThemeFieldBackgroundColor}" />
+        <SolidColorBrush x:Key="FieldBorderBrush" Color="{DynamicResource ThemeFieldBorderColor}" />
+        <SolidColorBrush x:Key="FieldBorderHoverBrush" Color="{DynamicResource ThemeFieldBorderHoverColor}" />
+        <SolidColorBrush x:Key="FieldBorderFocusBrush" Color="{DynamicResource ThemeFieldBorderFocusColor}" />
+        <SolidColorBrush x:Key="PrimaryTextBrush" Color="{DynamicResource ThemePrimaryTextColor}" />
+        <SolidColorBrush x:Key="SecondaryTextBrush" Color="{DynamicResource ThemeSecondaryTextColor}" />
+        <SolidColorBrush x:Key="MutedTextBrush" Color="{DynamicResource ThemeMutedTextColor}" />
+        <SolidColorBrush x:Key="AccentButtonBrush" Color="{DynamicResource ThemeAccentButtonColor}" />
+        <SolidColorBrush x:Key="AccentButtonHoverBrush" Color="{DynamicResource ThemeAccentButtonHoverColor}" />
+        <SolidColorBrush x:Key="AccentButtonBorderBrush" Color="{DynamicResource ThemeAccentButtonBorderColor}" />
 
         <Style x:Key="SettingsCardStyle" TargetType="Border">
             <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
@@ -87,10 +87,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsHighlighted" Value="True">
-                                <Setter TargetName="ItemBorder" Property="Background" Value="#1A2028" />
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource InsetBackgroundBrush}" />
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="ItemBorder" Property="Background" Value="#232C37" />
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource AccentButtonBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -136,7 +136,7 @@
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Data="M 0 0 L 5.5 5.5 L 11 0"
-                                Stroke="#96A3B3"
+                                Stroke="{StaticResource SecondaryTextBrush}"
                                 StrokeThickness="1.6" />
 
                             <ToggleButton
@@ -198,8 +198,8 @@
                             ClipToBounds="False">
                             <Border
                                 x:Name="Track"
-                                Background="#121821"
-                                BorderBrush="#324053"
+                                Background="{DynamicResource ThemeToggleTrackOffBrush}"
+                                BorderBrush="{DynamicResource ThemeToggleBorderOffBrush}"
                                 BorderThickness="1"
                                 CornerRadius="13" />
 
@@ -209,7 +209,7 @@
                                 Margin="3"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
-                                Fill="#F3F6FA"
+                                Fill="{DynamicResource ThemePrimaryTextBrush}"
                                 RenderTransformOrigin="0.5,0.5">
                                 <Ellipse.RenderTransform>
                                     <TranslateTransform x:Name="ThumbTransform" X="0" />
@@ -218,11 +218,11 @@
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Track" Property="BorderBrush" Value="#55657A" />
+                                <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Track" Property="Background" Value="#274A73" />
-                                <Setter TargetName="Track" Property="BorderBrush" Value="#6EA5D8" />
+                                <Setter TargetName="Track" Property="Background" Value="{DynamicResource ThemeToggleTrackOnBrush}" />
+                                <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource ThemeToggleBorderOnBrush}" />
                             </Trigger>
                             <EventTrigger RoutedEvent="ToggleButton.Checked">
                                 <BeginStoryboard>
@@ -354,24 +354,38 @@
                                     Width="260">
                                     <TextBlock
                                         Style="{StaticResource FieldLabelStyle}"
+                                        Text="Тема приложения" />
+                                    <ComboBox
+                                        ItemsSource="{Binding AvailableThemes}"
+                                        SelectedItem="{Binding SelectedTheme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        Style="{StaticResource SettingsComboBoxStyle}" />
+                                    <TextBlock
+                                        Style="{StaticResource FieldHintStyle}"
+                                        Text="{Binding ThemeHint}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid Margin="0,18,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <CheckBox
+                                    Margin="0,2,14,0"
+                                    IsChecked="{Binding ReduceMotion, Mode=TwoWay}"
+                                    Style="{StaticResource ToggleSwitchStyle}"
+                                    VerticalAlignment="Top" />
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock
+                                        Style="{StaticResource FieldLabelStyle}"
+                                        Margin="0,0,0,4"
                                         Text="Сдержанные анимации" />
-                                    <Grid Margin="0,4,0,0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-                                        <CheckBox
-                                            Margin="0,2,14,0"
-                                            IsChecked="{Binding ReduceMotion, Mode=TwoWay}"
-                                            Style="{StaticResource ToggleSwitchStyle}"
-                                            VerticalAlignment="Top" />
-                                        <TextBlock
-                                            Grid.Column="1"
-                                            Foreground="{StaticResource SecondaryTextBrush}"
-                                            FontSize="12"
-                                            Text="{Binding MotionHint}"
-                                            TextWrapping="Wrap" />
-                                    </Grid>
+                                    <TextBlock
+                                        FontSize="12"
+                                        Foreground="{StaticResource SecondaryTextBrush}"
+                                        Text="{Binding MotionHint}"
+                                        TextWrapping="Wrap" />
                                 </StackPanel>
                             </Grid>
                         </StackPanel>
@@ -418,7 +432,7 @@
                     <Border
                         Margin="0,18,0,0"
                         Padding="18,16"
-                        Background="#161C24"
+                        Background="{StaticResource InsetBackgroundBrush}"
                         BorderBrush="{StaticResource CardBorderBrush}"
                         BorderThickness="1"
                         CornerRadius="14">

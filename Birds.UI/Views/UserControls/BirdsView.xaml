@@ -13,19 +13,19 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
-        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#1B212A" />
-        <SolidColorBrush x:Key="CardBorderBrush" Color="#2B3441" />
-        <SolidColorBrush x:Key="InsetBackgroundBrush" Color="#161C24" />
-        <SolidColorBrush x:Key="FieldBackgroundBrush" Color="#11161D" />
-        <SolidColorBrush x:Key="FieldBorderBrush" Color="#313B48" />
-        <SolidColorBrush x:Key="FieldBorderHoverBrush" Color="#425060" />
-        <SolidColorBrush x:Key="FieldBorderFocusBrush" Color="#7C8EA3" />
-        <SolidColorBrush x:Key="PrimaryTextBrush" Color="#F3F6FA" />
-        <SolidColorBrush x:Key="SecondaryTextBrush" Color="#A3AFBD" />
-        <SolidColorBrush x:Key="MutedTextBrush" Color="#7E8A98" />
-        <SolidColorBrush x:Key="AccentButtonBrush" Color="#2D3744" />
-        <SolidColorBrush x:Key="AccentButtonHoverBrush" Color="#374353" />
-        <SolidColorBrush x:Key="AccentButtonBorderBrush" Color="#425061" />
+        <SolidColorBrush x:Key="CardBackgroundBrush" Color="{DynamicResource ThemeCardBackgroundColor}" />
+        <SolidColorBrush x:Key="CardBorderBrush" Color="{DynamicResource ThemeCardBorderColor}" />
+        <SolidColorBrush x:Key="InsetBackgroundBrush" Color="{DynamicResource ThemeInsetBackgroundColor}" />
+        <SolidColorBrush x:Key="FieldBackgroundBrush" Color="{DynamicResource ThemeFieldBackgroundColor}" />
+        <SolidColorBrush x:Key="FieldBorderBrush" Color="{DynamicResource ThemeFieldBorderColor}" />
+        <SolidColorBrush x:Key="FieldBorderHoverBrush" Color="{DynamicResource ThemeFieldBorderHoverColor}" />
+        <SolidColorBrush x:Key="FieldBorderFocusBrush" Color="{DynamicResource ThemeFieldBorderFocusColor}" />
+        <SolidColorBrush x:Key="PrimaryTextBrush" Color="{DynamicResource ThemePrimaryTextColor}" />
+        <SolidColorBrush x:Key="SecondaryTextBrush" Color="{DynamicResource ThemeSecondaryTextColor}" />
+        <SolidColorBrush x:Key="MutedTextBrush" Color="{DynamicResource ThemeMutedTextColor}" />
+        <SolidColorBrush x:Key="AccentButtonBrush" Color="{DynamicResource ThemeAccentButtonColor}" />
+        <SolidColorBrush x:Key="AccentButtonHoverBrush" Color="{DynamicResource ThemeAccentButtonHoverColor}" />
+        <SolidColorBrush x:Key="AccentButtonBorderBrush" Color="{DynamicResource ThemeAccentButtonBorderColor}" />
 
         <Style x:Key="ArchiveSearchBoxStyle" TargetType="TextBox">
             <Setter Property="MinHeight" Value="46" />

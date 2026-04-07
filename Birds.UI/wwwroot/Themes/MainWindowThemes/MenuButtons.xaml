@@ -6,7 +6,7 @@
         TargetType="{x:Type RadioButton}">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Foreground" Value="#B5BDC8" />
+        <Setter Property="Foreground" Value="{DynamicResource ThemeSecondaryTextBrush}" />
         <Setter Property="FontSize" Value="15" />
         <Setter Property="Width" Value="182" />
         <Setter Property="Margin" Value="0,0,0,12" />
@@ -23,7 +23,7 @@
                     <Border
                         x:Name="ButtonBorder"
                         Background="{TemplateBinding Background}"
-                        BorderBrush="#27303A"
+                        BorderBrush="{DynamicResource ThemeCardBorderBrush}"
                         BorderThickness="1"
                         CornerRadius="12">
                         <Grid>
@@ -33,7 +33,7 @@
                                 Margin="0,12,0,12"
                                 HorizontalAlignment="Left"
                                 Opacity="0"
-                                Background="#6D7E91"
+                                Background="{DynamicResource ThemeFieldBorderFocusBrush}"
                                 CornerRadius="2" />
                             <ContentPresenter
                                 Margin="18,16,18,16"
@@ -45,10 +45,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ButtonBorder" Property="Background" Value="#141A21" />
-                            <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#33404D" />
+                            <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource ThemeInsetBackgroundBrush}" />
+                            <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
                             <Setter TargetName="AccentBar" Property="Opacity" Value="0.5" />
-                            <Setter TargetName="AccentBar" Property="Background" Value="#536171" />
+                            <Setter TargetName="AccentBar" Property="Background" Value="{DynamicResource ThemeMutedTextBrush}" />
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
@@ -79,11 +79,11 @@
                             </Trigger.ExitActions>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter Property="Foreground" Value="White" />
-                            <Setter TargetName="ButtonBorder" Property="Background" Value="#181F27" />
-                            <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#3A4655" />
+                            <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
+                            <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource ThemeCardBackgroundBrush}" />
+                            <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
                             <Setter TargetName="AccentBar" Property="Opacity" Value="1" />
-                            <Setter TargetName="AccentBar" Property="Background" Value="#91A4BA" />
+                            <Setter TargetName="AccentBar" Property="Background" Value="{DynamicResource ThemePrimaryTextBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

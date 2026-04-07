@@ -8,6 +8,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/Palettes/GraphiteTheme.xaml" />
 
                 <!-- ========== -->
                 <!-- Converters -->

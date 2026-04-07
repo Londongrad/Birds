@@ -9,6 +9,8 @@ using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.Services.Preferences;
 using Birds.UI.Services.Preferences.Interfaces;
 using Birds.UI.Services.Stores.BirdStore;
+using Birds.UI.Services.Theming;
+using Birds.UI.Services.Theming.Interfaces;
 using Birds.UI.Threading;
 using Birds.UI.Threading.Abstractions;
 using Birds.UI.ViewModels;
@@ -38,6 +40,7 @@ namespace Birds.UI
             services.AddSingleton<INotificationManager, NotificationManager>();
             services.AddSingleton<IAppPreferencesPathProvider, LocalAppPreferencesPathProvider>();
             services.AddSingleton<IAppPreferencesService, JsonAppPreferencesService>();
+            services.AddSingleton<IThemeService, ThemeService>();
 
             // Export Services
             services.AddSingleton<IExportService, JsonExportService>();

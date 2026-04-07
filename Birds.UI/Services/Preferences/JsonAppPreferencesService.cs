@@ -18,6 +18,9 @@ namespace Birds.UI.Services.Preferences
         private string selectedLanguage = AppPreferencesState.DefaultLanguage;
 
         [ObservableProperty]
+        private string selectedTheme = AppPreferencesState.DefaultTheme;
+
+        [ObservableProperty]
         private bool showNotificationBadge = true;
 
         [ObservableProperty]
@@ -29,6 +32,7 @@ namespace Birds.UI.Services.Preferences
 
             var state = LoadState();
             selectedLanguage = state.SelectedLanguage;
+            selectedTheme = state.SelectedTheme;
             showNotificationBadge = state.ShowNotificationBadge;
             reduceMotion = state.ReduceMotion;
         }
@@ -36,11 +40,14 @@ namespace Birds.UI.Services.Preferences
         public void ResetToDefaults()
         {
             SelectedLanguage = AppPreferencesState.DefaultLanguage;
+            SelectedTheme = AppPreferencesState.DefaultTheme;
             ShowNotificationBadge = true;
             ReduceMotion = false;
         }
 
         partial void OnSelectedLanguageChanged(string value) => SaveState();
+
+        partial void OnSelectedThemeChanged(string value) => SaveState();
 
         partial void OnShowNotificationBadgeChanged(bool value) => SaveState();
 
@@ -77,6 +84,7 @@ namespace Birds.UI.Services.Preferences
                     new AppPreferencesState
                     {
                         SelectedLanguage = SelectedLanguage,
+                        SelectedTheme = SelectedTheme,
                         ShowNotificationBadge = ShowNotificationBadge,
                         ReduceMotion = ReduceMotion
                     },

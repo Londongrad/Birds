@@ -23,8 +23,8 @@
         Padding="20"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Center"
-        Background="#171D25"
-        BorderBrush="#2B3441"
+        Background="{DynamicResource ThemeBirdItemBackgroundBrush}"
+        BorderBrush="{DynamicResource ThemeCardBorderBrush}"
         BorderThickness="1"
         CornerRadius="14">
 
@@ -95,7 +95,7 @@
                 Padding="0"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Background="Gray"
+                Background="{DynamicResource ThemeNotificationActionBrush}"
                 CornerRadius="7.5">
 
                 <ToolTipService.ToolTip>
@@ -110,7 +110,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontWeight="Bold"
-                    Foreground="White"
+                    Foreground="{DynamicResource ThemePrimaryTextBrush}"
                     Text="!" />
             </Border>
         </Grid>
