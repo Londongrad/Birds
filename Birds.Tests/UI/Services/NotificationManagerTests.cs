@@ -23,6 +23,21 @@ namespace Birds.Tests.UI.Services
         }
 
         [Fact]
+        public async Task ShowNotification_WhenSameSuccessRepeated_Should_KeepSeparateEntries()
+        {
+            var sut = new NotificationManager(new InlineUiDispatcher());
+            var options = new NotificationOptions(NotificationType.Success, Timeout.InfiniteTimeSpan);
+
+            sut.ShowNotification("Bird added successfully!", options);
+            sut.ShowNotification("Bird added successfully!", options);
+
+            await Task.Delay(10);
+
+            sut.ActiveNotifications.Should().HaveCount(2);
+            sut.UnreadCount.Should().Be(2);
+        }
+
+        [Fact]
         public async Task DismissNotification_Should_RemoveToastFromActiveCollection()
         {
             var sut = new NotificationManager(new InlineUiDispatcher());

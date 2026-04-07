@@ -67,14 +67,17 @@ namespace Birds.UI.Services.Notification
         {
             await _uiDispatcher.InvokeAsync(() =>
             {
-                var title = NotificationToast.ResolveTitle(options.Title, options.Type);
-                var existing = _activeNotifications.FirstOrDefault(x =>
-                    x.Type == options.Type
-                    && x.Title == title
-                    && x.Message == message);
+                if (ShouldCoalesce(options))
+                {
+                    var title = NotificationToast.ResolveTitle(options.Title, options.Type);
+                    var existing = _activeNotifications.FirstOrDefault(x =>
+                        x.Type == options.Type
+                        && x.Title == title
+                        && x.Message == message);
 
-                if (existing is not null)
-                    _activeNotifications.Remove(existing);
+                    if (existing is not null)
+                        _activeNotifications.Remove(existing);
+                }
 
                 _activeNotifications.Insert(0, NotificationToast.Create(message, options));
 
@@ -84,6 +87,9 @@ namespace Birds.UI.Services.Notification
                 RefreshCounters();
             });
         }
+
+        private static bool ShouldCoalesce(NotificationOptions options)
+            => options.Type == NotificationType.Info;
 
         private void RemoveNotification(Guid id)
         {
