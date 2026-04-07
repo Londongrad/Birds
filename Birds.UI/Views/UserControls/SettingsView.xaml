@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:loc="clr-namespace:Birds.UI.Services.Localization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="clr-namespace:Birds.UI.ViewModels"
     d:DataContext="{d:DesignInstance Type=viewmodels:SettingsViewModel}"
@@ -311,12 +312,12 @@
                         FontSize="28"
                         FontWeight="SemiBold"
                         Foreground="{StaticResource PrimaryTextBrush}"
-                        Text="Настройки" />
+                        Text="{loc:Loc Key=Settings.Title}" />
                     <TextBlock
                         Margin="0,10,0,0"
                         FontSize="14"
                         Foreground="{StaticResource SecondaryTextBrush}"
-                        Text="Центр пользовательских предпочтений. Изменения сохраняются автоматически." />
+                        Text="{loc:Loc Key=Settings.Subtitle}" />
 
                     <Border
                         Margin="0,24,0,0"
@@ -324,10 +325,10 @@
                         <StackPanel>
                             <TextBlock
                                 Style="{StaticResource SectionTitleStyle}"
-                                Text="Интерфейс" />
+                                Text="{loc:Loc Key=Settings.Interface.Title}" />
                             <TextBlock
                                 Style="{StaticResource SectionSubtitleStyle}"
-                                Text="Здесь можно сохранить базовые предпочтения интерфейса и подготовить почву для будущей локализации." />
+                                Text="{loc:Loc Key=Settings.Interface.Description}" />
 
                             <Grid Margin="0,22,0,0">
                                 <Grid.ColumnDefinitions>
@@ -338,10 +339,12 @@
                                 <StackPanel>
                                     <TextBlock
                                         Style="{StaticResource FieldLabelStyle}"
-                                        Text="Язык интерфейса" />
+                                        Text="{loc:Loc Key=Settings.LanguageLabel}" />
                                     <ComboBox
+                                        DisplayMemberPath="DisplayName"
                                         ItemsSource="{Binding AvailableLanguages}"
-                                        SelectedItem="{Binding SelectedLanguage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        SelectedValue="{Binding SelectedLanguage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        SelectedValuePath="Code"
                                         Style="{StaticResource SettingsComboBoxStyle}" />
                                     <TextBlock
                                         Style="{StaticResource FieldHintStyle}"
@@ -354,10 +357,12 @@
                                     Width="260">
                                     <TextBlock
                                         Style="{StaticResource FieldLabelStyle}"
-                                        Text="Тема приложения" />
+                                        Text="{loc:Loc Key=Settings.ThemeLabel}" />
                                     <ComboBox
+                                        DisplayMemberPath="DisplayName"
                                         ItemsSource="{Binding AvailableThemes}"
-                                        SelectedItem="{Binding SelectedTheme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        SelectedValue="{Binding SelectedTheme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        SelectedValuePath="Code"
                                         Style="{StaticResource SettingsComboBoxStyle}" />
                                     <TextBlock
                                         Style="{StaticResource FieldHintStyle}"
@@ -380,7 +385,7 @@
                                     <TextBlock
                                         Style="{StaticResource FieldLabelStyle}"
                                         Margin="0,0,0,4"
-                                        Text="Сдержанные анимации" />
+                                        Text="{loc:Loc Key=Settings.MotionLabel}" />
                                     <TextBlock
                                         FontSize="12"
                                         Foreground="{StaticResource SecondaryTextBrush}"
@@ -397,10 +402,10 @@
                         <StackPanel>
                             <TextBlock
                                 Style="{StaticResource SectionTitleStyle}"
-                                Text="Уведомления" />
+                                Text="{loc:Loc Key=Settings.Notifications.Title}" />
                             <TextBlock
                                 Style="{StaticResource SectionSubtitleStyle}"
-                                Text="Можно оставить историю уведомлений и при этом убрать навязчивый индикатор новых событий." />
+                                Text="{loc:Loc Key=Settings.Notifications.Description}" />
 
                             <Grid Margin="0,22,0,0">
                                 <Grid.ColumnDefinitions>
@@ -418,7 +423,7 @@
                                     <TextBlock
                                         Style="{StaticResource FieldLabelStyle}"
                                         Margin="0,0,0,4"
-                                        Text="Показывать индикатор новых уведомлений" />
+                                        Text="{loc:Loc Key=Settings.NotificationBadgeLabel}" />
                                     <TextBlock
                                         FontSize="12"
                                         Foreground="{StaticResource SecondaryTextBrush}"
@@ -447,19 +452,19 @@
                                     FontSize="13"
                                     FontWeight="SemiBold"
                                     Foreground="{StaticResource PrimaryTextBrush}"
-                                    Text="Сброс к стандартным значениям" />
+                                    Text="{loc:Loc Key=Settings.ResetTitle}" />
                                 <TextBlock
                                     Margin="0,6,0,0"
                                     FontSize="12"
                                     Foreground="{StaticResource MutedTextBrush}"
-                                    Text="Полезно, если захочется быстро вернуть базовые параметры интерфейса." />
+                                    Text="{loc:Loc Key=Settings.ResetDescription}" />
                             </StackPanel>
 
                             <Button
                                 Grid.Column="1"
                                 Command="{Binding ResetPreferencesCommand}"
                                 Style="{StaticResource SecondaryButtonStyle}">
-                                <TextBlock Text="Сбросить" />
+                                <TextBlock Text="{loc:Loc Key=Settings.ResetButton}" />
                             </Button>
                         </Grid>
                     </Border>

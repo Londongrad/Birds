@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:Birds.UI.Views.UserControls"
+    xmlns:loc="clr-namespace:Birds.UI.Services.Localization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="clr-namespace:Birds.UI.ViewModels"
     d:DataContext="{d:DesignInstance Type=viewmodels:BirdViewModel}"
@@ -100,9 +101,11 @@
 
                 <ToolTipService.ToolTip>
                     <TextBlock>
-                        <Run Text="{Binding LocalCreatedAt, Mode=OneWay, StringFormat=Created: {0:dd.MM.yyyy HH:mm}}" />
+                        <Run Text="{loc:Loc Key=Bird.CreatedLabel}" />
+                        <Run Text="{Binding LocalCreatedAt, Mode=OneWay, StringFormat={}{0:dd.MM.yyyy HH:mm}}" />
                         <LineBreak />
-                        <Run Text="{Binding LocalUpdatedAt, Mode=TwoWay, StringFormat=Updated: {0:dd.MM.yyyy HH:mm}}" />
+                        <Run Text="{loc:Loc Key=Bird.UpdatedLabel}" />
+                        <Run Text="{Binding LocalUpdatedAt, Mode=OneWay, StringFormat={}{0:dd.MM.yyyy HH:mm}}" />
                     </TextBlock>
                 </ToolTipService.ToolTip>
 

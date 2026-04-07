@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:loc="clr-namespace:Birds.UI.Services.Localization"
     xmlns:dto="clr-namespace:Birds.Application.DTOs;assembly=Birds.Application"
     xmlns:local="clr-namespace:Birds.UI.Views.UserControls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -289,8 +290,10 @@
                             VerticalAlignment="Center"
                             Foreground="{StaticResource PrimaryTextBrush}"
                             FontSize="15"
-                            FontWeight="SemiBold"
-                            Text="{Binding BirdsView.Count, StringFormat=Птиц: {0}}" />
+                            FontWeight="SemiBold">
+                            <Run Text="{loc:Loc Key=BirdList.CountLabel}" />
+                            <Run Text="{Binding BirdsView.Count}" />
+                        </TextBlock>
                     </Border>
 
                     <ComboBox
@@ -304,7 +307,7 @@
                         Grid.Column="3"
                         Margin="14,0,0,0"
                         Command="{Binding ReloadBirdsCommand}"
-                        Content="Повторить"
+                        Content="{loc:Loc Key=BirdList.Retry}"
                         Style="{StaticResource ArchiveRetryButtonStyle}"
                         Visibility="{Binding IsFailed, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </Grid>
@@ -363,13 +366,13 @@
                                 Foreground="{StaticResource PrimaryTextBrush}"
                                 FontSize="18"
                                 FontWeight="SemiBold"
-                                Text="Ничего не найдено" />
+                                Text="{loc:Loc Key=BirdList.EmptyTitle}" />
                             <TextBlock
                                 Margin="0,8,0,0"
                                 HorizontalAlignment="Center"
                                 Foreground="{StaticResource SecondaryTextBrush}"
                                 FontSize="13"
-                                Text="Попробуйте изменить поиск или фильтр." />
+                                Text="{loc:Loc Key=BirdList.EmptyDescription}" />
                         </StackPanel>
 
                         <Grid
@@ -387,7 +390,7 @@
                                     HorizontalAlignment="Center"
                                     Foreground="{StaticResource PrimaryTextBrush}"
                                     FontSize="14"
-                                    Text="Загрузка архива..." />
+                                    Text="{loc:Loc Key=BirdList.Loading}" />
                             </StackPanel>
                         </Grid>
                     </Grid>
