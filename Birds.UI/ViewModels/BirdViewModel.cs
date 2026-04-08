@@ -255,13 +255,13 @@ namespace Birds.UI.ViewModels
             var culture = _localization.CurrentCulture;
 
             DisplayName = ResolveDisplayName();
-            ArrivalDisplay = Arrival.ToString("d", culture);
+            ArrivalDisplay = _localization.FormatDate(Arrival);
             DepartureDisplay = Departure.HasValue
-                ? Departure.Value.ToString("d", culture)
+                ? _localization.FormatDate(Departure.Value)
                 : _localization.GetString("Info.ToThisDay");
             StatusText = _localization.GetString(IsAlive ? "Bird.StatusAlive" : "Bird.StatusDead");
-            LocalCreatedAtDisplay = FormatDateTime(LocalCreatedAt, culture);
-            LocalUpdatedAtDisplay = FormatDateTime(LocalUpdatedAt, culture);
+            LocalCreatedAtDisplay = _localization.FormatDateTime(LocalCreatedAt);
+            LocalUpdatedAtDisplay = _localization.FormatDateTime(LocalUpdatedAt);
 
             var endDate = Departure?.ToDateTime(TimeOnly.MinValue) ?? DateTime.Now;
             DaysInStock = (int)(endDate - Arrival.ToDateTime(TimeOnly.MinValue)).TotalDays;
@@ -294,11 +294,6 @@ namespace Birds.UI.ViewModels
             return BirdEnumHelper.ParseBirdName(Name)?.ToDisplayName(_localization.CurrentCulture)
                 ?? Name;
         }
-
-        private static string FormatDateTime(DateTime? value, CultureInfo culture)
-            => value.HasValue
-                ? value.Value.ToString("g", culture)
-                : "\u2014";
 
         private void OnLanguageChanged(object? sender, EventArgs e)
         {

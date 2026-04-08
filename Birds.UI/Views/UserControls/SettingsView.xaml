@@ -335,6 +335,10 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
 
                                 <StackPanel>
                                     <TextBlock
@@ -367,6 +371,24 @@
                                     <TextBlock
                                         Style="{StaticResource FieldHintStyle}"
                                         Text="{Binding ThemeHint}" />
+                                </StackPanel>
+
+                                <StackPanel
+                                    Grid.Row="1"
+                                    Grid.ColumnSpan="2"
+                                    Margin="0,18,0,0">
+                                    <TextBlock
+                                        Style="{StaticResource FieldLabelStyle}"
+                                        Text="{loc:Loc Key=Settings.DateFormatLabel}" />
+                                    <ComboBox
+                                        DisplayMemberPath="DisplayName"
+                                        ItemsSource="{Binding AvailableDateFormats}"
+                                        SelectedValue="{Binding SelectedDateFormat, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        SelectedValuePath="Code"
+                                        Style="{StaticResource SettingsComboBoxStyle}" />
+                                    <TextBlock
+                                        Style="{StaticResource FieldHintStyle}"
+                                        Text="{Binding DateFormatHint}" />
                                 </StackPanel>
                             </Grid>
 

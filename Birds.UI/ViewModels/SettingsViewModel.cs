@@ -27,6 +27,9 @@ namespace Birds.UI.ViewModels
         private ReadOnlyCollection<ThemeOption> _availableThemes =
             new(new List<ThemeOption>());
 
+        private ReadOnlyCollection<DateFormatOption> _availableDateFormats =
+            new(new List<DateFormatOption>());
+
         public SettingsViewModel(IAppPreferencesService preferences,
                                  IThemeService themeService,
                                  ILocalizationService localization,
@@ -39,6 +42,7 @@ namespace Birds.UI.ViewModels
 
             BuildAvailableLanguages();
             BuildAvailableThemes();
+            BuildAvailableDateFormats();
             ReloadFromPreferences();
 
             _preferences.PropertyChanged += OnPreferencesChanged;
@@ -57,11 +61,20 @@ namespace Birds.UI.ViewModels
             private set => SetProperty(ref _availableThemes, value);
         }
 
+        public ReadOnlyCollection<DateFormatOption> AvailableDateFormats
+        {
+            get => _availableDateFormats;
+            private set => SetProperty(ref _availableDateFormats, value);
+        }
+
         [ObservableProperty]
         private string selectedLanguage = AppPreferencesState.DefaultLanguage;
 
         [ObservableProperty]
         private string selectedTheme = AppPreferencesState.DefaultTheme;
+
+        [ObservableProperty]
+        private string selectedDateFormat = AppPreferencesState.DefaultDateFormat;
 
         [ObservableProperty]
         private bool showNotificationBadge = true;
@@ -78,6 +91,14 @@ namespace Birds.UI.ViewModels
             SelectedTheme == ThemeKeys.Graphite
                 ? AppText.Get("Settings.ThemeHint.Graphite")
                 : AppText.Get("Settings.ThemeHint.Steel");
+
+        public string DateFormatHint =>
+            SelectedDateFormat switch
+            {
+                DateDisplayFormats.MonthDayYear => AppText.Get("Settings.DateFormatHint.MonthDayYear"),
+                DateDisplayFormats.YearMonthDay => AppText.Get("Settings.DateFormatHint.YearMonthDay"),
+                _ => AppText.Get("Settings.DateFormatHint.DayMonthYear")
+            };
 
         public string NotificationsHint =>
             ShowNotificationBadge
@@ -118,6 +139,16 @@ namespace Birds.UI.ViewModels
             OnPropertyChanged(nameof(ThemeHint));
         }
 
+        partial void OnSelectedDateFormatChanged(string value)
+        {
+            var normalized = DateDisplayFormats.Normalize(value);
+            if (_preferences.SelectedDateFormat != normalized)
+                _preferences.SelectedDateFormat = normalized;
+
+            _localization.ApplyDateFormat(normalized);
+            OnPropertyChanged(nameof(DateFormatHint));
+        }
+
         partial void OnShowNotificationBadgeChanged(bool value)
         {
             if (_preferences.ShowNotificationBadge != value)
@@ -138,6 +169,7 @@ namespace Birds.UI.ViewModels
         {
             if (e.PropertyName is nameof(IAppPreferencesService.SelectedLanguage)
                 or nameof(IAppPreferencesService.SelectedTheme)
+                or nameof(IAppPreferencesService.SelectedDateFormat)
                 or nameof(IAppPreferencesService.ShowNotificationBadge)
                 or nameof(IAppPreferencesService.ReduceMotion))
             {
@@ -149,8 +181,10 @@ namespace Birds.UI.ViewModels
         {
             BuildAvailableLanguages();
             BuildAvailableThemes();
+            BuildAvailableDateFormats();
             OnPropertyChanged(nameof(LanguageHint));
             OnPropertyChanged(nameof(ThemeHint));
+            OnPropertyChanged(nameof(DateFormatHint));
             OnPropertyChanged(nameof(NotificationsHint));
             OnPropertyChanged(nameof(MotionHint));
         }
@@ -173,15 +207,28 @@ namespace Birds.UI.ViewModels
                     .ToList());
         }
 
+        private void BuildAvailableDateFormats()
+        {
+            AvailableDateFormats = new ReadOnlyCollection<DateFormatOption>(
+                new List<DateFormatOption>
+                {
+                    new(DateDisplayFormats.DayMonthYear, AppText.Get("Settings.DateFormat.DayMonthYear")),
+                    new(DateDisplayFormats.MonthDayYear, AppText.Get("Settings.DateFormat.MonthDayYear")),
+                    new(DateDisplayFormats.YearMonthDay, AppText.Get("Settings.DateFormat.YearMonthDay"))
+                });
+        }
+
         private void ReloadFromPreferences()
         {
             SelectedLanguage = AppLanguages.Normalize(_preferences.SelectedLanguage);
             SelectedTheme = ThemeKeys.Normalize(_preferences.SelectedTheme);
+            SelectedDateFormat = DateDisplayFormats.Normalize(_preferences.SelectedDateFormat);
             ShowNotificationBadge = _preferences.ShowNotificationBadge;
             ReduceMotion = _preferences.ReduceMotion;
 
             OnPropertyChanged(nameof(LanguageHint));
             OnPropertyChanged(nameof(ThemeHint));
+            OnPropertyChanged(nameof(DateFormatHint));
             OnPropertyChanged(nameof(NotificationsHint));
             OnPropertyChanged(nameof(MotionHint));
         }

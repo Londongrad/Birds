@@ -8,6 +8,8 @@ namespace Birds.UI.Services.Preferences.Interfaces
 
         string SelectedTheme { get; set; }
 
+        string SelectedDateFormat { get; set; }
+
         bool ShowNotificationBadge { get; set; }
 
         bool ReduceMotion { get; set; }

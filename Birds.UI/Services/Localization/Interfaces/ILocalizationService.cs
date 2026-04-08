@@ -11,6 +11,8 @@ namespace Birds.UI.Services.Localization.Interfaces
 
         string CurrentLanguage { get; }
 
+        string CurrentDateFormat { get; }
+
         string this[string key] { get; }
 
         event EventHandler? LanguageChanged;
@@ -20,6 +22,16 @@ namespace Birds.UI.Services.Localization.Interfaces
         string GetString(string key, params object[] args);
 
         bool ApplyLanguage(string? language);
+
+        bool ApplyDateFormat(string? dateFormat);
+
+        string FormatDate(DateOnly value, DateDisplayStyle style = DateDisplayStyle.Short);
+
+        string FormatDate(DateOnly? value, DateDisplayStyle style = DateDisplayStyle.Short, string? fallback = null);
+
+        string FormatDateTime(DateTime value);
+
+        string FormatDateTime(DateTime? value, string? fallback = null);
 
         void LoadSavedLanguage();
     }

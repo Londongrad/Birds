@@ -3,6 +3,7 @@ using Birds.Application.DTOs.Helpers;
 using Birds.Domain.Extensions;
 using Birds.Shared.Localization;
 using Birds.UI.Enums;
+using Birds.UI.Services.Localization;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Stores.BirdStore;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -134,7 +135,7 @@ namespace Birds.UI.ViewModels
                 .ThenByDescending(g => g.Key.Month))
             {
                 var firstOfMonth = new DateOnly(g.Key.Year, g.Key.Month, 1);
-                var label = firstOfMonth.ToString("MMM yyyy", CultureInfo.CurrentCulture);
+                var label = _localization.FormatDate(firstOfMonth, DateDisplayStyle.MonthYearShort);
                 MonthStats.Add(new StatItem(label, g.Count()));
             }
         }
@@ -148,11 +149,9 @@ namespace Birds.UI.ViewModels
         {
             if (filteredBirds.Count == 0)
             {
-                TopMonth = TopWeek = TopDay = LongestBreak = "—";
+                TopMonth = TopWeek = TopDay = LongestBreak = "\u2014";
                 return;
             }
-
-            var culture = CultureInfo.CurrentCulture;
 
             var topMonthGroup = filteredBirds
                 .GroupBy(b => new { b.Arrival.Year, b.Arrival.Month })
@@ -162,12 +161,12 @@ namespace Birds.UI.ViewModels
             if (topMonthGroup is not null)
             {
                 var firstOfMonth = new DateOnly(topMonthGroup.Key.Year, topMonthGroup.Key.Month, 1);
-                var label = firstOfMonth.ToString("MMMM yyyy", culture);
-                TopMonth = $"{label} — {AppText.Format("Statistics.CountBirds", topMonthGroup.Count())}";
+                var label = _localization.FormatDate(firstOfMonth, DateDisplayStyle.MonthYearLong);
+                TopMonth = $"{label} \u2014 {AppText.Format("Statistics.CountBirds", topMonthGroup.Count())}";
             }
             else
             {
-                TopMonth = "—";
+                TopMonth = "\u2014";
             }
 
             var topWeekGroup = filteredBirds
@@ -188,11 +187,11 @@ namespace Birds.UI.ViewModels
                 int year = topWeekGroup.Key.Year;
                 int week = topWeekGroup.Key.Week;
                 string range = FormatIsoWeekRange(year, week);
-                TopWeek = $"{range} — {AppText.Format("Statistics.CountBirds", topWeekGroup.Count())}";
+                TopWeek = $"{range} \u2014 {AppText.Format("Statistics.CountBirds", topWeekGroup.Count())}";
             }
             else
             {
-                TopWeek = "—";
+                TopWeek = "\u2014";
             }
 
             var topDayGroup = filteredBirds
@@ -201,8 +200,8 @@ namespace Birds.UI.ViewModels
                 .FirstOrDefault();
 
             TopDay = topDayGroup != null
-                ? $"{topDayGroup.Key.ToString("dd MMMM yyyy", culture)} — {AppText.Format("Statistics.CountBirds", topDayGroup.Count())}"
-                : "—";
+                ? $"{_localization.FormatDate(topDayGroup.Key, DateDisplayStyle.Long)} \u2014 {AppText.Format("Statistics.CountBirds", topDayGroup.Count())}"
+                : "\u2014";
 
             CalculateLongestBreak(filteredBirds);
         }
@@ -217,12 +216,13 @@ namespace Birds.UI.ViewModels
 
             if (orderedDates.Count <= 1)
             {
-                LongestBreak = "—";
+                LongestBreak = "\u2014";
                 return;
             }
 
             var maxGap = TimeSpan.Zero;
-            DateOnly? start = null, end = null;
+            DateOnly? start = null;
+            DateOnly? end = null;
 
             for (int i = 1; i < orderedDates.Count; i++)
             {
@@ -237,13 +237,12 @@ namespace Birds.UI.ViewModels
                 }
             }
 
-            var culture = CultureInfo.CurrentCulture;
             LongestBreak = AppText.Format(
-                culture,
+                _localization.CurrentCulture,
                 "Statistics.LongestBreakValue",
                 maxGap.TotalDays - 1,
-                start?.ToString("d", culture) ?? "—",
-                end?.ToString("d", culture) ?? "—");
+                _localization.FormatDate(start),
+                _localization.FormatDate(end));
         }
 
         private void CalculateLongestKeeping(IList<BirdDTO> filteredBirds)
@@ -268,19 +267,11 @@ namespace Birds.UI.ViewModels
             }
         }
 
-        private static string FormatIsoWeekRange(int isoYear, int isoWeek)
+        private string FormatIsoWeekRange(int isoYear, int isoWeek)
         {
-            var start = ISOWeek.ToDateTime(isoYear, isoWeek, DayOfWeek.Monday);
-            var end = ISOWeek.ToDateTime(isoYear, isoWeek, DayOfWeek.Sunday);
-            var culture = CultureInfo.CurrentCulture;
-
-            if (start.Year != end.Year)
-                return $"{start.ToString("dd MMM yyyy", culture)}—{end.ToString("dd MMM yyyy", culture)}";
-
-            if (start.Month != end.Month)
-                return $"{start.ToString("dd MMM", culture)}-{end.ToString("dd MMM yyyy", culture)}";
-
-            return $"{start:dd}-{end:dd} {start.ToString("MMMM yyyy", culture)}";
+            var start = DateOnly.FromDateTime(ISOWeek.ToDateTime(isoYear, isoWeek, DayOfWeek.Monday));
+            var end = DateOnly.FromDateTime(ISOWeek.ToDateTime(isoYear, isoWeek, DayOfWeek.Sunday));
+            return $"{_localization.FormatDate(start, DateDisplayStyle.Medium)}\u2014{_localization.FormatDate(end, DateDisplayStyle.Medium)}";
         }
     }
 }

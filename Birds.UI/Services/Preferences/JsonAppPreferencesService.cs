@@ -1,5 +1,6 @@
 using Birds.Shared.Localization;
 using Birds.UI.Services.Preferences.Interfaces;
+using Birds.UI.Services.Localization;
 using Birds.UI.Services.Theming;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.IO;
@@ -24,6 +25,9 @@ namespace Birds.UI.Services.Preferences
         private string selectedTheme = AppPreferencesState.DefaultTheme;
 
         [ObservableProperty]
+        private string selectedDateFormat = AppPreferencesState.DefaultDateFormat;
+
+        [ObservableProperty]
         private bool showNotificationBadge = true;
 
         [ObservableProperty]
@@ -36,6 +40,7 @@ namespace Birds.UI.Services.Preferences
             var state = LoadState();
             selectedLanguage = AppLanguages.Normalize(state.SelectedLanguage);
             selectedTheme = ThemeKeys.Normalize(state.SelectedTheme);
+            selectedDateFormat = DateDisplayFormats.Normalize(state.SelectedDateFormat);
             showNotificationBadge = state.ShowNotificationBadge;
             reduceMotion = state.ReduceMotion;
         }
@@ -44,6 +49,7 @@ namespace Birds.UI.Services.Preferences
         {
             SelectedLanguage = AppPreferencesState.DefaultLanguage;
             SelectedTheme = AppPreferencesState.DefaultTheme;
+            SelectedDateFormat = AppPreferencesState.DefaultDateFormat;
             ShowNotificationBadge = true;
             ReduceMotion = false;
         }
@@ -53,6 +59,12 @@ namespace Birds.UI.Services.Preferences
         partial void OnSelectedThemeChanged(string value)
         {
             selectedTheme = ThemeKeys.Normalize(value);
+            SaveState();
+        }
+
+        partial void OnSelectedDateFormatChanged(string value)
+        {
+            selectedDateFormat = DateDisplayFormats.Normalize(value);
             SaveState();
         }
 
@@ -92,6 +104,7 @@ namespace Birds.UI.Services.Preferences
                     {
                         SelectedLanguage = SelectedLanguage,
                         SelectedTheme = ThemeKeys.Normalize(SelectedTheme),
+                        SelectedDateFormat = DateDisplayFormats.Normalize(SelectedDateFormat),
                         ShowNotificationBadge = ShowNotificationBadge,
                         ReduceMotion = ReduceMotion
                     },

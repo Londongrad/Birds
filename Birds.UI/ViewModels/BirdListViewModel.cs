@@ -147,8 +147,8 @@ namespace Birds.UI.ViewModels
 
             return localizedName.Contains(text, StringComparison.CurrentCultureIgnoreCase)
                 || (bird.Name?.Contains(text, StringComparison.CurrentCultureIgnoreCase) == true)
-                || (bird.Arrival.ToString().Contains(text, StringComparison.CurrentCultureIgnoreCase) == true)
-                || (bird.Departure?.ToString().Contains(text, StringComparison.CurrentCultureIgnoreCase) == true)
+                || _localization.FormatDate(bird.Arrival).Contains(text, StringComparison.CurrentCultureIgnoreCase)
+                || (bird.Departure is { } departure && _localization.FormatDate(departure).Contains(text, StringComparison.CurrentCultureIgnoreCase))
                 || (bird.Description?.Contains(text, StringComparison.CurrentCultureIgnoreCase) == true);
         }
 
