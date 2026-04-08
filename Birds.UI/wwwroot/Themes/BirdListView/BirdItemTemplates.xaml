@@ -107,7 +107,8 @@
         <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
         <Setter Property="CaretBrush" Value="{DynamicResource ThemePrimaryTextBrush}" />
         <Setter Property="FontSize" Value="15" />
-        <Setter Property="MinHeight" Value="112" />
+        <Setter Property="MinHeight" Value="76" />
+        <Setter Property="MaxHeight" Value="92" />
         <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
     </Style>
 
@@ -361,17 +362,24 @@
 
             <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="1.25*" />
                     <ColumnDefinition Width="196" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel
+                <Grid
                     Grid.Column="0"
                     Margin="0,0,18,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
                     <TextBlock
+                        Grid.Row="0"
                         Style="{StaticResource BirdCardFieldLabelStyle}"
                         Text="{loc:Loc Key=AddBird.SpeciesLabel}" />
                     <ComboBox
+                        Grid.Row="1"
                         IsEditable="False"
                         ItemTemplate="{StaticResource BirdNameComboTemplate}"
                         ItemsSource="{Binding BirdNames}"
@@ -380,13 +388,13 @@
                                                UpdateSourceTrigger=PropertyChanged,
                                                ValidatesOnNotifyDataErrors=True}"
                         Style="{StaticResource BirdCardComboBoxStyle}" />
-                </StackPanel>
+                </Grid>
 
                 <Border
                     Grid.Column="1"
                     MinHeight="74"
                     Padding="14,12"
-                    VerticalAlignment="Bottom"
+                    VerticalAlignment="Center"
                     Background="{DynamicResource ThemeInsetBackgroundBrush}"
                     BorderBrush="{DynamicResource ThemeFieldBorderBrush}"
                     BorderThickness="1"
@@ -418,7 +426,7 @@
 
             <Border
                 Grid.Row="2"
-                Margin="0,16,0,0"
+                Margin="0,14,0,0"
                 Padding="14,12"
                 Background="{DynamicResource ThemeInsetBackgroundBrush}"
                 BorderBrush="{DynamicResource ThemeFieldBorderBrush}"
