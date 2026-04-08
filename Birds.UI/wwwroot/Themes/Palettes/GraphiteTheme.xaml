@@ -29,6 +29,16 @@
     <Color x:Key="ThemeAccentButtonColor">#2F353F</Color>
     <Color x:Key="ThemeAccentButtonHoverColor">#3A424E</Color>
     <Color x:Key="ThemeAccentButtonBorderColor">#495462</Color>
+    <Color x:Key="ThemeStatusAliveColor">#7CE38B</Color>
+    <Color x:Key="ThemeStatusAliveBackgroundColor">#1B2B22</Color>
+    <Color x:Key="ThemeStatusAliveBorderColor">#4C7D59</Color>
+    <Color x:Key="ThemeStatusDeadColor">#E4A1A1</Color>
+    <Color x:Key="ThemeStatusDeadBackgroundColor">#2A1D1F</Color>
+    <Color x:Key="ThemeStatusDeadBorderColor">#8D6267</Color>
+    <Color x:Key="ThemeDangerButtonColor">#2A1B1E</Color>
+    <Color x:Key="ThemeDangerButtonHoverColor">#352225</Color>
+    <Color x:Key="ThemeDangerButtonBorderColor">#92656A</Color>
+    <Color x:Key="ThemeDangerButtonForegroundColor">#E7ABB0</Color>
     <Color x:Key="ThemeNotificationPanelBackgroundColor">#11151A</Color>
     <Color x:Key="ThemeNotificationPanelBorderColor">#282F38</Color>
     <Color x:Key="ThemeNotificationCardBackgroundColor">#171C23</Color>
@@ -76,6 +86,16 @@
     <SolidColorBrush x:Key="ThemeAccentButtonBrush" Color="{StaticResource ThemeAccentButtonColor}" />
     <SolidColorBrush x:Key="ThemeAccentButtonHoverBrush" Color="{StaticResource ThemeAccentButtonHoverColor}" />
     <SolidColorBrush x:Key="ThemeAccentButtonBorderBrush" Color="{StaticResource ThemeAccentButtonBorderColor}" />
+    <SolidColorBrush x:Key="ThemeStatusAliveBrush" Color="{StaticResource ThemeStatusAliveColor}" />
+    <SolidColorBrush x:Key="ThemeStatusAliveBackgroundBrush" Color="{StaticResource ThemeStatusAliveBackgroundColor}" />
+    <SolidColorBrush x:Key="ThemeStatusAliveBorderBrush" Color="{StaticResource ThemeStatusAliveBorderColor}" />
+    <SolidColorBrush x:Key="ThemeStatusDeadBrush" Color="{StaticResource ThemeStatusDeadColor}" />
+    <SolidColorBrush x:Key="ThemeStatusDeadBackgroundBrush" Color="{StaticResource ThemeStatusDeadBackgroundColor}" />
+    <SolidColorBrush x:Key="ThemeStatusDeadBorderBrush" Color="{StaticResource ThemeStatusDeadBorderColor}" />
+    <SolidColorBrush x:Key="ThemeDangerButtonBrush" Color="{StaticResource ThemeDangerButtonColor}" />
+    <SolidColorBrush x:Key="ThemeDangerButtonHoverBrush" Color="{StaticResource ThemeDangerButtonHoverColor}" />
+    <SolidColorBrush x:Key="ThemeDangerButtonBorderBrush" Color="{StaticResource ThemeDangerButtonBorderColor}" />
+    <SolidColorBrush x:Key="ThemeDangerButtonForegroundBrush" Color="{StaticResource ThemeDangerButtonForegroundColor}" />
     <SolidColorBrush x:Key="ThemeNotificationPanelBackgroundBrush" Color="{StaticResource ThemeNotificationPanelBackgroundColor}" />
     <SolidColorBrush x:Key="ThemeNotificationPanelBorderBrush" Color="{StaticResource ThemeNotificationPanelBorderColor}" />
     <SolidColorBrush x:Key="ThemeNotificationCardBackgroundBrush" Color="{StaticResource ThemeNotificationCardBackgroundColor}" />

@@ -43,7 +43,6 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
             <!-- Bird details -->
@@ -64,42 +63,9 @@
                 </ContentControl.Style>
             </ContentControl>
 
-            <!-- Action buttons -->
-            <Grid
-                Grid.Column="1"
-                VerticalAlignment="Top">
-
-                <!-- Manual mode -->
-                <ContentPresenter
-                    x:Name="NormalButtons"
-                    Content="{Binding}"
-                    ContentTemplate="{StaticResource NormalButtonsTemplate}">
-                    <ContentPresenter.Visibility>
-                        <MultiBinding Converter="{StaticResource MultiBoolToVisibilityConverter}">
-                            <Binding Path="IsConfirmingDelete" />
-                            <Binding Path="IsEditing" />
-                        </MultiBinding>
-                    </ContentPresenter.Visibility>
-                </ContentPresenter>
-
-                <!-- Delete mode -->
-                <ContentPresenter
-                    Content="{Binding}"
-                    ContentTemplate="{StaticResource ConfirmButtonsTemplate}"
-                    Visibility="{Binding IsConfirmingDelete,
-                                         Converter={StaticResource BoolToVisibilityConverter}}" />
-
-                <!-- Edit mode -->
-                <ContentPresenter
-                    Content="{Binding}"
-                    ContentTemplate="{StaticResource EditButtonsTemplate}"
-                    Visibility="{Binding IsEditing,
-                                         Converter={StaticResource BoolToVisibilityConverter}}" />
-            </Grid>
-
             <!-- Created/updated info tooltip -->
             <Border
-                Grid.Column="2"
+                Grid.Column="1"
                 Width="20"
                 Height="20"
                 Margin="8,2,0,0"
