@@ -128,18 +128,17 @@
                     Grid.Column="1"
                     Padding="10,5"
                     VerticalAlignment="Center"
-                    CornerRadius="999"
-                    Tag="{Binding IsAlive}">
+                    CornerRadius="999">
                     <Border.Style>
                         <Style TargetType="Border">
                             <Setter Property="Background" Value="{DynamicResource ThemeStatusAliveBackgroundBrush}" />
                             <Setter Property="BorderBrush" Value="{DynamicResource ThemeStatusAliveBorderBrush}" />
                             <Setter Property="BorderThickness" Value="1" />
                             <Style.Triggers>
-                                <Trigger Property="Tag" Value="False">
+                                <DataTrigger Binding="{Binding IsAlive}" Value="False">
                                     <Setter Property="BorderBrush" Value="{DynamicResource ThemeStatusDeadBorderBrush}" />
                                     <Setter Property="Background" Value="{DynamicResource ThemeStatusDeadBackgroundBrush}" />
-                                </Trigger>
+                                </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </Border.Style>
@@ -251,11 +250,8 @@
                                 Style="{StaticResource BirdCardMetaLabelStyle}"
                                 Text="{loc:Loc Key=Bird.DurationMeta}" />
                             <TextBlock
-                                Style="{StaticResource BirdCardMetaValueStyle}">
-                                <Run Text="{Binding DaysInStock}" />
-                                <Run Text=" " />
-                                <Run Text="{loc:Loc Key=Bird.DaysSuffix}" />
-                            </TextBlock>
+                                Style="{StaticResource BirdCardMetaValueStyle}"
+                                Text="{Binding DurationDisplay}" />
                         </StackPanel>
                     </Grid>
 

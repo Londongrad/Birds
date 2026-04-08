@@ -102,6 +102,12 @@ namespace Birds.UI.ViewModels
         private int daysInStock;
 
         /// <summary>
+        /// Localized duration text for the current culture.
+        /// </summary>
+        [ObservableProperty]
+        private string durationDisplay = string.Empty;
+
+        /// <summary>
         /// Localized bird status text for the current culture.
         /// </summary>
         [ObservableProperty]
@@ -259,12 +265,13 @@ namespace Birds.UI.ViewModels
             DepartureDisplay = Departure.HasValue
                 ? _localization.FormatDate(Departure.Value)
                 : _localization.GetString("Info.ToThisDay");
-            StatusText = _localization.GetString(IsAlive ? "Bird.StatusAlive" : "Bird.StatusDead");
-            LocalCreatedAtDisplay = _localization.FormatDateTime(LocalCreatedAt);
-            LocalUpdatedAtDisplay = _localization.FormatDateTime(LocalUpdatedAt);
 
             var endDate = Departure?.ToDateTime(TimeOnly.MinValue) ?? DateTime.Now;
             DaysInStock = (int)(endDate - Arrival.ToDateTime(TimeOnly.MinValue)).TotalDays;
+            DurationDisplay = $"{DaysInStock} {_localization.GetString("Bird.DaysSuffix")}";
+            StatusText = _localization.GetString(IsAlive ? "Bird.StatusAlive" : "Bird.StatusDead");
+            LocalCreatedAtDisplay = _localization.FormatDateTime(LocalCreatedAt);
+            LocalUpdatedAtDisplay = _localization.FormatDateTime(LocalUpdatedAt);
         }
 
         /// <summary>

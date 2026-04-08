@@ -136,6 +136,26 @@ namespace Birds.Tests.UI.ViewModels
             sut.ArrivalDisplay.Should().Be(DateDisplayFormats.FormatDate(dto.Arrival, _currentCulture, _currentDateFormat));
         }
 
+        [Fact]
+        public void LanguageChanged_Should_Update_DurationDisplay()
+        {
+            var sparrow = (BirdsName)1;
+            var dto = CreateBirdDto(sparrow) with
+            {
+                Arrival = DateOnly.FromDateTime(DateTime.Today.AddDays(-3)),
+                Departure = DateOnly.FromDateTime(DateTime.Today)
+            };
+
+            var sut = new BirdViewModel(dto, _birdManager.Object, _localization.Object, _notification.Object);
+
+            sut.DurationDisplay.Should().Be($"3 {AppText.Get("Bird.DaysSuffix", _currentCulture)}");
+
+            _currentCulture = CultureInfo.GetCultureInfo(AppLanguages.English);
+            _localization.Raise(x => x.LanguageChanged += null, EventArgs.Empty);
+
+            sut.DurationDisplay.Should().Be($"3 {AppText.Get("Bird.DaysSuffix", _currentCulture)}");
+        }
+
         private static BirdDTO CreateBirdDto(BirdsName name) =>
             new(
                 Id: Guid.NewGuid(),
