@@ -31,7 +31,7 @@ namespace Birds.Application.Behaviors
             catch (ValidationException ex)
             {
                 _logger.LogWarning(ex, LogMessages.ValidationFailed, typeof(TRequest).Name);
-                return CreateFailureResponse($"Validation error: {ex.Message}");
+                return CreateFailureResponse(ExceptionMessages.ValidationFailure(ex.Message));
             }
             catch (DomainValidationException ex)
             {
@@ -41,12 +41,12 @@ namespace Birds.Application.Behaviors
             catch (NotFoundException ex)
             {
                 _logger.LogWarning(ex, LogMessages.EntityNotFound, typeof(TRequest).Name);
-                return CreateFailureResponse($"Not found: {ex.Message}");
+                return CreateFailureResponse(ExceptionMessages.NotFoundFailure(ex.Message));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, LogMessages.UnhandledException, typeof(TRequest).Name);
-                return CreateFailureResponse($"Unexpected error: {ex.Message}");
+                return CreateFailureResponse(ExceptionMessages.UnexpectedFailure(ex.Message));
             }
         }
 
@@ -74,7 +74,7 @@ namespace Birds.Application.Behaviors
 
             // Case 3: Anything else → throw, because it’s not a Result
             throw new InvalidOperationException(
-                string.Format(ExceptionMessages.InvalidOperation, responseType.Name));
+                ExceptionMessages.InvalidOperation(responseType.Name));
         }
     }
 }

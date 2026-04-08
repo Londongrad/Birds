@@ -1,28 +1,43 @@
-﻿namespace Birds.Shared.Constants
+using Birds.Shared.Localization;
+
+namespace Birds.Shared.Constants
 {
     public static class ExceptionMessages
     {
-        public const string UiDispatcher = "UI Dispatcher";
-        public const string AppDomain = "AppDomain";
-        public const string UnobservedTask = "Unobserved Task";
-        public const string InvalidOperation = "ExceptionHandlingBehavior can only handle responses of type Result or Result<T>. " +
-                "Actual type: {0}";
-        public const string NotFound = "{0} with key '{1}' was not found.";
+        public static string UiDispatcher => AppText.Get("Exception.Source.UiDispatcher");
 
-        
+        public static string AppDomain => AppText.Get("Exception.Source.AppDomain");
+
+        public static string UnobservedTask => AppText.Get("Exception.Source.UnobservedTask");
+
+        public static string InvalidOperation(string actualType)
+            => AppText.Format("Exception.InvalidOperation", actualType);
+
+        public static string NotFound(string name, object key)
+            => AppText.Format("Exception.NotFound", name, key);
+
+        public static string ValidationFailure(string message)
+            => AppText.Format("Exception.ValidationFailure", message);
+
+        public static string NotFoundFailure(string message)
+            => AppText.Format("Exception.NotFoundFailure", message);
+
+        public static string UnexpectedFailure(string message)
+            => AppText.Format("Exception.UnexpectedFailure", message);
+
         public static string OperationCanceled(string source)
-        => $"{source}: The operation was canceled.";
+            => AppText.Format("Exception.OperationCanceled", source);
 
         public static string Timeout(string source)
-            => $"{source}: The operation has timed out.";
+            => AppText.Format("Exception.Timeout", source);
 
         public static string Network(string source)
-            => $"{source}: A network error occurred. Check your internet connection.";
+            => AppText.Format("Exception.Network", source);
 
         public static string DatabaseConnection(string source)
-            => $"{source}: Failed to connect to the database.";
+            => AppText.Format("Exception.DatabaseConnection", source);
 
         public static string Unexpected(string source)
-            => $"{source}: An unexpected error has occurred.";
+            => AppText.Format("Exception.Unexpected", source);
     }
 }
