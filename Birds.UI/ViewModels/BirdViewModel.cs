@@ -102,6 +102,12 @@ namespace Birds.UI.ViewModels
         private int daysInStock;
 
         /// <summary>
+        /// Localized bird status text for the current culture.
+        /// </summary>
+        [ObservableProperty]
+        private string statusText = string.Empty;
+
+        /// <summary>
         /// A textual representation of the departure date (or “to this day” if none).
         /// </summary>
         [ObservableProperty]
@@ -253,6 +259,7 @@ namespace Birds.UI.ViewModels
             DepartureDisplay = Departure.HasValue
                 ? Departure.Value.ToString("d", culture)
                 : _localization.GetString("Info.ToThisDay");
+            StatusText = _localization.GetString(IsAlive ? "Bird.StatusAlive" : "Bird.StatusDead");
             LocalCreatedAtDisplay = FormatDateTime(LocalCreatedAt, culture);
             LocalUpdatedAtDisplay = FormatDateTime(LocalUpdatedAt, culture);
 
@@ -361,6 +368,7 @@ namespace Birds.UI.ViewModels
         partial void OnIsAliveChanged(bool value)
         {
             ValidateProperty(Departure, nameof(Departure));
+            UpdateCalculatedFields();
         }
 
         #endregion [ Validation ]
