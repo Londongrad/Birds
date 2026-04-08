@@ -361,11 +361,13 @@
 
             <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.8*" />
-                    <ColumnDefinition Width="220" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="196" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0">
+                <StackPanel
+                    Grid.Column="0"
+                    Margin="0,0,18,0">
                     <TextBlock
                         Style="{StaticResource BirdCardFieldLabelStyle}"
                         Text="{loc:Loc Key=AddBird.SpeciesLabel}" />
@@ -382,8 +384,9 @@
 
                 <Border
                     Grid.Column="1"
-                    Margin="18,0,0,0"
-                    Padding="14,10"
+                    MinHeight="74"
+                    Padding="14,12"
+                    VerticalAlignment="Bottom"
                     Background="{DynamicResource ThemeInsetBackgroundBrush}"
                     BorderBrush="{DynamicResource ThemeFieldBorderBrush}"
                     BorderThickness="1"
@@ -401,7 +404,7 @@
                 </Border>
             </Grid>
 
-            <StackPanel Grid.Row="1" Margin="0,14,0,0">
+            <StackPanel Grid.Row="1" Margin="0,16,0,0">
                 <TextBlock
                     Style="{StaticResource BirdCardFieldLabelStyle}"
                     Text="{loc:Loc Key=AddBird.DescriptionLabel}" />
@@ -415,96 +418,91 @@
 
             <Border
                 Grid.Row="2"
-                Margin="0,14,0,0"
-                Padding="14,10"
+                Margin="0,16,0,0"
+                Padding="14,12"
                 Background="{DynamicResource ThemeInsetBackgroundBrush}"
                 BorderBrush="{DynamicResource ThemeFieldBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="12">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="1.15*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="1.15*" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <Grid Grid.Column="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0">
-                            <TextBlock
-                                Style="{StaticResource BirdCardFieldLabelStyle}"
-                                Text="{loc:Loc Key=Bird.ArrivalMeta}" />
-                            <DatePicker
-                                helpers:ValidationPlacement.MaxErrorWidth="160"
-                                helpers:ValidationPlacement.Placement="Bottom"
-                                CalendarStyle="{DynamicResource DarkCalendarStyle}"
-                                SelectedDate="{Binding Arrival,
-                                                       Mode=TwoWay,
-                                                       Converter={StaticResource DateOnlyConverter},
-                                                       UpdateSourceTrigger=PropertyChanged,
-                                                       ValidatesOnNotifyDataErrors=True}"
-                                Style="{StaticResource BirdCardDatePickerStyle}" />
-                        </StackPanel>
-
-                        <Border
-                            Grid.Column="1"
-                            Style="{StaticResource BirdCardMetaSeparatorStyle}" />
-
-                        <StackPanel Grid.Column="2">
-                            <TextBlock
-                                Style="{StaticResource BirdCardFieldLabelStyle}"
-                                Text="{loc:Loc Key=Bird.DepartureMeta}" />
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-
-                                <DatePicker
-                                    Grid.Column="0"
-                                    helpers:ValidationPlacement.MaxErrorWidth="160"
-                                    helpers:ValidationPlacement.Placement="Bottom"
-                                    CalendarStyle="{DynamicResource DarkCalendarStyle}"
-                                    SelectedDate="{Binding Departure,
-                                                           Mode=TwoWay,
-                                                           Converter={StaticResource DateOnlyConverter},
-                                                           UpdateSourceTrigger=PropertyChanged,
-                                                           ValidatesOnNotifyDataErrors=True}"
-                                    Style="{StaticResource BirdCardDatePickerStyle}" />
-
-                                <Button
-                                    Grid.Column="1"
-                                    Width="28"
-                                    Height="28"
-                                    Margin="8,6,0,0"
-                                    Padding="0"
-                                    HorizontalAlignment="Right"
-                                    VerticalAlignment="Top"
-                                    Background="{DynamicResource ThemeNotificationActionBrush}"
-                                    BorderBrush="{DynamicResource ThemeCardBorderBrush}"
-                                    BorderThickness="1"
-                                    Command="{Binding ClearDepartureCommand}"
-                                    Content="&#xE711;"
-                                    FontFamily="Segoe MDL2 Assets"
-                                    FontSize="10"
-                                    Foreground="{DynamicResource ThemeMutedTextBrush}"
-                                    Visibility="{Binding Departure,
-                                                         Converter={StaticResource NullToVisibilityConverter}}" />
-                            </Grid>
-                        </StackPanel>
-                    </Grid>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock
+                            Style="{StaticResource BirdCardFieldLabelStyle}"
+                            Text="{loc:Loc Key=Bird.ArrivalMeta}" />
+                        <DatePicker
+                            helpers:ValidationPlacement.MaxErrorWidth="160"
+                            helpers:ValidationPlacement.Placement="Bottom"
+                            CalendarStyle="{DynamicResource DarkCalendarStyle}"
+                            SelectedDate="{Binding Arrival,
+                                                   Mode=TwoWay,
+                                                   Converter={StaticResource DateOnlyConverter},
+                                                   UpdateSourceTrigger=PropertyChanged,
+                                                   ValidatesOnNotifyDataErrors=True}"
+                            Style="{StaticResource BirdCardDatePickerStyle}" />
+                    </StackPanel>
 
                     <Border
                         Grid.Column="1"
                         Style="{StaticResource BirdCardMetaSeparatorStyle}" />
 
+                    <StackPanel Grid.Column="2">
+                        <TextBlock
+                            Style="{StaticResource BirdCardFieldLabelStyle}"
+                            Text="{loc:Loc Key=Bird.DepartureMeta}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <DatePicker
+                                Grid.Column="0"
+                                helpers:ValidationPlacement.MaxErrorWidth="160"
+                                helpers:ValidationPlacement.Placement="Bottom"
+                                CalendarStyle="{DynamicResource DarkCalendarStyle}"
+                                SelectedDate="{Binding Departure,
+                                                       Mode=TwoWay,
+                                                       Converter={StaticResource DateOnlyConverter},
+                                                       UpdateSourceTrigger=PropertyChanged,
+                                                       ValidatesOnNotifyDataErrors=True}"
+                                Style="{StaticResource BirdCardDatePickerStyle}" />
+
+                            <Button
+                                Grid.Column="1"
+                                Width="30"
+                                Height="30"
+                                Margin="8,7,0,0"
+                                Padding="0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Background="{DynamicResource ThemeNotificationActionBrush}"
+                                BorderBrush="{DynamicResource ThemeCardBorderBrush}"
+                                BorderThickness="1"
+                                Command="{Binding ClearDepartureCommand}"
+                                Content="&#xE711;"
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="10"
+                                Foreground="{DynamicResource ThemeMutedTextBrush}"
+                                Visibility="{Binding Departure,
+                                                     Converter={StaticResource NullToVisibilityConverter}}" />
+                        </Grid>
+                    </StackPanel>
+
+                    <Border
+                        Grid.Column="3"
+                        Style="{StaticResource BirdCardMetaSeparatorStyle}" />
+
                     <ContentPresenter
-                        Grid.Column="2"
+                        Grid.Column="4"
+                        Margin="14,0,0,0"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Content="{Binding}"
