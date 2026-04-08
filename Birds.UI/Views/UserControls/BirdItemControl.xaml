@@ -19,9 +19,9 @@
     </UserControl.Resources>
 
     <Border
-        MinHeight="152"
-        Margin="0,0,0,14"
-        Padding="20"
+        MinHeight="132"
+        Margin="0,0,0,12"
+        Padding="18"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Top"
         BorderThickness="1"
@@ -100,16 +100,16 @@
             <!-- Created/updated info tooltip -->
             <Border
                 Grid.Column="2"
-                Width="22"
-                Height="22"
-                Margin="10,0,0,0"
+                Width="20"
+                Height="20"
+                Margin="8,2,0,0"
                 Padding="0"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
                 Background="{DynamicResource ThemeNotificationActionBrush}"
                 BorderBrush="{DynamicResource ThemeCardBorderBrush}"
                 BorderThickness="1"
-                CornerRadius="11">
+                CornerRadius="10">
 
                 <ToolTipService.ToolTip>
                     <TextBlock>
@@ -124,9 +124,9 @@
                 <TextBlock
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    FontSize="12"
+                    FontSize="11"
                     FontWeight="SemiBold"
-                    Foreground="{DynamicResource ThemePrimaryTextBrush}"
+                    Foreground="{DynamicResource ThemeSecondaryTextBrush}"
                     Text="i" />
             </Border>
         </Grid>

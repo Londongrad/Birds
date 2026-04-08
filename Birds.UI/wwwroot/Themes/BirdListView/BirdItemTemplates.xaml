@@ -20,7 +20,7 @@
     <Style
         x:Key="BirdCardDescriptionTextStyle"
         TargetType="TextBlock">
-        <Setter Property="FontSize" Value="13.5" />
+        <Setter Property="FontSize" Value="13" />
         <Setter Property="Foreground" Value="{DynamicResource ThemeSecondaryTextBrush}" />
         <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
@@ -45,11 +45,20 @@
     <Style
         x:Key="BirdCardMetaChipStyle"
         TargetType="Border">
-        <Setter Property="Padding" Value="12,10" />
+        <Setter Property="Padding" Value="12,9" />
         <Setter Property="Background" Value="{DynamicResource ThemeInsetBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="12" />
+    </Style>
+
+    <Style
+        x:Key="BirdCardMetaSeparatorStyle"
+        TargetType="Border">
+        <Setter Property="Width" Value="1" />
+        <Setter Property="Margin" Value="14,4" />
+        <Setter Property="Background" Value="{DynamicResource ThemeCardBorderBrush}" />
+        <Setter Property="Opacity" Value="0.75" />
     </Style>
 
     <Style
@@ -136,7 +145,7 @@
 
             <TextBlock
                 Grid.Row="1"
-                Margin="0,10,0,0"
+                Margin="0,8,0,0"
                 ToolTip="{Binding Description}">
                 <TextBlock.Style>
                     <Style BasedOn="{StaticResource BirdCardDescriptionTextStyle}" TargetType="TextBlock">
@@ -157,18 +166,24 @@
                 </TextBlock.Style>
             </TextBlock>
 
-            <Grid Grid.Row="2" Margin="0,16,0,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+            <Border
+                Grid.Row="2"
+                Margin="0,14,0,0"
+                Padding="14,10"
+                Background="{DynamicResource ThemeInsetBackgroundBrush}"
+                BorderBrush="{DynamicResource ThemeFieldBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
 
-                <Border
-                    Grid.Column="0"
-                    Margin="0,0,10,0"
-                    Style="{StaticResource BirdCardMetaChipStyle}">
-                    <StackPanel>
+                    <StackPanel Grid.Column="0">
                         <TextBlock
                             Style="{StaticResource BirdCardMetaLabelStyle}"
                             Text="{loc:Loc Key=Bird.ArrivalMeta}" />
@@ -176,13 +191,12 @@
                             Style="{StaticResource BirdCardMetaValueStyle}"
                             Text="{Binding ArrivalDisplay}" />
                     </StackPanel>
-                </Border>
 
-                <Border
-                    Grid.Column="1"
-                    Margin="0,0,10,0"
-                    Style="{StaticResource BirdCardMetaChipStyle}">
-                    <StackPanel>
+                    <Border
+                        Grid.Column="1"
+                        Style="{StaticResource BirdCardMetaSeparatorStyle}" />
+
+                    <StackPanel Grid.Column="2">
                         <TextBlock
                             Style="{StaticResource BirdCardMetaLabelStyle}"
                             Text="{loc:Loc Key=Bird.DepartureMeta}" />
@@ -190,24 +204,26 @@
                             Style="{StaticResource BirdCardMetaValueStyle}"
                             Text="{Binding DepartureDisplay}" />
                     </StackPanel>
-                </Border>
 
-                <Border
-                    Grid.Column="2"
-                    MinWidth="124"
-                    Style="{StaticResource BirdCardMetaChipStyle}">
-                    <StackPanel>
+                    <Border
+                        Grid.Column="3"
+                        Style="{StaticResource BirdCardMetaSeparatorStyle}" />
+
+                    <StackPanel
+                        Grid.Column="4"
+                        MinWidth="112">
                         <TextBlock
                             Style="{StaticResource BirdCardMetaLabelStyle}"
                             Text="{loc:Loc Key=Bird.DurationMeta}" />
-                        <TextBlock Style="{StaticResource BirdCardMetaValueStyle}">
+                        <TextBlock
+                            Style="{StaticResource BirdCardMetaValueStyle}">
                             <Run Text="{Binding DaysInStock}" />
                             <Run Text=" " />
                             <Run Text="{loc:Loc Key=Bird.DaysSuffix}" />
                         </TextBlock>
                     </StackPanel>
-                </Border>
-            </Grid>
+                </Grid>
+            </Border>
         </Grid>
     </DataTemplate>
 

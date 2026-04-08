@@ -6,9 +6,9 @@
     <Style
         x:Key="ActionButtonBase"
         TargetType="Button">
-        <Setter Property="Width" Value="40" />
-        <Setter Property="Height" Value="40" />
-        <Setter Property="Margin" Value="0,0,0,8" />
+        <Setter Property="Width" Value="34" />
+        <Setter Property="Height" Value="34" />
+        <Setter Property="Margin" Value="0" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
         <Setter Property="Background" Value="{DynamicResource ThemeNotificationActionBrush}" />
@@ -25,7 +25,7 @@
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="10">
+                        CornerRadius="9">
                         <ContentPresenter
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center" />
@@ -59,7 +59,6 @@
         BasedOn="{StaticResource ActionButtonBase}"
         TargetType="Button">
         <Setter Property="Foreground" Value="{DynamicResource ThemeFieldBorderErrorBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderErrorBrush}" />
         <Setter Property="Content" Value="&#xE74D;" />
     </Style>
 
@@ -93,15 +92,16 @@
         BasedOn="{StaticResource ActionButtonBase}"
         TargetType="Button">
         <Setter Property="Content" Value="&#xE711;" />
-        <Setter Property="Margin" Value="0" />
     </Style>
 
     <DataTemplate x:Key="NormalButtonsTemplate">
         <StackPanel
-            Margin="18,0,0,0"
+            Margin="14,2,0,0"
+            Orientation="Horizontal"
             VerticalAlignment="Top">
             <Button
                 Command="{Binding EditCommand}"
+                Margin="0,0,8,0"
                 Style="{StaticResource EditButtonStyle}"
                 ToolTip="{loc:Loc Key=Bird.Action.Edit}" />
             <Button
@@ -113,10 +113,12 @@
 
     <DataTemplate x:Key="ConfirmButtonsTemplate">
         <StackPanel
-            Margin="18,0,0,0"
+            Margin="14,2,0,0"
+            Orientation="Horizontal"
             VerticalAlignment="Top">
             <Button
                 Command="{Binding DeleteCommand}"
+                Margin="0,0,8,0"
                 Style="{StaticResource ConfirmButtonStyle}"
                 ToolTip="{loc:Loc Key=Bird.Action.ConfirmDelete}" />
             <Button
@@ -128,10 +130,12 @@
 
     <DataTemplate x:Key="EditButtonsTemplate">
         <StackPanel
-            Margin="18,0,0,0"
+            Margin="14,2,0,0"
+            Orientation="Horizontal"
             VerticalAlignment="Top">
             <Button
                 Command="{Binding SaveCommand}"
+                Margin="0,0,8,0"
                 Style="{StaticResource SaveButtonStyle}"
                 ToolTip="{loc:Loc Key=Bird.Action.Save}" />
             <Button
