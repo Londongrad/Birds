@@ -1,5 +1,6 @@
 using Birds.Application.DTOs;
 using Birds.Shared.Localization;
+using Birds.UI.Services.Localization;
 using Birds.UI.Services.Factories.BirdViewModelFactory;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Managers.Bird;
@@ -19,10 +20,32 @@ namespace Birds.Tests.UI.Services
 
         public BirdViewModelFactoryTests()
         {
-            _localization.SetupGet(x => x.CurrentCulture).Returns(CultureInfo.GetCultureInfo(AppLanguages.Russian));
+            var culture = CultureInfo.GetCultureInfo(AppLanguages.Russian);
+            var dateFormat = DateDisplayFormats.DayMonthYear;
+
+            _localization.SetupGet(x => x.CurrentCulture).Returns(culture);
+            _localization.SetupGet(x => x.CurrentDateFormat).Returns(dateFormat);
             _localization
                 .Setup(x => x.GetString(It.IsAny<string>()))
-                .Returns((string key) => AppText.Get(key, CultureInfo.GetCultureInfo(AppLanguages.Russian)));
+                .Returns((string key) => AppText.Get(key, culture));
+            _localization
+                .Setup(x => x.FormatDate(It.IsAny<DateOnly>(), It.IsAny<DateDisplayStyle>()))
+                .Returns((DateOnly value, DateDisplayStyle style) => DateDisplayFormats.FormatDate(value, culture, dateFormat, style));
+            _localization
+                .Setup(x => x.FormatDate(It.IsAny<DateOnly?>(), It.IsAny<DateDisplayStyle>(), It.IsAny<string?>()))
+                .Returns((DateOnly? value, DateDisplayStyle style, string? fallback) =>
+                    value.HasValue
+                        ? DateDisplayFormats.FormatDate(value.Value, culture, dateFormat, style)
+                        : fallback ?? "\u2014");
+            _localization
+                .Setup(x => x.FormatDateTime(It.IsAny<DateTime>()))
+                .Returns((DateTime value) => DateDisplayFormats.FormatDateTime(value, culture, dateFormat));
+            _localization
+                .Setup(x => x.FormatDateTime(It.IsAny<DateTime?>(), It.IsAny<string?>()))
+                .Returns((DateTime? value, string? fallback) =>
+                    value.HasValue
+                        ? DateDisplayFormats.FormatDateTime(value.Value, culture, dateFormat)
+                        : fallback ?? "\u2014");
         }
 
         [Fact]

@@ -3,6 +3,7 @@ using Birds.Application.DTOs;
 using Birds.Domain.Enums;
 using Birds.Domain.Extensions;
 using Birds.Shared.Localization;
+using Birds.UI.Services.Localization;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Notification.Interfaces;
@@ -19,13 +20,33 @@ namespace Birds.Tests.UI.ViewModels
         private readonly Mock<ILocalizationService> _localization = new();
         private readonly Mock<INotificationService> _notification = new();
         private CultureInfo _currentCulture = CultureInfo.GetCultureInfo(AppLanguages.Russian);
+        private string _currentDateFormat = DateDisplayFormats.DayMonthYear;
 
         public BirdViewModelTests()
         {
             _localization.SetupGet(x => x.CurrentCulture).Returns(() => _currentCulture);
+            _localization.SetupGet(x => x.CurrentDateFormat).Returns(() => _currentDateFormat);
             _localization
                 .Setup(x => x.GetString(It.IsAny<string>()))
                 .Returns((string key) => AppText.Get(key, _currentCulture));
+            _localization
+                .Setup(x => x.FormatDate(It.IsAny<DateOnly>(), It.IsAny<DateDisplayStyle>()))
+                .Returns((DateOnly value, DateDisplayStyle style) => DateDisplayFormats.FormatDate(value, _currentCulture, _currentDateFormat, style));
+            _localization
+                .Setup(x => x.FormatDate(It.IsAny<DateOnly?>(), It.IsAny<DateDisplayStyle>(), It.IsAny<string?>()))
+                .Returns((DateOnly? value, DateDisplayStyle style, string? fallback) =>
+                    value.HasValue
+                        ? DateDisplayFormats.FormatDate(value.Value, _currentCulture, _currentDateFormat, style)
+                        : fallback ?? "\u2014");
+            _localization
+                .Setup(x => x.FormatDateTime(It.IsAny<DateTime>()))
+                .Returns((DateTime value) => DateDisplayFormats.FormatDateTime(value, _currentCulture, _currentDateFormat));
+            _localization
+                .Setup(x => x.FormatDateTime(It.IsAny<DateTime?>(), It.IsAny<string?>()))
+                .Returns((DateTime? value, string? fallback) =>
+                    value.HasValue
+                        ? DateDisplayFormats.FormatDateTime(value.Value, _currentCulture, _currentDateFormat)
+                        : fallback ?? "\u2014");
         }
 
         [Fact]
@@ -96,7 +117,7 @@ namespace Birds.Tests.UI.ViewModels
         }
 
         [Fact]
-        public void LanguageChanged_Should_Update_Localized_Display_Fields()
+        public void CultureOrDateFormatChanged_Should_Update_Localized_Display_Fields()
         {
             var chickadee = (BirdsName)6;
             var dto = CreateBirdDto(chickadee);
@@ -104,14 +125,15 @@ namespace Birds.Tests.UI.ViewModels
 
             sut.DisplayName.Should().Be(chickadee.ToDisplayName(_currentCulture));
             sut.DepartureDisplay.Should().Be(AppText.Get("Info.ToThisDay", _currentCulture));
-            sut.ArrivalDisplay.Should().Be(dto.Arrival.ToString("d", _currentCulture));
+            sut.ArrivalDisplay.Should().Be(DateDisplayFormats.FormatDate(dto.Arrival, _currentCulture, _currentDateFormat));
 
             _currentCulture = CultureInfo.GetCultureInfo(AppLanguages.English);
+            _currentDateFormat = DateDisplayFormats.YearMonthDay;
             _localization.Raise(x => x.LanguageChanged += null, EventArgs.Empty);
 
             sut.DisplayName.Should().Be(chickadee.ToDisplayName(_currentCulture));
             sut.DepartureDisplay.Should().Be(AppText.Get("Info.ToThisDay", _currentCulture));
-            sut.ArrivalDisplay.Should().Be(dto.Arrival.ToString("d", _currentCulture));
+            sut.ArrivalDisplay.Should().Be(DateDisplayFormats.FormatDate(dto.Arrival, _currentCulture, _currentDateFormat));
         }
 
         private static BirdDTO CreateBirdDto(BirdsName name) =>

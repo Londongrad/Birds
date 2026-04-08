@@ -1,14 +1,17 @@
 using Birds.Application.DTOs;
 using Birds.Domain.Enums;
 using Birds.Domain.Extensions;
+using Birds.Shared.Localization;
 using Birds.Tests.UI.Services;
 using Birds.UI.Enums;
+using Birds.UI.Services.Localization;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Stores.BirdStore;
 using Birds.UI.ViewModels;
 using FluentAssertions;
 using Moq;
+using System.Globalization;
 
 namespace Birds.Tests.UI.ViewModels
 {
@@ -83,7 +86,20 @@ namespace Birds.Tests.UI.ViewModels
             sut.BirdCount.Should().Be(0);
         }
 
+        [Fact]
+        public void Search_Should_Match_Configured_Date_Format()
+        {
+            var bird = CreateBird((BirdsName)1);
+            var sut = CreateViewModel(DateDisplayFormats.YearMonthDay, bird);
+            sut.SearchText = "2026-04";
+
+            sut.FilterBirds(bird).Should().BeTrue();
+        }
+
         private static BirdListViewModel CreateViewModel(params BirdDTO[] birds)
+            => CreateViewModel(DateDisplayFormats.DayMonthYear, birds);
+
+        private static BirdListViewModel CreateViewModel(string dateFormat, params BirdDTO[] birds)
         {
             var store = new BirdStore();
             store.CompleteLoading();
@@ -93,7 +109,18 @@ namespace Birds.Tests.UI.ViewModels
 
             var manager = new Mock<IBirdManager>();
             manager.SetupGet(x => x.Store).Returns(store);
+
             var localization = new Mock<ILocalizationService>();
+            var culture = CultureInfo.GetCultureInfo(AppLanguages.Russian);
+            localization.SetupGet(x => x.CurrentCulture).Returns(culture);
+            localization.SetupGet(x => x.CurrentDateFormat).Returns(dateFormat);
+            localization.Setup(x => x.FormatDate(It.IsAny<DateOnly>(), It.IsAny<DateDisplayStyle>()))
+                .Returns((DateOnly value, DateDisplayStyle style) => DateDisplayFormats.FormatDate(value, culture, dateFormat, style));
+            localization.Setup(x => x.FormatDate(It.IsAny<DateOnly?>(), It.IsAny<DateDisplayStyle>(), It.IsAny<string?>()))
+                .Returns((DateOnly? value, DateDisplayStyle style, string? fallback) =>
+                    value.HasValue
+                        ? DateDisplayFormats.FormatDate(value.Value, culture, dateFormat, style)
+                        : fallback ?? "\u2014");
 
             return new BirdListViewModel(manager.Object, localization.Object);
         }
