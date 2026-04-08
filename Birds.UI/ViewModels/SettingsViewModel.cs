@@ -84,31 +84,31 @@ namespace Birds.UI.ViewModels
 
         public string LanguageHint =>
             SelectedLanguage == AppLanguages.Russian
-                ? AppText.Get("Settings.LanguageHint.Russian")
-                : AppText.Get("Settings.LanguageHint.English");
+                ? _localization.GetString("Settings.LanguageHint.Russian")
+                : _localization.GetString("Settings.LanguageHint.English");
 
         public string ThemeHint =>
             SelectedTheme == ThemeKeys.Graphite
-                ? AppText.Get("Settings.ThemeHint.Graphite")
-                : AppText.Get("Settings.ThemeHint.Steel");
+                ? _localization.GetString("Settings.ThemeHint.Graphite")
+                : _localization.GetString("Settings.ThemeHint.Steel");
 
         public string DateFormatHint =>
             SelectedDateFormat switch
             {
-                DateDisplayFormats.MonthDayYear => AppText.Get("Settings.DateFormatHint.MonthDayYear"),
-                DateDisplayFormats.YearMonthDay => AppText.Get("Settings.DateFormatHint.YearMonthDay"),
-                _ => AppText.Get("Settings.DateFormatHint.DayMonthYear")
+                DateDisplayFormats.MonthDayYear => _localization.GetString("Settings.DateFormatHint.MonthDayYear"),
+                DateDisplayFormats.YearMonthDay => _localization.GetString("Settings.DateFormatHint.YearMonthDay"),
+                _ => _localization.GetString("Settings.DateFormatHint.DayMonthYear")
             };
 
         public string NotificationsHint =>
             ShowNotificationBadge
-                ? AppText.Get("Settings.NotificationsHint.Enabled")
-                : AppText.Get("Settings.NotificationsHint.Disabled");
+                ? _localization.GetString("Settings.NotificationsHint.Enabled")
+                : _localization.GetString("Settings.NotificationsHint.Disabled");
 
         public string MotionHint =>
             ReduceMotion
-                ? AppText.Get("Settings.MotionHint.Enabled")
-                : AppText.Get("Settings.MotionHint.Disabled");
+                ? _localization.GetString("Settings.MotionHint.Enabled")
+                : _localization.GetString("Settings.MotionHint.Disabled");
 
         [RelayCommand]
         private void ResetPreferences()
@@ -194,8 +194,8 @@ namespace Birds.UI.ViewModels
             AvailableLanguages = new ReadOnlyCollection<LanguageOption>(
                 new List<LanguageOption>
                 {
-                    new(AppLanguages.Russian, AppText.Get("Language.Russian")),
-                    new(AppLanguages.English, AppText.Get("Language.English"))
+                    new(AppLanguages.Russian, _localization.GetString("Language.Russian")),
+                    new(AppLanguages.English, _localization.GetString("Language.English"))
                 });
         }
 
@@ -203,7 +203,7 @@ namespace Birds.UI.ViewModels
         {
             AvailableThemes = new ReadOnlyCollection<ThemeOption>(
                 _themeService.AvailableThemes
-                    .Select(theme => new ThemeOption(theme, AppText.Get($"Settings.Theme.{theme}")))
+                    .Select(theme => new ThemeOption(theme, _localization.GetString($"Settings.Theme.{theme}")))
                     .ToList());
         }
 
@@ -212,9 +212,9 @@ namespace Birds.UI.ViewModels
             AvailableDateFormats = new ReadOnlyCollection<DateFormatOption>(
                 new List<DateFormatOption>
                 {
-                    new(DateDisplayFormats.DayMonthYear, AppText.Get("Settings.DateFormat.DayMonthYear")),
-                    new(DateDisplayFormats.MonthDayYear, AppText.Get("Settings.DateFormat.MonthDayYear")),
-                    new(DateDisplayFormats.YearMonthDay, AppText.Get("Settings.DateFormat.YearMonthDay"))
+                    new(DateDisplayFormats.DayMonthYear, _localization.GetString("Settings.DateFormat.DayMonthYear")),
+                    new(DateDisplayFormats.MonthDayYear, _localization.GetString("Settings.DateFormat.MonthDayYear")),
+                    new(DateDisplayFormats.YearMonthDay, _localization.GetString("Settings.DateFormat.YearMonthDay"))
                 });
         }
 
