@@ -1,7 +1,8 @@
-﻿using Birds.Application.Behaviors;
+using Birds.Application.Behaviors;
 using Birds.Application.Common.Models;
 using Birds.Application.Exceptions;
 using Birds.Domain.Common.Exceptions;
+using Birds.Shared.Constants;
 using FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -21,15 +22,12 @@ public class ExceptionHandlingBehaviorTests
     [Fact]
     public async Task Handle_ShouldReturnResult_WhenNoExceptionThrown()
     {
-        // Arrange
         var behavior = new ExceptionHandlingBehavior<DummyRequest, Result>(_loggerMock.Object);
         var request = new DummyRequest();
-        RequestHandlerDelegate<Result> next = (cancellationToken) => Task.FromResult(Result.Success());
+        RequestHandlerDelegate<Result> next = cancellationToken => Task.FromResult(Result.Success());
 
-        // Act
         var result = await behavior.Handle(request, next, CancellationToken.None);
 
-        // Assert
         result.Should().NotBeNull();
         result.IsSuccess.Should().BeTrue();
     }
@@ -37,32 +35,26 @@ public class ExceptionHandlingBehaviorTests
     [Fact]
     public async Task Handle_ShouldReturnFailureAndLogWarning_WhenValidationExceptionThrown()
     {
-        // Arrange
         var behavior = new ExceptionHandlingBehavior<DummyRequest, Result>(_loggerMock.Object);
         var request = new DummyRequest();
-        RequestHandlerDelegate<Result> next = (cancellationToken) => throw new FluentValidation.ValidationException("Invalid!");
+        RequestHandlerDelegate<Result> next = cancellationToken => throw new FluentValidation.ValidationException("Invalid!");
 
-        // Act
         var result = await behavior.Handle(request, next, CancellationToken.None);
 
-        // Assert
         result.Should().NotBeNull();
         result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Contain("Validation error");
+        result.Error.Should().Be(ExceptionMessages.ValidationFailure("Invalid!"));
     }
 
     [Fact]
     public async Task Handle_ShouldReturnFailureAndLogWarning_WhenDomainValidationExceptionThrown()
     {
-        // Arrange
         var behavior = new ExceptionHandlingBehavior<DummyRequest, Result>(_loggerMock.Object);
         var request = new DummyRequest();
-        RequestHandlerDelegate<Result> next = (cancellationToken) => throw new DomainValidationException("Rule broken");
+        RequestHandlerDelegate<Result> next = cancellationToken => throw new DomainValidationException("Rule broken");
 
-        // Act
         var result = await behavior.Handle(request, next, CancellationToken.None);
 
-        // Assert
         result.Should().NotBeNull();
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Contain("Rule broken");
@@ -71,53 +63,45 @@ public class ExceptionHandlingBehaviorTests
     [Fact]
     public async Task Handle_ShouldReturnFailureAndLogWarning_WhenNotFoundExceptionThrown()
     {
-        // Arrange
         var id = Guid.NewGuid();
+        var notFound = new NotFoundException(nameof(id), id);
         var behavior = new ExceptionHandlingBehavior<DummyRequest, Result>(_loggerMock.Object);
         var request = new DummyRequest();
-        RequestHandlerDelegate<Result> next = (cancellationToken) => throw new NotFoundException(nameof(id), id);
+        RequestHandlerDelegate<Result> next = cancellationToken => throw notFound;
 
-        // Act
         var result = await behavior.Handle(request, next, CancellationToken.None);
 
-        // Assert
         result.Should().NotBeNull();
         result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Contain("Not found");
+        result.Error.Should().Be(ExceptionMessages.NotFoundFailure(notFound.Message));
     }
 
     [Fact]
     public async Task Handle_ShouldReturnFailureAndLogError_WhenUnhandledExceptionThrown()
     {
-        // Arrange
         var behavior = new ExceptionHandlingBehavior<DummyRequest, Result>(_loggerMock.Object);
         var request = new DummyRequest();
-        RequestHandlerDelegate<Result> next = (cancellationToken) => throw new InvalidOperationException("Something failed");
+        RequestHandlerDelegate<Result> next = cancellationToken => throw new InvalidOperationException("Something failed");
 
-        // Act
         var result = await behavior.Handle(request, next, CancellationToken.None);
 
-        // Assert
         result.Should().NotBeNull();
         result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Contain("Unexpected error");
+        result.Error.Should().Be(ExceptionMessages.UnexpectedFailure("Something failed"));
     }
 
     [Fact]
     public async Task Handle_ShouldThrowInvalidOperation_WhenResponseIsNotResult()
     {
-        // Arrange
         var logger = new Mock<ILogger<ExceptionHandlingBehavior<DummyRequest, string>>>();
         var behavior = new ExceptionHandlingBehavior<DummyRequest, string>(logger.Object);
         var request = new DummyRequest();
-        RequestHandlerDelegate<string> next = (cancellationToken) => throw new Exception("Boom");
+        RequestHandlerDelegate<string> next = cancellationToken => throw new Exception("Boom");
 
-        // Act
         Func<Task> act = async () => await behavior.Handle(request, next, CancellationToken.None);
 
-        // Assert
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*can only handle responses of type Result*");
+            .WithMessage(ExceptionMessages.InvalidOperation("String"));
     }
 
     public sealed class DummyRequest

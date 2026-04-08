@@ -2,6 +2,7 @@ using Birds.Application.Exceptions;
 using Birds.Domain.Entities;
 using Birds.Domain.Enums;
 using Birds.Infrastructure.Repositories;
+using Birds.Shared.Constants;
 using FluentAssertions;
 
 namespace Birds.Tests.Infrastructure
@@ -49,7 +50,7 @@ namespace Birds.Tests.Infrastructure
 
             // Assert
             await act.Should().ThrowAsync<NotFoundException>()
-                     .WithMessage("*Bird*not found*");
+                     .WithMessage(ExceptionMessages.NotFound("Bird", "*"));
         }
 
         [Fact]
