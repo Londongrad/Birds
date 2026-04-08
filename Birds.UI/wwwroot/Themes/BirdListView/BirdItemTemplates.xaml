@@ -5,7 +5,10 @@
     xmlns:loc="clr-namespace:Birds.UI.Services.Localization">
 
     <DataTemplate x:Key="BirdNameComboTemplate">
-        <TextBlock Text="{Binding Converter={StaticResource BirdNameDisplayConverter}}" />
+        <TextBlock
+            FontSize="16"
+            Foreground="{DynamicResource ThemePrimaryTextBrush}"
+            Text="{Binding Converter={StaticResource BirdNameDisplayConverter}}" />
     </DataTemplate>
 
     <Style
@@ -75,7 +78,16 @@
         BasedOn="{StaticResource ComboBox}"
         TargetType="ComboBox">
         <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="Width" Value="Auto" />
+        <Setter Property="Height" Value="Auto" />
+        <Setter Property="MinHeight" Value="44" />
+        <Setter Property="Padding" Value="14,0,38,0" />
+        <Setter Property="Background" Value="{DynamicResource ThemeFieldBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="FontSize" Value="16" />
     </Style>
 
     <Style
@@ -83,10 +95,20 @@
         BasedOn="{StaticResource TextBoxAdd}"
         TargetType="TextBox">
         <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="Width" Value="Auto" />
+        <Setter Property="Height" Value="Auto" />
+        <Setter Property="Padding" Value="14,12" />
         <Setter Property="TextWrapping" Value="Wrap" />
         <Setter Property="AcceptsReturn" Value="True" />
         <Setter Property="VerticalContentAlignment" Value="Top" />
-        <Setter Property="MinHeight" Value="76" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Background" Value="{DynamicResource ThemeFieldBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource ThemePrimaryTextBrush}" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="MinHeight" Value="112" />
+        <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
     </Style>
 
     <Style
@@ -94,14 +116,75 @@
         BasedOn="{StaticResource DatePickerAdd}"
         TargetType="DatePicker">
         <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="Width" Value="Auto" />
+        <Setter Property="Height" Value="44" />
+        <Setter Property="Background" Value="{DynamicResource ThemeFieldBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderBrush}" />
+        <Setter Property="FontSize" Value="16" />
     </Style>
 
     <Style
         x:Key="BirdCardInlineToggleStyle"
-        BasedOn="{StaticResource ToggleButton}"
         TargetType="CheckBox">
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid Height="22">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border
+                            x:Name="Track"
+                            Width="40"
+                            Height="22"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Background="{DynamicResource ThemeToggleTrackOffBrush}"
+                            BorderBrush="{DynamicResource ThemeToggleBorderOffBrush}"
+                            BorderThickness="1"
+                            CornerRadius="11" />
+
+                        <Ellipse
+                            x:Name="Thumb"
+                            Width="16"
+                            Height="16"
+                            Margin="3,0,0,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Fill="{DynamicResource ThemePrimaryTextBrush}"
+                            StrokeThickness="0" />
+
+                        <ContentPresenter
+                            Grid.Column="1"
+                            Margin="10,0,0,0"
+                            VerticalAlignment="Center"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            RecognizesAccessKey="True" />
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderFocusBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Track" Property="Background" Value="{DynamicResource ThemeToggleTrackOnBrush}" />
+                            <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource ThemeToggleBorderOnBrush}" />
+                            <Setter TargetName="Thumb" Property="Margin" Value="21,0,0,0" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <DataTemplate x:Key="BirdViewTemplate">
@@ -142,34 +225,12 @@
                             </Style.Triggers>
                         </Style>
                     </Border.Style>
-                    <StackPanel
+                    <TextBlock
                         HorizontalAlignment="Center"
-                        Orientation="Horizontal">
-                        <Ellipse
-                            Width="7"
-                            Height="7"
-                            Margin="0,0,7,0"
-                            VerticalAlignment="Center"
-                            Fill="{DynamicResource ThemeStatusAliveBrush}">
-                            <Ellipse.Style>
-                                <Style TargetType="Ellipse">
-                                    <Setter Property="Fill" Value="{DynamicResource ThemeStatusAliveBrush}" />
-                                    <Setter Property="Visibility" Value="Visible" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsAlive}" Value="False">
-                                            <Setter Property="Visibility" Value="Collapsed" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Ellipse.Style>
-                        </Ellipse>
-
-                        <TextBlock
-                            FontSize="11"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource ThemePrimaryTextBrush}"
-                            Text="{Binding StatusText}" />
-                    </StackPanel>
+                        FontSize="11"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource ThemePrimaryTextBrush}"
+                        Text="{Binding StatusText}" />
                 </Border>
             </Grid>
 
@@ -300,8 +361,8 @@
 
             <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="1.8*" />
+                    <ColumnDefinition Width="220" />
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
@@ -321,9 +382,8 @@
 
                 <Border
                     Grid.Column="1"
-                    Margin="16,0,0,0"
-                    Padding="14,12"
-                    MinWidth="180"
+                    Margin="18,0,0,0"
+                    Padding="14,10"
                     Background="{DynamicResource ThemeInsetBackgroundBrush}"
                     BorderBrush="{DynamicResource ThemeFieldBorderBrush}"
                     BorderThickness="1"
@@ -333,7 +393,6 @@
                             Style="{StaticResource BirdCardFieldLabelStyle}"
                             Text="{loc:Loc Key=Bird.StatusLabel}" />
                         <CheckBox
-                            Padding="10,0,0,0"
                             Content="{Binding StatusText}"
                             IsChecked="{Binding IsAlive,
                                                 Mode=TwoWay}"
