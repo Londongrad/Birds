@@ -142,7 +142,9 @@
                             </Style.Triggers>
                         </Style>
                     </Border.Style>
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel
+                        HorizontalAlignment="Center"
+                        Orientation="Horizontal">
                         <Ellipse
                             Width="7"
                             Height="7"
@@ -152,9 +154,10 @@
                             <Ellipse.Style>
                                 <Style TargetType="Ellipse">
                                     <Setter Property="Fill" Value="{DynamicResource ThemeStatusAliveBrush}" />
+                                    <Setter Property="Visibility" Value="Visible" />
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsAlive}" Value="False">
-                                            <Setter Property="Fill" Value="{DynamicResource ThemeStatusDeadBrush}" />
+                                            <Setter Property="Visibility" Value="Collapsed" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
