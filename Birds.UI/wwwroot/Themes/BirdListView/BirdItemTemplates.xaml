@@ -8,6 +8,7 @@
         <TextBlock
             FontSize="16"
             Foreground="{DynamicResource ThemePrimaryTextBrush}"
+            TextTrimming="CharacterEllipsis"
             Text="{Binding Converter={StaticResource BirdNameDisplayConverter}}" />
     </DataTemplate>
 
@@ -83,7 +84,7 @@
     <ControlTemplate
         x:Key="BirdCardComboBoxTemplate"
         TargetType="ComboBox">
-        <Grid>
+        <Grid x:Name="ComboRoot">
             <ToggleButton
                 x:Name="ToggleButton"
                 Background="{TemplateBinding Background}"
@@ -114,9 +115,8 @@
                 PopupAnimation="Fade"
                 StaysOpen="False">
                 <Border
-                    MinWidth="{Binding ActualWidth,
-                                       RelativeSource={RelativeSource TemplatedParent}}"
-                    Margin="0,6,0,0"
+                    Width="{Binding ActualWidth, ElementName=ComboRoot}"
+                    Margin="0,4,0,0"
                     Background="{DynamicResource ThemeInsetBackgroundBrush}"
                     BorderBrush="{DynamicResource ThemeFieldBorderBrush}"
                     BorderThickness="1"
@@ -219,7 +219,7 @@
         <Setter Property="ItemContainerStyle" Value="{StaticResource BirdCardComboBoxItemStyle}" />
         <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-        <Setter Property="MaxDropDownHeight" Value="280" />
+        <Setter Property="MaxDropDownHeight" Value="176" />
         <Setter Property="Template" Value="{StaticResource BirdCardComboBoxTemplate}" />
         <Style.Triggers>
             <Trigger Property="Validation.HasError" Value="True">
@@ -518,6 +518,8 @@
                         Text="{loc:Loc Key=AddBird.SpeciesLabel}" />
                     <ComboBox
                         Grid.Row="1"
+                        helpers:ValidationPlacement.MaxErrorWidth="220"
+                        helpers:ValidationPlacement.Placement="Bottom"
                         IsEditable="False"
                         ItemTemplate="{StaticResource BirdNameComboTemplate}"
                         ItemsSource="{Binding BirdNames}"
@@ -555,6 +557,8 @@
                     Style="{StaticResource BirdCardFieldLabelStyle}"
                     Text="{loc:Loc Key=AddBird.DescriptionLabel}" />
                 <TextBox
+                    helpers:ValidationPlacement.MaxErrorWidth="240"
+                    helpers:ValidationPlacement.Placement="Bottom"
                     Style="{StaticResource BirdCardTextBoxStyle}"
                     Text="{Binding Description,
                                    Mode=TwoWay,
