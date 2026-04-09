@@ -213,14 +213,6 @@
             <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
             <Setter Property="Background" Value="{DynamicResource ThemeNotificationActionBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource ThemeShellBorderBrush}" />
-            <Setter Property="RenderTransform">
-                <Setter.Value>
-                    <TransformGroup>
-                        <ScaleTransform ScaleX="0.72" ScaleY="0.72" />
-                        <TranslateTransform Y="-3" />
-                    </TransformGroup>
-                </Setter.Value>
-            </Setter>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsRecentOperationSuccess}" Value="True">
                     <Setter Property="Background" Value="{DynamicResource ThemeStatusAliveBackgroundBrush}" />
@@ -230,58 +222,23 @@
                     <Setter Property="Background" Value="{DynamicResource ThemeStatusDeadBackgroundBrush}" />
                     <Setter Property="BorderBrush" Value="{DynamicResource ThemeStatusDeadBorderBrush}" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding HasRecentOperationStatus}" Value="True">
-                    <DataTrigger.EnterActions>
-                        <BeginStoryboard>
-                            <Storyboard FillBehavior="HoldEnd">
-                                <DoubleAnimation
-                                    Storyboard.TargetProperty="Opacity"
-                                    To="1"
-                                    Duration="0:0:0.18" />
-                                <DoubleAnimationUsingKeyFrames
-                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)">
-                                    <EasingDoubleKeyFrame KeyTime="0:0:0" Value="0.72" />
-                                    <EasingDoubleKeyFrame KeyTime="0:0:0.14" Value="1.08" />
-                                    <EasingDoubleKeyFrame KeyTime="0:0:0.22" Value="1" />
-                                </DoubleAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames
-                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)">
-                                    <EasingDoubleKeyFrame KeyTime="0:0:0" Value="0.72" />
-                                    <EasingDoubleKeyFrame KeyTime="0:0:0.14" Value="1.08" />
-                                    <EasingDoubleKeyFrame KeyTime="0:0:0.22" Value="1" />
-                                </DoubleAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames
-                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)">
-                                    <EasingDoubleKeyFrame KeyTime="0:0:0" Value="-3" />
-                                    <EasingDoubleKeyFrame KeyTime="0:0:0.22" Value="0" />
-                                </DoubleAnimationUsingKeyFrames>
-                            </Storyboard>
-                        </BeginStoryboard>
-                    </DataTrigger.EnterActions>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="QuickOperationPulseStyle" TargetType="Border">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ThemeShellBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1.4" />
+            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsRecentOperationSuccess}" Value="True">
+                    <Setter Property="BorderBrush" Value="{DynamicResource ThemeStatusAliveBrush}" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding HasRecentOperationStatus}" Value="False">
-                    <DataTrigger.EnterActions>
-                        <BeginStoryboard>
-                            <Storyboard FillBehavior="HoldEnd">
-                                <DoubleAnimation
-                                    Storyboard.TargetProperty="Opacity"
-                                    To="0"
-                                    Duration="0:0:0.22" />
-                                <DoubleAnimation
-                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
-                                    To="0.82"
-                                    Duration="0:0:0.22" />
-                                <DoubleAnimation
-                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
-                                    To="0.82"
-                                    Duration="0:0:0.22" />
-                                <DoubleAnimation
-                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)"
-                                    To="-2"
-                                    Duration="0:0:0.22" />
-                            </Storyboard>
-                        </BeginStoryboard>
-                    </DataTrigger.EnterActions>
+                <DataTrigger Binding="{Binding IsRecentOperationError}" Value="True">
+                    <Setter Property="BorderBrush" Value="{DynamicResource ThemeStatusDeadBrush}" />
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -333,14 +290,30 @@
                         Orientation="Horizontal"
                         VerticalAlignment="Center">
                         <Border
+                            x:Name="QuickOperationIndicator"
                             Width="20"
                             Height="20"
                             Margin="0,0,8,0"
                             BorderThickness="1"
                             CornerRadius="10"
                             ToolTip="{Binding RecentOperationStatusToolTip}"
+                            Visibility="Collapsed"
                             Style="{StaticResource QuickOperationIndicatorStyle}">
+                            <Border.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform ScaleX="0.72" ScaleY="0.72" />
+                                    <TranslateTransform Y="-3" />
+                                </TransformGroup>
+                            </Border.RenderTransform>
                             <Grid>
+                                <Border
+                                    x:Name="QuickOperationPulse"
+                                    Margin="-2"
+                                    Style="{StaticResource QuickOperationPulseStyle}">
+                                    <Border.RenderTransform>
+                                        <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
+                                    </Border.RenderTransform>
+                                </Border>
                                 <Path
                                     Width="9"
                                     Height="7"
