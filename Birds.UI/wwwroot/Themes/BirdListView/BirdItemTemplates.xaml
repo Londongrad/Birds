@@ -196,30 +196,43 @@
     <Style
         x:Key="BirdCardFieldLabelStyle"
         TargetType="TextBlock">
-        <Setter Property="Margin" Value="0,0,0,6" />
+        <Setter Property="Margin" Value="0,0,0,4" />
         <Setter Property="FontSize" Value="11" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{DynamicResource ThemeMutedTextBrush}" />
     </Style>
 
     <Style
+        x:Key="BirdCardInlineErrorStyle"
+        TargetType="TextBlock">
+        <Setter Property="Margin" Value="12,0,0,0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Right" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource ThemeFieldBorderErrorBrush}" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="Visibility" Value="Collapsed" />
+    </Style>
+
+    <Style
         x:Key="BirdCardComboBoxStyle"
         TargetType="ComboBox">
         <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource FieldErrorTemplate_Universal}" />
-        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="Width" Value="Auto" />
-        <Setter Property="Height" Value="44" />
-        <Setter Property="Padding" Value="14,0,38,0" />
+        <Setter Property="Height" Value="40" />
+        <Setter Property="Padding" Value="12,0,34,0" />
         <Setter Property="Background" Value="{DynamicResource ThemeFieldBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderBrush}" />
         <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontSize" Value="15" />
         <Setter Property="ItemContainerStyle" Value="{StaticResource BirdCardComboBoxItemStyle}" />
         <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-        <Setter Property="MaxDropDownHeight" Value="176" />
+        <Setter Property="MaxDropDownHeight" Value="156" />
         <Setter Property="Template" Value="{StaticResource BirdCardComboBoxTemplate}" />
         <Style.Triggers>
             <Trigger Property="Validation.HasError" Value="True">
@@ -244,9 +257,9 @@
         <Setter Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderBrush}" />
         <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
         <Setter Property="CaretBrush" Value="{DynamicResource ThemePrimaryTextBrush}" />
-        <Setter Property="FontSize" Value="15" />
-        <Setter Property="MinHeight" Value="68" />
-        <Setter Property="MaxHeight" Value="84" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="MinHeight" Value="56" />
+        <Setter Property="MaxHeight" Value="72" />
         <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
     </Style>
 
@@ -254,12 +267,12 @@
         x:Key="BirdCardDatePickerStyle"
         BasedOn="{StaticResource DatePickerAdd}"
         TargetType="DatePicker">
-        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="Width" Value="Auto" />
-        <Setter Property="Height" Value="44" />
+        <Setter Property="Height" Value="40" />
         <Setter Property="Background" Value="{DynamicResource ThemeFieldBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderBrush}" />
-        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontSize" Value="15" />
     </Style>
 
     <Style
@@ -500,26 +513,51 @@
 
             <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.45*" />
-                    <ColumnDefinition Width="182" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <Grid
                     Grid.Column="0"
-                    Margin="0,0,18,0">
+                    Margin="0,0,16,0"
+                    VerticalAlignment="Top">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <TextBlock
-                        Grid.Row="0"
-                        Style="{StaticResource BirdCardFieldLabelStyle}"
-                        Text="{loc:Loc Key=AddBird.SpeciesLabel}" />
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock
+                            Grid.Column="0"
+                            Style="{StaticResource BirdCardFieldLabelStyle}"
+                            Text="{loc:Loc Key=AddBird.SpeciesLabel}" />
+                        <TextBlock
+                            Grid.Column="1"
+                            MaxWidth="180"
+                            Text="{Binding ElementName=SpeciesField, Path=(Validation.Errors)[0].ErrorContent}">
+                            <TextBlock.Style>
+                                <Style
+                                    BasedOn="{StaticResource BirdCardInlineErrorStyle}"
+                                    TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ElementName=SpeciesField, Path=(Validation.HasError)}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+
                     <ComboBox
+                        x:Name="SpeciesField"
                         Grid.Row="1"
-                        helpers:ValidationPlacement.MaxErrorWidth="220"
-                        helpers:ValidationPlacement.Placement="Bottom"
                         IsEditable="False"
                         ItemTemplate="{StaticResource BirdNameComboTemplate}"
                         ItemsSource="{Binding BirdNames}"
@@ -527,14 +565,16 @@
                                                Mode=TwoWay,
                                                UpdateSourceTrigger=PropertyChanged,
                                                ValidatesOnNotifyDataErrors=True}"
-                        Style="{StaticResource BirdCardComboBoxStyle}" />
+                        Style="{StaticResource BirdCardComboBoxStyle}"
+                        Validation.ErrorTemplate="{StaticResource NoErrorTemplate}"
+                        Width="280" />
                 </Grid>
 
                 <Border
-                    Grid.Column="1"
-                    MinHeight="68"
-                    Padding="12,10"
-                    VerticalAlignment="Center"
+                    Grid.Column="2"
+                    Width="144"
+                    Padding="12,8"
+                    VerticalAlignment="Bottom"
                     Background="{DynamicResource ThemeInsetBackgroundBrush}"
                     BorderBrush="{DynamicResource ThemeFieldBorderBrush}"
                     BorderThickness="1"
@@ -552,42 +592,78 @@
                 </Border>
             </Grid>
 
-            <StackPanel Grid.Row="1" Margin="0,16,0,0">
-                <TextBlock
-                    Style="{StaticResource BirdCardFieldLabelStyle}"
-                    Text="{loc:Loc Key=AddBird.DescriptionLabel}" />
+            <Grid Grid.Row="1" Margin="0,14,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock
+                        Grid.Column="0"
+                        Style="{StaticResource BirdCardFieldLabelStyle}"
+                        Text="{loc:Loc Key=AddBird.DescriptionLabel}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        MaxWidth="280"
+                        Text="{Binding ElementName=DescriptionField, Path=(Validation.Errors)[0].ErrorContent}">
+                        <TextBlock.Style>
+                            <Style
+                                BasedOn="{StaticResource BirdCardInlineErrorStyle}"
+                                TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=DescriptionField, Path=(Validation.HasError)}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+
                 <TextBox
-                    helpers:ValidationPlacement.MaxErrorWidth="240"
-                    helpers:ValidationPlacement.Placement="Bottom"
+                    x:Name="DescriptionField"
+                    Grid.Row="1"
+                    MaxLength="200"
                     Style="{StaticResource BirdCardTextBoxStyle}"
                     Text="{Binding Description,
                                    Mode=TwoWay,
                                    UpdateSourceTrigger=PropertyChanged,
-                                   ValidatesOnNotifyDataErrors=True}" />
-            </StackPanel>
+                                   ValidatesOnNotifyDataErrors=True}"
+                    Validation.ErrorTemplate="{StaticResource NoErrorTemplate}" />
+            </Grid>
 
             <Border
                 Grid.Row="2"
-                Margin="0,12,0,0"
-                Padding="14,10"
+                Margin="0,10,0,0"
+                Padding="12,8"
                 Background="{DynamicResource ThemeInsetBackgroundBrush}"
                 BorderBrush="{DynamicResource ThemeFieldBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="12">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1.15*" />
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="1.15*" />
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Column="0">
+                    <StackPanel
+                        Grid.Column="0"
+                        Margin="0,0,12,0">
                         <TextBlock
                             Style="{StaticResource BirdCardFieldLabelStyle}"
                             Text="{loc:Loc Key=Bird.ArrivalMeta}" />
                         <DatePicker
+                            Width="136"
                             helpers:ValidationPlacement.MaxErrorWidth="160"
                             helpers:ValidationPlacement.Placement="Bottom"
                             CalendarStyle="{DynamicResource DarkCalendarStyle}"
@@ -603,18 +679,21 @@
                         Grid.Column="1"
                         Style="{StaticResource BirdCardMetaSeparatorStyle}" />
 
-                    <StackPanel Grid.Column="2">
+                    <StackPanel
+                        Grid.Column="2"
+                        Margin="12,0,0,0">
                         <TextBlock
                             Style="{StaticResource BirdCardFieldLabelStyle}"
                             Text="{loc:Loc Key=Bird.DepartureMeta}" />
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
                             <DatePicker
                                 Grid.Column="0"
+                                Width="136"
                                 helpers:ValidationPlacement.MaxErrorWidth="160"
                                 helpers:ValidationPlacement.Placement="Bottom"
                                 CalendarStyle="{DynamicResource DarkCalendarStyle}"
@@ -629,7 +708,7 @@
                                 Grid.Column="1"
                                 Width="30"
                                 Height="30"
-                                Margin="8,7,0,0"
+                                Margin="8,5,0,0"
                                 Padding="0"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Top"
@@ -651,8 +730,8 @@
                         Style="{StaticResource BirdCardMetaSeparatorStyle}" />
 
                     <ContentPresenter
-                        Grid.Column="4"
-                        Margin="14,0,0,0"
+                        Grid.Column="5"
+                        Margin="16,0,0,0"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Content="{Binding}"
