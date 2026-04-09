@@ -74,6 +74,22 @@ namespace Birds.Tests.UI.ViewModels
             sut.MotionHint.Should().Be(AppText.Get("Settings.MotionHint.Enabled", _culture));
         }
 
+        [Fact]
+        public void LanguageChanged_Should_Preserve_SelectedTheme_And_Reapply_It()
+        {
+            _preferences.SelectedLanguage = AppLanguages.Russian;
+            _preferences.SelectedTheme = ThemeKeys.Steel;
+
+            var sut = CreateSut();
+
+            _culture = CultureInfo.GetCultureInfo(AppLanguages.English);
+            _localization.Raise(x => x.LanguageChanged += null, EventArgs.Empty);
+
+            sut.SelectedTheme.Should().Be(ThemeKeys.Steel);
+            _preferences.SelectedTheme.Should().Be(ThemeKeys.Steel);
+            _themeService.Verify(x => x.ApplyTheme(ThemeKeys.Steel), Times.AtLeastOnce);
+        }
+
         private SettingsViewModel CreateSut()
             => new(_preferences, _themeService.Object, _localization.Object, _birdManager.Object);
 

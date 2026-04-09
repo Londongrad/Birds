@@ -11,6 +11,7 @@ namespace Birds.UI.Views.Windows
     {
         private const double DefaultMinWindowWidth = 1080;
         private const double NotificationCenterMinWindowWidth = 1280;
+        private const double ArchiveNotificationCenterMinWindowWidth = 1360;
         private INotifyPropertyChanged? _viewModelNotifier;
 
         public MainWindow()
@@ -103,6 +104,11 @@ namespace Birds.UI.Views.Windows
             }
 
             if (e.PropertyName == nameof(MainViewModel.IsNotificationCenterOpen))
+            {
+                UpdateAdaptiveMinWidth();
+            }
+
+            if (e.PropertyName == nameof(MainViewModel.IsArchiveViewActive))
             {
                 UpdateAdaptiveMinWidth();
             }
@@ -304,7 +310,9 @@ namespace Birds.UI.Views.Windows
             }
 
             var targetMinWidth = viewModel.IsNotificationCenterOpen
-                ? NotificationCenterMinWindowWidth
+                ? viewModel.IsArchiveViewActive
+                    ? ArchiveNotificationCenterMinWindowWidth
+                    : NotificationCenterMinWindowWidth
                 : DefaultMinWindowWidth;
 
             MinWidth = targetMinWidth;

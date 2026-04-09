@@ -361,18 +361,18 @@
 
                     <TextBox
                         Grid.Column="0"
-                        Margin="0,0,14,0"
-                        MinWidth="240"
+                        Margin="0,0,12,0"
+                        MinWidth="200"
                         Style="{StaticResource ArchiveSearchBoxStyle}"
                         Tag="{Binding ClearSearchCommand}"
                         Text="{Binding SearchText, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}" />
 
                     <Border
                         Grid.Column="1"
-                        Margin="0,0,14,0"
+                        Margin="0,0,12,0"
                         MinHeight="46"
-                        MinWidth="132"
-                        Padding="14,0"
+                        MinWidth="116"
+                        Padding="12,0"
                         VerticalAlignment="Center"
                         Background="{StaticResource InsetBackgroundBrush}"
                         BorderBrush="{StaticResource FieldBorderBrush}"
@@ -392,10 +392,10 @@
                                 Text="{loc:Loc Key=BirdList.CountTitle}" />
                             <TextBlock
                                 Grid.Column="1"
-                                Margin="10,0,0,0"
+                                Margin="8,0,0,0"
                                 VerticalAlignment="Center"
                                 Foreground="{StaticResource PrimaryTextBrush}"
-                                FontSize="20"
+                                FontSize="18"
                                 FontWeight="Bold"
                                 Text="{Binding BirdCount, Mode=OneWay}" />
                         </Grid>
@@ -403,8 +403,8 @@
 
                     <ComboBox
                         Grid.Column="2"
-                        MinWidth="200"
-                        MaxWidth="240"
+                        MinWidth="176"
+                        MaxWidth="220"
                         DisplayMemberPath="Display"
                         ItemsSource="{Binding Filters}"
                         SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"

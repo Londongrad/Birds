@@ -83,6 +83,8 @@ namespace Birds.UI.ViewModels
 
         public bool IsRecentOperationError => _notificationManager.RecentOperationStatusType == NotificationType.Error;
 
+        public bool IsArchiveViewActive => _currentViewModelType == typeof(BirdListViewModel);
+
         public string RecentOperationStatusToolTip =>
             IsRecentOperationError
                 ? AppText.Get("Notification.QuickStatus.Error")
@@ -169,12 +171,15 @@ namespace Birds.UI.ViewModels
 
         private void OnLanguageChanged(object? sender, EventArgs e)
         {
+            _themeService.ApplyTheme(_appPreferences.SelectedTheme);
             UpdateHeader(_currentViewModelType);
             OnPropertyChanged(nameof(RecentOperationStatusToolTip));
         }
 
         private void UpdateHeader(Type? currentViewModelType)
         {
+            OnPropertyChanged(nameof(IsArchiveViewActive));
+
             switch (currentViewModelType?.Name)
             {
                 case nameof(AddBirdViewModel):

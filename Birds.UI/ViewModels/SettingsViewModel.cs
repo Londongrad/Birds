@@ -20,6 +20,7 @@ namespace Birds.UI.ViewModels
         private readonly IThemeService _themeService;
         private readonly ILocalizationService _localization;
         private readonly IBirdManager _birdManager;
+        private bool _isSynchronizingSelections;
 
         private ReadOnlyCollection<LanguageOption> _availableLanguages =
             new(new List<LanguageOption>());
@@ -120,6 +121,13 @@ namespace Birds.UI.ViewModels
         partial void OnSelectedLanguageChanged(string value)
         {
             var normalized = AppLanguages.Normalize(value);
+
+            if (_isSynchronizingSelections)
+            {
+                OnPropertyChanged(nameof(LanguageHint));
+                return;
+            }
+
             if (_preferences.SelectedLanguage != normalized)
                 _preferences.SelectedLanguage = normalized;
 
@@ -132,6 +140,13 @@ namespace Birds.UI.ViewModels
         partial void OnSelectedThemeChanged(string value)
         {
             var normalized = ThemeKeys.Normalize(value);
+
+            if (_isSynchronizingSelections)
+            {
+                OnPropertyChanged(nameof(ThemeHint));
+                return;
+            }
+
             if (_preferences.SelectedTheme != normalized)
                 _preferences.SelectedTheme = normalized;
 
@@ -142,6 +157,13 @@ namespace Birds.UI.ViewModels
         partial void OnSelectedDateFormatChanged(string value)
         {
             var normalized = DateDisplayFormats.Normalize(value);
+
+            if (_isSynchronizingSelections)
+            {
+                OnPropertyChanged(nameof(DateFormatHint));
+                return;
+            }
+
             if (_preferences.SelectedDateFormat != normalized)
                 _preferences.SelectedDateFormat = normalized;
 
@@ -151,6 +173,12 @@ namespace Birds.UI.ViewModels
 
         partial void OnShowNotificationBadgeChanged(bool value)
         {
+            if (_isSynchronizingSelections)
+            {
+                OnPropertyChanged(nameof(NotificationsHint));
+                return;
+            }
+
             if (_preferences.ShowNotificationBadge != value)
                 _preferences.ShowNotificationBadge = value;
 
@@ -159,6 +187,12 @@ namespace Birds.UI.ViewModels
 
         partial void OnReduceMotionChanged(bool value)
         {
+            if (_isSynchronizingSelections)
+            {
+                OnPropertyChanged(nameof(MotionHint));
+                return;
+            }
+
             if (_preferences.ReduceMotion != value)
                 _preferences.ReduceMotion = value;
 
@@ -173,15 +207,19 @@ namespace Birds.UI.ViewModels
                 or nameof(IAppPreferencesService.ShowNotificationBadge)
                 or nameof(IAppPreferencesService.ReduceMotion))
             {
-                ReloadFromPreferences();
+                ReloadFromPreferences(reapplyTheme: true);
             }
         }
 
         private void OnLanguageChanged(object? sender, EventArgs e)
         {
+            var preservedTheme = ThemeKeys.Normalize(_preferences.SelectedTheme);
+
             BuildAvailableLanguages();
             BuildAvailableThemes();
             BuildAvailableDateFormats();
+            ReloadFromPreferences(reapplyTheme: true);
+            _themeService.ApplyTheme(preservedTheme);
             OnPropertyChanged(nameof(LanguageHint));
             OnPropertyChanged(nameof(ThemeHint));
             OnPropertyChanged(nameof(DateFormatHint));
@@ -218,13 +256,28 @@ namespace Birds.UI.ViewModels
                 });
         }
 
-        private void ReloadFromPreferences()
+        private void ReloadFromPreferences(bool reapplyTheme = false)
         {
-            SelectedLanguage = AppLanguages.Normalize(_preferences.SelectedLanguage);
-            SelectedTheme = ThemeKeys.Normalize(_preferences.SelectedTheme);
-            SelectedDateFormat = DateDisplayFormats.Normalize(_preferences.SelectedDateFormat);
-            ShowNotificationBadge = _preferences.ShowNotificationBadge;
-            ReduceMotion = _preferences.ReduceMotion;
+            var normalizedLanguage = AppLanguages.Normalize(_preferences.SelectedLanguage);
+            var normalizedTheme = ThemeKeys.Normalize(_preferences.SelectedTheme);
+            var normalizedDateFormat = DateDisplayFormats.Normalize(_preferences.SelectedDateFormat);
+
+            _isSynchronizingSelections = true;
+            try
+            {
+                SelectedLanguage = normalizedLanguage;
+                SelectedTheme = normalizedTheme;
+                SelectedDateFormat = normalizedDateFormat;
+                ShowNotificationBadge = _preferences.ShowNotificationBadge;
+                ReduceMotion = _preferences.ReduceMotion;
+            }
+            finally
+            {
+                _isSynchronizingSelections = false;
+            }
+
+            if (reapplyTheme)
+                _themeService.ApplyTheme(normalizedTheme);
 
             OnPropertyChanged(nameof(LanguageHint));
             OnPropertyChanged(nameof(ThemeHint));
