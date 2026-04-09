@@ -124,7 +124,7 @@
                     CornerRadius="12">
                     <ScrollViewer
                         MaxHeight="{TemplateBinding MaxDropDownHeight}"
-                        CanContentScroll="True"
+                        CanContentScroll="False"
                         VerticalScrollBarVisibility="Auto">
                         <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained" />
                     </ScrollViewer>
