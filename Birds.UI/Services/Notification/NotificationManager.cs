@@ -10,8 +10,10 @@ namespace Birds.UI.Services.Notification
         private const int MaxHistoryNotifications = 80;
 
         private readonly IUiDispatcher _uiDispatcher;
+        private readonly TimeSpan _recentOperationStatusDuration;
         private readonly ObservableCollection<NotificationToast> _activeNotifications = [];
         private readonly ReadOnlyObservableCollection<NotificationToast> _activeNotificationsView;
+        private CancellationTokenSource? _recentOperationStatusCts;
 
         [ObservableProperty]
         private int unreadCount;
@@ -19,9 +21,16 @@ namespace Birds.UI.Services.Notification
         [ObservableProperty]
         private bool hasNotifications;
 
-        public NotificationManager(IUiDispatcher uiDispatcher)
+        [ObservableProperty]
+        private bool hasRecentOperationStatus;
+
+        [ObservableProperty]
+        private NotificationType? recentOperationStatusType;
+
+        public NotificationManager(IUiDispatcher uiDispatcher, TimeSpan? recentOperationStatusDuration = null)
         {
             _uiDispatcher = uiDispatcher;
+            _recentOperationStatusDuration = recentOperationStatusDuration ?? TimeSpan.FromSeconds(3);
             _activeNotificationsView = new ReadOnlyObservableCollection<NotificationToast>(_activeNotifications);
         }
 
@@ -101,11 +110,49 @@ namespace Birds.UI.Services.Notification
                     _activeNotifications.RemoveAt(_activeNotifications.Count - 1);
 
                 RefreshCounters();
+                ShowRecentOperationStatus(options.Type);
             });
         }
 
         private static bool ShouldCoalesce(NotificationOptions options)
             => options.Type == NotificationType.Info;
+
+        private void ShowRecentOperationStatus(NotificationType type)
+        {
+            if (type is not NotificationType.Success and not NotificationType.Error)
+                return;
+
+            _recentOperationStatusCts?.Cancel();
+            _recentOperationStatusCts?.Dispose();
+
+            var cts = new CancellationTokenSource();
+            _recentOperationStatusCts = cts;
+
+            HasRecentOperationStatus = true;
+            RecentOperationStatusType = type;
+
+            _ = HideRecentOperationStatusAsync(cts.Token);
+        }
+
+        private async Task HideRecentOperationStatusAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                await Task.Delay(_recentOperationStatusDuration, cancellationToken);
+                await _uiDispatcher.InvokeAsync(() =>
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                        return;
+
+                    HasRecentOperationStatus = false;
+                    RecentOperationStatusType = null;
+                }, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                // A new operation status replaced the current one.
+            }
+        }
 
         private void RemoveNotification(Guid id)
         {

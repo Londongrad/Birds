@@ -55,6 +55,37 @@ namespace Birds.Tests.UI.Services
         }
 
         [Fact]
+        public async Task ShowNotification_WhenSuccessShown_Should_DisplayRecentOperationIndicatorTemporarily()
+        {
+            var sut = new NotificationManager(new InlineUiDispatcher(), TimeSpan.FromMilliseconds(40));
+
+            sut.ShowNotification("Bird added successfully!", new NotificationOptions(NotificationType.Success, Timeout.InfiniteTimeSpan));
+
+            await Task.Delay(10);
+
+            sut.HasRecentOperationStatus.Should().BeTrue();
+            sut.RecentOperationStatusType.Should().Be(NotificationType.Success);
+
+            await Task.Delay(70);
+
+            sut.HasRecentOperationStatus.Should().BeFalse();
+            sut.RecentOperationStatusType.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task ShowNotification_WhenInfoShown_Should_NotDisplayRecentOperationIndicator()
+        {
+            var sut = new NotificationManager(new InlineUiDispatcher(), TimeSpan.FromMilliseconds(40));
+
+            sut.ShowNotification("Archive reloaded.", new NotificationOptions(NotificationType.Info, Timeout.InfiniteTimeSpan));
+
+            await Task.Delay(10);
+
+            sut.HasRecentOperationStatus.Should().BeFalse();
+            sut.RecentOperationStatusType.Should().BeNull();
+        }
+
+        [Fact]
         public async Task LocalizedNotification_Should_Update_Message_When_Language_Changes()
         {
             var sut = new NotificationManager(new InlineUiDispatcher());

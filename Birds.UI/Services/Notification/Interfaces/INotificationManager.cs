@@ -12,6 +12,10 @@ namespace Birds.UI.Services.Notification.Interfaces
 
         bool HasNotifications { get; }
 
+        bool HasRecentOperationStatus { get; }
+
+        NotificationType? RecentOperationStatusType { get; }
+
         void ShowNotification(string message, NotificationOptions options);
 
         void ShowLocalizedNotification(string messageKey, NotificationOptions options, params object[] args);

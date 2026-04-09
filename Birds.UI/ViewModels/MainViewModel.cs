@@ -77,6 +77,17 @@ namespace Birds.UI.ViewModels
 
         public bool ShouldShowNotificationBadge => _appPreferences.ShowNotificationBadge && HasUnreadNotifications;
 
+        public bool HasRecentOperationStatus => _notificationManager.HasRecentOperationStatus;
+
+        public bool IsRecentOperationSuccess => _notificationManager.RecentOperationStatusType == NotificationType.Success;
+
+        public bool IsRecentOperationError => _notificationManager.RecentOperationStatusType == NotificationType.Error;
+
+        public string RecentOperationStatusToolTip =>
+            IsRecentOperationError
+                ? AppText.Get("Notification.QuickStatus.Error")
+                : AppText.Get("Notification.QuickStatus.Success");
+
         [ObservableProperty]
         private string headerTitle = AppText.Get("Main.Header.AddBird.Title");
 
@@ -124,12 +135,19 @@ namespace Birds.UI.ViewModels
 
         private void OnNotificationManagerPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName is nameof(INotificationManager.UnreadCount) or nameof(INotificationManager.HasNotifications))
+            if (e.PropertyName is nameof(INotificationManager.UnreadCount)
+                or nameof(INotificationManager.HasNotifications)
+                or nameof(INotificationManager.HasRecentOperationStatus)
+                or nameof(INotificationManager.RecentOperationStatusType))
             {
                 OnPropertyChanged(nameof(UnreadNotificationCount));
                 OnPropertyChanged(nameof(HasUnreadNotifications));
                 OnPropertyChanged(nameof(HasNotifications));
                 OnPropertyChanged(nameof(ShouldShowNotificationBadge));
+                OnPropertyChanged(nameof(HasRecentOperationStatus));
+                OnPropertyChanged(nameof(IsRecentOperationSuccess));
+                OnPropertyChanged(nameof(IsRecentOperationError));
+                OnPropertyChanged(nameof(RecentOperationStatusToolTip));
             }
         }
 
@@ -152,6 +170,7 @@ namespace Birds.UI.ViewModels
         private void OnLanguageChanged(object? sender, EventArgs e)
         {
             UpdateHeader(_currentViewModelType);
+            OnPropertyChanged(nameof(RecentOperationStatusToolTip));
         }
 
         private void UpdateHeader(Type? currentViewModelType)

@@ -125,6 +125,8 @@ namespace Birds.Shared.Localization
             ["Notification.Title.Success"] = "Успешно",
             ["Notification.Title.Warning"] = "Внимание",
             ["Notification.Title.Error"] = "Ошибка",
+            ["Notification.QuickStatus.Success"] = "Последняя операция завершилась успешно",
+            ["Notification.QuickStatus.Error"] = "Последняя операция завершилась ошибкой",
 
             ["Exception.Source.UiDispatcher"] = "Диспетчер UI",
             ["Exception.Source.AppDomain"] = "Домен приложения",
@@ -311,6 +313,8 @@ namespace Birds.Shared.Localization
             ["Notification.Title.Success"] = "Success",
             ["Notification.Title.Warning"] = "Warning",
             ["Notification.Title.Error"] = "Error",
+            ["Notification.QuickStatus.Success"] = "The latest operation completed successfully",
+            ["Notification.QuickStatus.Error"] = "The latest operation failed",
 
             ["Exception.Source.UiDispatcher"] = "UI Dispatcher",
             ["Exception.Source.AppDomain"] = "AppDomain",

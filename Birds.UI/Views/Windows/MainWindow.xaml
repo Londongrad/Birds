@@ -206,6 +206,85 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="QuickOperationIndicatorStyle" TargetType="Border">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+            <Setter Property="Background" Value="{DynamicResource ThemeNotificationActionBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ThemeShellBorderBrush}" />
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <TransformGroup>
+                        <ScaleTransform ScaleX="0.72" ScaleY="0.72" />
+                        <TranslateTransform Y="-3" />
+                    </TransformGroup>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsRecentOperationSuccess}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource ThemeStatusAliveBackgroundBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource ThemeStatusAliveBorderBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsRecentOperationError}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource ThemeStatusDeadBackgroundBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource ThemeStatusDeadBorderBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding HasRecentOperationStatus}" Value="True">
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard FillBehavior="HoldEnd">
+                                <DoubleAnimation
+                                    Storyboard.TargetProperty="Opacity"
+                                    To="1"
+                                    Duration="0:0:0.18" />
+                                <DoubleAnimationUsingKeyFrames
+                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)">
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0" Value="0.72" />
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0.14" Value="1.08" />
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0.22" Value="1" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames
+                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)">
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0" Value="0.72" />
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0.14" Value="1.08" />
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0.22" Value="1" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames
+                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)">
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0" Value="-3" />
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0.22" Value="0" />
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding HasRecentOperationStatus}" Value="False">
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard FillBehavior="HoldEnd">
+                                <DoubleAnimation
+                                    Storyboard.TargetProperty="Opacity"
+                                    To="0"
+                                    Duration="0:0:0.22" />
+                                <DoubleAnimation
+                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
+                                    To="0.82"
+                                    Duration="0:0:0.22" />
+                                <DoubleAnimation
+                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
+                                    To="0.82"
+                                    Duration="0:0:0.22" />
+                                <DoubleAnimation
+                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)"
+                                    To="-2"
+                                    Duration="0:0:0.22" />
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Border
@@ -249,42 +328,82 @@
                             Text="B" />
                     </Border>
 
-                    <Button
+                    <StackPanel
                         Grid.Column="1"
-                        Command="{Binding ToggleNotificationCenterCommand}"
-                        Style="{StaticResource NotificationCenterButtonStyle}">
-                        <Grid
-                            Width="18"
-                            Height="18"
-                            ClipToBounds="False">
-                            <TextBlock
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                FontFamily="Segoe MDL2 Assets"
-                                FontSize="14"
-                                Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                Text="&#xE7F4;" />
-                            <Border
-                                Width="16"
-                                Height="16"
-                                Margin="0,-6,-7,0"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Top"
-                                Background="{DynamicResource ThemeBadgeBrush}"
-                                BorderBrush="{DynamicResource ThemeChromeBackgroundBrush}"
-                                BorderThickness="1"
-                                CornerRadius="8"
-                                Visibility="{Binding ShouldShowNotificationBadge, Converter={StaticResource BoolToVisibilityConverter}}">
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center">
+                        <Border
+                            Width="20"
+                            Height="20"
+                            Margin="0,0,8,0"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            ToolTip="{Binding RecentOperationStatusToolTip}"
+                            Style="{StaticResource QuickOperationIndicatorStyle}">
+                            <Grid>
+                                <Path
+                                    Width="9"
+                                    Height="7"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Data="M 1 4 L 3.4 6.2 L 8 1.4"
+                                    Stroke="{DynamicResource ThemeStatusAliveBrush}"
+                                    StrokeStartLineCap="Round"
+                                    StrokeEndLineCap="Round"
+                                    StrokeLineJoin="Round"
+                                    StrokeThickness="1.8"
+                                    Visibility="{Binding IsRecentOperationSuccess, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                <Path
+                                    Width="8"
+                                    Height="8"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Data="M 1 1 L 7 7 M 7 1 L 1 7"
+                                    Stroke="{DynamicResource ThemeStatusDeadBrush}"
+                                    StrokeStartLineCap="Round"
+                                    StrokeEndLineCap="Round"
+                                    StrokeThickness="1.6"
+                                    Visibility="{Binding IsRecentOperationError, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            </Grid>
+                        </Border>
+
+                        <Button
+                            Command="{Binding ToggleNotificationCenterCommand}"
+                            Margin="0"
+                            Style="{StaticResource NotificationCenterButtonStyle}">
+                            <Grid
+                                Width="18"
+                                Height="18"
+                                ClipToBounds="False">
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    FontSize="9"
-                                    FontWeight="Bold"
-                                    Foreground="{DynamicResource ThemePrimaryTextBrush}"
-                                    Text="{Binding UnreadNotificationCount, Mode=OneWay}" />
-                            </Border>
-                        </Grid>
-                    </Button>
+                                    FontFamily="Segoe MDL2 Assets"
+                                    FontSize="14"
+                                    Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                                    Text="&#xE7F4;" />
+                                <Border
+                                    Width="16"
+                                    Height="16"
+                                    Margin="0,-6,-7,0"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Top"
+                                    Background="{DynamicResource ThemeBadgeBrush}"
+                                    BorderBrush="{DynamicResource ThemeChromeBackgroundBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Visibility="{Binding ShouldShowNotificationBadge, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="9"
+                                        FontWeight="Bold"
+                                        Foreground="{DynamicResource ThemePrimaryTextBrush}"
+                                        Text="{Binding UnreadNotificationCount, Mode=OneWay}" />
+                                </Border>
+                            </Grid>
+                        </Button>
+                    </StackPanel>
 
                     <StackPanel
                         Grid.Column="2"
