@@ -242,6 +242,55 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+
+        <Style x:Key="PendingUndoButtonStyle" TargetType="Button">
+            <Setter Property="Padding" Value="12,7,12,9" />
+            <Setter Property="Background" Value="{DynamicResource ThemeNotificationActionBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="ButtonSurface"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="12">
+                            <Grid ClipToBounds="True">
+                                <ContentPresenter
+                                    Margin="{TemplateBinding Padding}"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center" />
+                                <Border
+                                    x:Name="UndoProgressBar"
+                                    Height="2.5"
+                                    VerticalAlignment="Bottom"
+                                    HorizontalAlignment="Stretch"
+                                    Background="{DynamicResource ThemeAccentButtonBorderBrush}"
+                                    Opacity="0.9"
+                                    RenderTransformOrigin="0,0.5">
+                                    <Border.RenderTransform>
+                                        <ScaleTransform ScaleX="1" />
+                                    </Border.RenderTransform>
+                                </Border>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeNotificationCardHoverBrush}" />
+                                <Setter TargetName="ButtonSurface" Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonSurface" Property="Opacity" Value="0.92" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Border
@@ -289,6 +338,40 @@
                         Grid.Column="1"
                         Orientation="Horizontal"
                         VerticalAlignment="Center">
+                        <Button
+                            x:Name="PendingDeleteUndoButton"
+                            Margin="0,0,8,0"
+                            Command="{Binding UndoPendingDeleteCommand}"
+                            Style="{StaticResource PendingUndoButtonStyle}"
+                            ToolTip="{Binding PendingDeleteUndoToolTip}"
+                            Visibility="Collapsed">
+                            <Button.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform ScaleX="0.86" ScaleY="0.86" />
+                                    <TranslateTransform Y="-2" />
+                                </TransformGroup>
+                            </Button.RenderTransform>
+                            <StackPanel Orientation="Horizontal">
+                                <Path
+                                    Width="11"
+                                    Height="11"
+                                    Margin="0,0,8,0"
+                                    VerticalAlignment="Center"
+                                    Data="M 2 3.5 A 4.5 4.5 0 1 1 4.2 8 M 2.2 1.2 L 2.2 4.4 L 5.2 4.4"
+                                    Stroke="{DynamicResource ThemePrimaryTextBrush}"
+                                    StrokeThickness="1.5"
+                                    StrokeStartLineCap="Round"
+                                    StrokeEndLineCap="Round"
+                                    StrokeLineJoin="Round" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                                    Text="{loc:Loc Key=Notification.UndoDelete}" />
+                            </StackPanel>
+                        </Button>
+
                         <Border
                             x:Name="QuickOperationIndicator"
                             Width="20"

@@ -1,5 +1,6 @@
 using Birds.Shared.Localization;
 using Birds.UI.Services.Localization.Interfaces;
+using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Navigation.Interfaces;
 using Birds.UI.Services.Notification;
 using Birds.UI.Services.Notification.Interfaces;
@@ -20,6 +21,7 @@ namespace Birds.UI.ViewModels
         private readonly IAppPreferencesService _appPreferences;
         private readonly IThemeService _themeService;
         private readonly ILocalizationService _localization;
+        private readonly IBirdManager _birdManager;
         private Type? _currentViewModelType;
 
         public MainViewModel(INavigationService navigation,
@@ -27,6 +29,7 @@ namespace Birds.UI.ViewModels
                              IAppPreferencesService appPreferences,
                              IThemeService themeService,
                              ILocalizationService localization,
+                             IBirdManager birdManager,
                              BirdListViewModel birdsVM,
                              AddBirdViewModel addBirdVM,
                              BirdStatisticsViewModel birdStatistics,
@@ -37,6 +40,7 @@ namespace Birds.UI.ViewModels
             _appPreferences = appPreferences;
             _themeService = themeService;
             _localization = localization;
+            _birdManager = birdManager;
 
             _navigation.AddCreator<BirdListViewModel>(() => birdsVM);
             _navigation.AddCreator<AddBirdViewModel>(() => addBirdVM);
@@ -55,6 +59,7 @@ namespace Birds.UI.ViewModels
             if (_notificationManager.ActiveNotifications is INotifyCollectionChanged notificationsChanged)
                 notificationsChanged.CollectionChanged += OnNotificationsCollectionChanged;
 
+            _birdManager.PropertyChanged += OnBirdManagerPropertyChanged;
             _localization.LanguageChanged += OnLanguageChanged;
 
             _localization.ApplyLanguage(_appPreferences.SelectedLanguage);
@@ -83,7 +88,13 @@ namespace Birds.UI.ViewModels
 
         public bool IsRecentOperationError => _notificationManager.RecentOperationStatusType == NotificationType.Error;
 
-        public bool IsArchiveViewActive => _currentViewModelType == typeof(BirdListViewModel);
+        public bool HasPendingDeleteUndo => _birdManager.HasPendingDeleteUndo;
+
+        public int PendingDeleteUndoVersion => _birdManager.PendingDeleteUndoVersion;
+
+        public TimeSpan PendingDeleteUndoDuration => _birdManager.PendingDeleteUndoDuration;
+
+        public string PendingDeleteUndoToolTip => AppText.Get("Notification.UndoDelete.ToolTip");
 
         public string RecentOperationStatusToolTip =>
             IsRecentOperationError
@@ -101,6 +112,8 @@ namespace Birds.UI.ViewModels
 
         [ObservableProperty]
         private bool isNotificationCenterOpen;
+
+        public bool IsArchiveViewActive => _currentViewModelType == typeof(BirdListViewModel);
 
         [RelayCommand]
         private void ToggleNotificationCenter()
@@ -125,6 +138,9 @@ namespace Birds.UI.ViewModels
         {
             _notificationManager.ClearNotifications();
         }
+
+        [RelayCommand]
+        private Task UndoPendingDelete() => _birdManager.UndoPendingDeleteAsync(CancellationToken.None);
 
         private void OnNavigationPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
@@ -169,11 +185,22 @@ namespace Birds.UI.ViewModels
             OnPropertyChanged(nameof(ShouldShowNotificationBadge));
         }
 
+        private void OnBirdManagerPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName is nameof(IBirdManager.HasPendingDeleteUndo)
+                or nameof(IBirdManager.PendingDeleteUndoVersion))
+            {
+                OnPropertyChanged(nameof(HasPendingDeleteUndo));
+                OnPropertyChanged(nameof(PendingDeleteUndoVersion));
+            }
+        }
+
         private void OnLanguageChanged(object? sender, EventArgs e)
         {
             _themeService.ApplyTheme(_appPreferences.SelectedTheme);
             UpdateHeader(_currentViewModelType);
             OnPropertyChanged(nameof(RecentOperationStatusToolTip));
+            OnPropertyChanged(nameof(PendingDeleteUndoToolTip));
         }
 
         private void UpdateHeader(Type? currentViewModelType)

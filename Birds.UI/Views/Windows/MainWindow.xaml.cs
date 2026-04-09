@@ -1,6 +1,7 @@
 using Birds.UI.ViewModels;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -22,6 +23,7 @@ namespace Birds.UI.Views.Windows
             {
                 UpdateWindowStateGlyph();
                 UpdateQuickOperationIndicatorState(animate: false);
+                UpdatePendingDeleteUndoState(animate: false);
                 UpdateAdaptiveMinWidth();
             };
             StateChanged += (_, _) => UpdateWindowStateGlyph();
@@ -91,6 +93,7 @@ namespace Birds.UI.Views.Windows
                 _viewModelNotifier.PropertyChanged += OnViewModelPropertyChanged;
 
             UpdateQuickOperationIndicatorState(animate: false);
+            UpdatePendingDeleteUndoState(animate: false);
             UpdateAdaptiveMinWidth();
         }
 
@@ -111,6 +114,12 @@ namespace Birds.UI.Views.Windows
             if (e.PropertyName == nameof(MainViewModel.IsArchiveViewActive))
             {
                 UpdateAdaptiveMinWidth();
+            }
+
+            if (e.PropertyName is nameof(MainViewModel.HasPendingDeleteUndo)
+                or nameof(MainViewModel.PendingDeleteUndoVersion))
+            {
+                UpdatePendingDeleteUndoState(animate: true);
             }
         }
 
@@ -321,6 +330,175 @@ namespace Birds.UI.Views.Windows
             {
                 Width = targetMinWidth;
             }
+        }
+
+        private void UpdatePendingDeleteUndoState(bool animate)
+        {
+            if (PendingDeleteUndoButton is null || DataContext is not MainViewModel viewModel)
+                return;
+
+            if (viewModel.HasPendingDeleteUndo)
+            {
+                PendingDeleteUndoButton.Visibility = Visibility.Visible;
+
+                if (animate)
+                    AnimatePendingDeleteUndoIn(viewModel.PendingDeleteUndoDuration);
+                else
+                    ApplyPendingDeleteUndoVisibleState();
+
+                return;
+            }
+
+            if (animate && PendingDeleteUndoButton.Visibility == Visibility.Visible)
+            {
+                AnimatePendingDeleteUndoOut();
+            }
+            else
+            {
+                PendingDeleteUndoButton.Visibility = Visibility.Collapsed;
+                ApplyPendingDeleteUndoHiddenState();
+            }
+        }
+
+        private void AnimatePendingDeleteUndoIn(TimeSpan duration)
+        {
+            StopPendingDeleteUndoAnimations();
+
+            ApplyPendingDeleteUndoHiddenState();
+            PendingDeleteUndoButton.Visibility = Visibility.Visible;
+
+            var easeOut = new BackEase
+            {
+                EasingMode = EasingMode.EaseOut,
+                Amplitude = 0.32
+            };
+
+            PendingDeleteUndoButton.BeginAnimation(OpacityProperty, new DoubleAnimation(1, TimeSpan.FromMilliseconds(200))
+            {
+                EasingFunction = easeOut
+            });
+
+            if (TryGetPendingDeleteUndoTransforms(out var scale, out var translate))
+            {
+                scale.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(1, TimeSpan.FromMilliseconds(220))
+                {
+                    From = 0.86,
+                    EasingFunction = easeOut
+                });
+                scale.BeginAnimation(ScaleTransform.ScaleYProperty, new DoubleAnimation(1, TimeSpan.FromMilliseconds(220))
+                {
+                    From = 0.86,
+                    EasingFunction = easeOut
+                });
+                translate.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(0, TimeSpan.FromMilliseconds(200))
+                {
+                    From = -2,
+                    EasingFunction = easeOut
+                });
+            }
+
+            AnimatePendingDeleteUndoProgress(duration);
+        }
+
+        private void AnimatePendingDeleteUndoOut()
+        {
+            StopPendingDeleteUndoAnimations();
+
+            var fade = new DoubleAnimation(0, TimeSpan.FromMilliseconds(160));
+            fade.Completed += (_, _) =>
+            {
+                if (DataContext is MainViewModel viewModel && viewModel.HasPendingDeleteUndo)
+                    return;
+
+                PendingDeleteUndoButton.Visibility = Visibility.Collapsed;
+                ApplyPendingDeleteUndoHiddenState();
+            };
+
+            PendingDeleteUndoButton.BeginAnimation(OpacityProperty, fade);
+        }
+
+        private void StopPendingDeleteUndoAnimations()
+        {
+            if (PendingDeleteUndoButton is null)
+                return;
+
+            PendingDeleteUndoButton.BeginAnimation(OpacityProperty, null);
+
+            if (TryGetPendingDeleteUndoTransforms(out var scale, out var translate))
+            {
+                scale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
+                scale.BeginAnimation(ScaleTransform.ScaleYProperty, null);
+                translate.BeginAnimation(TranslateTransform.YProperty, null);
+            }
+
+            if (FindUndoProgressScale() is ScaleTransform progressScale)
+                progressScale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
+        }
+
+        private void ApplyPendingDeleteUndoVisibleState()
+        {
+            PendingDeleteUndoButton.Opacity = 1;
+
+            if (TryGetPendingDeleteUndoTransforms(out var scale, out var translate))
+            {
+                scale.ScaleX = 1;
+                scale.ScaleY = 1;
+                translate.Y = 0;
+            }
+
+            if (FindUndoProgressScale() is ScaleTransform progressScale)
+                progressScale.ScaleX = 1;
+        }
+
+        private void ApplyPendingDeleteUndoHiddenState()
+        {
+            if (PendingDeleteUndoButton is null)
+                return;
+
+            PendingDeleteUndoButton.Opacity = 0;
+
+            if (TryGetPendingDeleteUndoTransforms(out var scale, out var translate))
+            {
+                scale.ScaleX = 0.86;
+                scale.ScaleY = 0.86;
+                translate.Y = -2;
+            }
+
+            if (FindUndoProgressScale() is ScaleTransform progressScale)
+                progressScale.ScaleX = 1;
+        }
+
+        private void AnimatePendingDeleteUndoProgress(TimeSpan duration)
+        {
+            if (FindUndoProgressScale() is not ScaleTransform progressScale)
+                return;
+
+            progressScale.ScaleX = 1;
+            progressScale.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(0, duration));
+        }
+
+        private bool TryGetPendingDeleteUndoTransforms(out ScaleTransform scale, out TranslateTransform translate)
+        {
+            scale = null!;
+            translate = null!;
+
+            if (PendingDeleteUndoButton?.RenderTransform is not TransformGroup group || group.Children.Count < 2)
+                return false;
+
+            if (group.Children[0] is not ScaleTransform scaleTransform || group.Children[1] is not TranslateTransform translateTransform)
+                return false;
+
+            scale = scaleTransform;
+            translate = translateTransform;
+            return true;
+        }
+
+        private ScaleTransform? FindUndoProgressScale()
+        {
+            if (PendingDeleteUndoButton?.Template?.FindName("UndoProgressBar", PendingDeleteUndoButton) is not Border progressBorder)
+                return null;
+
+            return progressBorder.RenderTransform as ScaleTransform;
         }
     }
 }
