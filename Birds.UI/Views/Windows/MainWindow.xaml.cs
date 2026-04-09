@@ -423,6 +423,7 @@ namespace Birds.UI.Views.Windows
                 return;
 
             PendingDeleteUndoHost.BeginAnimation(OpacityProperty, null);
+            PendingDeleteUndoProgressBar?.BeginAnimation(OpacityProperty, null);
 
             if (TryGetPendingDeleteUndoTransforms(out var scale, out var translate))
             {
@@ -433,6 +434,9 @@ namespace Birds.UI.Views.Windows
 
             if (FindUndoProgressScale() is ScaleTransform progressScale)
                 progressScale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
+
+            if (FindUndoProgressBrush() is SolidColorBrush progressBrush)
+                progressBrush.BeginAnimation(SolidColorBrush.ColorProperty, null);
         }
 
         private void ApplyPendingDeleteUndoVisibleState()
@@ -448,6 +452,12 @@ namespace Birds.UI.Views.Windows
 
             if (FindUndoProgressScale() is ScaleTransform progressScale)
                 progressScale.ScaleX = 1;
+
+            if (PendingDeleteUndoProgressBar is not null)
+                PendingDeleteUndoProgressBar.Opacity = 0.92;
+
+            if (FindUndoProgressBrush() is SolidColorBrush progressBrush)
+                progressBrush.Color = ResolveUndoProgressStartColor();
         }
 
         private void ApplyPendingDeleteUndoHiddenState()
@@ -466,6 +476,12 @@ namespace Birds.UI.Views.Windows
 
             if (FindUndoProgressScale() is ScaleTransform progressScale)
                 progressScale.ScaleX = 1;
+
+            if (PendingDeleteUndoProgressBar is not null)
+                PendingDeleteUndoProgressBar.Opacity = 0.9;
+
+            if (FindUndoProgressBrush() is SolidColorBrush progressBrush)
+                progressBrush.Color = ResolveUndoProgressStartColor();
         }
 
         private void AnimatePendingDeleteUndoProgress(TimeSpan duration)
@@ -475,6 +491,36 @@ namespace Birds.UI.Views.Windows
 
             progressScale.ScaleX = 1;
             progressScale.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(0, duration));
+
+            if (PendingDeleteUndoProgressBar is not null)
+            {
+                PendingDeleteUndoProgressBar.Opacity = 0.96;
+                PendingDeleteUndoProgressBar.BeginAnimation(OpacityProperty, new DoubleAnimation(0.72, TimeSpan.FromMilliseconds(420))
+                {
+                    AutoReverse = true,
+                    RepeatBehavior = RepeatBehavior.Forever
+                });
+            }
+
+            if (FindUndoProgressBrush() is SolidColorBrush progressBrush)
+            {
+                var colorAnimation = new ColorAnimationUsingKeyFrames
+                {
+                    Duration = duration
+                };
+
+                colorAnimation.KeyFrames.Add(new LinearColorKeyFrame(
+                    ResolveUndoProgressStartColor(),
+                    KeyTime.FromTimeSpan(TimeSpan.Zero)));
+                colorAnimation.KeyFrames.Add(new LinearColorKeyFrame(
+                    ResolveUndoProgressMidColor(),
+                    KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(duration.TotalMilliseconds * 0.62))));
+                colorAnimation.KeyFrames.Add(new LinearColorKeyFrame(
+                    ResolveUndoProgressEndColor(),
+                    KeyTime.FromTimeSpan(duration)));
+
+                progressBrush.BeginAnimation(SolidColorBrush.ColorProperty, colorAnimation);
+            }
         }
 
         private bool TryGetPendingDeleteUndoTransforms(out ScaleTransform scale, out TranslateTransform translate)
@@ -496,6 +542,27 @@ namespace Birds.UI.Views.Windows
         private ScaleTransform? FindUndoProgressScale()
         {
             return PendingDeleteUndoProgressBar?.RenderTransform as ScaleTransform;
+        }
+
+        private SolidColorBrush? FindUndoProgressBrush()
+        {
+            return PendingDeleteUndoProgressBar?.Background as SolidColorBrush;
+        }
+
+        private Color ResolveUndoProgressStartColor()
+        {
+            return TryFindResource("ThemeStatusAliveColor") is Color color
+                ? color
+                : Color.FromRgb(124, 227, 139);
+        }
+
+        private static Color ResolveUndoProgressMidColor() => Color.FromRgb(214, 171, 89);
+
+        private Color ResolveUndoProgressEndColor()
+        {
+            return TryFindResource("ThemeStatusDeadColor") is Color color
+                ? color
+                : Color.FromRgb(228, 161, 161);
         }
     }
 }

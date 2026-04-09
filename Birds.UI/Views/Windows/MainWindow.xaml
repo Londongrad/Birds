@@ -365,10 +365,12 @@
                                 Margin="1,0,1,1"
                                 VerticalAlignment="Bottom"
                                 HorizontalAlignment="Stretch"
-                                Background="{DynamicResource ThemeAccentButtonBorderBrush}"
                                 CornerRadius="0,0,11,11"
                                 Opacity="0.9"
                                 RenderTransformOrigin="0,0.5">
+                                <Border.Background>
+                                    <SolidColorBrush x:Name="PendingDeleteUndoProgressBrush" Color="#7CE38B" />
+                                </Border.Background>
                                 <Border.RenderTransform>
                                     <ScaleTransform ScaleX="1" />
                                 </Border.RenderTransform>
