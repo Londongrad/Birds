@@ -51,6 +51,8 @@ namespace Birds.Shared.Localization
             ["Bird.Action.CancelEdit"] = "Отменить редактирование",
 
             ["BirdList.CountLabel"] = "Птиц: ",
+            ["BirdList.CountTitle"] = "Птиц",
+            ["BirdList.SearchPlaceholder"] = "Поиск по виду, дате или описанию",
             ["BirdList.Retry"] = "Повторить",
             ["BirdList.EmptyTitle"] = "Ничего не найдено",
             ["BirdList.EmptyDescription"] = "Попробуйте изменить поиск или фильтр.",
@@ -235,6 +237,8 @@ namespace Birds.Shared.Localization
             ["Bird.Action.CancelEdit"] = "Cancel editing",
 
             ["BirdList.CountLabel"] = "Birds: ",
+            ["BirdList.CountTitle"] = "Birds",
+            ["BirdList.SearchPlaceholder"] = "Search by species, date or note",
             ["BirdList.Retry"] = "Retry",
             ["BirdList.EmptyTitle"] = "Nothing found",
             ["BirdList.EmptyDescription"] = "Try changing the search or filter.",

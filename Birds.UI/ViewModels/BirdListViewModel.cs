@@ -109,6 +109,12 @@ namespace Birds.UI.ViewModels
             await _birdManager.ReloadAsync(CancellationToken.None);
         }
 
+        [RelayCommand]
+        private void ClearSearch()
+        {
+            SearchText = string.Empty;
+        }
+
         private void OnLanguageChanged(object? sender, EventArgs e)
         {
             var selectedFilter = SelectedFilter;

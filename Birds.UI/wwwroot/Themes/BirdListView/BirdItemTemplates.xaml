@@ -117,6 +117,7 @@
                 <Border
                     Width="{Binding ActualWidth, ElementName=ComboRoot}"
                     Margin="0,4,0,0"
+                    Padding="0,6,6,6"
                     Background="{DynamicResource ThemeInsetBackgroundBrush}"
                     BorderBrush="{DynamicResource ThemeFieldBorderBrush}"
                     BorderThickness="1"

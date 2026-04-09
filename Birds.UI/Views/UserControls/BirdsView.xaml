@@ -30,7 +30,7 @@
 
         <Style x:Key="ArchiveSearchBoxStyle" TargetType="TextBox">
             <Setter Property="MinHeight" Value="46" />
-            <Setter Property="Padding" Value="14,11" />
+            <Setter Property="Padding" Value="0" />
             <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
             <Setter Property="Background" Value="{StaticResource FieldBackgroundBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}" />
@@ -41,12 +41,86 @@
                     <ControlTemplate TargetType="TextBox">
                         <Border
                             x:Name="FieldBorder"
-                            Padding="{TemplateBinding Padding}"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="10">
-                            <ScrollViewer x:Name="PART_ContentHost" />
+                            <Grid Margin="14,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Path
+                                    Grid.Column="0"
+                                    Width="14"
+                                    Height="14"
+                                    Margin="0,0,12,0"
+                                    VerticalAlignment="Center"
+                                    Data="M 6 1.5 A 4.5 4.5 0 1 1 5.999 1.5 M 9.3 9.3 L 13 13"
+                                    Stroke="{StaticResource MutedTextBrush}"
+                                    StrokeStartLineCap="Round"
+                                    StrokeEndLineCap="Round"
+                                    StrokeThickness="1.6" />
+
+                                <Grid Grid.Column="1">
+                                    <ScrollViewer
+                                        x:Name="PART_ContentHost"
+                                        Margin="0"
+                                        VerticalAlignment="Center" />
+                                    <TextBlock
+                                        x:Name="PlaceholderText"
+                                        VerticalAlignment="Center"
+                                        Foreground="{StaticResource MutedTextBrush}"
+                                        IsHitTestVisible="False"
+                                        Visibility="Collapsed"
+                                        Text="{loc:Loc Key=BirdList.SearchPlaceholder}" />
+                                </Grid>
+
+                                <Button
+                                    x:Name="ClearButton"
+                                    Grid.Column="2"
+                                    Width="22"
+                                    Height="22"
+                                    Margin="10,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Command="{TemplateBinding Tag}"
+                                    Cursor="Hand"
+                                    Focusable="False"
+                                    Foreground="{StaticResource MutedTextBrush}">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border
+                                                x:Name="ButtonBorder"
+                                                Background="Transparent"
+                                                CornerRadius="11">
+                                                <Path
+                                                    Width="8"
+                                                    Height="8"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    Data="M 1 1 L 7 7 M 7 1 L 1 7"
+                                                    Stroke="{TemplateBinding Foreground}"
+                                                    StrokeStartLineCap="Round"
+                                                    StrokeEndLineCap="Round"
+                                                    StrokeThickness="1.5" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="ButtonBorder" Property="Background" Value="#16222E" />
+                                                    <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.85" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -54,6 +128,14 @@
                             </Trigger>
                             <Trigger Property="IsKeyboardFocused" Value="True">
                                 <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderFocusBrush}" />
+                            </Trigger>
+                            <Trigger Property="Text" Value="">
+                                <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible" />
+                                <Setter TargetName="ClearButton" Property="Visibility" Value="Collapsed" />
+                            </Trigger>
+                            <Trigger Property="Text" Value="{x:Null}">
+                                <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible" />
+                                <Setter TargetName="ClearButton" Property="Visibility" Value="Collapsed" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -96,7 +178,7 @@
             <Setter Property="MinHeight" Value="46" />
             <Setter Property="FontSize" Value="15" />
             <Setter Property="MaxDropDownHeight" Value="340" />
-            <Setter Property="Padding" Value="14,0,42,0" />
+            <Setter Property="Padding" Value="40,0,42,0" />
             <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
             <Setter Property="Background" Value="{StaticResource FieldBackgroundBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}" />
@@ -122,6 +204,16 @@
                                 Content="{TemplateBinding SelectionBoxItem}"
                                 ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
                                 IsHitTestVisible="False" />
+
+                            <Path
+                                Width="14"
+                                Height="14"
+                                Margin="14,0,0,0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Data="M 1 2 L 13 2 L 8 7 L 8 12 L 6 11 L 6 7 Z"
+                                Fill="{StaticResource MutedTextBrush}"
+                                Opacity="0.8" />
 
                             <Path
                                 Width="11"
@@ -264,7 +356,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="240" />
+                        <ColumnDefinition Width="260" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
@@ -272,28 +364,41 @@
                         Grid.Column="0"
                         Margin="0,0,14,0"
                         Style="{StaticResource ArchiveSearchBoxStyle}"
-                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                        Tag="{Binding ClearSearchCommand}"
+                        Text="{Binding SearchText, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}" />
 
                     <Border
                         Grid.Column="1"
                         Margin="0,0,14,0"
                         MinHeight="46"
-                        MinWidth="96"
-                        Padding="18,10"
+                        MinWidth="132"
+                        Padding="14,0"
                         VerticalAlignment="Center"
                         Background="{StaticResource InsetBackgroundBrush}"
                         BorderBrush="{StaticResource FieldBorderBrush}"
                         BorderThickness="1"
                         CornerRadius="10">
-                        <TextBlock
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Foreground="{StaticResource PrimaryTextBrush}"
-                            FontSize="15"
-                            FontWeight="SemiBold">
-                            <Run Text="{loc:Loc Key=BirdList.CountLabel}" />
-                            <Run Text="{Binding BirdCount, Mode=OneWay}" />
-                        </TextBlock>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                Foreground="{StaticResource MutedTextBrush}"
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Text="{loc:Loc Key=BirdList.CountTitle}" />
+                            <TextBlock
+                                Grid.Column="1"
+                                Margin="10,0,0,0"
+                                VerticalAlignment="Center"
+                                Foreground="{StaticResource PrimaryTextBrush}"
+                                FontSize="20"
+                                FontWeight="Bold"
+                                Text="{Binding BirdCount, Mode=OneWay}" />
+                        </Grid>
                     </Border>
 
                     <ComboBox
