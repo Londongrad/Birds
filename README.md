@@ -188,16 +188,25 @@ Recommended set:
 
 ### 1. Archive / Архив
 
-![Archive screenshot](docs/screenshots/archive.png)
+![Archive screenshot](<img width="1920" height="1023" alt="image" src="https://github.com/user-attachments/assets/6d4d5916-4381-4e2d-aedb-fda114533230" />
+)
 
 ### 2. Add Bird / Добавление птицы
 
-![Add bird screenshot](docs/screenshots/add-bird.png)
+![Add bird screenshot](<img width="1920" height="1030" alt="image" src="https://github.com/user-attachments/assets/26bf47cc-5d50-4d19-88a7-2f41bedbb181" />
+)
 
 ### 3. Statistics / Статистика
 
-![Statistics screenshot](docs/screenshots/statistics.png)
+![Statistics screenshot](<img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/d20af0e1-07ea-4f2e-95c6-e5ec0bb02d21" />
+)
 
 ### 4. Settings / Настройки
 
-![Settings screenshot](docs/screenshots/settings.png)
+![Settings screenshot](<img width="1920" height="1031" alt="image" src="https://github.com/user-attachments/assets/2b184fe8-85ca-4836-8861-61ffd94e6e9c" />
+)
+
+### 5. Notification Center / Центр уведомлений
+
+![Notification center screenshot](<img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/4964aadb-ea2b-46cd-9953-608ade6af816" />
+)
