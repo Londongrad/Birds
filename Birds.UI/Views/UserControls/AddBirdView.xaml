@@ -707,10 +707,9 @@
             MinHeight="{Binding ElementName=FormScrollViewer, Path=ViewportHeight}">
             <Border
                 Style="{StaticResource AnimatedCardStyle}"
-                Width="760"
                 MaxWidth="760"
                 Padding="32,28,32,10"
-                HorizontalAlignment="Center"
+                HorizontalAlignment="Stretch"
                 VerticalAlignment="Center"
                 Background="{StaticResource CardBackgroundBrush}"
                 BorderBrush="{StaticResource CardBorderBrush}"

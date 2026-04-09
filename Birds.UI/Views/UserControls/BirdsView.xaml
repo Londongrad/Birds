@@ -337,10 +337,9 @@
 
     <Grid Margin="24,12,24,24">
         <Border
-            Width="980"
             MaxWidth="980"
             Padding="28"
-            HorizontalAlignment="Center"
+            HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             Background="{StaticResource CardBackgroundBrush}"
             BorderBrush="{StaticResource CardBorderBrush}"
