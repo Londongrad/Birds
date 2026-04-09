@@ -222,9 +222,11 @@
         <Setter Property="Height" Value="28" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="Background" Value="{DynamicResource ThemeNotificationActionBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ThemeCardBorderBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeNotificationActionBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Foreground" Value="{DynamicResource ThemeMutedTextBrush}" />
         <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
         <Setter Property="FontSize" Value="10" />
@@ -236,7 +238,7 @@
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="14">
+                        CornerRadius="999">
                         <ContentPresenter
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center" />
@@ -244,7 +246,7 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource ThemeNotificationCardHoverBrush}" />
-                            <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
+                            <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{DynamicResource ThemeNotificationCardHoverBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.9" />
