@@ -355,13 +355,14 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="260" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
                     <TextBox
                         Grid.Column="0"
                         Margin="0,0,14,0"
+                        MinWidth="240"
                         Style="{StaticResource ArchiveSearchBoxStyle}"
                         Tag="{Binding ClearSearchCommand}"
                         Text="{Binding SearchText, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}" />
@@ -402,6 +403,8 @@
 
                     <ComboBox
                         Grid.Column="2"
+                        MinWidth="200"
+                        MaxWidth="240"
                         DisplayMemberPath="Display"
                         ItemsSource="{Binding Filters}"
                         SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"

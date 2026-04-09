@@ -9,6 +9,8 @@ namespace Birds.UI.Views.Windows
 {
     public partial class MainWindow : Window
     {
+        private const double DefaultMinWindowWidth = 1080;
+        private const double NotificationCenterMinWindowWidth = 1280;
         private INotifyPropertyChanged? _viewModelNotifier;
 
         public MainWindow()
@@ -19,6 +21,7 @@ namespace Birds.UI.Views.Windows
             {
                 UpdateWindowStateGlyph();
                 UpdateQuickOperationIndicatorState(animate: false);
+                UpdateAdaptiveMinWidth();
             };
             StateChanged += (_, _) => UpdateWindowStateGlyph();
             DataContextChanged += OnDataContextChanged;
@@ -87,6 +90,7 @@ namespace Birds.UI.Views.Windows
                 _viewModelNotifier.PropertyChanged += OnViewModelPropertyChanged;
 
             UpdateQuickOperationIndicatorState(animate: false);
+            UpdateAdaptiveMinWidth();
         }
 
         private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -96,6 +100,11 @@ namespace Birds.UI.Views.Windows
                 or nameof(MainViewModel.IsRecentOperationError))
             {
                 UpdateQuickOperationIndicatorState(animate: true);
+            }
+
+            if (e.PropertyName == nameof(MainViewModel.IsNotificationCenterOpen))
+            {
+                UpdateAdaptiveMinWidth();
             }
         }
 
@@ -284,6 +293,26 @@ namespace Birds.UI.Views.Windows
             scale = scaleTransform;
             translate = translateTransform;
             return true;
+        }
+
+        private void UpdateAdaptiveMinWidth()
+        {
+            if (DataContext is not MainViewModel viewModel)
+            {
+                MinWidth = DefaultMinWindowWidth;
+                return;
+            }
+
+            var targetMinWidth = viewModel.IsNotificationCenterOpen
+                ? NotificationCenterMinWindowWidth
+                : DefaultMinWindowWidth;
+
+            MinWidth = targetMinWidth;
+
+            if (WindowState == WindowState.Normal && Width < targetMinWidth)
+            {
+                Width = targetMinWidth;
+            }
         }
     }
 }
