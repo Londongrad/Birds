@@ -259,24 +259,10 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="12">
-                            <Grid ClipToBounds="True">
-                                <ContentPresenter
-                                    Margin="{TemplateBinding Padding}"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center" />
-                                <Border
-                                    x:Name="UndoProgressBar"
-                                    Height="2.5"
-                                    VerticalAlignment="Bottom"
-                                    HorizontalAlignment="Stretch"
-                                    Background="{DynamicResource ThemeAccentButtonBorderBrush}"
-                                    Opacity="0.9"
-                                    RenderTransformOrigin="0,0.5">
-                                    <Border.RenderTransform>
-                                        <ScaleTransform ScaleX="1" />
-                                    </Border.RenderTransform>
-                                </Border>
-                            </Grid>
+                            <ContentPresenter
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -338,39 +324,56 @@
                         Grid.Column="1"
                         Orientation="Horizontal"
                         VerticalAlignment="Center">
-                        <Button
-                            x:Name="PendingDeleteUndoButton"
+                        <Grid
+                            x:Name="PendingDeleteUndoHost"
                             Margin="0,0,8,0"
-                            Command="{Binding UndoPendingDeleteCommand}"
-                            Style="{StaticResource PendingUndoButtonStyle}"
-                            ToolTip="{Binding PendingDeleteUndoToolTip}"
                             Visibility="Collapsed">
-                            <Button.RenderTransform>
+                            <Grid.RenderTransform>
                                 <TransformGroup>
                                     <ScaleTransform ScaleX="0.86" ScaleY="0.86" />
                                     <TranslateTransform Y="-2" />
                                 </TransformGroup>
-                            </Button.RenderTransform>
-                            <StackPanel Orientation="Horizontal">
-                                <Path
-                                    Width="11"
-                                    Height="11"
-                                    Margin="0,0,8,0"
-                                    VerticalAlignment="Center"
-                                    Data="M 2 3.5 A 4.5 4.5 0 1 1 4.2 8 M 2.2 1.2 L 2.2 4.4 L 5.2 4.4"
-                                    Stroke="{DynamicResource ThemePrimaryTextBrush}"
-                                    StrokeThickness="1.5"
-                                    StrokeStartLineCap="Round"
-                                    StrokeEndLineCap="Round"
-                                    StrokeLineJoin="Round" />
-                                <TextBlock
-                                    VerticalAlignment="Center"
-                                    FontSize="12"
-                                    FontWeight="SemiBold"
-                                    Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                    Text="{loc:Loc Key=Notification.UndoDelete}" />
-                            </StackPanel>
-                        </Button>
+                            </Grid.RenderTransform>
+                            <Button
+                                x:Name="PendingDeleteUndoButton"
+                                Command="{Binding UndoPendingDeleteCommand}"
+                                Style="{StaticResource PendingUndoButtonStyle}"
+                                ToolTip="{Binding PendingDeleteUndoToolTip}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path
+                                        Width="11"
+                                        Height="11"
+                                        Margin="0,0,8,0"
+                                        VerticalAlignment="Center"
+                                        Data="M 2 3.5 A 4.5 4.5 0 1 1 4.2 8 M 2.2 1.2 L 2.2 4.4 L 5.2 4.4"
+                                        Stroke="{DynamicResource ThemePrimaryTextBrush}"
+                                        StrokeThickness="1.5"
+                                        StrokeStartLineCap="Round"
+                                        StrokeEndLineCap="Round"
+                                        StrokeLineJoin="Round" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="12"
+                                        FontWeight="SemiBold"
+                                        Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                                        Text="{loc:Loc Key=Notification.UndoDelete}" />
+                                </StackPanel>
+                            </Button>
+                            <Border
+                                x:Name="PendingDeleteUndoProgressBar"
+                                Height="2.5"
+                                Margin="1,0,1,1"
+                                VerticalAlignment="Bottom"
+                                HorizontalAlignment="Stretch"
+                                Background="{DynamicResource ThemeAccentButtonBorderBrush}"
+                                CornerRadius="0,0,11,11"
+                                Opacity="0.9"
+                                RenderTransformOrigin="0,0.5">
+                                <Border.RenderTransform>
+                                    <ScaleTransform ScaleX="1" />
+                                </Border.RenderTransform>
+                            </Border>
+                        </Grid>
 
                         <Border
                             x:Name="QuickOperationIndicator"

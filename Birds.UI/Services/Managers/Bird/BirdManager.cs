@@ -11,6 +11,7 @@ using Birds.UI.Services.Stores.BirdStore;
 using Birds.UI.Threading.Abstractions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MediatR;
+using System.Diagnostics;
 using System.ComponentModel;
 
 namespace Birds.UI.Services.Managers.Bird
@@ -227,6 +228,10 @@ namespace Birds.UI.Services.Managers.Bird
             catch (OperationCanceledException)
             {
                 // Delete was undone or replaced by a new pending operation.
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Deferred bird deletion failed unexpectedly: {ex}");
             }
         }
 

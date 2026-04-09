@@ -334,12 +334,12 @@ namespace Birds.UI.Views.Windows
 
         private void UpdatePendingDeleteUndoState(bool animate)
         {
-            if (PendingDeleteUndoButton is null || DataContext is not MainViewModel viewModel)
+            if (PendingDeleteUndoHost is null || DataContext is not MainViewModel viewModel)
                 return;
 
             if (viewModel.HasPendingDeleteUndo)
             {
-                PendingDeleteUndoButton.Visibility = Visibility.Visible;
+                PendingDeleteUndoHost.Visibility = Visibility.Visible;
 
                 if (animate)
                     AnimatePendingDeleteUndoIn(viewModel.PendingDeleteUndoDuration);
@@ -349,13 +349,13 @@ namespace Birds.UI.Views.Windows
                 return;
             }
 
-            if (animate && PendingDeleteUndoButton.Visibility == Visibility.Visible)
+            if (animate && PendingDeleteUndoHost.Visibility == Visibility.Visible)
             {
                 AnimatePendingDeleteUndoOut();
             }
             else
             {
-                PendingDeleteUndoButton.Visibility = Visibility.Collapsed;
+                PendingDeleteUndoHost.Visibility = Visibility.Collapsed;
                 ApplyPendingDeleteUndoHiddenState();
             }
         }
@@ -365,7 +365,7 @@ namespace Birds.UI.Views.Windows
             StopPendingDeleteUndoAnimations();
 
             ApplyPendingDeleteUndoHiddenState();
-            PendingDeleteUndoButton.Visibility = Visibility.Visible;
+            PendingDeleteUndoHost.Visibility = Visibility.Visible;
 
             var easeOut = new BackEase
             {
@@ -373,7 +373,7 @@ namespace Birds.UI.Views.Windows
                 Amplitude = 0.32
             };
 
-            PendingDeleteUndoButton.BeginAnimation(OpacityProperty, new DoubleAnimation(1, TimeSpan.FromMilliseconds(200))
+            PendingDeleteUndoHost.BeginAnimation(OpacityProperty, new DoubleAnimation(1, TimeSpan.FromMilliseconds(200))
             {
                 EasingFunction = easeOut
             });
@@ -410,19 +410,19 @@ namespace Birds.UI.Views.Windows
                 if (DataContext is MainViewModel viewModel && viewModel.HasPendingDeleteUndo)
                     return;
 
-                PendingDeleteUndoButton.Visibility = Visibility.Collapsed;
+                PendingDeleteUndoHost.Visibility = Visibility.Collapsed;
                 ApplyPendingDeleteUndoHiddenState();
             };
 
-            PendingDeleteUndoButton.BeginAnimation(OpacityProperty, fade);
+            PendingDeleteUndoHost.BeginAnimation(OpacityProperty, fade);
         }
 
         private void StopPendingDeleteUndoAnimations()
         {
-            if (PendingDeleteUndoButton is null)
+            if (PendingDeleteUndoHost is null)
                 return;
 
-            PendingDeleteUndoButton.BeginAnimation(OpacityProperty, null);
+            PendingDeleteUndoHost.BeginAnimation(OpacityProperty, null);
 
             if (TryGetPendingDeleteUndoTransforms(out var scale, out var translate))
             {
@@ -437,7 +437,7 @@ namespace Birds.UI.Views.Windows
 
         private void ApplyPendingDeleteUndoVisibleState()
         {
-            PendingDeleteUndoButton.Opacity = 1;
+            PendingDeleteUndoHost.Opacity = 1;
 
             if (TryGetPendingDeleteUndoTransforms(out var scale, out var translate))
             {
@@ -452,10 +452,10 @@ namespace Birds.UI.Views.Windows
 
         private void ApplyPendingDeleteUndoHiddenState()
         {
-            if (PendingDeleteUndoButton is null)
+            if (PendingDeleteUndoHost is null)
                 return;
 
-            PendingDeleteUndoButton.Opacity = 0;
+            PendingDeleteUndoHost.Opacity = 0;
 
             if (TryGetPendingDeleteUndoTransforms(out var scale, out var translate))
             {
@@ -482,7 +482,7 @@ namespace Birds.UI.Views.Windows
             scale = null!;
             translate = null!;
 
-            if (PendingDeleteUndoButton?.RenderTransform is not TransformGroup group || group.Children.Count < 2)
+            if (PendingDeleteUndoHost?.RenderTransform is not TransformGroup group || group.Children.Count < 2)
                 return false;
 
             if (group.Children[0] is not ScaleTransform scaleTransform || group.Children[1] is not TranslateTransform translateTransform)
@@ -495,10 +495,7 @@ namespace Birds.UI.Views.Windows
 
         private ScaleTransform? FindUndoProgressScale()
         {
-            if (PendingDeleteUndoButton?.Template?.FindName("UndoProgressBar", PendingDeleteUndoButton) is not Border progressBorder)
-                return null;
-
-            return progressBorder.RenderTransform as ScaleTransform;
+            return PendingDeleteUndoProgressBar?.RenderTransform as ScaleTransform;
         }
     }
 }
