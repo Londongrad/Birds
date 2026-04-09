@@ -679,30 +679,68 @@
                         Grid.Column="1"
                         Style="{StaticResource BirdCardMetaSeparatorStyle}" />
 
-                    <StackPanel
+                    <Grid
                         Grid.Column="2"
                         Margin="12,0,0,0">
-                        <TextBlock
-                            Style="{StaticResource BirdCardFieldLabelStyle}"
-                            Text="{loc:Loc Key=Bird.DepartureMeta}" />
-                        <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock
+                                Grid.Column="0"
+                                Style="{StaticResource BirdCardFieldLabelStyle}"
+                                Text="{loc:Loc Key=Bird.DepartureMeta}" />
+                            <TextBlock
+                                Grid.Column="1"
+                                MaxWidth="220"
+                                Margin="12,0,0,0"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Left"
+                                TextAlignment="Left"
+                                TextWrapping="Wrap"
+                                Text="{Binding ElementName=DepartureField, Path=(Validation.Errors)[0].ErrorContent}">
+                                <TextBlock.Style>
+                                    <Style
+                                        BasedOn="{StaticResource BirdCardInlineErrorStyle}"
+                                        TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Left" />
+                                        <Setter Property="TextWrapping" Value="Wrap" />
+                                        <Setter Property="TextTrimming" Value="None" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ElementName=DepartureField, Path=(Validation.HasError)}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+
+                        <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
                             <DatePicker
+                                x:Name="DepartureField"
                                 Grid.Column="0"
                                 Width="136"
-                                helpers:ValidationPlacement.MaxErrorWidth="160"
-                                helpers:ValidationPlacement.Placement="Bottom"
                                 CalendarStyle="{DynamicResource DarkCalendarStyle}"
                                 SelectedDate="{Binding Departure,
                                                        Mode=TwoWay,
                                                        Converter={StaticResource DateOnlyConverter},
                                                        UpdateSourceTrigger=PropertyChanged,
                                                        ValidatesOnNotifyDataErrors=True}"
-                                Style="{StaticResource BirdCardDatePickerStyle}" />
+                                Style="{StaticResource BirdCardDatePickerStyle}"
+                                Validation.ErrorTemplate="{StaticResource NoErrorTemplate}" />
 
                             <Button
                                 Grid.Column="1"
@@ -723,7 +761,7 @@
                                 Visibility="{Binding Departure,
                                                      Converter={StaticResource NullToVisibilityConverter}}" />
                         </Grid>
-                    </StackPanel>
+                    </Grid>
 
                     <Border
                         Grid.Column="3"
