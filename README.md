@@ -172,20 +172,6 @@ Birds — это WPF-приложение для учёта птиц: посту
 
 ## Screenshots / Скриншоты 🖼️
 
-Recommended set:
-
-1. Archive screen with search, filters, and archive cards.
-2. Add bird screen with the main form.
-3. Statistics overview with summary cards.
-4. Settings screen with sync and data tools.
-
-Рекомендуемый набор:
-
-1. Архив с поиском, фильтрами и карточками записей.
-2. Экран добавления птицы с основной формой.
-3. Статистика с обзорными карточками.
-4. Настройки с блоками синхронизации и работы с данными.
-
 ### 1. Archive / Архив
 
 ![Archive screenshot](https://github.com/user-attachments/assets/6d4d5916-4381-4e2d-aedb-fda114533230)
