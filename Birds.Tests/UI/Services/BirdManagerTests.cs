@@ -8,6 +8,7 @@ using Birds.Domain.Enums;
 using Birds.Tests.Helpers;
 using Birds.UI.Enums;
 using Birds.UI.Services.Managers.Bird;
+using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.Services.Stores.BirdStore;
 using FluentAssertions;
 using MediatR;
@@ -20,8 +21,13 @@ namespace Birds.Tests.UI.Services
         private static BirdStoreInitializer Init(IBirdStore store, IMediator mediator) =>
             TestHelpers.MakeInitializer(store, mediator, out _, out _);
 
-        private static BirdManager MakeManager(IBirdStore store, BirdStoreInitializer init, IMediator mediator) =>
-            new(store, init, mediator, new InlineUiDispatcher());
+        private static BirdManager MakeManager(
+            IBirdStore store,
+            BirdStoreInitializer init,
+            IMediator mediator,
+            INotificationService? notificationService = null,
+            TimeSpan? pendingDeleteUndoDuration = null) =>
+            new(store, init, mediator, new InlineUiDispatcher(), notificationService ?? Mock.Of<INotificationService>(), pendingDeleteUndoDuration);
 
         [Fact]
         public async Task AddAsync_WhenStoreLoaded_SendsCreate_AndAddsToStore()
@@ -192,7 +198,7 @@ namespace Birds.Tests.UI.Services
             mediator.Setup(m => m.Send(It.IsAny<DeleteBirdCommand>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(Result.Success());
 
-            var sut = MakeManager(store, Init(store, mediator.Object), mediator.Object);
+            var sut = MakeManager(store, Init(store, mediator.Object), mediator.Object, pendingDeleteUndoDuration: TimeSpan.Zero);
 
             // Act
             var result = await sut.DeleteAsync(id, CancellationToken.None);
@@ -203,11 +209,12 @@ namespace Birds.Tests.UI.Services
         }
 
         [Fact]
-        public async Task DeleteAsync_Failure_DoesNotRemoveFromStore()
+        public async Task DeleteAsync_WhenFinalDeleteFails_Should_RestoreBirdToStore()
         {
             // Arrange
             var store = new BirdStore(); store.CompleteLoading();
             var mediator = new Mock<IMediator>();
+            var notifications = new Mock<INotificationService>();
 
             var id = Guid.NewGuid();
             store.Birds.Add(new BirdDTO(id, "Воробей", null, TestHelpers.Today(), null, true, null, null));
@@ -215,14 +222,83 @@ namespace Birds.Tests.UI.Services
             mediator.Setup(m => m.Send(It.IsAny<DeleteBirdCommand>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(Result.Failure("nope"));
 
-            var sut = MakeManager(store, Init(store, mediator.Object), mediator.Object);
+            var sut = MakeManager(
+                store,
+                Init(store, mediator.Object),
+                mediator.Object,
+                notifications.Object,
+                TimeSpan.FromMilliseconds(60));
 
             // Act
             var result = await sut.DeleteAsync(id, CancellationToken.None);
+            await Task.Delay(100);
 
             // Assert
-            result.IsSuccess.Should().BeFalse();
+            result.IsSuccess.Should().BeTrue();
             store.Birds.Should().ContainSingle(b => b.Id == id);
+            notifications.Verify(n => n.ShowErrorLocalized("Error.CannotDeleteBird", It.IsAny<object[]>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteAsync_Should_RemoveFromStoreImmediately_And_ExposeUndoWindow()
+        {
+            var store = new BirdStore(); store.CompleteLoading();
+            var mediator = new Mock<IMediator>();
+
+            var id = Guid.NewGuid();
+            store.Birds.Add(new BirdDTO(id, "Воробей", null, TestHelpers.Today(), null, true, null, null));
+
+            mediator.Setup(m => m.Send(It.IsAny<DeleteBirdCommand>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(Result.Success());
+
+            var sut = MakeManager(
+                store,
+                Init(store, mediator.Object),
+                mediator.Object,
+                pendingDeleteUndoDuration: TimeSpan.FromMilliseconds(80));
+
+            var result = await sut.DeleteAsync(id, CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            sut.HasPendingDeleteUndo.Should().BeTrue();
+            store.Birds.Should().BeEmpty();
+
+            mediator.Verify(m => m.Send(It.IsAny<DeleteBirdCommand>(), It.IsAny<CancellationToken>()), Times.Never);
+
+            await Task.Delay(120);
+
+            mediator.Verify(m => m.Send(It.IsAny<DeleteBirdCommand>(), It.IsAny<CancellationToken>()), Times.Once);
+            sut.HasPendingDeleteUndo.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task UndoPendingDeleteAsync_Should_RestoreBird_And_SkipDeleteCommand()
+        {
+            var store = new BirdStore(); store.CompleteLoading();
+            var mediator = new Mock<IMediator>();
+            var notifications = new Mock<INotificationService>();
+
+            var id = Guid.NewGuid();
+            var bird = new BirdDTO(id, "Воробей", null, TestHelpers.Today(), null, true, null, null);
+            store.Birds.Add(bird);
+
+            var sut = MakeManager(
+                store,
+                Init(store, mediator.Object),
+                mediator.Object,
+                notifications.Object,
+                TimeSpan.FromMilliseconds(120));
+
+            await sut.DeleteAsync(id, CancellationToken.None);
+            await sut.UndoPendingDeleteAsync(CancellationToken.None);
+
+            store.Birds.Should().ContainSingle(b => b.Id == id);
+            sut.HasPendingDeleteUndo.Should().BeFalse();
+
+            await Task.Delay(150);
+
+            mediator.Verify(m => m.Send(It.IsAny<DeleteBirdCommand>(), It.IsAny<CancellationToken>()), Times.Never);
+            notifications.Verify(n => n.ShowInfoLocalized("Info.DeleteRestored", It.IsAny<object[]>()), Times.Once);
         }
     }
 }

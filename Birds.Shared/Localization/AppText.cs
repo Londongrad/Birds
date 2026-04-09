@@ -127,6 +127,8 @@ namespace Birds.Shared.Localization
             ["Notification.Title.Error"] = "Ошибка",
             ["Notification.QuickStatus.Success"] = "Последняя операция завершилась успешно",
             ["Notification.QuickStatus.Error"] = "Последняя операция завершилась ошибкой",
+            ["Notification.UndoDelete"] = "Вернуть",
+            ["Notification.UndoDelete.ToolTip"] = "Отменить удаление записи",
 
             ["Exception.Source.UiDispatcher"] = "Диспетчер UI",
             ["Exception.Source.AppDomain"] = "Домен приложения",
@@ -151,6 +153,7 @@ namespace Birds.Shared.Localization
             ["Info.UpdatedBird"] = "Птица успешно обновлена!",
             ["Info.DeletingBird"] = "Удаление птицы...",
             ["Info.DeletedBird"] = "Птица успешно удалена!",
+            ["Info.DeleteRestored"] = "Удаление отменено. Запись возвращена.",
             ["Info.BirdAdded"] = "Птица успешно добавлена!",
             ["Info.ToThisDay"] = "по сегодняшний день",
             ["Info.LoadFailed"] = "Попытка {0} загрузить птиц не удалась. Повтор через {1} с.",
@@ -315,6 +318,8 @@ namespace Birds.Shared.Localization
             ["Notification.Title.Error"] = "Error",
             ["Notification.QuickStatus.Success"] = "The latest operation completed successfully",
             ["Notification.QuickStatus.Error"] = "The latest operation failed",
+            ["Notification.UndoDelete"] = "Undo",
+            ["Notification.UndoDelete.ToolTip"] = "Undo deleting this entry",
 
             ["Exception.Source.UiDispatcher"] = "UI Dispatcher",
             ["Exception.Source.AppDomain"] = "AppDomain",
@@ -339,6 +344,7 @@ namespace Birds.Shared.Localization
             ["Info.UpdatedBird"] = "Bird updated successfully!",
             ["Info.DeletingBird"] = "Deleting bird...",
             ["Info.DeletedBird"] = "Bird deleted successfully!",
+            ["Info.DeleteRestored"] = "Deletion was canceled. The record was restored.",
             ["Info.BirdAdded"] = "Bird added successfully!",
             ["Info.ToThisDay"] = "to this day",
             ["Info.LoadFailed"] = "Attempt {0} to load birds failed. Retrying in {1}s.",

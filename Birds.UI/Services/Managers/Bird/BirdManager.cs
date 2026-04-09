@@ -1,4 +1,4 @@
-﻿using Birds.Application.Commands.CreateBird;
+using Birds.Application.Commands.CreateBird;
 using Birds.Application.Commands.DeleteBird;
 using Birds.Application.Commands.UpdateBird;
 using Birds.Application.Common.Models;
@@ -6,19 +6,23 @@ using Birds.Application.DTOs;
 using Birds.Application.DTOs.Helpers;
 using Birds.UI.Enums;
 using Birds.UI.Extensions;
+using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.Services.Stores.BirdStore;
 using Birds.UI.Threading.Abstractions;
+using CommunityToolkit.Mvvm.ComponentModel;
 using MediatR;
 using System.ComponentModel;
 
 namespace Birds.UI.Services.Managers.Bird
 {
-    public class BirdManager(
+    public partial class BirdManager(
                        IBirdStore store,
                        BirdStoreInitializer initializer,
                        IMediator mediator,
-                       IUiDispatcher uiDispatcher)
-        : IBirdManager
+                       IUiDispatcher uiDispatcher,
+                       INotificationService notificationService,
+                       TimeSpan? pendingDeleteUndoDuration = null)
+        : ObservableObject, IBirdManager
     {
         #region [ Fields ]
 
@@ -26,12 +30,22 @@ namespace Birds.UI.Services.Managers.Bird
         private readonly BirdStoreInitializer _initializer = initializer;
         private readonly IMediator _mediator = mediator;
         private readonly IUiDispatcher _uiDispatcher = uiDispatcher;
+        private readonly INotificationService _notificationService = notificationService;
+        private readonly TimeSpan _pendingDeleteUndoDuration = pendingDeleteUndoDuration ?? TimeSpan.FromSeconds(5);
+        private PendingDeleteContext? _pendingDelete;
 
         #endregion [ Fields ]
 
         #region [ Properties ]
 
         public IBirdStore Store => _store;
+
+        public bool HasPendingDeleteUndo => _pendingDelete is not null;
+
+        public TimeSpan PendingDeleteUndoDuration => _pendingDeleteUndoDuration;
+
+        [ObservableProperty]
+        private int pendingDeleteUndoVersion;
 
         #endregion [ Properties ]
 
@@ -46,18 +60,15 @@ namespace Birds.UI.Services.Managers.Bird
         /// <inheritdoc/>
         public async Task<Result<BirdDTO>> AddAsync(BirdCreateDTO newBird, CancellationToken cancellationToken)
         {
-            // Handle "uninitialized" or "failed" states
             if (_store.LoadState is LoadState.Uninitialized or LoadState.Failed)
             {
-                await ReloadAsync(cancellationToken);   // Force reload
+                await ReloadAsync(cancellationToken);
             }
             else if (_store.LoadState is LoadState.Loading)
             {
-                // Just wait for the initial load to complete
                 await WaitUntilLoadedOrFailedAsync(cancellationToken);
             }
 
-            // Check if loading was successful after reload, otherwise fail the operation
             if (_store.LoadState is not LoadState.Loaded)
                 return Result<BirdDTO>.Failure("Bird store cannot be loaded.");
 
@@ -98,12 +109,54 @@ namespace Birds.UI.Services.Managers.Bird
         /// <inheritdoc/>
         public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken)
         {
-            var result = await _mediator.Send(new DeleteBirdCommand(id), cancellationToken);
+            await CommitPendingDeleteIfAnyAsync(cancellationToken);
 
-            if (result.IsSuccess)
-                await RemoveBirdFromStore(id);
+            BirdDTO? deletedBird = null;
+            int originalIndex = -1;
 
-            return result;
+            await ExecuteOnUiAsync(() =>
+            {
+                originalIndex = _store.Birds
+                    .Select((bird, index) => new { bird, index })
+                    .FirstOrDefault(item => item.bird.Id == id)
+                    ?.index ?? -1;
+
+                if (originalIndex < 0)
+                    return;
+
+                deletedBird = _store.Birds[originalIndex];
+                _store.Birds.RemoveAt(originalIndex);
+            });
+
+            if (deletedBird is null)
+            {
+                var immediateResult = await _mediator.Send(new DeleteBirdCommand(id), cancellationToken);
+                if (immediateResult.IsSuccess)
+                    _notificationService.ShowSuccessLocalized("Info.DeletedBird");
+
+                return immediateResult;
+            }
+
+            var context = new PendingDeleteContext(deletedBird, originalIndex);
+            await _uiDispatcher.InvokeAsync(() => SetPendingDelete(context), cancellationToken);
+            _ = FinalizePendingDeleteAfterDelayAsync(context);
+
+            return Result.Success();
+        }
+
+        /// <inheritdoc/>
+        public async Task UndoPendingDeleteAsync(CancellationToken cancellationToken)
+        {
+            var context = _pendingDelete;
+            if (context is null)
+                return;
+
+            await _uiDispatcher.InvokeAsync(() => ClearPendingDelete(context), cancellationToken);
+            context.CancellationTokenSource.Cancel();
+            context.CancellationTokenSource.Dispose();
+
+            await RestoreBirdToStore(context, cancellationToken);
+            _notificationService.ShowInfoLocalized("Info.DeleteRestored");
         }
 
         #endregion [ Interface methods ]
@@ -113,7 +166,6 @@ namespace Birds.UI.Services.Managers.Bird
         /// <summary>
         /// Executes the specified UI-related action on the main thread.
         /// </summary>
-        /// <param name="action">The action to execute on the UI thread.</param>
         private async Task ExecuteOnUiAsync(Action action)
         {
             await _uiDispatcher.InvokeAsync(action);
@@ -122,7 +174,6 @@ namespace Birds.UI.Services.Managers.Bird
         /// <summary>
         /// Safely adds a new bird to the shared <see cref="IBirdStore"/> collection.
         /// </summary>
-        /// <param name="bird">The bird to add.</param>
         private async Task AddBirdToStore(BirdDTO bird)
         {
             await ExecuteOnUiAsync(() => _store.Birds.Add(bird));
@@ -132,52 +183,86 @@ namespace Birds.UI.Services.Managers.Bird
         /// Safely updates an existing bird within the <see cref="IBirdStore"/> collection.
         /// If the bird does not exist, it will be added.
         /// </summary>
-        /// <param name="bird">The bird with updated data.</param>
         private async Task UpdateBirdInStore(BirdDTO bird)
         {
             await ExecuteOnUiAsync(() =>
                 _store.Birds.ReplaceOrAdd(b => b.Id == bird.Id, bird));
         }
 
-        /// <summary>
-        /// Safely removes a bird from the <see cref="IBirdStore"/> collection by its ID.
-        /// </summary>
-        /// <param name="id">The unique identifier of the bird to remove.</param>
-        private async Task RemoveBirdFromStore(Guid id)
+        private async Task RestoreBirdToStore(PendingDeleteContext context, CancellationToken cancellationToken)
         {
-            await ExecuteOnUiAsync(() =>
+            await _uiDispatcher.InvokeAsync(() =>
             {
-                var toRemove = _store.Birds.FirstOrDefault(b => b.Id == id);
-                if (toRemove != null)
-                    _store.Birds.Remove(toRemove);
-            });
+                if (_store.Birds.Any(b => b.Id == context.Bird.Id))
+                    return;
+
+                var insertIndex = Math.Clamp(context.OriginalIndex, 0, _store.Birds.Count);
+                _store.Birds.Insert(insertIndex, context.Bird);
+            }, cancellationToken);
+        }
+
+        private void SetPendingDelete(PendingDeleteContext context)
+        {
+            _pendingDelete = context;
+            PendingDeleteUndoVersion++;
+            OnPropertyChanged(nameof(HasPendingDeleteUndo));
+        }
+
+        private void ClearPendingDelete(PendingDeleteContext context)
+        {
+            if (!ReferenceEquals(_pendingDelete, context))
+                return;
+
+            _pendingDelete = null;
+            OnPropertyChanged(nameof(HasPendingDeleteUndo));
+        }
+
+        private async Task FinalizePendingDeleteAfterDelayAsync(PendingDeleteContext context)
+        {
+            try
+            {
+                await Task.Delay(_pendingDeleteUndoDuration, context.CancellationTokenSource.Token);
+                await CommitPendingDeleteAsync(context, CancellationToken.None);
+            }
+            catch (OperationCanceledException)
+            {
+                // Delete was undone or replaced by a new pending operation.
+            }
+        }
+
+        private async Task CommitPendingDeleteIfAnyAsync(CancellationToken cancellationToken)
+        {
+            var context = _pendingDelete;
+            if (context is null)
+                return;
+
+            context.CancellationTokenSource.Cancel();
+            await CommitPendingDeleteAsync(context, cancellationToken);
+        }
+
+        private async Task CommitPendingDeleteAsync(PendingDeleteContext context, CancellationToken cancellationToken)
+        {
+            if (!ReferenceEquals(_pendingDelete, context))
+                return;
+
+            await _uiDispatcher.InvokeAsync(() => ClearPendingDelete(context), cancellationToken);
+
+            var result = await _mediator.Send(new DeleteBirdCommand(context.Bird.Id), cancellationToken);
+            context.CancellationTokenSource.Dispose();
+
+            if (result.IsSuccess)
+            {
+                _notificationService.ShowSuccessLocalized("Info.DeletedBird");
+                return;
+            }
+
+            await RestoreBirdToStore(context, CancellationToken.None);
+            _notificationService.ShowErrorLocalized("Error.CannotDeleteBird");
         }
 
         /// <summary>
-        /// Asynchronously waits until the bird store reaches a terminal load state
-        /// (<see cref="LoadState.Loaded"/> or <see cref="LoadState.Failed"/>).
-        /// <para>
-        /// Uses <c>INotifyPropertyChanged</c> (via <c>ObservableObject</c>) to observe
-        /// <see cref="IBirdStore.LoadState"/> changes through the <c>PropertyChanged</c> event.
-        /// </para>
-        /// <para>
-        /// Fast path: if the store is already in a terminal state, returns a completed task immediately.
-        /// Otherwise, subscribes to <c>PropertyChanged</c> and completes when <see cref="IBirdStore.LoadState"/>
-        /// becomes <see cref="LoadState.Loaded"/> or <see cref="LoadState.Failed"/>.
-        /// </para>
-        /// <para>
-        /// Race handling: right after subscribing, performs an extra state check to cover the window
-        /// where the state might have changed between the initial check and the subscription (and no event will arrive).
-        /// </para>
-        /// <para>
-        /// Cancellation: if <paramref name="cancellationToken"/> is canceled, unsubscribes and completes the task as canceled.
-        /// Continuations run asynchronously due to <see cref="TaskCreationOptions.RunContinuationsAsynchronously"/>.
-        /// </para>
+        /// Asynchronously waits until the bird store reaches a terminal load state.
         /// </summary>
-        /// <param name="cancellationToken">Cancellation token to abort waiting.</param>
-        /// <returns>
-        /// A task that completes when the store reaches <see cref="LoadState.Loaded"/> or <see cref="LoadState.Failed"/>.
-        /// </returns>
         private Task WaitUntilLoadedOrFailedAsync(CancellationToken cancellationToken)
         {
             if (_store.LoadState is LoadState.Loaded or LoadState.Failed)
@@ -216,5 +301,10 @@ namespace Birds.UI.Services.Managers.Bird
         }
 
         #endregion [ Private Helper Methods ]
+
+        private sealed record PendingDeleteContext(BirdDTO Bird, int OriginalIndex)
+        {
+            public CancellationTokenSource CancellationTokenSource { get; } = new();
+        }
     }
 }

@@ -166,13 +166,9 @@ namespace Birds.UI.ViewModels
         [RelayCommand]
         private async Task DeleteAsync()
         {
-            _notificationService.ShowInfoLocalized("Info.DeletingBird");
-
             Result result = await _birdManager.DeleteAsync(Id, CancellationToken.None);
 
-            if (result.IsSuccess)
-                _notificationService.ShowSuccessLocalized("Info.DeletedBird");
-            else
+            if (!result.IsSuccess)
                 _notificationService.ShowErrorLocalized("Error.CannotDeleteBird");
 
             IsConfirmingDelete = false;

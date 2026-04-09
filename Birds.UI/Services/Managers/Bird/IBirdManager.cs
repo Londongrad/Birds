@@ -1,6 +1,7 @@
-﻿using Birds.Application.Common.Models;
+using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
 using Birds.UI.Services.Stores.BirdStore;
+using System.ComponentModel;
 
 namespace Birds.UI.Services.Managers.Bird
 {
@@ -9,7 +10,7 @@ namespace Birds.UI.Services.Managers.Bird
     /// Acts as a facade over <see cref="IBirdStore"/>, <see cref="BirdStoreInitializer"/>,
     /// and MediatR commands for create/update/delete.
     /// </summary>
-    public interface IBirdManager
+    public interface IBirdManager : INotifyPropertyChanged
     {
         /// <summary>
         /// Reloads the entire bird collection from the database.
@@ -31,6 +32,26 @@ namespace Birds.UI.Services.Managers.Bird
         /// Deletes a bird by ID and refreshes the collection if required.
         /// </summary>
         Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Indicates that a recent delete operation can still be undone.
+        /// </summary>
+        bool HasPendingDeleteUndo { get; }
+
+        /// <summary>
+        /// A monotonic counter that changes whenever a new undo window is opened.
+        /// </summary>
+        int PendingDeleteUndoVersion { get; }
+
+        /// <summary>
+        /// The amount of time the undo affordance stays active.
+        /// </summary>
+        TimeSpan PendingDeleteUndoDuration { get; }
+
+        /// <summary>
+        /// Restores the most recently deleted bird while the undo window is still active.
+        /// </summary>
+        Task UndoPendingDeleteAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the current collection of birds (shared store reference).
