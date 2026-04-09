@@ -153,6 +153,11 @@
         BasedOn="{StaticResource PrimaryActionButtonBase}"
         TargetType="Button">
         <Setter Property="Content" Value="&#xE74E;" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsSaveLockedByDepartureRequirement}" Value="True">
+                <Setter Property="Content" Value="&#xE72E;" />
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 
     <Style
@@ -202,6 +207,7 @@
                 Command="{Binding SaveCommand}"
                 Margin="0,0,6,0"
                 Style="{StaticResource SaveButtonStyle}"
+                ToolTipService.ShowOnDisabled="True"
                 ToolTip="{loc:Loc Key=Bird.Action.Save}" />
             <Button
                 Command="{Binding CancelEditCommand}"

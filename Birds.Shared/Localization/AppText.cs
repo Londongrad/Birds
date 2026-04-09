@@ -402,7 +402,11 @@ namespace Birds.Shared.Localization
 
         private static IReadOnlyDictionary<string, string> SelectDictionary(CultureInfo? culture)
         {
-            var language = AppLanguages.Normalize(culture?.Name ?? CultureInfo.CurrentUICulture.Name);
+            var effectiveCulture = culture
+                ?? CultureInfo.DefaultThreadCurrentUICulture
+                ?? CultureInfo.CurrentUICulture;
+
+            var language = AppLanguages.Normalize(effectiveCulture.Name);
             return language == AppLanguages.English ? English : Russian;
         }
     }

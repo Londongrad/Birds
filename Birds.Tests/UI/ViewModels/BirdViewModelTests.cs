@@ -10,6 +10,8 @@ using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.ViewModels;
 using FluentAssertions;
 using Moq;
+using System.Collections;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 
 namespace Birds.Tests.UI.ViewModels
@@ -117,6 +119,26 @@ namespace Birds.Tests.UI.ViewModels
         }
 
         [Fact]
+        public void SaveCommand_Should_Be_Locked_When_Dead_Bird_Has_No_Departure()
+        {
+            var sparrow = (BirdsName)1;
+            var dto = CreateBirdDto(sparrow);
+            var sut = new BirdViewModel(dto, _birdManager.Object, _localization.Object, _notification.Object);
+
+            sut.EditCommand.Execute(null);
+            sut.IsAlive = false;
+            sut.Departure = null;
+
+            sut.IsSaveLockedByDepartureRequirement.Should().BeTrue();
+            sut.SaveCommand.CanExecute(null).Should().BeFalse();
+
+            sut.Departure = DateOnly.FromDateTime(DateTime.Today);
+
+            sut.IsSaveLockedByDepartureRequirement.Should().BeFalse();
+            sut.SaveCommand.CanExecute(null).Should().BeTrue();
+        }
+
+        [Fact]
         public void CultureOrDateFormatChanged_Should_Update_Localized_Display_Fields()
         {
             var chickadee = (BirdsName)6;
@@ -156,6 +178,52 @@ namespace Birds.Tests.UI.ViewModels
             sut.DurationDisplay.Should().Be($"3 {AppText.Get("Bird.DaysSuffix", _currentCulture)}");
         }
 
+        [Fact]
+        public void LanguageChanged_Should_Rebuild_DepartureValidation_In_Current_Language()
+        {
+            var previousCulture = CultureInfo.CurrentCulture;
+            var previousUiCulture = CultureInfo.CurrentUICulture;
+            var previousDefaultCulture = CultureInfo.DefaultThreadCurrentCulture;
+            var previousDefaultUiCulture = CultureInfo.DefaultThreadCurrentUICulture;
+
+            try
+            {
+                _currentCulture = CultureInfo.GetCultureInfo(AppLanguages.Russian);
+                CultureInfo.CurrentCulture = _currentCulture;
+                CultureInfo.CurrentUICulture = _currentCulture;
+                CultureInfo.DefaultThreadCurrentCulture = _currentCulture;
+                CultureInfo.DefaultThreadCurrentUICulture = _currentCulture;
+
+                var sparrow = (BirdsName)1;
+                var dto = CreateBirdDto(sparrow);
+                var sut = new BirdViewModel(dto, _birdManager.Object, _localization.Object, _notification.Object);
+
+                sut.EditCommand.Execute(null);
+                sut.IsAlive = false;
+                sut.Departure = null;
+
+                GetValidationError(sut, nameof(BirdViewModel.Departure))
+                    .Should().Be(AppText.Get("Validation.DateIsNotSpecified", _currentCulture));
+
+                _currentCulture = CultureInfo.GetCultureInfo(AppLanguages.English);
+                CultureInfo.CurrentCulture = _currentCulture;
+                CultureInfo.CurrentUICulture = _currentCulture;
+                CultureInfo.DefaultThreadCurrentCulture = _currentCulture;
+                CultureInfo.DefaultThreadCurrentUICulture = _currentCulture;
+                _localization.Raise(x => x.LanguageChanged += null, EventArgs.Empty);
+
+                GetValidationError(sut, nameof(BirdViewModel.Departure))
+                    .Should().Be(AppText.Get("Validation.DateIsNotSpecified", _currentCulture));
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = previousCulture;
+                CultureInfo.CurrentUICulture = previousUiCulture;
+                CultureInfo.DefaultThreadCurrentCulture = previousDefaultCulture;
+                CultureInfo.DefaultThreadCurrentUICulture = previousDefaultUiCulture;
+            }
+        }
+
         private static BirdDTO CreateBirdDto(BirdsName name) =>
             new(
                 Id: Guid.NewGuid(),
@@ -166,5 +234,11 @@ namespace Birds.Tests.UI.ViewModels
                 IsAlive: true,
                 CreatedAt: DateTime.Today.AddDays(-5),
                 UpdatedAt: null);
+
+        private static string GetValidationError(BirdViewModel viewModel, string propertyName)
+            => ((IEnumerable)viewModel.GetErrors(propertyName))
+                .Cast<ValidationResult>()
+                .Single()
+                .ErrorMessage!;
     }
 }

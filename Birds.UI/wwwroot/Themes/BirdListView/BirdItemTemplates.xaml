@@ -170,7 +170,7 @@
         x:Key="BirdCardMetaValueStyle"
         TargetType="TextBlock">
         <Setter Property="Margin" Value="0,4,0,0" />
-        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontSize" Value="13" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
     </Style>
@@ -189,7 +189,7 @@
         x:Key="BirdCardMetaSeparatorStyle"
         TargetType="Border">
         <Setter Property="Width" Value="1" />
-        <Setter Property="Margin" Value="14,4" />
+        <Setter Property="Margin" Value="10,4" />
         <Setter Property="Background" Value="{DynamicResource ThemeCardBorderBrush}" />
         <Setter Property="Opacity" Value="0.75" />
     </Style>
@@ -458,7 +458,7 @@
             <Border
                 Grid.Row="2"
                 Margin="0,14,0,0"
-                Padding="14,10"
+                Padding="12,9"
                 Background="{DynamicResource ThemeInsetBackgroundBrush}"
                 BorderBrush="{DynamicResource ThemeFieldBorderBrush}"
                 BorderThickness="1"
@@ -507,7 +507,7 @@
 
                         <StackPanel
                             Grid.Column="4"
-                            MinWidth="112">
+                            MinWidth="88">
                             <TextBlock
                                 Style="{StaticResource BirdCardMetaLabelStyle}"
                                 Text="{loc:Loc Key=Bird.DurationMeta}" />
@@ -696,9 +696,8 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
@@ -727,7 +726,8 @@
 
                     <Grid
                         Grid.Column="2"
-                        Margin="12,0,0,0">
+                        Margin="12,0,0,0"
+                        HorizontalAlignment="Stretch">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -748,7 +748,7 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
                             <DatePicker
@@ -776,20 +776,21 @@
 
                             <TextBlock
                                 Grid.Column="2"
-                                MaxWidth="220"
                                 Margin="12,0,0,0"
                                 VerticalAlignment="Center"
-                                HorizontalAlignment="Left"
+                                HorizontalAlignment="Stretch"
                                 TextAlignment="Left"
-                                TextWrapping="Wrap"
+                                TextWrapping="NoWrap"
+                                TextTrimming="CharacterEllipsis"
+                                ToolTip="{Binding ElementName=DepartureField, Path=(Validation.Errors)[0].ErrorContent}"
                                 Text="{Binding ElementName=DepartureField, Path=(Validation.Errors)[0].ErrorContent}">
                                 <TextBlock.Style>
                                     <Style
                                         BasedOn="{StaticResource BirdCardInlineErrorStyle}"
                                         TargetType="TextBlock">
-                                        <Setter Property="HorizontalAlignment" Value="Left" />
-                                        <Setter Property="TextWrapping" Value="Wrap" />
-                                        <Setter Property="TextTrimming" Value="None" />
+                                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                        <Setter Property="TextWrapping" Value="NoWrap" />
+                                        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding ElementName=DepartureField, Path=(Validation.HasError)}" Value="True">
                                                 <Setter Property="Visibility" Value="Visible" />
@@ -806,8 +807,8 @@
                         Style="{StaticResource BirdCardMetaSeparatorStyle}" />
 
                     <ContentPresenter
-                        Grid.Column="5"
-                        Margin="16,0,0,0"
+                        Grid.Column="4"
+                        Margin="12,0,0,0"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Content="{Binding}"

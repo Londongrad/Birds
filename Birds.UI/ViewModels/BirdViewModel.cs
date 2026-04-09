@@ -39,8 +39,10 @@ namespace Birds.UI.ViewModels
             _notificationService = notificationService;
 
             _localization.LanguageChanged += OnLanguageChanged;
+            ErrorsChanged += (_, __) => SaveCommand.NotifyCanExecuteChanged();
 
             ApplyDto(dto);
+            ValidateAllProperties();
         }
 
         #region [ Properties ]
@@ -59,6 +61,11 @@ namespace Birds.UI.ViewModels
         /// Bird's creation date in local time.
         /// </summary>
         public DateTime? LocalCreatedAt { get; private set; }
+
+        /// <summary>
+        /// Indicates that saving is intentionally blocked because a dead bird requires a departure date.
+        /// </summary>
+        public bool IsSaveLockedByDepartureRequirement => !IsAlive && Departure is null;
 
         #endregion [ Properties ]
 
@@ -202,7 +209,7 @@ namespace Birds.UI.ViewModels
         /// <summary>
         /// Command that validates user input and updates the bird through <see cref="IBirdManager"/>.
         /// </summary>
-        [RelayCommand]
+        [RelayCommand(CanExecute = nameof(CanSave))]
         private async Task SaveAsync()
         {
             ValidateAllProperties();
@@ -248,6 +255,8 @@ namespace Birds.UI.ViewModels
         {
             Departure = null;
         }
+
+        private bool CanSave() => !HasErrors;
 
         #endregion [ Commands ]
 
@@ -305,10 +314,8 @@ namespace Birds.UI.ViewModels
         private void OnLanguageChanged(object? sender, EventArgs e)
         {
             UpdateCalculatedFields();
-            ValidateProperty(SelectedBirdName, nameof(SelectedBirdName));
-            ValidateProperty(Description, nameof(Description));
-            ValidateProperty(Arrival, nameof(Arrival));
-            ValidateProperty(Departure, nameof(Departure));
+            ValidateAllProperties();
+            SaveCommand.NotifyCanExecuteChanged();
         }
 
         /// <summary>
@@ -318,6 +325,7 @@ namespace Birds.UI.ViewModels
         {
             ValidateProperty(value, nameof(Departure));
             UpdateCalculatedFields();
+            OnPropertyChanged(nameof(IsSaveLockedByDepartureRequirement));
         }
 
         /// <summary>
@@ -375,6 +383,7 @@ namespace Birds.UI.ViewModels
         {
             ValidateProperty(Departure, nameof(Departure));
             UpdateCalculatedFields();
+            OnPropertyChanged(nameof(IsSaveLockedByDepartureRequirement));
         }
 
         #endregion [ Validation ]
