@@ -96,6 +96,7 @@ namespace Birds.Shared.Localization
             ["Settings.Notifications.Title"] = "Уведомления",
             ["Settings.Notifications.Description"] = "Можно оставить историю уведомлений и при этом убрать навязчивый индикатор новых событий.",
             ["Settings.NotificationBadgeLabel"] = "Показывать индикатор новых уведомлений",
+            ["Settings.AutoExportLabel"] = "Автоэкспорт снимка",
             ["Settings.Data.Title"] = "Данные",
             ["Settings.Data.Description"] = "Вручную экспортируйте текущий снимок или импортируйте JSON-файл, созданный приложением.",
             ["Settings.ExportPathLabel"] = "Путь экспорта",
@@ -139,6 +140,8 @@ namespace Birds.Shared.Localization
             ["Settings.ImportModeHint.Replace"] = "Режим восстановления снимка: текущий архив будет синхронизирован с файлом и лишние локальные записи исчезнут.",
             ["Settings.NotificationsHint.Enabled"] = "Индикатор новых уведомлений будет показываться рядом с кнопкой центра уведомлений.",
             ["Settings.NotificationsHint.Disabled"] = "Красный индикатор скрыт, но сама история уведомлений остаётся доступной.",
+            ["Settings.AutoExportHint.Enabled"] = "После успешных изменений и при закрытии приложения экспортный снимок будет обновляться автоматически.",
+            ["Settings.AutoExportHint.Disabled"] = "Автоэкспорт отключён. Снимок будет обновляться только вручную.",
             ["Settings.MotionHint.Enabled"] = "Сдержанный режим анимации сохранён как предпочтение и готов для будущих экранов.",
             ["Settings.MotionHint.Disabled"] = "Сейчас приложение использует стандартные мягкие анимации интерфейса.",
 
@@ -334,6 +337,7 @@ namespace Birds.Shared.Localization
             ["Settings.Notifications.Title"] = "Notifications",
             ["Settings.Notifications.Description"] = "You can keep notification history while hiding the distracting unread indicator.",
             ["Settings.NotificationBadgeLabel"] = "Show unread notification badge",
+            ["Settings.AutoExportLabel"] = "Automatic snapshot export",
             ["Settings.Data.Title"] = "Data",
             ["Settings.Data.Description"] = "Export the current snapshot manually or import a JSON file produced by the application.",
             ["Settings.ExportPathLabel"] = "Export location",
@@ -377,6 +381,8 @@ namespace Birds.Shared.Localization
             ["Settings.ImportModeHint.Replace"] = "Snapshot restore mode: the current archive will be synchronized with the file and extra local records will be removed.",
             ["Settings.NotificationsHint.Enabled"] = "The unread badge will be shown next to the notification center button.",
             ["Settings.NotificationsHint.Disabled"] = "The red unread badge is hidden, but the notification history stays available.",
+            ["Settings.AutoExportHint.Enabled"] = "After successful changes and on application shutdown the export snapshot will be refreshed automatically.",
+            ["Settings.AutoExportHint.Disabled"] = "Auto-export is disabled. The snapshot will only be updated manually.",
             ["Settings.MotionHint.Enabled"] = "Reduced motion is saved as a preference and is ready for future screens.",
             ["Settings.MotionHint.Disabled"] = "The application currently uses the default subtle interface animations.",
 

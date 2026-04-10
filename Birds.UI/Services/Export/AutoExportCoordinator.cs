@@ -50,6 +50,9 @@ namespace Birds.UI.Services.Export
         {
             ThrowIfDisposed();
 
+            if (!_preferences.AutoExportEnabled)
+                return;
+
             Interlocked.Increment(ref _dirtyVersion);
             ScheduleDebouncedFlush();
         }
@@ -59,6 +62,10 @@ namespace Birds.UI.Services.Export
             ThrowIfDisposed();
 
             CancelPendingDebounce();
+
+            if (!_preferences.AutoExportEnabled)
+                return;
+
             await FlushCoreAsync(cancellationToken, throwOnFailure: true).ConfigureAwait(false);
         }
 
@@ -75,8 +82,21 @@ namespace Birds.UI.Services.Export
 
         private void OnPreferencesChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(IAppPreferencesService.CustomExportPath))
+            if (e.PropertyName == nameof(IAppPreferencesService.AutoExportEnabled))
+            {
+                if (_preferences.AutoExportEnabled)
+                    MarkDirty();
+                else
+                    CancelPendingDebounce();
+
+                return;
+            }
+
+            if (e.PropertyName == nameof(IAppPreferencesService.CustomExportPath)
+                && _preferences.AutoExportEnabled)
+            {
                 MarkDirty();
+            }
         }
 
         private void ScheduleDebouncedFlush()

@@ -24,6 +24,7 @@ namespace Birds.Tests.UI.Services
                 sut.SelectedDateFormat.Should().Be(AppPreferencesState.DefaultDateFormat);
                 sut.SelectedImportMode.Should().Be(AppPreferencesState.DefaultImportMode);
                 sut.CustomExportPath.Should().BeEmpty();
+                sut.AutoExportEnabled.Should().BeTrue();
                 sut.ShowNotificationBadge.Should().BeTrue();
                 sut.ReduceMotion.Should().BeFalse();
             }
@@ -48,6 +49,7 @@ namespace Birds.Tests.UI.Services
                     SelectedDateFormat = DateDisplayFormats.YearMonthDay,
                     SelectedImportMode = BirdImportModes.Replace,
                     CustomExportPath = "C:\\exports\\birds-custom.json",
+                    AutoExportEnabled = false,
                     ShowNotificationBadge = false,
                     ReduceMotion = true
                 };
@@ -59,6 +61,7 @@ namespace Birds.Tests.UI.Services
                 reloaded.SelectedDateFormat.Should().Be(DateDisplayFormats.YearMonthDay);
                 reloaded.SelectedImportMode.Should().Be(BirdImportModes.Replace);
                 reloaded.CustomExportPath.Should().Be("C:\\exports\\birds-custom.json");
+                reloaded.AutoExportEnabled.Should().BeFalse();
                 reloaded.ShowNotificationBadge.Should().BeFalse();
                 reloaded.ReduceMotion.Should().BeTrue();
             }
@@ -85,6 +88,7 @@ namespace Birds.Tests.UI.Services
                       "selectedDateFormat": "ymd",
                       "selectedImportMode": "replace",
                       "customExportPath": "C:\\exports\\birds-custom.json",
+                      "autoExportEnabled": false,
                       "showNotificationBadge": true,
                       "reduceMotion": false
                     }
@@ -96,6 +100,7 @@ namespace Birds.Tests.UI.Services
                 sut.SelectedDateFormat.Should().Be(DateDisplayFormats.YearMonthDay);
                 sut.SelectedImportMode.Should().Be(BirdImportModes.Replace);
                 sut.CustomExportPath.Should().Be("C:\\exports\\birds-custom.json");
+                sut.AutoExportEnabled.Should().BeFalse();
             }
             finally
             {

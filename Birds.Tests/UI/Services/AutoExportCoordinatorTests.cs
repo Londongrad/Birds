@@ -97,6 +97,55 @@ namespace Birds.Tests.UI.Services
                 Times.Once);
         }
 
+        [Fact]
+        public async Task MarkDirty_WhenAutoExportIsDisabled_Should_NotExport_Until_Reenabled()
+        {
+            var store = new BirdStore();
+            var exportService = new Mock<IExportService>();
+            var exportPathProvider = new Mock<IExportPathProvider>();
+            exportPathProvider.Setup(x => x.GetLatestPath("birds", It.IsAny<string>()))
+                .Returns("C:\\exports\\birds.json");
+
+            store.ReplaceBirds(new[]
+            {
+                new BirdDTO(Guid.NewGuid(), "Sparrow", null, new DateOnly(2026, 4, 1), null, true, null, null)
+            });
+
+            var preferences = new TestPreferencesService
+            {
+                AutoExportEnabled = false
+            };
+
+            using var sut = new AutoExportCoordinator(
+                store,
+                exportService.Object,
+                exportPathProvider.Object,
+                preferences,
+                new InlineUiDispatcher(),
+                NullLogger<AutoExportCoordinator>.Instance,
+                TimeSpan.FromMilliseconds(40));
+
+            sut.MarkDirty();
+            await Task.Delay(120);
+
+            exportService.Verify(
+                x => x.ExportAsync(
+                    It.IsAny<IEnumerable<BirdDTO>>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()),
+                Times.Never);
+
+            preferences.AutoExportEnabled = true;
+            await Task.Delay(120);
+
+            exportService.Verify(
+                x => x.ExportAsync(
+                    It.Is<IEnumerable<BirdDTO>>(items => items.Count() == 1),
+                    "C:\\exports\\birds.json",
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
         private sealed class TestPreferencesService : IAppPreferencesService
         {
             private string _selectedLanguage = AppPreferencesState.DefaultLanguage;
@@ -104,6 +153,7 @@ namespace Birds.Tests.UI.Services
             private string _selectedDateFormat = DateDisplayFormats.Default;
             private string _selectedImportMode = BirdImportModes.Merge;
             private string _customExportPath = string.Empty;
+            private bool _autoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
             private bool _showNotificationBadge = true;
             private bool _reduceMotion;
 
@@ -139,6 +189,12 @@ namespace Birds.Tests.UI.Services
                 set => SetField(ref _customExportPath, value, nameof(CustomExportPath));
             }
 
+            public bool AutoExportEnabled
+            {
+                get => _autoExportEnabled;
+                set => SetField(ref _autoExportEnabled, value, nameof(AutoExportEnabled));
+            }
+
             public bool ShowNotificationBadge
             {
                 get => _showNotificationBadge;
@@ -158,6 +214,7 @@ namespace Birds.Tests.UI.Services
                 SelectedDateFormat = AppPreferencesState.DefaultDateFormat;
                 SelectedImportMode = AppPreferencesState.DefaultImportMode;
                 CustomExportPath = string.Empty;
+                AutoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
                 ShowNotificationBadge = true;
                 ReduceMotion = false;
             }

@@ -9,6 +9,7 @@ namespace Birds.UI.Services.Preferences
         public const string DefaultTheme = ThemeKeys.Graphite;
         public const string DefaultDateFormat = Localization.DateDisplayFormats.Default;
         public const string DefaultImportMode = Import.BirdImportModes.Merge;
+        public const bool DefaultAutoExportEnabled = true;
 
         public string SelectedLanguage { get; init; } = DefaultLanguage;
 
@@ -19,6 +20,8 @@ namespace Birds.UI.Services.Preferences
         public string SelectedImportMode { get; init; } = DefaultImportMode;
 
         public string CustomExportPath { get; init; } = string.Empty;
+
+        public bool AutoExportEnabled { get; init; } = DefaultAutoExportEnabled;
 
         public bool ShowNotificationBadge { get; init; } = true;
 

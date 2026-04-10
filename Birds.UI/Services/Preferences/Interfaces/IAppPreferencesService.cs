@@ -14,6 +14,8 @@ namespace Birds.UI.Services.Preferences.Interfaces
 
         string CustomExportPath { get; set; }
 
+        bool AutoExportEnabled { get; set; }
+
         bool ShowNotificationBadge { get; set; }
 
         bool ReduceMotion { get; set; }

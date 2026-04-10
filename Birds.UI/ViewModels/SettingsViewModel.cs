@@ -124,6 +124,9 @@ namespace Birds.UI.ViewModels
         private string selectedImportMode = AppPreferencesState.DefaultImportMode;
 
         [ObservableProperty]
+        private bool autoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
+
+        [ObservableProperty]
         private bool showNotificationBadge = true;
 
         [ObservableProperty]
@@ -197,6 +200,11 @@ namespace Birds.UI.ViewModels
             SelectedImportMode == BirdImportModes.Replace
                 ? _localization.GetString("Settings.ImportModeHint.Replace")
                 : _localization.GetString("Settings.ImportModeHint.Merge");
+
+        public string AutoExportHint =>
+            AutoExportEnabled
+                ? _localization.GetString("Settings.AutoExportHint.Enabled")
+                : _localization.GetString("Settings.AutoExportHint.Disabled");
 
         public bool SupportsLocalDatabaseReset => _databaseMaintenanceService.CanResetLocalDatabase;
 
@@ -439,6 +447,20 @@ namespace Birds.UI.ViewModels
             OnPropertyChanged(nameof(ImportHint));
         }
 
+        partial void OnAutoExportEnabledChanged(bool value)
+        {
+            if (_isSynchronizingSelections)
+            {
+                OnPropertyChanged(nameof(AutoExportHint));
+                return;
+            }
+
+            if (_preferences.AutoExportEnabled != value)
+                _preferences.AutoExportEnabled = value;
+
+            OnPropertyChanged(nameof(AutoExportHint));
+        }
+
         partial void OnShowNotificationBadgeChanged(bool value)
         {
             if (_isSynchronizingSelections)
@@ -474,6 +496,7 @@ namespace Birds.UI.ViewModels
                 or nameof(IAppPreferencesService.SelectedDateFormat)
                 or nameof(IAppPreferencesService.SelectedImportMode)
                 or nameof(IAppPreferencesService.CustomExportPath)
+                or nameof(IAppPreferencesService.AutoExportEnabled)
                 or nameof(IAppPreferencesService.ShowNotificationBadge)
                 or nameof(IAppPreferencesService.ReduceMotion))
             {
@@ -495,6 +518,7 @@ namespace Birds.UI.ViewModels
             OnPropertyChanged(nameof(ThemeHint));
             OnPropertyChanged(nameof(DateFormatHint));
             OnPropertyChanged(nameof(ImportModeHint));
+            OnPropertyChanged(nameof(AutoExportHint));
             OnPropertyChanged(nameof(NotificationsHint));
             OnPropertyChanged(nameof(MotionHint));
             OnPropertyChanged(nameof(ExportPathHint));
@@ -554,6 +578,7 @@ namespace Birds.UI.ViewModels
                 SelectedTheme = normalizedTheme;
                 SelectedDateFormat = normalizedDateFormat;
                 SelectedImportMode = normalizedImportMode;
+                AutoExportEnabled = _preferences.AutoExportEnabled;
                 ShowNotificationBadge = _preferences.ShowNotificationBadge;
                 ReduceMotion = _preferences.ReduceMotion;
             }
@@ -569,6 +594,7 @@ namespace Birds.UI.ViewModels
             OnPropertyChanged(nameof(ThemeHint));
             OnPropertyChanged(nameof(DateFormatHint));
             OnPropertyChanged(nameof(ImportModeHint));
+            OnPropertyChanged(nameof(AutoExportHint));
             OnPropertyChanged(nameof(NotificationsHint));
             OnPropertyChanged(nameof(MotionHint));
             OnPropertyChanged(nameof(ExportPathHint));

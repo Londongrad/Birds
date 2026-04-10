@@ -71,6 +71,7 @@ namespace Birds.Tests.UI.ViewModels
             _preferences.SelectedTheme = ThemeKeys.Graphite;
             _preferences.SelectedDateFormat = DateDisplayFormats.DayMonthYear;
             _preferences.SelectedImportMode = BirdImportModes.Merge;
+            _preferences.AutoExportEnabled = true;
             _preferences.ShowNotificationBadge = true;
             _preferences.ReduceMotion = false;
 
@@ -79,6 +80,7 @@ namespace Birds.Tests.UI.ViewModels
             sut.ThemeHint.Should().Be(AppText.Get("Settings.ThemeHint.Graphite", _culture));
             sut.DateFormatHint.Should().Be(AppText.Get("Settings.DateFormatHint.DayMonthYear", _culture));
             sut.ImportModeHint.Should().Be(AppText.Get("Settings.ImportModeHint.Merge", _culture));
+            sut.AutoExportHint.Should().Be(AppText.Get("Settings.AutoExportHint.Enabled", _culture));
             sut.NotificationsHint.Should().Be(AppText.Get("Settings.NotificationsHint.Enabled", _culture));
             sut.MotionHint.Should().Be(AppText.Get("Settings.MotionHint.Disabled", _culture));
         }
@@ -90,6 +92,7 @@ namespace Birds.Tests.UI.ViewModels
             _preferences.SelectedTheme = ThemeKeys.Steel;
             _preferences.SelectedDateFormat = DateDisplayFormats.YearMonthDay;
             _preferences.SelectedImportMode = BirdImportModes.Replace;
+            _preferences.AutoExportEnabled = false;
             _preferences.ShowNotificationBadge = false;
             _preferences.ReduceMotion = true;
 
@@ -103,8 +106,22 @@ namespace Birds.Tests.UI.ViewModels
             sut.ThemeHint.Should().Be(AppText.Get("Settings.ThemeHint.Steel", _culture));
             sut.DateFormatHint.Should().Be(AppText.Get("Settings.DateFormatHint.YearMonthDay", _culture));
             sut.ImportModeHint.Should().Be(AppText.Get("Settings.ImportModeHint.Replace", _culture));
+            sut.AutoExportHint.Should().Be(AppText.Get("Settings.AutoExportHint.Disabled", _culture));
             sut.NotificationsHint.Should().Be(AppText.Get("Settings.NotificationsHint.Disabled", _culture));
             sut.MotionHint.Should().Be(AppText.Get("Settings.MotionHint.Enabled", _culture));
+        }
+
+        [Fact]
+        public void AutoExportEnabledChanged_Should_PersistPreference_And_UpdateHint()
+        {
+            _preferences.AutoExportEnabled = true;
+
+            var sut = CreateSut();
+
+            sut.AutoExportEnabled = false;
+
+            _preferences.AutoExportEnabled.Should().BeFalse();
+            sut.AutoExportHint.Should().Be(AppText.Get("Settings.AutoExportHint.Disabled", _culture));
         }
 
         [Fact]
@@ -292,6 +309,7 @@ namespace Birds.Tests.UI.ViewModels
             private string _selectedDateFormat = DateDisplayFormats.DayMonthYear;
             private string _selectedImportMode = BirdImportModes.Merge;
             private string _customExportPath = string.Empty;
+            private bool _autoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
             private bool _showNotificationBadge = true;
             private bool _reduceMotion;
 
@@ -345,6 +363,18 @@ namespace Birds.Tests.UI.ViewModels
                 }
             }
 
+            public bool AutoExportEnabled
+            {
+                get => _autoExportEnabled;
+                set
+                {
+                    if (_autoExportEnabled == value)
+                        return;
+                    _autoExportEnabled = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AutoExportEnabled)));
+                }
+            }
+
             public string CustomExportPath
             {
                 get => _customExportPath;
@@ -388,6 +418,7 @@ namespace Birds.Tests.UI.ViewModels
                 SelectedDateFormat = AppPreferencesState.DefaultDateFormat;
                 SelectedImportMode = AppPreferencesState.DefaultImportMode;
                 CustomExportPath = string.Empty;
+                AutoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
                 ShowNotificationBadge = true;
                 ReduceMotion = false;
             }

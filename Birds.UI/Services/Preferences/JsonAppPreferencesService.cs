@@ -35,6 +35,9 @@ namespace Birds.UI.Services.Preferences
         private string customExportPath = string.Empty;
 
         [ObservableProperty]
+        private bool autoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
+
+        [ObservableProperty]
         private bool showNotificationBadge = true;
 
         [ObservableProperty]
@@ -50,6 +53,7 @@ namespace Birds.UI.Services.Preferences
             selectedDateFormat = DateDisplayFormats.Normalize(state.SelectedDateFormat);
             selectedImportMode = BirdImportModes.Normalize(state.SelectedImportMode);
             customExportPath = state.CustomExportPath?.Trim() ?? string.Empty;
+            autoExportEnabled = state.AutoExportEnabled;
             showNotificationBadge = state.ShowNotificationBadge;
             reduceMotion = state.ReduceMotion;
         }
@@ -61,6 +65,7 @@ namespace Birds.UI.Services.Preferences
             SelectedDateFormat = AppPreferencesState.DefaultDateFormat;
             SelectedImportMode = AppPreferencesState.DefaultImportMode;
             CustomExportPath = string.Empty;
+            AutoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
             ShowNotificationBadge = true;
             ReduceMotion = false;
         }
@@ -90,6 +95,8 @@ namespace Birds.UI.Services.Preferences
             customExportPath = value?.Trim() ?? string.Empty;
             SaveState();
         }
+
+        partial void OnAutoExportEnabledChanged(bool value) => SaveState();
 
         partial void OnShowNotificationBadgeChanged(bool value) => SaveState();
 
@@ -130,6 +137,7 @@ namespace Birds.UI.Services.Preferences
                         SelectedDateFormat = DateDisplayFormats.Normalize(SelectedDateFormat),
                         SelectedImportMode = BirdImportModes.Normalize(SelectedImportMode),
                         CustomExportPath = CustomExportPath?.Trim() ?? string.Empty,
+                        AutoExportEnabled = AutoExportEnabled,
                         ShowNotificationBadge = ShowNotificationBadge,
                         ReduceMotion = ReduceMotion
                     },

@@ -792,6 +792,38 @@
 
                             <Border
                                 HorizontalAlignment="Stretch"
+                                Margin="0,16,0,0"
+                                Style="{StaticResource SettingsToggleRowStyle}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center">
+                                        <TextBlock
+                                            Style="{StaticResource FieldLabelStyle}"
+                                            Margin="0,0,0,4"
+                                            Text="{loc:Loc Key=Settings.AutoExportLabel}" />
+                                        <TextBlock
+                                            FontSize="12"
+                                            Foreground="{StaticResource SecondaryTextBrush}"
+                                            Text="{Binding AutoExportHint}"
+                                            TextWrapping="Wrap" />
+                                    </StackPanel>
+
+                                    <CheckBox
+                                        Grid.Column="1"
+                                        IsChecked="{Binding AutoExportEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        Style="{StaticResource ToggleSwitchStyle}"
+                                        VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+
+                            <Border
+                                HorizontalAlignment="Stretch"
                                 Style="{StaticResource SettingsToggleRowStyle}">
                                 <Grid>
                                     <Grid.RowDefinitions>
