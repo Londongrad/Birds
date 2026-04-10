@@ -30,6 +30,31 @@ namespace Birds.Domain.Entities
             bool isAlive = true)
             : base(id)
         {
+            Initialize(id, name, description, arrival, departure, isAlive);
+        }
+
+        private Bird(
+            Guid id,
+            BirdsName name,
+            string? description,
+            DateOnly arrival,
+            DateOnly? departure,
+            bool isAlive,
+            DateTime createdAt,
+            DateTime? updatedAt)
+            : base(id, createdAt, updatedAt)
+        {
+            Initialize(id, name, description, arrival, departure, isAlive);
+        }
+
+        private void Initialize(
+            Guid id,
+            BirdsName name,
+            string? description,
+            DateOnly arrival,
+            DateOnly? departure,
+            bool isAlive)
+        {
             GuardHelper.AgainstEmptyGuid(id, nameof(id));
             GuardHelper.AgainstInvalidEnum(name, nameof(name));
             GuardHelper.AgainstExceedsMaxLength(description, BirdValidationRules.DescriptionMaxLength, nameof(description));
@@ -85,7 +110,9 @@ namespace Birds.Domain.Entities
             string? description,
             DateOnly arrival,
             DateOnly? departure,
-            bool isAlive)
+            bool isAlive,
+            DateTime? createdAt = null,
+            DateTime? updatedAt = null)
         {
             GuardHelper.AgainstInvalidEnum(name, nameof(name));
             GuardHelper.AgainstExceedsMaxLength(description, BirdValidationRules.DescriptionMaxLength, nameof(description));
@@ -95,7 +122,9 @@ namespace Birds.Domain.Entities
             GuardHelper.AgainstInvalidStatusUpdate(departure, isAlive, nameof(departure));
             GuardHelper.AgainstEmptyGuid(id, nameof(id));
 
-            return new Bird(id, name, description, arrival, departure, isAlive);
+            return createdAt.HasValue
+                ? new Bird(id, name, description, arrival, departure, isAlive, createdAt.Value, updatedAt)
+                : new Bird(id, name, description, arrival, departure, isAlive);
         }
 
         /// <summary>

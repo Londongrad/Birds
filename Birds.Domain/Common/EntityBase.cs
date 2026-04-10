@@ -21,6 +21,13 @@
             Id = id;
         }
 
+        protected EntityBase(Guid id, DateTime createdAt, DateTime? updatedAt)
+        {
+            Id = id;
+            CreatedAt = createdAt;
+            UpdatedAt = updatedAt;
+        }
+
         #endregion [ Ctors ]
 
         #region [ Methods ]

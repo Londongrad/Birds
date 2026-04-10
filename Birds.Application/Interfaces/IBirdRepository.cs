@@ -27,6 +27,13 @@ namespace Birds.Application.Interfaces
         /// </remarks>
         Task UpdateAsync(Bird bird, CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// Adds missing birds and updates existing ones in a single persistence operation.
+        /// </summary>
+        Task<Common.Models.UpsertBirdsResult> UpsertAsync(
+            IReadOnlyCollection<Bird> birds,
+            CancellationToken cancellationToken = default);
+
         /// <summary>Removes a bird and immediately persists the change to the database.</summary>
         /// <remarks>
         /// This method deletes the specified <see cref="Bird"/> entity from the data source and saves the change.
