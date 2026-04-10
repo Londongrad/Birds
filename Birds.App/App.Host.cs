@@ -40,6 +40,7 @@ namespace Birds.App
                     // Register export path provider (implementation lives in App, interface in UI)
                     services.AddSingleton<IExportPathProvider, AppExportPathProvider>();
                     services.AddSingleton<StartupDataCoordinator>();
+                    services.AddSingleton<IRemoteSyncCoordinator, RemoteSyncCoordinator>();
 
                     // Register the Application layer (CQRS, Mediator, validators, etc.)
                     services.AddApplication();

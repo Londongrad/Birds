@@ -60,7 +60,5 @@ namespace Birds.Infrastructure.Services
             await context.Database.EnsureDeletedAsync(cancellationToken);
             await context.Database.EnsureCreatedAsync(cancellationToken);
         }
-
-        private sealed record BirdDeleteSyncPayload(Guid Id, DateTime DeletedAtUtc);
     }
 }

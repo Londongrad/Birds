@@ -9,12 +9,14 @@ namespace Birds.App.Services
 {
     public sealed class StartupDataCoordinator(
         IDatabaseInitializer databaseInitializer,
+        IRemoteSyncCoordinator remoteSyncCoordinator,
         BirdStoreInitializer birdStoreInitializer,
         IBirdStore birdStore,
         INotificationService notificationService,
         IUiDispatcher uiDispatcher)
     {
         private readonly IDatabaseInitializer _databaseInitializer = databaseInitializer;
+        private readonly IRemoteSyncCoordinator _remoteSyncCoordinator = remoteSyncCoordinator;
         private readonly BirdStoreInitializer _birdStoreInitializer = birdStoreInitializer;
         private readonly IBirdStore _birdStore = birdStore;
         private readonly INotificationService _notificationService = notificationService;
@@ -27,6 +29,7 @@ namespace Birds.App.Services
             try
             {
                 await _databaseInitializer.InitializeAsync(cancellationToken);
+                _remoteSyncCoordinator.Start(cancellationToken);
                 await _birdStoreInitializer.StartAsync(cancellationToken);
             }
             catch (OperationCanceledException)

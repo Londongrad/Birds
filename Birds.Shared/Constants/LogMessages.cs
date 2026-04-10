@@ -32,5 +32,10 @@
 
         public const string AutoExportFailed = "Auto-export failed";
         public const string AutoExportSucceeded = "Auto-export succeeded. Path: {Path}";
+
+        public const string RemoteSyncProcessed = "Remote sync processed {Count} pending changes.";
+        public const string RemoteSyncFailed = "Remote sync failed while processing {Count} pending changes.";
+        public const string RemoteSyncStopped = "Remote sync loop stopped because the application is shutting down.";
+        public const string RemoteSyncLoopFailed = "Remote sync background loop crashed unexpectedly.";
     }
 }

@@ -31,6 +31,17 @@ namespace Birds.Infrastructure
             services.AddSingleton<IDatabaseInitializer, DatabaseInitializerService>();
             services.AddSingleton<IDatabaseMaintenanceService, DatabaseMaintenanceService>();
             services.AddSingleton<IBirdRepository, BirdRepository>();
+
+            if (remoteSyncOptions.IsConfigured)
+            {
+                services.AddDbContextFactory<RemoteBirdDbContext>(options =>
+                    options.UseNpgsql(remoteSyncOptions.ConnectionString!, n => n.EnableRetryOnFailure(0)));
+                services.AddSingleton<IRemoteSyncService, RemoteSyncService>();
+            }
+            else
+            {
+                services.AddSingleton<IRemoteSyncService, DisabledRemoteSyncService>();
+            }
         }
 
         private static string NormalizeSqliteConnectionString(string connectionString)

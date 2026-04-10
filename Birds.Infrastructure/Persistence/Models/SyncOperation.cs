@@ -46,5 +46,17 @@ namespace Birds.Infrastructure.Persistence.Models
             LastAttemptAtUtc = null;
             LastError = null;
         }
+
+        public void MarkFailed(string errorMessage, DateTime attemptUtc)
+        {
+            RetryCount++;
+            LastAttemptAtUtc = attemptUtc;
+            UpdatedAtUtc = attemptUtc;
+            LastError = string.IsNullOrWhiteSpace(errorMessage)
+                ? null
+                : errorMessage.Length <= 2048
+                    ? errorMessage
+                    : errorMessage[..2048];
+        }
     }
 }

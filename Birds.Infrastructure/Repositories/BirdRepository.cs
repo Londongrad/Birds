@@ -226,7 +226,7 @@ namespace Birds.Infrastructure.Repositories
 
         private static string SerializeUpsertPayload(Bird bird)
         {
-            var payload = new BirdSyncPayload(
+            var payload = new Persistence.Models.BirdSyncPayload(
                 bird.Id,
                 bird.Name.ToString(),
                 bird.Description,
@@ -241,18 +241,7 @@ namespace Birds.Infrastructure.Repositories
 
         private static string SerializeDeletePayload(Guid birdId, DateTime deletedAtUtc)
         {
-            return JsonSerializer.Serialize(new BirdDeleteSyncPayload(birdId, deletedAtUtc));
+            return JsonSerializer.Serialize(new Persistence.Models.BirdDeleteSyncPayload(birdId, deletedAtUtc));
         }
-
-        private sealed record BirdSyncPayload(Guid Id,
-                                              string Name,
-                                              string? Description,
-                                              DateOnly Arrival,
-                                              DateOnly? Departure,
-                                              bool IsAlive,
-                                              DateTime CreatedAt,
-                                              DateTime? UpdatedAt);
-
-        private sealed record BirdDeleteSyncPayload(Guid Id, DateTime DeletedAtUtc);
     }
 }

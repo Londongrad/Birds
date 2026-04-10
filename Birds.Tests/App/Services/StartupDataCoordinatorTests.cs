@@ -19,6 +19,7 @@ namespace Birds.Tests.App.Services
         {
             var birdStore = new BirdStore();
             var databaseInitializer = new Mock<IDatabaseInitializer>();
+            var remoteSyncCoordinator = new Mock<IRemoteSyncCoordinator>();
             var mediator = new Mock<IMediator>();
             mediator.SetupGetAllBirdsSuccess(TestHelpers.Birds(TestHelpers.Bird(name: "Sparrow")));
 
@@ -30,6 +31,7 @@ namespace Birds.Tests.App.Services
 
             var coordinator = new StartupDataCoordinator(
                 databaseInitializer.Object,
+                remoteSyncCoordinator.Object,
                 birdStoreInitializer,
                 birdStore,
                 notificationService.Object,
@@ -40,6 +42,7 @@ namespace Birds.Tests.App.Services
             birdStore.LoadState.Should().Be(LoadState.Loaded);
             birdStore.Birds.Should().HaveCount(1);
             databaseInitializer.Verify(x => x.InitializeAsync(It.IsAny<CancellationToken>()), Times.Once);
+            remoteSyncCoordinator.Verify(x => x.Start(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -47,6 +50,7 @@ namespace Birds.Tests.App.Services
         {
             var birdStore = new BirdStore();
             var databaseInitializer = new Mock<IDatabaseInitializer>();
+            var remoteSyncCoordinator = new Mock<IRemoteSyncCoordinator>();
             databaseInitializer
                 .Setup(x => x.InitializeAsync(It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new InvalidOperationException("db init failed"));
@@ -60,6 +64,7 @@ namespace Birds.Tests.App.Services
 
             var coordinator = new StartupDataCoordinator(
                 databaseInitializer.Object,
+                remoteSyncCoordinator.Object,
                 birdStoreInitializer,
                 birdStore,
                 notificationService.Object,
@@ -76,6 +81,7 @@ namespace Birds.Tests.App.Services
                     It.Is<NotificationOptions>(o => o.Type == NotificationType.Error),
                     It.IsAny<object[]>()),
                 Times.Once);
+            remoteSyncCoordinator.Verify(x => x.Start(It.IsAny<CancellationToken>()), Times.Never);
         }
     }
 }
