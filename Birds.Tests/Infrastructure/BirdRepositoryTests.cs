@@ -22,19 +22,17 @@ namespace Birds.Tests.Infrastructure
         [Fact]
         public async Task Add_Then_GetById_Should_Return_Same_Entity()
         {
-            // Arrange
             var repo = new BirdRepository(_db.CreateFactory());
+            var species = Enum.GetValues<BirdsName>()[0];
 
             var bird = Bird.Create(
-                name: BirdsName.Воробей,
+                name: species,
                 description: "sparrow",
                 arrival: DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
 
-            // Act
             await repo.AddAsync(bird);
             var found = await repo.GetByIdAsync(bird.Id);
 
-            // Assert
             found.Id.Should().Be(bird.Id);
             found.Name.Should().Be(bird.Name);
         }
@@ -42,13 +40,10 @@ namespace Birds.Tests.Infrastructure
         [Fact]
         public async Task GetById_When_NotExists_Should_Throw_NotFound()
         {
-            // Arrange
             var repo = new BirdRepository(_db.CreateFactory());
 
-            // Act
             Func<Task> act = async () => await repo.GetByIdAsync(Guid.NewGuid());
 
-            // Assert
             await act.Should().ThrowAsync<NotFoundException>()
                      .WithMessage(ExceptionMessages.NotFound("Bird", "*"));
         }
@@ -56,21 +51,19 @@ namespace Birds.Tests.Infrastructure
         [Fact]
         public async Task GetAll_Should_Return_AsNoTracking_Entities()
         {
-            // Arrange
             var ctx = _db.CreateContext();
             var repo = new BirdRepository(_db.CreateFactory());
+            var firstSpecies = Enum.GetValues<BirdsName>()[0];
+            var secondSpecies = Enum.GetValues<BirdsName>()[1];
 
-            // Act
-            var b1 = Bird.Create(BirdsName.Гайка, "tit", DateOnly.FromDateTime(DateTime.Now.AddDays(-5)));
-            var b2 = Bird.Create(BirdsName.Воробей, "sparrow", DateOnly.FromDateTime(DateTime.Now.AddDays(-4)));
+            var b1 = Bird.Create(firstSpecies, "tit", DateOnly.FromDateTime(DateTime.Now.AddDays(-5)));
+            var b2 = Bird.Create(secondSpecies, "sparrow", DateOnly.FromDateTime(DateTime.Now.AddDays(-4)));
             await repo.AddAsync(b1);
             await repo.AddAsync(b2);
 
-            // Assert
             var list = await repo.GetAllAsync();
             list.Should().HaveCount(2);
 
-            // Check that entities are not tracked
             foreach (var e in list)
                 ctx.Entry(e).State.Should().Be(Microsoft.EntityFrameworkCore.EntityState.Detached);
         }
@@ -78,39 +71,67 @@ namespace Birds.Tests.Infrastructure
         [Fact]
         public async Task Update_Should_Persist_Changes()
         {
-            // Arrange
             var repo = new BirdRepository(_db.CreateFactory());
+            var originalSpecies = Enum.GetValues<BirdsName>()[0];
+            var updatedSpecies = Enum.GetValues<BirdsName>()[2];
 
-            // Act
-            var bird = Bird.Create(BirdsName.Воробей, "old", DateOnly.FromDateTime(DateTime.Now.AddDays(-10)));
+            var bird = Bird.Create(originalSpecies, "old", DateOnly.FromDateTime(DateTime.Now.AddDays(-10)));
             await repo.AddAsync(bird);
 
-            bird.Update(BirdsName.Большак, "new", bird.Arrival, bird.Departure, true);
+            bird.Update(updatedSpecies, "new", bird.Arrival, bird.Departure, true);
             await repo.UpdateAsync(bird);
 
-            // Use a fresh repository call to verify persistence across independent contexts.
             var repo2 = new BirdRepository(_db.CreateFactory());
             var again = await repo2.GetByIdAsync(bird.Id);
 
-            // Assert
-            again.Name.Should().Be(BirdsName.Большак);
+            again.Name.Should().Be(updatedSpecies);
             again.Description.Should().Be("new");
         }
 
         [Fact]
         public async Task Remove_Should_Delete_Row()
         {
-            // Arrange
             var repo = new BirdRepository(_db.CreateFactory());
+            var species = Enum.GetValues<BirdsName>()[0];
 
-            // Act
-            var bird = Bird.Create(BirdsName.Воробей, "to delete", DateOnly.FromDateTime(DateTime.Now.AddDays(-2)));
+            var bird = Bird.Create(species, "to delete", DateOnly.FromDateTime(DateTime.Now.AddDays(-2)));
             await repo.AddAsync(bird);
             await repo.RemoveAsync(bird);
             Func<Task> act = async () => await repo.GetByIdAsync(bird.Id);
 
-            // Assert
             await act.Should().ThrowAsync<NotFoundException>();
+        }
+
+        [Fact]
+        public async Task Upsert_Should_Add_And_Update_Birds_In_One_Pass()
+        {
+            var repo = new BirdRepository(_db.CreateFactory());
+            var primarySpecies = Enum.GetValues<BirdsName>()[0];
+            var secondarySpecies = Enum.GetValues<BirdsName>()[1];
+
+            var existing = Bird.Create(primarySpecies, "old", DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
+            await repo.AddAsync(existing);
+
+            var updated = Bird.Restore(
+                existing.Id,
+                primarySpecies,
+                "updated",
+                existing.Arrival,
+                existing.Departure,
+                existing.IsAlive,
+                existing.CreatedAt,
+                existing.UpdatedAt);
+
+            var added = Bird.Create(secondarySpecies, "new", DateOnly.FromDateTime(DateTime.Now.AddDays(-1)));
+
+            var result = await repo.UpsertAsync(new[] { updated, added });
+            var list = await repo.GetAllAsync();
+
+            result.Added.Should().Be(1);
+            result.Updated.Should().Be(1);
+            list.Should().HaveCount(2);
+            list.Should().Contain(x => x.Id == existing.Id && x.Description == "updated");
+            list.Should().Contain(x => x.Id == added.Id);
         }
     }
 }
