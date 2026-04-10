@@ -31,6 +31,7 @@ namespace Birds.Infrastructure.Services
             }
 
             await context.Database.EnsureCreatedAsync(cancellationToken);
+            await EnsureSyncOutboxSchemaAsync(context, cancellationToken);
 
             if (_seedingOptions.Mode != DatabaseSeedingMode.None)
                 await _birdSeeder.SeedAsync(_seedingOptions, cancellationToken);
@@ -42,6 +43,40 @@ namespace Birds.Infrastructure.Services
                 _logger.LogInformation(
                     "Remote PostgreSQL sync backend is configured for future synchronization.");
             }
+        }
+
+        private static async Task EnsureSyncOutboxSchemaAsync(BirdDbContext context, CancellationToken cancellationToken)
+        {
+            await context.Database.ExecuteSqlRawAsync(
+                """
+                CREATE TABLE IF NOT EXISTS "SyncOperations" (
+                    "Id" TEXT NOT NULL CONSTRAINT "PK_SyncOperations" PRIMARY KEY,
+                    "AggregateType" TEXT NOT NULL,
+                    "AggregateId" TEXT NOT NULL,
+                    "OperationType" TEXT NOT NULL,
+                    "PayloadJson" TEXT NOT NULL,
+                    "CreatedAtUtc" TEXT NOT NULL,
+                    "UpdatedAtUtc" TEXT NOT NULL,
+                    "RetryCount" INTEGER NOT NULL DEFAULT 0,
+                    "LastAttemptAtUtc" TEXT NULL,
+                    "LastError" TEXT NULL
+                );
+                """,
+                cancellationToken);
+
+            await context.Database.ExecuteSqlRawAsync(
+                """
+                CREATE UNIQUE INDEX IF NOT EXISTS "IX_SyncOperations_AggregateType_AggregateId"
+                ON "SyncOperations" ("AggregateType", "AggregateId");
+                """,
+                cancellationToken);
+
+            await context.Database.ExecuteSqlRawAsync(
+                """
+                CREATE INDEX IF NOT EXISTS "IX_SyncOperations_CreatedAtUtc"
+                ON "SyncOperations" ("CreatedAtUtc");
+                """,
+                cancellationToken);
         }
     }
 }

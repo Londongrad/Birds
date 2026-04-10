@@ -1,4 +1,5 @@
-﻿using Birds.Domain.Entities;
+using Birds.Domain.Entities;
+using Birds.Infrastructure.Persistence.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Birds.Infrastructure.Persistence
@@ -6,6 +7,7 @@ namespace Birds.Infrastructure.Persistence
     public class BirdDbContext(DbContextOptions<BirdDbContext> options) : DbContext(options)
     {
         public DbSet<Bird> Birds => Set<Bird>();
+        public DbSet<SyncOperation> SyncOperations => Set<SyncOperation>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

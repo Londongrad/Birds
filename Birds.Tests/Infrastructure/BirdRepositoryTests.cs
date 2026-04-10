@@ -1,9 +1,12 @@
 using Birds.Application.Exceptions;
 using Birds.Domain.Entities;
 using Birds.Domain.Enums;
+using Birds.Infrastructure.Persistence.Models;
 using Birds.Infrastructure.Repositories;
 using Birds.Shared.Constants;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace Birds.Tests.Infrastructure
 {
@@ -65,7 +68,7 @@ namespace Birds.Tests.Infrastructure
             list.Should().HaveCount(2);
 
             foreach (var e in list)
-                ctx.Entry(e).State.Should().Be(Microsoft.EntityFrameworkCore.EntityState.Detached);
+                ctx.Entry(e).State.Should().Be(EntityState.Detached);
         }
 
         [Fact]
@@ -166,6 +169,68 @@ namespace Birds.Tests.Infrastructure
             list.Should().Contain(x => x.Id == retained.Id && x.Description == "updated retain");
             list.Should().Contain(x => x.Id == added.Id);
             list.Should().NotContain(x => x.Id == removed.Id);
+        }
+
+        [Fact]
+        public async Task Add_Should_Queue_Pending_Upsert_Sync_Operation()
+        {
+            var repo = new BirdRepository(_db.CreateFactory());
+            var species = Enum.GetValues<BirdsName>()[0];
+            var bird = Bird.Create(species, "queued", DateOnly.FromDateTime(DateTime.Now.AddDays(-2)));
+
+            await repo.AddAsync(bird);
+
+            await using var context = _db.CreateContext();
+            var operation = await context.SyncOperations.SingleAsync();
+
+            operation.AggregateId.Should().Be(bird.Id);
+            operation.OperationType.Should().Be(SyncOperationType.Upsert);
+
+            using var payload = JsonDocument.Parse(operation.PayloadJson);
+            payload.RootElement.GetProperty("Id").GetGuid().Should().Be(bird.Id);
+            payload.RootElement.GetProperty("Name").GetString().Should().Be(bird.Name.ToString());
+        }
+
+        [Fact]
+        public async Task Update_Should_Coalesce_To_A_Single_Pending_Upsert_Operation()
+        {
+            var repo = new BirdRepository(_db.CreateFactory());
+            var species = Enum.GetValues<BirdsName>();
+            var bird = Bird.Create(species[0], "before", DateOnly.FromDateTime(DateTime.Now.AddDays(-5)));
+            await repo.AddAsync(bird);
+
+            bird.Update(species[1], "after", bird.Arrival, bird.Departure, bird.IsAlive);
+            await repo.UpdateAsync(bird);
+
+            await using var context = _db.CreateContext();
+            var operations = await context.SyncOperations.ToListAsync();
+
+            operations.Should().HaveCount(1);
+            operations[0].OperationType.Should().Be(SyncOperationType.Upsert);
+
+            using var payload = JsonDocument.Parse(operations[0].PayloadJson);
+            payload.RootElement.GetProperty("Description").GetString().Should().Be("after");
+            payload.RootElement.GetProperty("Name").GetString().Should().Be(species[1].ToString());
+        }
+
+        [Fact]
+        public async Task Remove_Should_Replace_Pending_Upsert_With_Delete_Operation()
+        {
+            var repo = new BirdRepository(_db.CreateFactory());
+            var species = Enum.GetValues<BirdsName>()[0];
+            var bird = Bird.Create(species, "delete me", DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
+            await repo.AddAsync(bird);
+
+            await repo.RemoveAsync(bird);
+
+            await using var context = _db.CreateContext();
+            var operations = await context.SyncOperations.ToListAsync();
+
+            operations.Should().HaveCount(1);
+            operations[0].OperationType.Should().Be(SyncOperationType.Delete);
+
+            using var payload = JsonDocument.Parse(operations[0].PayloadJson);
+            payload.RootElement.GetProperty("Id").GetGuid().Should().Be(bird.Id);
         }
     }
 }
