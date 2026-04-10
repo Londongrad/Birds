@@ -23,7 +23,24 @@ namespace Birds.Application.Commands.ImportBirds
                 return Result<BirdImportResultDTO>.Failure(ErrorMessages.ImportPayloadCannotBeNull);
 
             if (request.Birds.Count == 0)
-                return Result<BirdImportResultDTO>.Success(new BirdImportResultDTO(0, 0, 0, Array.Empty<BirdDTO>()));
+            {
+                if (request.Mode == BirdImportMode.Replace)
+                {
+                    var replaceResult = await repository.ReplaceWithSnapshotAsync(
+                        Array.Empty<Bird>(),
+                        cancellationToken);
+
+                    return Result<BirdImportResultDTO>.Success(
+                        new BirdImportResultDTO(
+                            0,
+                            replaceResult.Added,
+                            replaceResult.Updated,
+                            replaceResult.Removed,
+                            Array.Empty<BirdDTO>()));
+                }
+
+                return Result<BirdImportResultDTO>.Success(new BirdImportResultDTO(0, 0, 0, 0, Array.Empty<BirdDTO>()));
+            }
 
             var duplicateId = request.Birds
                 .GroupBy(static bird => bird.Id)
@@ -52,7 +69,9 @@ namespace Birds.Application.Commands.ImportBirds
                     dto.UpdatedAt));
             }
 
-            var upsertResult = await repository.UpsertAsync(restoredBirds, cancellationToken);
+            var upsertResult = request.Mode == BirdImportMode.Replace
+                ? await repository.ReplaceWithSnapshotAsync(restoredBirds, cancellationToken)
+                : await repository.UpsertAsync(restoredBirds, cancellationToken);
             var snapshot = (await repository.GetAllAsync(cancellationToken)).ToDtos();
 
             return Result<BirdImportResultDTO>.Success(
@@ -60,6 +79,7 @@ namespace Birds.Application.Commands.ImportBirds
                     restoredBirds.Count,
                     upsertResult.Added,
                     upsertResult.Updated,
+                    upsertResult.Removed,
                     snapshot));
         }
     }

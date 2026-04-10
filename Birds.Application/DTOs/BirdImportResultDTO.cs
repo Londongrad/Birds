@@ -4,5 +4,6 @@ namespace Birds.Application.DTOs
         int Imported,
         int Added,
         int Updated,
+        int Removed,
         IReadOnlyList<BirdDTO> Snapshot);
 }

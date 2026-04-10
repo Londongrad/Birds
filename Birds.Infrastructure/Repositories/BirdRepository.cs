@@ -89,5 +89,50 @@ namespace Birds.Infrastructure.Repositories
 
             return new UpsertBirdsResult(toAdd.Count, toUpdate.Count);
         }
+
+        /// <inheritdoc/>
+        public async Task<UpsertBirdsResult> ReplaceWithSnapshotAsync(
+            IReadOnlyCollection<Bird> birds,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(birds);
+
+            await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+            await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
+
+            var ids = birds
+                .Select(static bird => bird.Id)
+                .Distinct()
+                .ToArray();
+
+            var existingIds = ids.Length == 0
+                ? Array.Empty<Guid>()
+                : await context.Birds
+                    .AsNoTracking()
+                    .Where(bird => ids.Contains(bird.Id))
+                    .Select(static bird => bird.Id)
+                    .ToArrayAsync(cancellationToken);
+
+            var existingSet = existingIds.ToHashSet();
+            var toAdd = birds.Where(bird => !existingSet.Contains(bird.Id)).ToList();
+            var toUpdate = birds.Where(bird => existingSet.Contains(bird.Id)).ToList();
+
+            var removed = ids.Length == 0
+                ? await context.Birds.ExecuteDeleteAsync(cancellationToken)
+                : await context.Birds
+                    .Where(bird => !ids.Contains(bird.Id))
+                    .ExecuteDeleteAsync(cancellationToken);
+
+            if (toAdd.Count > 0)
+                await context.Birds.AddRangeAsync(toAdd, cancellationToken);
+
+            if (toUpdate.Count > 0)
+                context.Birds.UpdateRange(toUpdate);
+
+            await context.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
+            return new UpsertBirdsResult(toAdd.Count, toUpdate.Count, removed);
+        }
     }
 }

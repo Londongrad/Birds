@@ -34,6 +34,13 @@ namespace Birds.Application.Interfaces
             IReadOnlyCollection<Bird> birds,
             CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// Replaces the persisted bird snapshot with the provided collection in one atomic operation.
+        /// </summary>
+        Task<Common.Models.UpsertBirdsResult> ReplaceWithSnapshotAsync(
+            IReadOnlyCollection<Bird> birds,
+            CancellationToken cancellationToken = default);
+
         /// <summary>Removes a bird and immediately persists the change to the database.</summary>
         /// <remarks>
         /// This method deletes the specified <see cref="Bird"/> entity from the data source and saves the change.

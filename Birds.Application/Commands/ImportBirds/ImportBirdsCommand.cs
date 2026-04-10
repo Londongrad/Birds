@@ -4,6 +4,8 @@ using MediatR;
 
 namespace Birds.Application.Commands.ImportBirds
 {
-    public sealed record ImportBirdsCommand(IReadOnlyList<BirdDTO> Birds)
+    public sealed record ImportBirdsCommand(
+        IReadOnlyList<BirdDTO> Birds,
+        BirdImportMode Mode = BirdImportMode.Merge)
         : IRequest<Result<BirdImportResultDTO>>;
 }
