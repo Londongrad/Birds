@@ -35,11 +35,7 @@ namespace Birds.UI.Services.Stores.BirdStore
         IMediator mediator,
         ILogger<BirdStoreInitializer> logger,
         INotificationService notificationService,
-
-        // Export services
-        IExportService exportService,
-        IExportPathProvider exportPathProvider,
-
+        IAutoExportCoordinator autoExportCoordinator,
         IUiDispatcher uiDispatcher,
 
         // This parameter is optional and mainly for testing purposes in unit tests
@@ -51,9 +47,8 @@ namespace Birds.UI.Services.Stores.BirdStore
         private readonly IMediator _mediator = mediator;
         private readonly ILogger<BirdStoreInitializer> _logger = logger;
         private readonly INotificationService _notificationService = notificationService;
+        private readonly IAutoExportCoordinator _autoExportCoordinator = autoExportCoordinator;
         private readonly IUiDispatcher _ui = uiDispatcher;
-        private readonly IExportService _export = exportService;
-        private readonly IExportPathProvider _paths = exportPathProvider;
 
         // Define a retry policy: retry if the Result is not successful
         private readonly IAsyncPolicy<Result<IReadOnlyList<BirdDTO>>> _policy =
@@ -123,9 +118,6 @@ namespace Birds.UI.Services.Stores.BirdStore
 
             var loadedBirds = result.Value ?? Array.Empty<BirdDTO>();
 
-            // Start Fire-and-forget export of loaded data in the background
-            FireAndForgetExport(loadedBirds.ToList());
-
             // Populate the bird store on the UI thread and mark as loaded
             await InvokeAsync(() =>
             {
@@ -137,28 +129,9 @@ namespace Birds.UI.Services.Stores.BirdStore
                 _birdStore.CompleteLoading(); // mark as successfully loaded
             }, cancellationToken);
 
+            _autoExportCoordinator.MarkDirty();
+
             _logger.LogInformation(LogMessages.LoadedSuccessfully, _birdStore.Birds.Count);
-        }
-
-        private void FireAndForgetExport(IReadOnlyList<BirdDTO> items)
-        {
-            var path = _paths.GetLatestPath("birds");
-            _ = Task.Run(async () =>
-            {
-                try 
-                { 
-                    await _export.ExportAsync(items, path, CancellationToken.None); 
-                    _logger.LogInformation(LogMessages.AutoExportSucceeded, path);
-
-                    await InvokeAsync(() =>
-                    {
-                        _notificationService.ShowInfoLocalized(
-                            "Info.AutoExportSucceeded",
-                            path);
-                    }, CancellationToken.None);
-                }
-                catch (Exception ex) { _logger.LogError(ex, LogMessages.AutoExportFailed); }
-            });
         }
 
         #endregion [ Methods ]

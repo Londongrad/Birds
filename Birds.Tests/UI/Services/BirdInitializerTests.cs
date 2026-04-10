@@ -3,6 +3,7 @@ using Birds.Application.DTOs;
 using Birds.Application.Queries.GetAllBirds;
 using Birds.Shared.Constants;
 using Birds.UI.Enums;
+using Birds.UI.Services.Export.Interfaces;
 using Birds.UI.Services.Notification;
 using Birds.UI.Services.Stores.BirdStore;
 using FluentAssertions;
@@ -20,6 +21,7 @@ namespace Birds.Tests.UI.Services
             // Arrange
             var store = new BirdStore();
             var mediator = new Mock<IMediator>();
+            var autoExport = new Mock<IAutoExportCoordinator>();
             var collectionChangedCount = 0;
             store.Birds.CollectionChanged += (_, e) =>
             {
@@ -32,7 +34,7 @@ namespace Birds.Tests.UI.Services
                 TestHelpers.Bird(name: "Tit", desc: "d")
             ));
 
-            var sut = TestHelpers.MakeInitializer(store, mediator.Object, out var notify, out _);
+            var sut = TestHelpers.MakeInitializer(store, mediator.Object, out var notify, out _, autoExport: autoExport);
 
             // Act
             await sut.StartAsync(CancellationToken.None);
@@ -42,6 +44,7 @@ namespace Birds.Tests.UI.Services
             store.Birds.Should().HaveCount(2);
             collectionChangedCount.Should().Be(1);
             notify.Verify(n => n.ShowInfoLocalized(It.IsAny<string>(), It.IsAny<object[]>()), Times.AtLeast(2)); // Loading..., LoadedSuccessfully
+            autoExport.Verify(x => x.MarkDirty(), Times.Once);
         }
 
         [Fact]

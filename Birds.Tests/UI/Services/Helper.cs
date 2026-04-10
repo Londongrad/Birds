@@ -64,24 +64,18 @@ public static class TestHelpers
         out Mock<INotificationService> notify,
         out Mock<ILogger<BirdStoreInitializer>> logger,
         int retries = 4,
-        Mock<IExportService>? export = null,
-        Mock<IExportPathProvider>? exportPath = null)
+        Mock<IAutoExportCoordinator>? autoExport = null)
     {
         logger = new Mock<ILogger<BirdStoreInitializer>>();
         notify = new Mock<INotificationService>();
-
-        export ??= new Mock<IExportService>();
-        exportPath ??= new Mock<IExportPathProvider>();
-        exportPath.Setup(p => p.GetLatestPath(It.IsAny<string>(), It.IsAny<string>()))
-                  .Returns(() => Path.Combine(Path.GetTempPath(), $"birds-test-{Guid.NewGuid():N}.json"));
+        autoExport ??= new Mock<IAutoExportCoordinator>();
 
         return new BirdStoreInitializer(
             store,
             mediator,
             logger.Object,
             notify.Object,
-            exportService: export.Object,
-            exportPathProvider: exportPath.Object,
+            autoExportCoordinator: autoExport.Object,
             uiDispatcher: new InlineUiDispatcher(),
             retryPolicy: RetryNoDelay(retries));
     }

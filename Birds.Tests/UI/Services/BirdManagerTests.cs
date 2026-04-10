@@ -7,6 +7,7 @@ using Birds.Application.Queries.GetAllBirds;
 using Birds.Domain.Enums;
 using Birds.Tests.Helpers;
 using Birds.UI.Enums;
+using Birds.UI.Services.Export.Interfaces;
 using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.Services.Stores.BirdStore;
@@ -26,8 +27,16 @@ namespace Birds.Tests.UI.Services
             BirdStoreInitializer init,
             IMediator mediator,
             INotificationService? notificationService = null,
+            IAutoExportCoordinator? autoExportCoordinator = null,
             TimeSpan? pendingDeleteUndoDuration = null) =>
-            new(store, init, mediator, new InlineUiDispatcher(), notificationService ?? Mock.Of<INotificationService>(), pendingDeleteUndoDuration);
+            new(
+                store,
+                init,
+                mediator,
+                new InlineUiDispatcher(),
+                notificationService ?? Mock.Of<INotificationService>(),
+                autoExportCoordinator ?? Mock.Of<IAutoExportCoordinator>(),
+                pendingDeleteUndoDuration);
 
         [Fact]
         public async Task AddAsync_WhenStoreLoaded_SendsCreate_AndAddsToStore()
@@ -35,12 +44,13 @@ namespace Birds.Tests.UI.Services
             // Arrange
             var store = new BirdStore(); store.CompleteLoading();
             var mediator = new Mock<IMediator>();
+            var autoExport = new Mock<IAutoExportCoordinator>();
 
             var created = TestHelpers.Bird(name: "Воробей", desc: "desc");
             mediator.Setup(m => m.Send(It.IsAny<CreateBirdCommand>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(Result<BirdDTO>.Success(created));
 
-            var sut = MakeManager(store, Init(store, mediator.Object), mediator.Object);
+            var sut = MakeManager(store, Init(store, mediator.Object), mediator.Object, autoExportCoordinator: autoExport.Object);
             var dto = new BirdCreateDTO(BirdsName.Воробей, "desc", TestHelpers.Today(), null, true);
 
             // Act
@@ -50,6 +60,7 @@ namespace Birds.Tests.UI.Services
             result.IsSuccess.Should().BeTrue();
             store.Birds.Should().ContainSingle(b => b.Id == created.Id);
             mediator.Verify(m => m.Send(It.IsAny<CreateBirdCommand>(), It.IsAny<CancellationToken>()), Times.Once);
+            autoExport.Verify(x => x.MarkDirty(), Times.Once);
         }
 
         [Fact]
@@ -227,7 +238,7 @@ namespace Birds.Tests.UI.Services
                 Init(store, mediator.Object),
                 mediator.Object,
                 notifications.Object,
-                TimeSpan.FromMilliseconds(60));
+                pendingDeleteUndoDuration: TimeSpan.FromMilliseconds(60));
 
             // Act
             var result = await sut.DeleteAsync(id, CancellationToken.None);
@@ -244,6 +255,7 @@ namespace Birds.Tests.UI.Services
         {
             var store = new BirdStore(); store.CompleteLoading();
             var mediator = new Mock<IMediator>();
+            var autoExport = new Mock<IAutoExportCoordinator>();
 
             var id = Guid.NewGuid();
             store.Birds.Add(new BirdDTO(id, "Воробей", null, TestHelpers.Today(), null, true, null, null));
@@ -255,6 +267,7 @@ namespace Birds.Tests.UI.Services
                 store,
                 Init(store, mediator.Object),
                 mediator.Object,
+                autoExportCoordinator: autoExport.Object,
                 pendingDeleteUndoDuration: TimeSpan.FromMilliseconds(80));
 
             var result = await sut.DeleteAsync(id, CancellationToken.None);
@@ -264,11 +277,13 @@ namespace Birds.Tests.UI.Services
             store.Birds.Should().BeEmpty();
 
             mediator.Verify(m => m.Send(It.IsAny<DeleteBirdCommand>(), It.IsAny<CancellationToken>()), Times.Never);
+            autoExport.Verify(x => x.MarkDirty(), Times.Never);
 
             await Task.Delay(120);
 
             mediator.Verify(m => m.Send(It.IsAny<DeleteBirdCommand>(), It.IsAny<CancellationToken>()), Times.Once);
             sut.HasPendingDeleteUndo.Should().BeFalse();
+            autoExport.Verify(x => x.MarkDirty(), Times.Once);
         }
 
         [Fact]
@@ -287,7 +302,7 @@ namespace Birds.Tests.UI.Services
                 Init(store, mediator.Object),
                 mediator.Object,
                 notifications.Object,
-                TimeSpan.FromMilliseconds(120));
+                pendingDeleteUndoDuration: TimeSpan.FromMilliseconds(120));
 
             await sut.DeleteAsync(id, CancellationToken.None);
             await sut.UndoPendingDeleteAsync(CancellationToken.None);

@@ -1,5 +1,8 @@
 using Birds.Shared.Constants;
+using Birds.UI.Services.Export.Interfaces;
+using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Localization;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using System.Windows;
@@ -65,9 +68,19 @@ namespace Birds.App
             // Gracefully stop and dispose the Host if it was created.
             if (_host is not null)
             {
+                using var shutdownCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
                 try
                 {
-                    await _host.StopAsync();
+                    var birdManager = _host.Services.GetService(typeof(IBirdManager)) as IBirdManager;
+                    var autoExportCoordinator = _host.Services.GetService(typeof(IAutoExportCoordinator)) as IAutoExportCoordinator;
+
+                    if (birdManager is not null)
+                        await birdManager.FlushPendingOperationsAsync(shutdownCts.Token);
+
+                    if (autoExportCoordinator is not null)
+                        await autoExportCoordinator.FlushAsync(shutdownCts.Token);
+
+                    await _host.StopAsync(shutdownCts.Token);
                 }
                 catch (Exception ex)
                 {

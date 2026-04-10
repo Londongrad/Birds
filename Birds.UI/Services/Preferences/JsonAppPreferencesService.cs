@@ -32,6 +32,9 @@ namespace Birds.UI.Services.Preferences
         private string selectedImportMode = AppPreferencesState.DefaultImportMode;
 
         [ObservableProperty]
+        private string customExportPath = string.Empty;
+
+        [ObservableProperty]
         private bool showNotificationBadge = true;
 
         [ObservableProperty]
@@ -46,6 +49,7 @@ namespace Birds.UI.Services.Preferences
             selectedTheme = ThemeKeys.Normalize(state.SelectedTheme);
             selectedDateFormat = DateDisplayFormats.Normalize(state.SelectedDateFormat);
             selectedImportMode = BirdImportModes.Normalize(state.SelectedImportMode);
+            customExportPath = state.CustomExportPath?.Trim() ?? string.Empty;
             showNotificationBadge = state.ShowNotificationBadge;
             reduceMotion = state.ReduceMotion;
         }
@@ -56,6 +60,7 @@ namespace Birds.UI.Services.Preferences
             SelectedTheme = AppPreferencesState.DefaultTheme;
             SelectedDateFormat = AppPreferencesState.DefaultDateFormat;
             SelectedImportMode = AppPreferencesState.DefaultImportMode;
+            CustomExportPath = string.Empty;
             ShowNotificationBadge = true;
             ReduceMotion = false;
         }
@@ -77,6 +82,12 @@ namespace Birds.UI.Services.Preferences
         partial void OnSelectedImportModeChanged(string value)
         {
             selectedImportMode = BirdImportModes.Normalize(value);
+            SaveState();
+        }
+
+        partial void OnCustomExportPathChanged(string value)
+        {
+            customExportPath = value?.Trim() ?? string.Empty;
             SaveState();
         }
 
@@ -118,6 +129,7 @@ namespace Birds.UI.Services.Preferences
                         SelectedTheme = ThemeKeys.Normalize(SelectedTheme),
                         SelectedDateFormat = DateDisplayFormats.Normalize(SelectedDateFormat),
                         SelectedImportMode = BirdImportModes.Normalize(SelectedImportMode),
+                        CustomExportPath = CustomExportPath?.Trim() ?? string.Empty,
                         ShowNotificationBadge = ShowNotificationBadge,
                         ReduceMotion = ReduceMotion
                     },

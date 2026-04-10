@@ -53,6 +53,7 @@ namespace Birds.UI
 
             // Export Services
             services.AddSingleton<IExportService, JsonExportService>();
+            services.AddSingleton<IAutoExportCoordinator, AutoExportCoordinator>();
         }
     }
 }

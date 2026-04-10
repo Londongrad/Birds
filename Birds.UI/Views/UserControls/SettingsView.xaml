@@ -50,6 +50,7 @@
             x:Key="DangerSectionCardStyle"
             BasedOn="{StaticResource SectionCardStyle}"
             TargetType="Border">
+            <Setter Property="Padding" Value="0,22,0,22" />
             <Setter Property="BorderBrush" Value="{StaticResource DangerButtonBorderBrush}" />
         </Style>
 
@@ -93,11 +94,18 @@
 
         <Style x:Key="SettingsToggleRowStyle" TargetType="Border">
             <Setter Property="Margin" Value="0,20,0,0" />
-            <Setter Property="Padding" Value="16,14" />
+            <Setter Property="Padding" Value="10,14" />
             <Setter Property="Background" Value="{StaticResource InsetBackgroundBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="14" />
+        </Style>
+
+        <Style
+            x:Key="DangerRowStyle"
+            BasedOn="{StaticResource SettingsToggleRowStyle}"
+            TargetType="Border">
+            <Setter Property="Padding" Value="10,14" />
         </Style>
 
         <Style x:Key="SettingsComboBoxItemStyle" TargetType="ComboBoxItem">
@@ -345,6 +353,7 @@
             x:Key="DangerActionButtonStyle"
             BasedOn="{StaticResource DataActionButtonStyle}"
             TargetType="Button">
+            <Setter Property="Margin" Value="0" />
             <Setter Property="Foreground" Value="{StaticResource DangerButtonForegroundBrush}" />
             <Setter Property="Background" Value="{StaticResource DangerButtonBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource DangerButtonBorderBrush}" />
@@ -386,6 +395,26 @@
             <Setter Property="BorderBrush" Value="{StaticResource DangerButtonBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="12" />
+        </Style>
+
+        <Style
+            x:Key="ConfirmSecondaryButtonStyle"
+            BasedOn="{StaticResource DataActionButtonStyle}"
+            TargetType="Button">
+            <Setter Property="MinWidth" Value="104" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Padding" Value="16,0" />
+        </Style>
+
+        <Style
+            x:Key="ConfirmDangerButtonStyle"
+            BasedOn="{StaticResource DangerActionButtonStyle}"
+            TargetType="Button">
+            <Setter Property="MinWidth" Value="136" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Padding" Value="16,0" />
         </Style>
 
         <Style
@@ -599,19 +628,20 @@
                                 </Grid>
                             </Grid>
 
-                            <Border Style="{StaticResource SettingsToggleRowStyle}">
+                            <Border
+                                HorizontalAlignment="Stretch"
+                                Style="{StaticResource DangerRowStyle}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <CheckBox
-                                        Margin="0,2,14,0"
-                                        IsChecked="{Binding ReduceMotion, Mode=TwoWay}"
-                                        Style="{StaticResource ToggleSwitchStyle}"
-                                        VerticalAlignment="Top" />
-                                    <StackPanel Grid.Column="1">
+                                    <StackPanel
+                                        Grid.Column="0"
+                                        HorizontalAlignment="Left"
+                                        Margin="0,0,12,0"
+                                        VerticalAlignment="Center">
                                         <TextBlock
                                             Style="{StaticResource FieldLabelStyle}"
                                             Margin="0,0,0,4"
@@ -622,6 +652,14 @@
                                             Text="{Binding MotionHint}"
                                             TextWrapping="Wrap" />
                                     </StackPanel>
+
+                                    <CheckBox
+                                        Grid.Column="1"
+                                        Margin="14,0,0,0"
+                                        HorizontalAlignment="Right"
+                                        IsChecked="{Binding ReduceMotion, Mode=TwoWay}"
+                                        Style="{StaticResource ToggleSwitchStyle}"
+                                        VerticalAlignment="Center" />
                                 </Grid>
                             </Border>
                         </StackPanel>
@@ -630,28 +668,28 @@
                     <Border
                         Margin="0,18,0,0"
                         Style="{StaticResource SectionCardStyle}">
-                        <StackPanel>
-                            <TextBlock
+                        <StackPanel >
+                            <TextBlock 
                                 Style="{StaticResource SectionTitleStyle}"
                                 Text="{loc:Loc Key=Settings.Notifications.Title}" />
-                            <TextBlock
-                                Style="{StaticResource SectionSubtitleStyle}"
-                                Text="{loc:Loc Key=Settings.Notifications.Description}" />
+                            <TextBlock 
+                                       Style="{StaticResource SectionSubtitleStyle}"
+                                       Text="{loc:Loc Key=Settings.Notifications.Description}" />
 
-                            <Border Style="{StaticResource SettingsToggleRowStyle}">
+                            <Border
+                                HorizontalAlignment="Stretch"
+                                Style="{StaticResource DangerRowStyle}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <CheckBox
-                                        Margin="0,2,14,0"
-                                        IsChecked="{Binding ShowNotificationBadge, Mode=TwoWay}"
-                                        Style="{StaticResource ToggleSwitchStyle}"
-                                        VerticalAlignment="Top" />
-
-                                    <StackPanel Grid.Column="1">
+                                    <StackPanel
+                                        Grid.Column="0"
+                                        HorizontalAlignment="Left"
+                                        Margin="0,0,12,0"
+                                        VerticalAlignment="Center">
                                         <TextBlock
                                             Style="{StaticResource FieldLabelStyle}"
                                             Margin="0,0,0,4"
@@ -662,6 +700,14 @@
                                             Text="{Binding NotificationsHint}"
                                             TextWrapping="Wrap" />
                                     </StackPanel>
+
+                                    <CheckBox
+                                        Grid.Column="1"
+                                        Margin="14,0,0,0"
+                                        HorizontalAlignment="Right"
+                                        IsChecked="{Binding ShowNotificationBadge, Mode=TwoWay}"
+                                        Style="{StaticResource ToggleSwitchStyle}"
+                                        VerticalAlignment="Center" />
                                 </Grid>
                             </Border>
                         </StackPanel>
@@ -680,6 +726,39 @@
 
                             <Border
                                 Margin="0,22,0,0"
+                                Style="{StaticResource DangerRowStyle}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center">
+                                        <TextBlock
+                                            Style="{StaticResource FieldLabelStyle}"
+                                            Margin="0,0,0,4"
+                                            Text="{loc:Loc Key=Settings.ExportPathLabel}" />
+                                        <TextBlock
+                                            FontSize="12"
+                                            Foreground="{StaticResource SecondaryTextBrush}"
+                                            Text="{Binding ExportPathHint}"
+                                            TextWrapping="Wrap" />
+                                    </StackPanel>
+
+                                    <Button
+                                        Grid.Column="1"
+                                        Command="{Binding ChooseExportPathCommand}"
+                                        Style="{StaticResource DataActionButtonStyle}"
+                                        VerticalAlignment="Center">
+                                        <TextBlock Text="{loc:Loc Key=Settings.ExportPathButton}" />
+                                    </Button>
+                                </Grid>
+                            </Border>
+
+                            <Border
+                                HorizontalAlignment="Stretch"
                                 Style="{StaticResource SettingsToggleRowStyle}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -697,7 +776,7 @@
                                         <TextBlock
                                             FontSize="12"
                                             Foreground="{StaticResource SecondaryTextBrush}"
-                                            Text="{Binding ExportPathHint}"
+                                            Text="{loc:Loc Key=Settings.Data.ExportActionHint}"
                                             TextWrapping="Wrap" />
                                     </StackPanel>
 
@@ -711,7 +790,9 @@
                                 </Grid>
                             </Border>
 
-                            <Border Style="{StaticResource SettingsToggleRowStyle}">
+                            <Border
+                                HorizontalAlignment="Stretch"
+                                Style="{StaticResource SettingsToggleRowStyle}">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -778,7 +859,8 @@
 
                     <Border
                         Margin="0,18,0,0"
-                        Style="{StaticResource DangerSectionCardStyle}">
+                        Style="{StaticResource SectionCardStyle}"
+                        BorderBrush="{StaticResource DangerButtonBorderBrush}">
                         <StackPanel>
                             <TextBlock
                                 Style="{StaticResource DangerSectionTitleStyle}"
@@ -788,10 +870,16 @@
                                 Text="{loc:Loc Key=Settings.Danger.Description}" />
 
                             <Border
+                                HorizontalAlignment="Stretch"
                                 Margin="0,22,0,0"
-                                Style="{StaticResource SettingsToggleRowStyle}">
-                                <StackPanel>
-                                    <Grid>
+                                Style="{StaticResource DangerRowStyle}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <Grid Grid.Row="0" HorizontalAlignment="Stretch">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
@@ -799,6 +887,7 @@
 
                                         <StackPanel
                                             HorizontalAlignment="Left"
+                                            Margin="0,0,12,0"
                                             VerticalAlignment="Center">
                                             <TextBlock
                                                 Style="{StaticResource FieldLabelStyle}"
@@ -815,53 +904,63 @@
                                             Grid.Column="1"
                                             Command="{Binding BeginClearBirdRecordsCommand}"
                                             Style="{StaticResource DangerActionButtonStyle}"
+                                            HorizontalAlignment="Right"
                                             VerticalAlignment="Center">
                                             <TextBlock Text="{loc:Loc Key=Settings.Danger.ClearButton}" />
                                         </Button>
                                     </Grid>
 
                                     <Border
+                                        Grid.Row="1"
                                         Style="{StaticResource DangerConfirmPanelStyle}"
                                         Visibility="{Binding IsConfirmingClearBirdRecords, Converter={StaticResource BooleanToVisibilityConverter}}">
                                         <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
 
                                             <TextBlock
-                                                VerticalAlignment="Center"
+                                                Grid.Row="0"
                                                 FontSize="12"
                                                 Foreground="{StaticResource DangerButtonForegroundBrush}"
                                                 Text="{loc:Loc Key=Settings.Danger.ConfirmClearHint}"
                                                 TextWrapping="Wrap" />
 
-                                            <Button
-                                                Grid.Column="1"
-                                                Margin="16,0,0,0"
-                                                Command="{Binding CancelDangerActionCommand}"
-                                                Style="{StaticResource DataActionButtonStyle}">
-                                                <TextBlock Text="{loc:Loc Key=Settings.Danger.Cancel}" />
-                                            </Button>
+                                            <StackPanel
+                                                Grid.Row="1"
+                                                Margin="0,12,0,0"
+                                                HorizontalAlignment="Right"
+                                                Orientation="Horizontal">
+                                                <Button
+                                                    Command="{Binding CancelDangerActionCommand}"
+                                                    Style="{StaticResource ConfirmSecondaryButtonStyle}">
+                                                    <TextBlock Text="{loc:Loc Key=Settings.Danger.Cancel}" />
+                                                </Button>
 
-                                            <Button
-                                                Grid.Column="2"
-                                                Margin="12,0,0,0"
-                                                Command="{Binding ConfirmClearBirdRecordsCommand}"
-                                                Style="{StaticResource DangerActionButtonStyle}">
-                                                <TextBlock Text="{loc:Loc Key=Settings.Danger.ClearConfirm}" />
-                                            </Button>
+                                                <Button
+                                                    Margin="10,0,0,0"
+                                                    Command="{Binding ConfirmClearBirdRecordsCommand}"
+                                                    Style="{StaticResource ConfirmDangerButtonStyle}">
+                                                    <TextBlock Text="{loc:Loc Key=Settings.Danger.ClearConfirm}" />
+                                                </Button>
+                                            </StackPanel>
                                         </Grid>
                                     </Border>
-                                </StackPanel>
+                                </Grid>
                             </Border>
 
                             <Border
+                                HorizontalAlignment="Stretch"
                                 Margin="0,16,0,0"
-                                Style="{StaticResource SettingsToggleRowStyle}">
-                                <StackPanel>
-                                    <Grid>
+                                Style="{StaticResource DangerRowStyle}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <Grid Grid.Row="0" HorizontalAlignment="Stretch">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
@@ -869,6 +968,7 @@
 
                                         <StackPanel
                                             HorizontalAlignment="Left"
+                                            Margin="0,0,12,0"
                                             VerticalAlignment="Center">
                                             <TextBlock
                                                 Style="{StaticResource FieldLabelStyle}"
@@ -902,46 +1002,50 @@
                                             Command="{Binding BeginResetLocalDatabaseCommand}"
                                             IsEnabled="{Binding SupportsLocalDatabaseReset}"
                                             Style="{StaticResource DangerActionButtonStyle}"
+                                            HorizontalAlignment="Right"
                                             VerticalAlignment="Center">
                                             <TextBlock Text="{loc:Loc Key=Settings.Danger.ResetButton}" />
                                         </Button>
                                     </Grid>
 
                                     <Border
+                                        Grid.Row="1"
                                         Style="{StaticResource DangerConfirmPanelStyle}"
                                         Visibility="{Binding IsConfirmingResetLocalDatabase, Converter={StaticResource BooleanToVisibilityConverter}}">
                                         <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
 
                                             <TextBlock
-                                                VerticalAlignment="Center"
+                                                Grid.Row="0"
                                                 FontSize="12"
                                                 Foreground="{StaticResource DangerButtonForegroundBrush}"
                                                 Text="{loc:Loc Key=Settings.Danger.ConfirmResetHint}"
                                                 TextWrapping="Wrap" />
 
-                                            <Button
-                                                Grid.Column="1"
-                                                Margin="16,0,0,0"
-                                                Command="{Binding CancelDangerActionCommand}"
-                                                Style="{StaticResource DataActionButtonStyle}">
-                                                <TextBlock Text="{loc:Loc Key=Settings.Danger.Cancel}" />
-                                            </Button>
+                                            <StackPanel
+                                                Grid.Row="1"
+                                                Margin="0,12,0,0"
+                                                HorizontalAlignment="Right"
+                                                Orientation="Horizontal">
+                                                <Button
+                                                    Command="{Binding CancelDangerActionCommand}"
+                                                    Style="{StaticResource ConfirmSecondaryButtonStyle}">
+                                                    <TextBlock Text="{loc:Loc Key=Settings.Danger.Cancel}" />
+                                                </Button>
 
-                                            <Button
-                                                Grid.Column="2"
-                                                Margin="12,0,0,0"
-                                                Command="{Binding ConfirmResetLocalDatabaseCommand}"
-                                                Style="{StaticResource DangerActionButtonStyle}">
-                                                <TextBlock Text="{loc:Loc Key=Settings.Danger.ResetConfirm}" />
-                                            </Button>
+                                                <Button
+                                                    Margin="10,0,0,0"
+                                                    Command="{Binding ConfirmResetLocalDatabaseCommand}"
+                                                    Style="{StaticResource ConfirmDangerButtonStyle}">
+                                                    <TextBlock Text="{loc:Loc Key=Settings.Danger.ResetConfirm}" />
+                                                </Button>
+                                            </StackPanel>
                                         </Grid>
                                     </Border>
-                                </StackPanel>
+                                </Grid>
                             </Border>
                         </StackPanel>
                     </Border>

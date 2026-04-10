@@ -23,6 +23,7 @@ namespace Birds.Tests.UI.Services
                 sut.SelectedTheme.Should().Be(AppPreferencesState.DefaultTheme);
                 sut.SelectedDateFormat.Should().Be(AppPreferencesState.DefaultDateFormat);
                 sut.SelectedImportMode.Should().Be(AppPreferencesState.DefaultImportMode);
+                sut.CustomExportPath.Should().BeEmpty();
                 sut.ShowNotificationBadge.Should().BeTrue();
                 sut.ReduceMotion.Should().BeFalse();
             }
@@ -46,6 +47,7 @@ namespace Birds.Tests.UI.Services
                     SelectedTheme = ThemeKeys.Steel,
                     SelectedDateFormat = DateDisplayFormats.YearMonthDay,
                     SelectedImportMode = BirdImportModes.Replace,
+                    CustomExportPath = "C:\\exports\\birds-custom.json",
                     ShowNotificationBadge = false,
                     ReduceMotion = true
                 };
@@ -56,6 +58,7 @@ namespace Birds.Tests.UI.Services
                 reloaded.SelectedTheme.Should().Be(ThemeKeys.Steel);
                 reloaded.SelectedDateFormat.Should().Be(DateDisplayFormats.YearMonthDay);
                 reloaded.SelectedImportMode.Should().Be(BirdImportModes.Replace);
+                reloaded.CustomExportPath.Should().Be("C:\\exports\\birds-custom.json");
                 reloaded.ShowNotificationBadge.Should().BeFalse();
                 reloaded.ReduceMotion.Should().BeTrue();
             }
@@ -81,6 +84,7 @@ namespace Birds.Tests.UI.Services
                       "selectedTheme": "Сталь",
                       "selectedDateFormat": "ymd",
                       "selectedImportMode": "replace",
+                      "customExportPath": "C:\\exports\\birds-custom.json",
                       "showNotificationBadge": true,
                       "reduceMotion": false
                     }
@@ -91,6 +95,7 @@ namespace Birds.Tests.UI.Services
                 sut.SelectedTheme.Should().Be(ThemeKeys.Steel);
                 sut.SelectedDateFormat.Should().Be(DateDisplayFormats.YearMonthDay);
                 sut.SelectedImportMode.Should().Be(BirdImportModes.Replace);
+                sut.CustomExportPath.Should().Be("C:\\exports\\birds-custom.json");
             }
             finally
             {

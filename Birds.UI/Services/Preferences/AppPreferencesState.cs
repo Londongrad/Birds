@@ -18,6 +18,8 @@ namespace Birds.UI.Services.Preferences
 
         public string SelectedImportMode { get; init; } = DefaultImportMode;
 
+        public string CustomExportPath { get; init; } = string.Empty;
+
         public bool ShowNotificationBadge { get; init; } = true;
 
         public bool ReduceMotion { get; init; }

@@ -12,6 +12,8 @@ namespace Birds.UI.Services.Preferences.Interfaces
 
         string SelectedImportMode { get; set; }
 
+        string CustomExportPath { get; set; }
+
         bool ShowNotificationBadge { get; set; }
 
         bool ReduceMotion { get; set; }

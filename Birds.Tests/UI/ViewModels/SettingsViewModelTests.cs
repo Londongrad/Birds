@@ -34,6 +34,7 @@ namespace Birds.Tests.UI.ViewModels
         private readonly Mock<IBirdManager> _birdManager = new();
         private readonly Mock<IExportService> _exportService = new();
         private readonly Mock<IExportPathProvider> _exportPathProvider = new();
+        private readonly Mock<IAutoExportCoordinator> _autoExportCoordinator = new();
         private readonly Mock<IImportService> _importService = new();
         private readonly Mock<IDataFileDialogService> _dataFileDialogService = new();
         private readonly Mock<INotificationService> _notificationService = new();
@@ -52,8 +53,12 @@ namespace Birds.Tests.UI.ViewModels
             _localization.SetupGet(x => x.CurrentDateFormat).Returns(DateDisplayFormats.DayMonthYear);
             _localization.Setup(x => x.GetString(It.IsAny<string>()))
                 .Returns((string key) => AppText.Get(key, _culture));
+            _localization.Setup(x => x.GetString(It.IsAny<string>(), It.IsAny<object[]>()))
+                .Returns((string key, object[] args) => AppText.Format(_culture, key, args));
 
             _birdManager.SetupGet(x => x.Store).Returns(_store);
+            _birdManager.Setup(x => x.FlushPendingOperationsAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
             _exportPathProvider.Setup(x => x.GetLatestPath(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns("C:\\temp\\birds.json");
             _databaseMaintenanceService.SetupGet(x => x.CanResetLocalDatabase).Returns(true);
@@ -125,14 +130,13 @@ namespace Birds.Tests.UI.ViewModels
             {
                 new BirdDTO(Guid.NewGuid(), "Sparrow", "desc", new DateOnly(2026, 4, 1), null, true, null, null)
             });
-
-            _dataFileDialogService.Setup(x => x.PickExportPath(It.IsAny<string>()))
-                .Returns("C:\\temp\\birds-export.json");
+            _preferences.CustomExportPath = "C:\\temp\\birds-export.json";
 
             var sut = CreateSut();
 
             await sut.ExportDataCommand.ExecuteAsync(null);
 
+            _birdManager.Verify(x => x.FlushPendingOperationsAsync(It.IsAny<CancellationToken>()), Times.Once);
             _exportService.Verify(
                 x => x.ExportAsync(
                     It.Is<IEnumerable<BirdDTO>>(items => items.Single().Name == "Sparrow"),
@@ -143,6 +147,20 @@ namespace Birds.Tests.UI.ViewModels
             _notificationService.Verify(
                 x => x.ShowSuccessLocalized("Info.ExportSucceeded", It.Is<object[]>(args => args.Single().Equals("C:\\temp\\birds-export.json"))),
                 Times.Once);
+        }
+
+        [Fact]
+        public void ChooseExportPathCommand_Should_Persist_Selected_Path()
+        {
+            _dataFileDialogService.Setup(x => x.PickExportPath(It.IsAny<string>()))
+                .Returns("C:\\exports\\selected-birds.json");
+
+            var sut = CreateSut();
+
+            sut.ChooseExportPathCommand.Execute(null);
+
+            _preferences.CustomExportPath.Should().Be("C:\\exports\\selected-birds.json");
+            sut.ExportPathHint.Should().Contain("selected-birds.json");
         }
 
         [Fact]
@@ -162,7 +180,9 @@ namespace Birds.Tests.UI.ViewModels
 
             await sut.ImportDataCommand.ExecuteAsync(null);
 
+            _birdManager.Verify(x => x.FlushPendingOperationsAsync(It.IsAny<CancellationToken>()), Times.Once);
             _store.Birds.Should().ContainSingle(x => x.Id == importedBird.Id);
+            _autoExportCoordinator.Verify(x => x.MarkDirty(), Times.Once);
             _notificationService.Verify(
                 x => x.ShowSuccessLocalized(
                     "Info.ImportMergedSucceeded",
@@ -222,6 +242,8 @@ namespace Birds.Tests.UI.ViewModels
 
             sut.IsConfirmingClearBirdRecords.Should().BeFalse();
             _store.Birds.Should().BeEmpty();
+            _birdManager.Verify(x => x.FlushPendingOperationsAsync(It.IsAny<CancellationToken>()), Times.Once);
+            _autoExportCoordinator.Verify(x => x.MarkDirty(), Times.Once);
             _notificationService.Verify(
                 x => x.ShowSuccessLocalized("Info.BirdRecordsCleared", It.Is<object[]>(args => args.Length == 1 && (int)args[0] == 1)),
                 Times.Once);
@@ -242,7 +264,9 @@ namespace Birds.Tests.UI.ViewModels
 
             sut.IsConfirmingResetLocalDatabase.Should().BeFalse();
             _store.Birds.Should().BeEmpty();
+            _birdManager.Verify(x => x.FlushPendingOperationsAsync(It.IsAny<CancellationToken>()), Times.Once);
             _databaseMaintenanceService.Verify(x => x.ResetLocalDatabaseAsync(It.IsAny<CancellationToken>()), Times.Once);
+            _autoExportCoordinator.Verify(x => x.MarkDirty(), Times.Once);
             _notificationService.Verify(x => x.ShowSuccessLocalized("Info.LocalDatabaseReset", It.IsAny<object[]>()), Times.Once);
         }
 
@@ -254,6 +278,7 @@ namespace Birds.Tests.UI.ViewModels
                 _birdManager.Object,
                 _exportService.Object,
                 _exportPathProvider.Object,
+                _autoExportCoordinator.Object,
                 _importService.Object,
                 _dataFileDialogService.Object,
                 _notificationService.Object,
@@ -266,6 +291,7 @@ namespace Birds.Tests.UI.ViewModels
             private string _selectedTheme = ThemeKeys.Graphite;
             private string _selectedDateFormat = DateDisplayFormats.DayMonthYear;
             private string _selectedImportMode = BirdImportModes.Merge;
+            private string _customExportPath = string.Empty;
             private bool _showNotificationBadge = true;
             private bool _reduceMotion;
 
@@ -319,6 +345,18 @@ namespace Birds.Tests.UI.ViewModels
                 }
             }
 
+            public string CustomExportPath
+            {
+                get => _customExportPath;
+                set
+                {
+                    if (_customExportPath == value)
+                        return;
+                    _customExportPath = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CustomExportPath)));
+                }
+            }
+
             public string SelectedImportMode
             {
                 get => _selectedImportMode;
@@ -349,6 +387,7 @@ namespace Birds.Tests.UI.ViewModels
                 SelectedTheme = AppPreferencesState.DefaultTheme;
                 SelectedDateFormat = AppPreferencesState.DefaultDateFormat;
                 SelectedImportMode = AppPreferencesState.DefaultImportMode;
+                CustomExportPath = string.Empty;
                 ShowNotificationBadge = true;
                 ReduceMotion = false;
             }

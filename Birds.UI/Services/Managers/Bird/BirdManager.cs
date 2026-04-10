@@ -6,6 +6,7 @@ using Birds.Application.DTOs;
 using Birds.Application.DTOs.Helpers;
 using Birds.UI.Enums;
 using Birds.UI.Extensions;
+using Birds.UI.Services.Export.Interfaces;
 using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.Services.Stores.BirdStore;
 using Birds.UI.Threading.Abstractions;
@@ -22,6 +23,7 @@ namespace Birds.UI.Services.Managers.Bird
                        IMediator mediator,
                        IUiDispatcher uiDispatcher,
                        INotificationService notificationService,
+                       IAutoExportCoordinator autoExportCoordinator,
                        TimeSpan? pendingDeleteUndoDuration = null)
         : ObservableObject, IBirdManager
     {
@@ -32,6 +34,7 @@ namespace Birds.UI.Services.Managers.Bird
         private readonly IMediator _mediator = mediator;
         private readonly IUiDispatcher _uiDispatcher = uiDispatcher;
         private readonly INotificationService _notificationService = notificationService;
+        private readonly IAutoExportCoordinator _autoExportCoordinator = autoExportCoordinator;
         private readonly TimeSpan _pendingDeleteUndoDuration = pendingDeleteUndoDuration ?? TimeSpan.FromSeconds(5);
         private PendingDeleteContext? _pendingDelete;
 
@@ -83,7 +86,10 @@ namespace Birds.UI.Services.Managers.Bird
                     ), cancellationToken);
 
             if (result.IsSuccess)
+            {
                 await AddBirdToStore(result.Value);
+                _autoExportCoordinator.MarkDirty();
+            }
 
             return result;
         }
@@ -102,7 +108,10 @@ namespace Birds.UI.Services.Managers.Bird
             Result<BirdDTO> result = await _mediator.Send(command, cancellationToken);
 
             if (result.IsSuccess)
+            {
                 await UpdateBirdInStore(result.Value);
+                _autoExportCoordinator.MarkDirty();
+            }
 
             return result;
         }
@@ -133,7 +142,10 @@ namespace Birds.UI.Services.Managers.Bird
             {
                 var immediateResult = await _mediator.Send(new DeleteBirdCommand(id), cancellationToken);
                 if (immediateResult.IsSuccess)
+                {
+                    _autoExportCoordinator.MarkDirty();
                     _notificationService.ShowSuccessLocalized("Info.DeletedBird");
+                }
 
                 return immediateResult;
             }
@@ -158,6 +170,12 @@ namespace Birds.UI.Services.Managers.Bird
 
             await RestoreBirdToStore(context, cancellationToken);
             _notificationService.ShowInfoLocalized("Info.DeleteRestored");
+        }
+
+        /// <inheritdoc/>
+        public async Task FlushPendingOperationsAsync(CancellationToken cancellationToken)
+        {
+            await CommitPendingDeleteIfAnyAsync(cancellationToken);
         }
 
         #endregion [ Interface methods ]
@@ -257,6 +275,7 @@ namespace Birds.UI.Services.Managers.Bird
 
             if (result.IsSuccess)
             {
+                _autoExportCoordinator.MarkDirty();
                 _notificationService.ShowSuccessLocalized("Info.DeletedBird");
                 return;
             }

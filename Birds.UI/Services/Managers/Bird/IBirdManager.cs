@@ -54,6 +54,11 @@ namespace Birds.UI.Services.Managers.Bird
         Task UndoPendingDeleteAsync(CancellationToken cancellationToken);
 
         /// <summary>
+        /// Forces any deferred operations, such as pending deletes, to be committed immediately.
+        /// </summary>
+        Task FlushPendingOperationsAsync(CancellationToken cancellationToken);
+
+        /// <summary>
         /// Gets the current collection of birds (shared store reference).
         /// </summary>
         IBirdStore Store { get; }

@@ -19,6 +19,7 @@ using MediatR;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 
 namespace Birds.UI.ViewModels
 {
@@ -30,6 +31,7 @@ namespace Birds.UI.ViewModels
         private readonly IBirdManager _birdManager;
         private readonly IExportService _exportService;
         private readonly IExportPathProvider _exportPathProvider;
+        private readonly IAutoExportCoordinator _autoExportCoordinator;
         private readonly IImportService _importService;
         private readonly IDataFileDialogService _dataFileDialogService;
         private readonly INotificationService _notificationService;
@@ -55,6 +57,7 @@ namespace Birds.UI.ViewModels
                                  IBirdManager birdManager,
                                  IExportService exportService,
                                  IExportPathProvider exportPathProvider,
+                                 IAutoExportCoordinator autoExportCoordinator,
                                  IImportService importService,
                                  IDataFileDialogService dataFileDialogService,
                                  INotificationService notificationService,
@@ -67,6 +70,7 @@ namespace Birds.UI.ViewModels
             _birdManager = birdManager;
             _exportService = exportService;
             _exportPathProvider = exportPathProvider;
+            _autoExportCoordinator = autoExportCoordinator;
             _importService = importService;
             _dataFileDialogService = dataFileDialogService;
             _notificationService = notificationService;
@@ -182,7 +186,7 @@ namespace Birds.UI.ViewModels
                 : _localization.GetString("Settings.MotionHint.Disabled");
 
         public string ExportPathHint =>
-            _localization.GetString("Settings.Data.ExportHint", _exportPathProvider.GetLatestPath("birds"));
+            _localization.GetString("Settings.Data.ExportHint", ResolveExportPath());
 
         public string ImportHint =>
             SelectedImportMode == BirdImportModes.Replace
@@ -206,17 +210,26 @@ namespace Birds.UI.ViewModels
         }
 
         [RelayCommand(CanExecute = nameof(CanTransferData))]
+        private void ChooseExportPath()
+        {
+            var selectedPath = _dataFileDialogService.PickExportPath(ResolveExportPath());
+
+            if (string.IsNullOrWhiteSpace(selectedPath))
+                return;
+
+            _preferences.CustomExportPath = Path.GetFullPath(selectedPath);
+            OnPropertyChanged(nameof(ExportPathHint));
+        }
+
+        [RelayCommand(CanExecute = nameof(CanTransferData))]
         private async Task ExportDataAsync(CancellationToken cancellationToken)
         {
-            var suggestedPath = _exportPathProvider.GetLatestPath("birds");
-            var targetPath = _dataFileDialogService.PickExportPath(suggestedPath);
-
-            if (string.IsNullOrWhiteSpace(targetPath))
-                return;
+            var targetPath = ResolveExportPath();
 
             IsDataTransferBusy = true;
             try
             {
+                await _birdManager.FlushPendingOperationsAsync(cancellationToken);
                 var snapshot = _birdManager.Store.Birds.ToList();
                 await _exportService.ExportAsync(snapshot, targetPath, cancellationToken);
                 _notificationService.ShowSuccessLocalized("Info.ExportSucceeded", targetPath);
@@ -264,9 +277,11 @@ namespace Birds.UI.ViewModels
         {
             await ExecuteDangerActionAsync(async token =>
             {
+                await _birdManager.FlushPendingOperationsAsync(token);
                 var removed = await _databaseMaintenanceService.ClearBirdRecordsAsync(token);
                 _birdManager.Store.ReplaceBirds(Array.Empty<Birds.Application.DTOs.BirdDTO>());
                 _birdManager.Store.CompleteLoading();
+                _autoExportCoordinator.MarkDirty();
                 IsConfirmingClearBirdRecords = false;
                 _notificationService.ShowSuccessLocalized("Info.BirdRecordsCleared", removed);
             }, "Error.CannotClearBirdRecords", cancellationToken);
@@ -277,9 +292,11 @@ namespace Birds.UI.ViewModels
         {
             await ExecuteDangerActionAsync(async token =>
             {
+                await _birdManager.FlushPendingOperationsAsync(token);
                 await _databaseMaintenanceService.ResetLocalDatabaseAsync(token);
                 _birdManager.Store.ReplaceBirds(Array.Empty<Birds.Application.DTOs.BirdDTO>());
                 _birdManager.Store.CompleteLoading();
+                _autoExportCoordinator.MarkDirty();
                 IsConfirmingResetLocalDatabase = false;
                 _notificationService.ShowSuccessLocalized("Info.LocalDatabaseReset");
             }, "Error.CannotResetLocalDatabase", cancellationToken);
@@ -288,7 +305,7 @@ namespace Birds.UI.ViewModels
         [RelayCommand(CanExecute = nameof(CanTransferData))]
         private async Task ImportDataAsync(CancellationToken cancellationToken)
         {
-            var suggestedPath = _exportPathProvider.GetLatestPath("birds");
+            var suggestedPath = ResolveExportPath();
             var sourcePath = _dataFileDialogService.PickImportPath(suggestedPath);
 
             if (string.IsNullOrWhiteSpace(sourcePath))
@@ -304,6 +321,7 @@ namespace Birds.UI.ViewModels
                     return;
                 }
 
+                await _birdManager.FlushPendingOperationsAsync(cancellationToken);
                 var importMode = BirdImportModes.ToCommandMode(SelectedImportMode);
                 var importResult = await _mediator.Send(
                     new ImportBirdsCommand(importPayload.Value!, importMode),
@@ -316,6 +334,7 @@ namespace Birds.UI.ViewModels
 
                 _birdManager.Store.ReplaceBirds(importResult.Value!.Snapshot);
                 _birdManager.Store.CompleteLoading();
+                _autoExportCoordinator.MarkDirty();
 
                 if (importMode == BirdImportMode.Replace)
                 {
@@ -454,6 +473,7 @@ namespace Birds.UI.ViewModels
                 or nameof(IAppPreferencesService.SelectedTheme)
                 or nameof(IAppPreferencesService.SelectedDateFormat)
                 or nameof(IAppPreferencesService.SelectedImportMode)
+                or nameof(IAppPreferencesService.CustomExportPath)
                 or nameof(IAppPreferencesService.ShowNotificationBadge)
                 or nameof(IAppPreferencesService.ReduceMotion))
             {
@@ -588,5 +608,10 @@ namespace Birds.UI.ViewModels
 
         private bool CanConfirmResetLocalDatabase()
             => SupportsLocalDatabaseReset && IsConfirmingResetLocalDatabase && CanStartDangerAction();
+
+        private string ResolveExportPath()
+            => string.IsNullOrWhiteSpace(_preferences.CustomExportPath)
+                ? _exportPathProvider.GetLatestPath("birds")
+                : _preferences.CustomExportPath;
     }
 }
