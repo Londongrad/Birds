@@ -310,7 +310,10 @@ namespace Birds.UI.ViewModels
         private void OnLanguageChanged(object? sender, EventArgs e)
         {
             UpdateCalculatedFields();
-            ValidateAllProperties();
+            ValidateProperty(SelectedBirdName, nameof(SelectedBirdName));
+            ValidateProperty(Description, nameof(Description));
+            ValidateProperty(Arrival, nameof(Arrival));
+            ValidateProperty(Departure, nameof(Departure));
             SaveCommand.NotifyCanExecuteChanged();
         }
 

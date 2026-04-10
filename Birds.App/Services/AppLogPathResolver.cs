@@ -42,7 +42,20 @@ namespace Birds.App.Services
         }
 
         private static bool IsRepositoryRoot(DirectoryInfo directory)
-            => directory.EnumerateFiles("*.sln").Any()
-               || Directory.Exists(Path.Combine(directory.FullName, ".git"));
+        {
+            try
+            {
+                return directory.EnumerateFiles("*.sln").Any()
+                       || Directory.Exists(Path.Combine(directory.FullName, ".git"));
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
+            catch (IOException)
+            {
+                return false;
+            }
+        }
     }
 }
