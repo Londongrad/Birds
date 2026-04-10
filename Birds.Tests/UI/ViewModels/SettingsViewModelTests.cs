@@ -1,13 +1,22 @@
+using Birds.Application.Commands.ImportBirds;
+using Birds.Application.Common.Models;
+using Birds.Application.DTOs;
 using Birds.Shared.Localization;
+using Birds.UI.Services.Dialogs.Interfaces;
+using Birds.UI.Services.Export.Interfaces;
+using Birds.UI.Services.Import.Interfaces;
 using Birds.UI.Services.Localization;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Managers.Bird;
+using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.Services.Preferences;
 using Birds.UI.Services.Preferences.Interfaces;
+using Birds.UI.Services.Stores.BirdStore;
 using Birds.UI.Services.Theming;
 using Birds.UI.Services.Theming.Interfaces;
 using Birds.UI.ViewModels;
 using FluentAssertions;
+using MediatR;
 using Moq;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -21,6 +30,13 @@ namespace Birds.Tests.UI.ViewModels
         private readonly Mock<IThemeService> _themeService = new();
         private readonly Mock<ILocalizationService> _localization = new();
         private readonly Mock<IBirdManager> _birdManager = new();
+        private readonly Mock<IExportService> _exportService = new();
+        private readonly Mock<IExportPathProvider> _exportPathProvider = new();
+        private readonly Mock<IImportService> _importService = new();
+        private readonly Mock<IDataFileDialogService> _dataFileDialogService = new();
+        private readonly Mock<INotificationService> _notificationService = new();
+        private readonly Mock<IMediator> _mediator = new();
+        private readonly BirdStore _store = new();
         private CultureInfo _culture = CultureInfo.GetCultureInfo(AppLanguages.English);
 
         public SettingsViewModelTests()
@@ -33,6 +49,10 @@ namespace Birds.Tests.UI.ViewModels
             _localization.SetupGet(x => x.CurrentDateFormat).Returns(DateDisplayFormats.DayMonthYear);
             _localization.Setup(x => x.GetString(It.IsAny<string>()))
                 .Returns((string key) => AppText.Get(key, _culture));
+
+            _birdManager.SetupGet(x => x.Store).Returns(_store);
+            _exportPathProvider.Setup(x => x.GetLatestPath(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns("C:\\temp\\birds.json");
         }
 
         [Fact]
@@ -90,8 +110,70 @@ namespace Birds.Tests.UI.ViewModels
             _themeService.Verify(x => x.ApplyTheme(ThemeKeys.Steel), Times.AtLeastOnce);
         }
 
+        [Fact]
+        public async Task ExportDataCommand_Should_ExportCurrentSnapshot_And_ShowSuccess()
+        {
+            _store.ReplaceBirds(new[]
+            {
+                new BirdDTO(Guid.NewGuid(), "Sparrow", "desc", new DateOnly(2026, 4, 1), null, true, null, null)
+            });
+
+            _dataFileDialogService.Setup(x => x.PickExportPath(It.IsAny<string>()))
+                .Returns("C:\\temp\\birds-export.json");
+
+            var sut = CreateSut();
+
+            await sut.ExportDataCommand.ExecuteAsync(null);
+
+            _exportService.Verify(
+                x => x.ExportAsync(
+                    It.Is<IEnumerable<BirdDTO>>(items => items.Single().Name == "Sparrow"),
+                    "C:\\temp\\birds-export.json",
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
+
+            _notificationService.Verify(
+                x => x.ShowSuccessLocalized("Info.ExportSucceeded", It.Is<object[]>(args => args.Single().Equals("C:\\temp\\birds-export.json"))),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task ImportDataCommand_Should_ApplyImportedSnapshot_And_ShowSuccess()
+        {
+            var importedBird = new BirdDTO(Guid.NewGuid(), "Sparrow", null, new DateOnly(2026, 4, 1), null, true, null, null);
+
+            _dataFileDialogService.Setup(x => x.PickImportPath(It.IsAny<string>()))
+                .Returns("C:\\temp\\birds-import.json");
+            _importService.Setup(x => x.ImportAsync("C:\\temp\\birds-import.json", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result<IReadOnlyList<BirdDTO>>.Success(new[] { importedBird }));
+            _mediator.Setup(x => x.Send(It.IsAny<ImportBirdsCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result<BirdImportResultDTO>.Success(
+                    new BirdImportResultDTO(1, 1, 0, new[] { importedBird })));
+
+            var sut = CreateSut();
+
+            await sut.ImportDataCommand.ExecuteAsync(null);
+
+            _store.Birds.Should().ContainSingle(x => x.Id == importedBird.Id);
+            _notificationService.Verify(
+                x => x.ShowSuccessLocalized(
+                    "Info.ImportSucceeded",
+                    It.Is<object[]>(args => args.Length == 3 && (int)args[0] == 1 && (int)args[1] == 1 && (int)args[2] == 0)),
+                Times.Once);
+        }
+
         private SettingsViewModel CreateSut()
-            => new(_preferences, _themeService.Object, _localization.Object, _birdManager.Object);
+            => new(
+                _preferences,
+                _themeService.Object,
+                _localization.Object,
+                _birdManager.Object,
+                _exportService.Object,
+                _exportPathProvider.Object,
+                _importService.Object,
+                _dataFileDialogService.Object,
+                _notificationService.Object,
+                _mediator.Object);
 
         private sealed class TestPreferencesService : IAppPreferencesService
         {
