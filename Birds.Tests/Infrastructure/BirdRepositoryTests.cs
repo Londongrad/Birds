@@ -133,5 +133,39 @@ namespace Birds.Tests.Infrastructure
             list.Should().Contain(x => x.Id == existing.Id && x.Description == "updated");
             list.Should().Contain(x => x.Id == added.Id);
         }
+
+        [Fact]
+        public async Task ReplaceWithSnapshot_Should_Remove_Missing_Birds_And_Upsert_Current_Ones()
+        {
+            var repo = new BirdRepository(_db.CreateFactory());
+            var species = Enum.GetValues<BirdsName>();
+
+            var retained = Bird.Create(species[0], "retain", DateOnly.FromDateTime(DateTime.Now.AddDays(-4)));
+            var removed = Bird.Create(species[1], "remove", DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
+            await repo.AddAsync(retained);
+            await repo.AddAsync(removed);
+
+            var updatedRetained = Bird.Restore(
+                retained.Id,
+                retained.Name,
+                "updated retain",
+                retained.Arrival,
+                retained.Departure,
+                retained.IsAlive,
+                retained.CreatedAt,
+                retained.UpdatedAt);
+            var added = Bird.Create(species[2], "added", DateOnly.FromDateTime(DateTime.Now.AddDays(-1)));
+
+            var result = await repo.ReplaceWithSnapshotAsync(new[] { updatedRetained, added });
+            var list = await repo.GetAllAsync();
+
+            result.Added.Should().Be(1);
+            result.Updated.Should().Be(1);
+            result.Removed.Should().Be(1);
+            list.Should().HaveCount(2);
+            list.Should().Contain(x => x.Id == retained.Id && x.Description == "updated retain");
+            list.Should().Contain(x => x.Id == added.Id);
+            list.Should().NotContain(x => x.Id == removed.Id);
+        }
     }
 }
