@@ -54,6 +54,12 @@ namespace Birds.Shared.Constants
         public static string ExportFailed
             => AppText.Get("Error.ExportFailed");
 
+        public static string CannotClearBirdRecords
+            => AppText.Get("Error.CannotClearBirdRecords");
+
+        public static string CannotResetLocalDatabase
+            => AppText.Get("Error.CannotResetLocalDatabase");
+
         public static string FailedToDisplayErrorNotification
             => AppText.Get("Error.FailedToDisplayErrorNotification");
 

@@ -1,5 +1,6 @@
 using Birds.Application.Commands.ImportBirds;
 using Birds.Shared.Localization;
+using Birds.Application.Interfaces;
 using Birds.UI.Services.Dialogs.Interfaces;
 using Birds.UI.Services.Export.Interfaces;
 using Birds.UI.Services.Import.Interfaces;
@@ -33,6 +34,7 @@ namespace Birds.UI.ViewModels
         private readonly IDataFileDialogService _dataFileDialogService;
         private readonly INotificationService _notificationService;
         private readonly IMediator _mediator;
+        private readonly IDatabaseMaintenanceService _databaseMaintenanceService;
         private bool _isSynchronizingSelections;
 
         private ReadOnlyCollection<LanguageOption> _availableLanguages =
@@ -56,7 +58,8 @@ namespace Birds.UI.ViewModels
                                  IImportService importService,
                                  IDataFileDialogService dataFileDialogService,
                                  INotificationService notificationService,
-                                 IMediator mediator)
+                                 IMediator mediator,
+                                 IDatabaseMaintenanceService databaseMaintenanceService)
         {
             _preferences = preferences;
             _themeService = themeService;
@@ -68,6 +71,7 @@ namespace Birds.UI.ViewModels
             _dataFileDialogService = dataFileDialogService;
             _notificationService = notificationService;
             _mediator = mediator;
+            _databaseMaintenanceService = databaseMaintenanceService;
 
             BuildAvailableLanguages();
             BuildAvailableThemes();
@@ -124,7 +128,30 @@ namespace Birds.UI.ViewModels
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(ExportDataCommand))]
         [NotifyCanExecuteChangedFor(nameof(ImportDataCommand))]
+        [NotifyCanExecuteChangedFor(nameof(BeginClearBirdRecordsCommand))]
+        [NotifyCanExecuteChangedFor(nameof(BeginResetLocalDatabaseCommand))]
+        [NotifyCanExecuteChangedFor(nameof(ConfirmClearBirdRecordsCommand))]
+        [NotifyCanExecuteChangedFor(nameof(ConfirmResetLocalDatabaseCommand))]
         private bool isDataTransferBusy;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(ExportDataCommand))]
+        [NotifyCanExecuteChangedFor(nameof(ImportDataCommand))]
+        [NotifyCanExecuteChangedFor(nameof(BeginClearBirdRecordsCommand))]
+        [NotifyCanExecuteChangedFor(nameof(BeginResetLocalDatabaseCommand))]
+        [NotifyCanExecuteChangedFor(nameof(ConfirmClearBirdRecordsCommand))]
+        [NotifyCanExecuteChangedFor(nameof(ConfirmResetLocalDatabaseCommand))]
+        private bool isDangerZoneBusy;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsDangerConfirmationVisible))]
+        [NotifyCanExecuteChangedFor(nameof(ConfirmClearBirdRecordsCommand))]
+        private bool isConfirmingClearBirdRecords;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsDangerConfirmationVisible))]
+        [NotifyCanExecuteChangedFor(nameof(ConfirmResetLocalDatabaseCommand))]
+        private bool isConfirmingResetLocalDatabase;
 
         public string LanguageHint =>
             SelectedLanguage == AppLanguages.Russian
@@ -167,6 +194,10 @@ namespace Birds.UI.ViewModels
                 ? _localization.GetString("Settings.ImportModeHint.Replace")
                 : _localization.GetString("Settings.ImportModeHint.Merge");
 
+        public bool SupportsLocalDatabaseReset => _databaseMaintenanceService.CanResetLocalDatabase;
+
+        public bool IsDangerConfirmationVisible => IsConfirmingClearBirdRecords || IsConfirmingResetLocalDatabase;
+
         [RelayCommand]
         private void ResetPreferences()
         {
@@ -202,6 +233,56 @@ namespace Birds.UI.ViewModels
             {
                 IsDataTransferBusy = false;
             }
+        }
+
+        [RelayCommand(CanExecute = nameof(CanStartDangerAction))]
+        private void BeginClearBirdRecords()
+        {
+            IsConfirmingResetLocalDatabase = false;
+            IsConfirmingClearBirdRecords = true;
+        }
+
+        [RelayCommand(CanExecute = nameof(CanStartDangerAction))]
+        private void BeginResetLocalDatabase()
+        {
+            if (!SupportsLocalDatabaseReset)
+                return;
+
+            IsConfirmingClearBirdRecords = false;
+            IsConfirmingResetLocalDatabase = true;
+        }
+
+        [RelayCommand]
+        private void CancelDangerAction()
+        {
+            IsConfirmingClearBirdRecords = false;
+            IsConfirmingResetLocalDatabase = false;
+        }
+
+        [RelayCommand(CanExecute = nameof(CanConfirmClearBirdRecords))]
+        private async Task ConfirmClearBirdRecordsAsync(CancellationToken cancellationToken)
+        {
+            await ExecuteDangerActionAsync(async token =>
+            {
+                var removed = await _databaseMaintenanceService.ClearBirdRecordsAsync(token);
+                _birdManager.Store.ReplaceBirds(Array.Empty<Birds.Application.DTOs.BirdDTO>());
+                _birdManager.Store.CompleteLoading();
+                IsConfirmingClearBirdRecords = false;
+                _notificationService.ShowSuccessLocalized("Info.BirdRecordsCleared", removed);
+            }, "Error.CannotClearBirdRecords", cancellationToken);
+        }
+
+        [RelayCommand(CanExecute = nameof(CanConfirmResetLocalDatabase))]
+        private async Task ConfirmResetLocalDatabaseAsync(CancellationToken cancellationToken)
+        {
+            await ExecuteDangerActionAsync(async token =>
+            {
+                await _databaseMaintenanceService.ResetLocalDatabaseAsync(token);
+                _birdManager.Store.ReplaceBirds(Array.Empty<Birds.Application.DTOs.BirdDTO>());
+                _birdManager.Store.CompleteLoading();
+                IsConfirmingResetLocalDatabase = false;
+                _notificationService.ShowSuccessLocalized("Info.LocalDatabaseReset");
+            }, "Error.CannotResetLocalDatabase", cancellationToken);
         }
 
         [RelayCommand(CanExecute = nameof(CanTransferData))]
@@ -474,6 +555,38 @@ namespace Birds.UI.ViewModels
             OnPropertyChanged(nameof(ImportHint));
         }
 
-        private bool CanTransferData() => !IsDataTransferBusy;
+        private async Task ExecuteDangerActionAsync(
+            Func<CancellationToken, Task> action,
+            string errorKey,
+            CancellationToken cancellationToken)
+        {
+            IsDangerZoneBusy = true;
+            try
+            {
+                await action(cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                // User canceled or application is shutting down.
+            }
+            catch
+            {
+                _notificationService.ShowErrorLocalized(errorKey);
+            }
+            finally
+            {
+                IsDangerZoneBusy = false;
+            }
+        }
+
+        private bool CanTransferData() => !IsDataTransferBusy && !IsDangerZoneBusy;
+
+        private bool CanStartDangerAction() => !IsDataTransferBusy && !IsDangerZoneBusy;
+
+        private bool CanConfirmClearBirdRecords()
+            => IsConfirmingClearBirdRecords && CanStartDangerAction();
+
+        private bool CanConfirmResetLocalDatabase()
+            => SupportsLocalDatabaseReset && IsConfirmingResetLocalDatabase && CanStartDangerAction();
     }
 }

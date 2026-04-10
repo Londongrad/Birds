@@ -43,6 +43,7 @@ namespace Birds.Infrastructure
 
             services.AddSingleton<BirdSeeder>();
             services.AddSingleton<IDatabaseInitializer, DatabaseInitializerService>();
+            services.AddSingleton<IDatabaseMaintenanceService, DatabaseMaintenanceService>();
             services.AddSingleton<IBirdRepository, BirdRepository>();
         }
 
