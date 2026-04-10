@@ -1,13 +1,19 @@
+using Birds.Application.Commands.ImportBirds;
 using Birds.Shared.Localization;
+using Birds.UI.Services.Dialogs.Interfaces;
+using Birds.UI.Services.Export.Interfaces;
+using Birds.UI.Services.Import.Interfaces;
 using Birds.UI.Services.Localization;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Preferences;
 using Birds.UI.Services.Preferences.Interfaces;
+using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.Services.Theming;
 using Birds.UI.Services.Theming.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MediatR;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -20,6 +26,12 @@ namespace Birds.UI.ViewModels
         private readonly IThemeService _themeService;
         private readonly ILocalizationService _localization;
         private readonly IBirdManager _birdManager;
+        private readonly IExportService _exportService;
+        private readonly IExportPathProvider _exportPathProvider;
+        private readonly IImportService _importService;
+        private readonly IDataFileDialogService _dataFileDialogService;
+        private readonly INotificationService _notificationService;
+        private readonly IMediator _mediator;
         private bool _isSynchronizingSelections;
 
         private ReadOnlyCollection<LanguageOption> _availableLanguages =
@@ -34,12 +46,24 @@ namespace Birds.UI.ViewModels
         public SettingsViewModel(IAppPreferencesService preferences,
                                  IThemeService themeService,
                                  ILocalizationService localization,
-                                 IBirdManager birdManager)
+                                 IBirdManager birdManager,
+                                 IExportService exportService,
+                                 IExportPathProvider exportPathProvider,
+                                 IImportService importService,
+                                 IDataFileDialogService dataFileDialogService,
+                                 INotificationService notificationService,
+                                 IMediator mediator)
         {
             _preferences = preferences;
             _themeService = themeService;
             _localization = localization;
             _birdManager = birdManager;
+            _exportService = exportService;
+            _exportPathProvider = exportPathProvider;
+            _importService = importService;
+            _dataFileDialogService = dataFileDialogService;
+            _notificationService = notificationService;
+            _mediator = mediator;
 
             BuildAvailableLanguages();
             BuildAvailableThemes();
@@ -83,6 +107,11 @@ namespace Birds.UI.ViewModels
         [ObservableProperty]
         private bool reduceMotion;
 
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(ExportDataCommand))]
+        [NotifyCanExecuteChangedFor(nameof(ImportDataCommand))]
+        private bool isDataTransferBusy;
+
         public string LanguageHint =>
             SelectedLanguage == AppLanguages.Russian
                 ? _localization.GetString("Settings.LanguageHint.Russian")
@@ -111,11 +140,96 @@ namespace Birds.UI.ViewModels
                 ? _localization.GetString("Settings.MotionHint.Enabled")
                 : _localization.GetString("Settings.MotionHint.Disabled");
 
+        public string ExportPathHint =>
+            _localization.GetString("Settings.Data.ExportHint", _exportPathProvider.GetLatestPath("birds"));
+
+        public string ImportHint =>
+            _localization.GetString("Settings.Data.ImportHint");
+
         [RelayCommand]
         private void ResetPreferences()
         {
             _preferences.ResetToDefaults();
             ReloadFromPreferences();
+        }
+
+        [RelayCommand(CanExecute = nameof(CanTransferData))]
+        private async Task ExportDataAsync(CancellationToken cancellationToken)
+        {
+            var suggestedPath = _exportPathProvider.GetLatestPath("birds");
+            var targetPath = _dataFileDialogService.PickExportPath(suggestedPath);
+
+            if (string.IsNullOrWhiteSpace(targetPath))
+                return;
+
+            IsDataTransferBusy = true;
+            try
+            {
+                var snapshot = _birdManager.Store.Birds.ToList();
+                await _exportService.ExportAsync(snapshot, targetPath, cancellationToken);
+                _notificationService.ShowSuccessLocalized("Info.ExportSucceeded", targetPath);
+            }
+            catch (OperationCanceledException)
+            {
+                // User canceled or application is shutting down.
+            }
+            catch
+            {
+                _notificationService.ShowErrorLocalized("Error.ExportFailed");
+            }
+            finally
+            {
+                IsDataTransferBusy = false;
+            }
+        }
+
+        [RelayCommand(CanExecute = nameof(CanTransferData))]
+        private async Task ImportDataAsync(CancellationToken cancellationToken)
+        {
+            var suggestedPath = _exportPathProvider.GetLatestPath("birds");
+            var sourcePath = _dataFileDialogService.PickImportPath(suggestedPath);
+
+            if (string.IsNullOrWhiteSpace(sourcePath))
+                return;
+
+            IsDataTransferBusy = true;
+            try
+            {
+                var importPayload = await _importService.ImportAsync(sourcePath, cancellationToken);
+                if (!importPayload.IsSuccess)
+                {
+                    _notificationService.ShowError(importPayload.Error ?? _localization.GetString("Error.ImportFailed"));
+                    return;
+                }
+
+                var importResult = await _mediator.Send(new ImportBirdsCommand(importPayload.Value!), cancellationToken);
+                if (!importResult.IsSuccess)
+                {
+                    _notificationService.ShowError(importResult.Error ?? _localization.GetString("Error.ImportFailed"));
+                    return;
+                }
+
+                _birdManager.Store.ReplaceBirds(importResult.Value!.Snapshot);
+                _birdManager.Store.CompleteLoading();
+
+                _notificationService.ShowSuccessLocalized(
+                    "Info.ImportSucceeded",
+                    importResult.Value.Imported,
+                    importResult.Value.Added,
+                    importResult.Value.Updated);
+            }
+            catch (OperationCanceledException)
+            {
+                // User canceled or application is shutting down.
+            }
+            catch
+            {
+                _notificationService.ShowErrorLocalized("Error.ImportFailed");
+            }
+            finally
+            {
+                IsDataTransferBusy = false;
+            }
         }
 
         partial void OnSelectedLanguageChanged(string value)
@@ -225,6 +339,8 @@ namespace Birds.UI.ViewModels
             OnPropertyChanged(nameof(DateFormatHint));
             OnPropertyChanged(nameof(NotificationsHint));
             OnPropertyChanged(nameof(MotionHint));
+            OnPropertyChanged(nameof(ExportPathHint));
+            OnPropertyChanged(nameof(ImportHint));
         }
 
         private void BuildAvailableLanguages()
@@ -284,6 +400,10 @@ namespace Birds.UI.ViewModels
             OnPropertyChanged(nameof(DateFormatHint));
             OnPropertyChanged(nameof(NotificationsHint));
             OnPropertyChanged(nameof(MotionHint));
+            OnPropertyChanged(nameof(ExportPathHint));
+            OnPropertyChanged(nameof(ImportHint));
         }
+
+        private bool CanTransferData() => !IsDataTransferBusy;
     }
 }

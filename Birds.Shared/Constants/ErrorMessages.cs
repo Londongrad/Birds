@@ -27,6 +27,33 @@ namespace Birds.Shared.Constants
         public static string InvalidDatabaseSeedingMode(string mode)
             => AppText.Format("Error.InvalidDatabaseSeedingMode", mode);
 
+        public static string ImportPathCannotBeEmpty
+            => AppText.Get("Error.ImportPathCannotBeEmpty");
+
+        public static string ImportFileNotFound(string path)
+            => AppText.Format("Error.ImportFileNotFound", path);
+
+        public static string ImportPayloadCannotBeNull
+            => AppText.Get("Error.ImportPayloadCannotBeNull");
+
+        public static string InvalidImportFileFormat
+            => AppText.Get("Error.InvalidImportFileFormat");
+
+        public static string UnsupportedImportVersion(int version)
+            => AppText.Format("Error.UnsupportedImportVersion", version);
+
+        public static string ImportContainsDuplicateIds(Guid id)
+            => AppText.Format("Error.ImportContainsDuplicateIds", id);
+
+        public static string InvalidImportedBirdName(string name)
+            => AppText.Format("Error.InvalidImportedBirdName", name);
+
+        public static string ImportFailed
+            => AppText.Get("Error.ImportFailed");
+
+        public static string ExportFailed
+            => AppText.Get("Error.ExportFailed");
+
         public static string FailedToDisplayErrorNotification
             => AppText.Get("Error.FailedToDisplayErrorNotification");
 

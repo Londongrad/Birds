@@ -1,6 +1,10 @@
 using Birds.UI.Services.Export;
 using Birds.UI.Services.Export.Interfaces;
 using Birds.UI.Services.Factories.BirdViewModelFactory;
+using Birds.UI.Services.Dialogs;
+using Birds.UI.Services.Dialogs.Interfaces;
+using Birds.UI.Services.Import;
+using Birds.UI.Services.Import.Interfaces;
 using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Navigation;
 using Birds.UI.Services.Navigation.Interfaces;
@@ -44,6 +48,8 @@ namespace Birds.UI
             services.AddSingleton<IAppPreferencesPathProvider, LocalAppPreferencesPathProvider>();
             services.AddSingleton<IAppPreferencesService, JsonAppPreferencesService>();
             services.AddSingleton<IThemeService, ThemeService>();
+            services.AddSingleton<IDataFileDialogService, DataFileDialogService>();
+            services.AddSingleton<IImportService, JsonImportService>();
 
             // Export Services
             services.AddSingleton<IExportService, JsonExportService>();

@@ -501,6 +501,77 @@
 
                     <Border
                         Margin="0,18,0,0"
+                        Style="{StaticResource SectionCardStyle}">
+                        <StackPanel>
+                            <TextBlock
+                                Style="{StaticResource SectionTitleStyle}"
+                                Text="{loc:Loc Key=Settings.Data.Title}" />
+                            <TextBlock
+                                Style="{StaticResource SectionSubtitleStyle}"
+                                Text="{loc:Loc Key=Settings.Data.Description}" />
+
+                            <Border
+                                Margin="0,22,0,0"
+                                Style="{StaticResource SettingsToggleRowStyle}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel>
+                                        <TextBlock
+                                            Style="{StaticResource FieldLabelStyle}"
+                                            Margin="0,0,0,4"
+                                            Text="{loc:Loc Key=Settings.ExportLabel}" />
+                                        <TextBlock
+                                            FontSize="12"
+                                            Foreground="{StaticResource SecondaryTextBrush}"
+                                            Text="{Binding ExportPathHint}"
+                                            TextWrapping="Wrap" />
+                                    </StackPanel>
+
+                                    <Button
+                                        Grid.Column="1"
+                                        Command="{Binding ExportDataCommand}"
+                                        Style="{StaticResource SecondaryButtonStyle}">
+                                        <TextBlock Text="{loc:Loc Key=Settings.ExportButton}" />
+                                    </Button>
+                                </Grid>
+                            </Border>
+
+                            <Border Style="{StaticResource SettingsToggleRowStyle}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel>
+                                        <TextBlock
+                                            Style="{StaticResource FieldLabelStyle}"
+                                            Margin="0,0,0,4"
+                                            Text="{loc:Loc Key=Settings.ImportLabel}" />
+                                        <TextBlock
+                                            FontSize="12"
+                                            Foreground="{StaticResource SecondaryTextBrush}"
+                                            Text="{Binding ImportHint}"
+                                            TextWrapping="Wrap" />
+                                    </StackPanel>
+
+                                    <Button
+                                        Grid.Column="1"
+                                        Command="{Binding ImportDataCommand}"
+                                        Style="{StaticResource SecondaryButtonStyle}">
+                                        <TextBlock Text="{loc:Loc Key=Settings.ImportButton}" />
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <Border
+                        Margin="0,18,0,0"
                         Padding="18,16"
                         Background="{StaticResource InsetBackgroundBrush}"
                         BorderBrush="{StaticResource CardBorderBrush}"
