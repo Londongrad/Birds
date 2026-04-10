@@ -542,31 +542,58 @@
 
                             <Border Style="{StaticResource SettingsToggleRowStyle}">
                                 <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <StackPanel>
+                                    <StackPanel Grid.Row="0">
                                         <TextBlock
                                             Style="{StaticResource FieldLabelStyle}"
                                             Margin="0,0,0,4"
-                                            Text="{loc:Loc Key=Settings.ImportLabel}" />
+                                            Text="{loc:Loc Key=Settings.ImportModeLabel}" />
+                                        <ComboBox
+                                            DisplayMemberPath="DisplayName"
+                                            ItemsSource="{Binding AvailableImportModes}"
+                                            SelectedValue="{Binding SelectedImportMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            SelectedValuePath="Code"
+                                            Style="{StaticResource SettingsComboBoxStyle}" />
                                         <TextBlock
-                                            FontSize="12"
-                                            Foreground="{StaticResource SecondaryTextBrush}"
-                                            Text="{Binding ImportHint}"
-                                            TextWrapping="Wrap" />
+                                            Style="{StaticResource FieldHintStyle}"
+                                            Text="{Binding ImportModeHint}" />
                                     </StackPanel>
 
-                                    <Button
-                                        Grid.Column="1"
-                                        Command="{Binding ImportDataCommand}"
-                                        Style="{StaticResource SecondaryButtonStyle}">
-                                        <TextBlock Text="{loc:Loc Key=Settings.ImportButton}" />
-                                    </Button>
+                                    <Grid Grid.Row="1" Margin="0,20,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel>
+                                            <TextBlock
+                                                Style="{StaticResource FieldLabelStyle}"
+                                                Margin="0,0,0,4"
+                                                Text="{loc:Loc Key=Settings.ImportLabel}" />
+                                            <TextBlock
+                                                FontSize="12"
+                                                Foreground="{StaticResource SecondaryTextBrush}"
+                                                Text="{Binding ImportHint}"
+                                                TextWrapping="Wrap" />
+                                        </StackPanel>
+
+                                        <Button
+                                            Grid.Column="1"
+                                            Command="{Binding ImportDataCommand}"
+                                            Style="{StaticResource SecondaryButtonStyle}">
+                                            <TextBlock Text="{loc:Loc Key=Settings.ImportButton}" />
+                                        </Button>
+                                    </Grid>
                                 </Grid>
                             </Border>
+
                         </StackPanel>
                     </Border>
 

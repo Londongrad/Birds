@@ -1,6 +1,7 @@
 using Birds.Shared.Localization;
 using Birds.UI.Services.Preferences.Interfaces;
 using Birds.UI.Services.Localization;
+using Birds.UI.Services.Import;
 using Birds.UI.Services.Theming;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.IO;
@@ -28,6 +29,9 @@ namespace Birds.UI.Services.Preferences
         private string selectedDateFormat = AppPreferencesState.DefaultDateFormat;
 
         [ObservableProperty]
+        private string selectedImportMode = AppPreferencesState.DefaultImportMode;
+
+        [ObservableProperty]
         private bool showNotificationBadge = true;
 
         [ObservableProperty]
@@ -41,6 +45,7 @@ namespace Birds.UI.Services.Preferences
             selectedLanguage = AppLanguages.Normalize(state.SelectedLanguage);
             selectedTheme = ThemeKeys.Normalize(state.SelectedTheme);
             selectedDateFormat = DateDisplayFormats.Normalize(state.SelectedDateFormat);
+            selectedImportMode = BirdImportModes.Normalize(state.SelectedImportMode);
             showNotificationBadge = state.ShowNotificationBadge;
             reduceMotion = state.ReduceMotion;
         }
@@ -50,6 +55,7 @@ namespace Birds.UI.Services.Preferences
             SelectedLanguage = AppPreferencesState.DefaultLanguage;
             SelectedTheme = AppPreferencesState.DefaultTheme;
             SelectedDateFormat = AppPreferencesState.DefaultDateFormat;
+            SelectedImportMode = AppPreferencesState.DefaultImportMode;
             ShowNotificationBadge = true;
             ReduceMotion = false;
         }
@@ -65,6 +71,12 @@ namespace Birds.UI.Services.Preferences
         partial void OnSelectedDateFormatChanged(string value)
         {
             selectedDateFormat = DateDisplayFormats.Normalize(value);
+            SaveState();
+        }
+
+        partial void OnSelectedImportModeChanged(string value)
+        {
+            selectedImportMode = BirdImportModes.Normalize(value);
             SaveState();
         }
 
@@ -105,6 +117,7 @@ namespace Birds.UI.Services.Preferences
                         SelectedLanguage = SelectedLanguage,
                         SelectedTheme = ThemeKeys.Normalize(SelectedTheme),
                         SelectedDateFormat = DateDisplayFormats.Normalize(SelectedDateFormat),
+                        SelectedImportMode = BirdImportModes.Normalize(SelectedImportMode),
                         ShowNotificationBadge = ShowNotificationBadge,
                         ReduceMotion = ReduceMotion
                     },

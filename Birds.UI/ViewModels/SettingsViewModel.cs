@@ -3,6 +3,7 @@ using Birds.Shared.Localization;
 using Birds.UI.Services.Dialogs.Interfaces;
 using Birds.UI.Services.Export.Interfaces;
 using Birds.UI.Services.Import.Interfaces;
+using Birds.UI.Services.Import;
 using Birds.UI.Services.Localization;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Managers.Bird;
@@ -43,6 +44,9 @@ namespace Birds.UI.ViewModels
         private ReadOnlyCollection<DateFormatOption> _availableDateFormats =
             new(new List<DateFormatOption>());
 
+        private ReadOnlyCollection<ImportModeOption> _availableImportModes =
+            new(new List<ImportModeOption>());
+
         public SettingsViewModel(IAppPreferencesService preferences,
                                  IThemeService themeService,
                                  ILocalizationService localization,
@@ -68,6 +72,7 @@ namespace Birds.UI.ViewModels
             BuildAvailableLanguages();
             BuildAvailableThemes();
             BuildAvailableDateFormats();
+            BuildAvailableImportModes();
             ReloadFromPreferences();
 
             _preferences.PropertyChanged += OnPreferencesChanged;
@@ -92,6 +97,12 @@ namespace Birds.UI.ViewModels
             private set => SetProperty(ref _availableDateFormats, value);
         }
 
+        public ReadOnlyCollection<ImportModeOption> AvailableImportModes
+        {
+            get => _availableImportModes;
+            private set => SetProperty(ref _availableImportModes, value);
+        }
+
         [ObservableProperty]
         private string selectedLanguage = AppPreferencesState.DefaultLanguage;
 
@@ -100,6 +111,9 @@ namespace Birds.UI.ViewModels
 
         [ObservableProperty]
         private string selectedDateFormat = AppPreferencesState.DefaultDateFormat;
+
+        [ObservableProperty]
+        private string selectedImportMode = AppPreferencesState.DefaultImportMode;
 
         [ObservableProperty]
         private bool showNotificationBadge = true;
@@ -144,7 +158,14 @@ namespace Birds.UI.ViewModels
             _localization.GetString("Settings.Data.ExportHint", _exportPathProvider.GetLatestPath("birds"));
 
         public string ImportHint =>
-            _localization.GetString("Settings.Data.ImportHint");
+            SelectedImportMode == BirdImportModes.Replace
+                ? _localization.GetString("Settings.Data.ImportHint.Replace")
+                : _localization.GetString("Settings.Data.ImportHint.Merge");
+
+        public string ImportModeHint =>
+            SelectedImportMode == BirdImportModes.Replace
+                ? _localization.GetString("Settings.ImportModeHint.Replace")
+                : _localization.GetString("Settings.ImportModeHint.Merge");
 
         [RelayCommand]
         private void ResetPreferences()
@@ -202,7 +223,10 @@ namespace Birds.UI.ViewModels
                     return;
                 }
 
-                var importResult = await _mediator.Send(new ImportBirdsCommand(importPayload.Value!), cancellationToken);
+                var importMode = BirdImportModes.ToCommandMode(SelectedImportMode);
+                var importResult = await _mediator.Send(
+                    new ImportBirdsCommand(importPayload.Value!, importMode),
+                    cancellationToken);
                 if (!importResult.IsSuccess)
                 {
                     _notificationService.ShowError(importResult.Error ?? _localization.GetString("Error.ImportFailed"));
@@ -212,11 +236,23 @@ namespace Birds.UI.ViewModels
                 _birdManager.Store.ReplaceBirds(importResult.Value!.Snapshot);
                 _birdManager.Store.CompleteLoading();
 
-                _notificationService.ShowSuccessLocalized(
-                    "Info.ImportSucceeded",
-                    importResult.Value.Imported,
-                    importResult.Value.Added,
-                    importResult.Value.Updated);
+                if (importMode == BirdImportMode.Replace)
+                {
+                    _notificationService.ShowSuccessLocalized(
+                        "Info.ImportReplacedSucceeded",
+                        importResult.Value.Imported,
+                        importResult.Value.Added,
+                        importResult.Value.Updated,
+                        importResult.Value.Removed);
+                }
+                else
+                {
+                    _notificationService.ShowSuccessLocalized(
+                        "Info.ImportMergedSucceeded",
+                        importResult.Value.Imported,
+                        importResult.Value.Added,
+                        importResult.Value.Updated);
+                }
             }
             catch (OperationCanceledException)
             {
@@ -285,6 +321,24 @@ namespace Birds.UI.ViewModels
             OnPropertyChanged(nameof(DateFormatHint));
         }
 
+        partial void OnSelectedImportModeChanged(string value)
+        {
+            var normalized = BirdImportModes.Normalize(value);
+
+            if (_isSynchronizingSelections)
+            {
+                OnPropertyChanged(nameof(ImportModeHint));
+                OnPropertyChanged(nameof(ImportHint));
+                return;
+            }
+
+            if (_preferences.SelectedImportMode != normalized)
+                _preferences.SelectedImportMode = normalized;
+
+            OnPropertyChanged(nameof(ImportModeHint));
+            OnPropertyChanged(nameof(ImportHint));
+        }
+
         partial void OnShowNotificationBadgeChanged(bool value)
         {
             if (_isSynchronizingSelections)
@@ -318,6 +372,7 @@ namespace Birds.UI.ViewModels
             if (e.PropertyName is nameof(IAppPreferencesService.SelectedLanguage)
                 or nameof(IAppPreferencesService.SelectedTheme)
                 or nameof(IAppPreferencesService.SelectedDateFormat)
+                or nameof(IAppPreferencesService.SelectedImportMode)
                 or nameof(IAppPreferencesService.ShowNotificationBadge)
                 or nameof(IAppPreferencesService.ReduceMotion))
             {
@@ -332,11 +387,13 @@ namespace Birds.UI.ViewModels
             BuildAvailableLanguages();
             BuildAvailableThemes();
             BuildAvailableDateFormats();
+            BuildAvailableImportModes();
             ReloadFromPreferences(reapplyTheme: true);
             _themeService.ApplyTheme(preservedTheme);
             OnPropertyChanged(nameof(LanguageHint));
             OnPropertyChanged(nameof(ThemeHint));
             OnPropertyChanged(nameof(DateFormatHint));
+            OnPropertyChanged(nameof(ImportModeHint));
             OnPropertyChanged(nameof(NotificationsHint));
             OnPropertyChanged(nameof(MotionHint));
             OnPropertyChanged(nameof(ExportPathHint));
@@ -372,11 +429,22 @@ namespace Birds.UI.ViewModels
                 });
         }
 
+        private void BuildAvailableImportModes()
+        {
+            AvailableImportModes = new ReadOnlyCollection<ImportModeOption>(
+                new List<ImportModeOption>
+                {
+                    new(BirdImportModes.Merge, _localization.GetString("Settings.ImportMode.Merge")),
+                    new(BirdImportModes.Replace, _localization.GetString("Settings.ImportMode.Replace"))
+                });
+        }
+
         private void ReloadFromPreferences(bool reapplyTheme = false)
         {
             var normalizedLanguage = AppLanguages.Normalize(_preferences.SelectedLanguage);
             var normalizedTheme = ThemeKeys.Normalize(_preferences.SelectedTheme);
             var normalizedDateFormat = DateDisplayFormats.Normalize(_preferences.SelectedDateFormat);
+            var normalizedImportMode = BirdImportModes.Normalize(_preferences.SelectedImportMode);
 
             _isSynchronizingSelections = true;
             try
@@ -384,6 +452,7 @@ namespace Birds.UI.ViewModels
                 SelectedLanguage = normalizedLanguage;
                 SelectedTheme = normalizedTheme;
                 SelectedDateFormat = normalizedDateFormat;
+                SelectedImportMode = normalizedImportMode;
                 ShowNotificationBadge = _preferences.ShowNotificationBadge;
                 ReduceMotion = _preferences.ReduceMotion;
             }
@@ -398,6 +467,7 @@ namespace Birds.UI.ViewModels
             OnPropertyChanged(nameof(LanguageHint));
             OnPropertyChanged(nameof(ThemeHint));
             OnPropertyChanged(nameof(DateFormatHint));
+            OnPropertyChanged(nameof(ImportModeHint));
             OnPropertyChanged(nameof(NotificationsHint));
             OnPropertyChanged(nameof(MotionHint));
             OnPropertyChanged(nameof(ExportPathHint));
