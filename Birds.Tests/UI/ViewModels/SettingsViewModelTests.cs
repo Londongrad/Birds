@@ -4,6 +4,7 @@ using Birds.Application.DTOs;
 using Birds.Shared.Localization;
 using Birds.UI.Services.Dialogs.Interfaces;
 using Birds.UI.Services.Export.Interfaces;
+using Birds.UI.Services.Import;
 using Birds.UI.Services.Import.Interfaces;
 using Birds.UI.Services.Localization;
 using Birds.UI.Services.Localization.Interfaces;
@@ -61,6 +62,7 @@ namespace Birds.Tests.UI.ViewModels
             _preferences.SelectedLanguage = AppLanguages.English;
             _preferences.SelectedTheme = ThemeKeys.Graphite;
             _preferences.SelectedDateFormat = DateDisplayFormats.DayMonthYear;
+            _preferences.SelectedImportMode = BirdImportModes.Merge;
             _preferences.ShowNotificationBadge = true;
             _preferences.ReduceMotion = false;
 
@@ -68,6 +70,7 @@ namespace Birds.Tests.UI.ViewModels
 
             sut.ThemeHint.Should().Be(AppText.Get("Settings.ThemeHint.Graphite", _culture));
             sut.DateFormatHint.Should().Be(AppText.Get("Settings.DateFormatHint.DayMonthYear", _culture));
+            sut.ImportModeHint.Should().Be(AppText.Get("Settings.ImportModeHint.Merge", _culture));
             sut.NotificationsHint.Should().Be(AppText.Get("Settings.NotificationsHint.Enabled", _culture));
             sut.MotionHint.Should().Be(AppText.Get("Settings.MotionHint.Disabled", _culture));
         }
@@ -78,6 +81,7 @@ namespace Birds.Tests.UI.ViewModels
             _preferences.SelectedLanguage = AppLanguages.Russian;
             _preferences.SelectedTheme = ThemeKeys.Steel;
             _preferences.SelectedDateFormat = DateDisplayFormats.YearMonthDay;
+            _preferences.SelectedImportMode = BirdImportModes.Replace;
             _preferences.ShowNotificationBadge = false;
             _preferences.ReduceMotion = true;
 
@@ -90,6 +94,7 @@ namespace Birds.Tests.UI.ViewModels
             sut.AvailableThemes.Should().Contain(x => x.DisplayName == AppText.Get("Settings.Theme.Steel", _culture));
             sut.ThemeHint.Should().Be(AppText.Get("Settings.ThemeHint.Steel", _culture));
             sut.DateFormatHint.Should().Be(AppText.Get("Settings.DateFormatHint.YearMonthDay", _culture));
+            sut.ImportModeHint.Should().Be(AppText.Get("Settings.ImportModeHint.Replace", _culture));
             sut.NotificationsHint.Should().Be(AppText.Get("Settings.NotificationsHint.Disabled", _culture));
             sut.MotionHint.Should().Be(AppText.Get("Settings.MotionHint.Enabled", _culture));
         }
@@ -148,7 +153,7 @@ namespace Birds.Tests.UI.ViewModels
                 .ReturnsAsync(Result<IReadOnlyList<BirdDTO>>.Success(new[] { importedBird }));
             _mediator.Setup(x => x.Send(It.IsAny<ImportBirdsCommand>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Result<BirdImportResultDTO>.Success(
-                    new BirdImportResultDTO(1, 1, 0, new[] { importedBird })));
+                    new BirdImportResultDTO(1, 1, 0, 0, new[] { importedBird })));
 
             var sut = CreateSut();
 
@@ -157,8 +162,43 @@ namespace Birds.Tests.UI.ViewModels
             _store.Birds.Should().ContainSingle(x => x.Id == importedBird.Id);
             _notificationService.Verify(
                 x => x.ShowSuccessLocalized(
-                    "Info.ImportSucceeded",
+                    "Info.ImportMergedSucceeded",
                     It.Is<object[]>(args => args.Length == 3 && (int)args[0] == 1 && (int)args[1] == 1 && (int)args[2] == 0)),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task ImportDataCommand_Should_Use_Replace_Mode_When_Selected()
+        {
+            var importedBird = new BirdDTO(Guid.NewGuid(), "Sparrow", null, new DateOnly(2026, 4, 1), null, true, null, null);
+
+            _preferences.SelectedImportMode = BirdImportModes.Replace;
+            _dataFileDialogService.Setup(x => x.PickImportPath(It.IsAny<string>()))
+                .Returns("C:\\temp\\birds-import.json");
+            _importService.Setup(x => x.ImportAsync("C:\\temp\\birds-import.json", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result<IReadOnlyList<BirdDTO>>.Success(new[] { importedBird }));
+            _mediator.Setup(x => x.Send(It.IsAny<ImportBirdsCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result<BirdImportResultDTO>.Success(
+                    new BirdImportResultDTO(1, 1, 0, 4, new[] { importedBird })));
+
+            var sut = CreateSut();
+
+            await sut.ImportDataCommand.ExecuteAsync(null);
+
+            _mediator.Verify(
+                x => x.Send(
+                    It.Is<ImportBirdsCommand>(command => command.Mode == BirdImportMode.Replace),
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
+            _notificationService.Verify(
+                x => x.ShowSuccessLocalized(
+                    "Info.ImportReplacedSucceeded",
+                    It.Is<object[]>(args =>
+                        args.Length == 4
+                        && (int)args[0] == 1
+                        && (int)args[1] == 1
+                        && (int)args[2] == 0
+                        && (int)args[3] == 4)),
                 Times.Once);
         }
 
@@ -180,6 +220,7 @@ namespace Birds.Tests.UI.ViewModels
             private string _selectedLanguage = AppLanguages.Russian;
             private string _selectedTheme = ThemeKeys.Graphite;
             private string _selectedDateFormat = DateDisplayFormats.DayMonthYear;
+            private string _selectedImportMode = BirdImportModes.Merge;
             private bool _showNotificationBadge = true;
             private bool _reduceMotion;
 
@@ -233,6 +274,18 @@ namespace Birds.Tests.UI.ViewModels
                 }
             }
 
+            public string SelectedImportMode
+            {
+                get => _selectedImportMode;
+                set
+                {
+                    if (_selectedImportMode == value)
+                        return;
+                    _selectedImportMode = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedImportMode)));
+                }
+            }
+
             public bool ReduceMotion
             {
                 get => _reduceMotion;
@@ -250,6 +303,7 @@ namespace Birds.Tests.UI.ViewModels
                 SelectedLanguage = AppPreferencesState.DefaultLanguage;
                 SelectedTheme = AppPreferencesState.DefaultTheme;
                 SelectedDateFormat = AppPreferencesState.DefaultDateFormat;
+                SelectedImportMode = AppPreferencesState.DefaultImportMode;
                 ShowNotificationBadge = true;
                 ReduceMotion = false;
             }

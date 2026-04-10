@@ -1,4 +1,5 @@
 using Birds.Shared.Localization;
+using Birds.UI.Services.Import;
 using Birds.UI.Services.Localization;
 using Birds.UI.Services.Preferences;
 using Birds.UI.Services.Preferences.Interfaces;
@@ -21,6 +22,7 @@ namespace Birds.Tests.UI.Services
                 sut.SelectedLanguage.Should().Be(AppPreferencesState.DefaultLanguage);
                 sut.SelectedTheme.Should().Be(AppPreferencesState.DefaultTheme);
                 sut.SelectedDateFormat.Should().Be(AppPreferencesState.DefaultDateFormat);
+                sut.SelectedImportMode.Should().Be(AppPreferencesState.DefaultImportMode);
                 sut.ShowNotificationBadge.Should().BeTrue();
                 sut.ReduceMotion.Should().BeFalse();
             }
@@ -43,6 +45,7 @@ namespace Birds.Tests.UI.Services
                     SelectedLanguage = AppLanguages.English,
                     SelectedTheme = ThemeKeys.Steel,
                     SelectedDateFormat = DateDisplayFormats.YearMonthDay,
+                    SelectedImportMode = BirdImportModes.Replace,
                     ShowNotificationBadge = false,
                     ReduceMotion = true
                 };
@@ -52,6 +55,7 @@ namespace Birds.Tests.UI.Services
                 reloaded.SelectedLanguage.Should().Be(AppLanguages.English);
                 reloaded.SelectedTheme.Should().Be(ThemeKeys.Steel);
                 reloaded.SelectedDateFormat.Should().Be(DateDisplayFormats.YearMonthDay);
+                reloaded.SelectedImportMode.Should().Be(BirdImportModes.Replace);
                 reloaded.ShowNotificationBadge.Should().BeFalse();
                 reloaded.ReduceMotion.Should().BeTrue();
             }
@@ -76,6 +80,7 @@ namespace Birds.Tests.UI.Services
                       "selectedLanguage": "ru-RU",
                       "selectedTheme": "Сталь",
                       "selectedDateFormat": "ymd",
+                      "selectedImportMode": "replace",
                       "showNotificationBadge": true,
                       "reduceMotion": false
                     }
@@ -85,6 +90,7 @@ namespace Birds.Tests.UI.Services
 
                 sut.SelectedTheme.Should().Be(ThemeKeys.Steel);
                 sut.SelectedDateFormat.Should().Be(DateDisplayFormats.YearMonthDay);
+                sut.SelectedImportMode.Should().Be(BirdImportModes.Replace);
             }
             finally
             {
