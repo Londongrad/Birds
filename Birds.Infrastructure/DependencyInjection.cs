@@ -13,33 +13,19 @@ namespace Birds.Infrastructure
     public static class DependencyInjection
     {
         public static void AddInfrastructure(this IServiceCollection services,
-                                             DatabaseProvider provider,
-                                             string connectionString,
-                                             DatabaseSeedingOptions seedingOptions)
+                                             string localStoreConnectionString,
+                                             DatabaseSeedingOptions seedingOptions,
+                                             RemoteSyncRuntimeOptions remoteSyncOptions)
         {
-            var normalizedConnectionString = provider switch
-            {
-                DatabaseProvider.Sqlite => NormalizeSqliteConnectionString(connectionString),
-                _ => connectionString
-            };
+            var normalizedConnectionString = NormalizeSqliteConnectionString(localStoreConnectionString);
 
-            services.AddSingleton(new DatabaseRuntimeOptions(provider, normalizedConnectionString));
+            services.AddSingleton(new DatabaseRuntimeOptions(DatabaseProvider.Sqlite, normalizedConnectionString));
             services.AddSingleton(seedingOptions);
+            services.AddSingleton(remoteSyncOptions);
 
             // Register a factory so each repository call can create its own short-lived DbContext.
             services.AddDbContextFactory<BirdDbContext>(options =>
-            {
-                switch (provider)
-                {
-                    case DatabaseProvider.Sqlite:
-                        options.UseSqlite(normalizedConnectionString);
-                        break;
-
-                    case DatabaseProvider.Postgres:
-                        options.UseNpgsql(normalizedConnectionString, n => n.EnableRetryOnFailure(0));
-                        break;
-                }
-            });
+                options.UseSqlite(normalizedConnectionString));
 
             services.AddSingleton<BirdSeeder>();
             services.AddSingleton<IDatabaseInitializer, DatabaseInitializerService>();
