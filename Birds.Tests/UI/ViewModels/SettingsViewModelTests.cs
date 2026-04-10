@@ -1,6 +1,7 @@
 using Birds.Application.Commands.ImportBirds;
 using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
+using Birds.Application.Interfaces;
 using Birds.Shared.Localization;
 using Birds.UI.Services.Dialogs.Interfaces;
 using Birds.UI.Services.Export.Interfaces;
@@ -37,6 +38,7 @@ namespace Birds.Tests.UI.ViewModels
         private readonly Mock<IDataFileDialogService> _dataFileDialogService = new();
         private readonly Mock<INotificationService> _notificationService = new();
         private readonly Mock<IMediator> _mediator = new();
+        private readonly Mock<IDatabaseMaintenanceService> _databaseMaintenanceService = new();
         private readonly BirdStore _store = new();
         private CultureInfo _culture = CultureInfo.GetCultureInfo(AppLanguages.English);
 
@@ -54,6 +56,7 @@ namespace Birds.Tests.UI.ViewModels
             _birdManager.SetupGet(x => x.Store).Returns(_store);
             _exportPathProvider.Setup(x => x.GetLatestPath(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns("C:\\temp\\birds.json");
+            _databaseMaintenanceService.SetupGet(x => x.CanResetLocalDatabase).Returns(true);
         }
 
         [Fact]
@@ -202,6 +205,47 @@ namespace Birds.Tests.UI.ViewModels
                 Times.Once);
         }
 
+        [Fact]
+        public async Task ConfirmClearBirdRecordsCommand_Should_ClearStore_And_ShowSuccess()
+        {
+            _store.ReplaceBirds(new[]
+            {
+                new BirdDTO(Guid.NewGuid(), "Sparrow", null, new DateOnly(2026, 4, 1), null, true, null, null)
+            });
+            _databaseMaintenanceService.Setup(x => x.ClearBirdRecordsAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
+
+            var sut = CreateSut();
+            sut.BeginClearBirdRecordsCommand.Execute(null);
+
+            await sut.ConfirmClearBirdRecordsCommand.ExecuteAsync(null);
+
+            sut.IsConfirmingClearBirdRecords.Should().BeFalse();
+            _store.Birds.Should().BeEmpty();
+            _notificationService.Verify(
+                x => x.ShowSuccessLocalized("Info.BirdRecordsCleared", It.Is<object[]>(args => args.Length == 1 && (int)args[0] == 1)),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task ConfirmResetLocalDatabaseCommand_Should_ResetStore_And_ShowSuccess()
+        {
+            _store.ReplaceBirds(new[]
+            {
+                new BirdDTO(Guid.NewGuid(), "Sparrow", null, new DateOnly(2026, 4, 1), null, true, null, null)
+            });
+
+            var sut = CreateSut();
+            sut.BeginResetLocalDatabaseCommand.Execute(null);
+
+            await sut.ConfirmResetLocalDatabaseCommand.ExecuteAsync(null);
+
+            sut.IsConfirmingResetLocalDatabase.Should().BeFalse();
+            _store.Birds.Should().BeEmpty();
+            _databaseMaintenanceService.Verify(x => x.ResetLocalDatabaseAsync(It.IsAny<CancellationToken>()), Times.Once);
+            _notificationService.Verify(x => x.ShowSuccessLocalized("Info.LocalDatabaseReset", It.IsAny<object[]>()), Times.Once);
+        }
+
         private SettingsViewModel CreateSut()
             => new(
                 _preferences,
@@ -213,7 +257,8 @@ namespace Birds.Tests.UI.ViewModels
                 _importService.Object,
                 _dataFileDialogService.Object,
                 _notificationService.Object,
-                _mediator.Object);
+                _mediator.Object,
+                _databaseMaintenanceService.Object);
 
         private sealed class TestPreferencesService : IAppPreferencesService
         {
