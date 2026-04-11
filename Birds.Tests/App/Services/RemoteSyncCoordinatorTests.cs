@@ -132,5 +132,57 @@ namespace Birds.Tests.App.Services
 
             await sut.BootstrapLocalStoreAsync(CancellationToken.None);
         }
+
+        [Fact]
+        public async Task RunSingleIterationAsync_WhenSyncServiceThrows_Should_ReportLoopFailure_And_BackOff()
+        {
+            var remoteSyncService = new Mock<IRemoteSyncService>();
+            remoteSyncService.Setup(x => x.SyncPendingAsync(It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new TimeoutException("remote timeout"));
+
+            var statusReporter = new Mock<IRemoteSyncStatusReporter>();
+            var sequence = new MockSequence();
+            statusReporter.InSequence(sequence)
+                .Setup(x => x.SetSyncingAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+            statusReporter.InSequence(sequence)
+                .Setup(x => x.SetLoopFailedAsync("remote timeout", It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            var sut = new RemoteSyncCoordinator(
+                remoteSyncService.Object,
+                new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+                statusReporter.Object);
+
+            var delay = await sut.RunSingleIterationAsync(CancellationToken.None);
+
+            delay.Should().Be(TimeSpan.FromSeconds(30));
+        }
+
+        [Fact]
+        public async Task BootstrapLocalStoreAsync_WhenSyncServiceThrows_Should_ReportError_WithoutThrowing()
+        {
+            var remoteSyncService = new Mock<IRemoteSyncService>();
+            remoteSyncService.Setup(x => x.SyncPendingAsync(It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new TimeoutException("bootstrap timeout"));
+
+            var statusReporter = new Mock<IRemoteSyncStatusReporter>();
+            var sequence = new MockSequence();
+            statusReporter.InSequence(sequence)
+                .Setup(x => x.SetSyncingAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+            statusReporter.InSequence(sequence)
+                .Setup(x => x.SetResultAsync(RemoteSyncDisplayState.Error, 0, "bootstrap timeout", It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            var sut = new RemoteSyncCoordinator(
+                remoteSyncService.Object,
+                new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+                statusReporter.Object);
+
+            var act = () => sut.BootstrapLocalStoreAsync(CancellationToken.None);
+
+            await act.Should().NotThrowAsync();
+        }
     }
 }

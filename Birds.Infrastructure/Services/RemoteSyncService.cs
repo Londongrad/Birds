@@ -5,6 +5,7 @@ using Birds.Infrastructure.Persistence.Models;
 using Birds.Shared.Constants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 using System.Text.Json;
 
 namespace Birds.Infrastructure.Services
@@ -35,51 +36,52 @@ namespace Birds.Infrastructure.Services
                     .Take(PushBatchSize)
                     .ToListAsync(cancellationToken);
 
-                await using var remoteContext = await _remoteContextFactory.CreateDbContextAsync(cancellationToken);
-                if (!await remoteContext.Database.CanConnectAsync(cancellationToken))
+                try
                 {
-                    const string backendUnavailableMessage = "Remote sync backend is unavailable.";
+                    await using var remoteContext = await _remoteContextFactory.CreateDbContextAsync(cancellationToken);
+                    if (!await remoteContext.Database.CanConnectAsync(cancellationToken))
+                    {
+                        const string backendUnavailableMessage = "Remote sync backend is unavailable.";
+                        return await HandleRemoteFailureAsync(
+                            localContext,
+                            pendingOperations,
+                            RemoteSyncRunStatus.BackendUnavailable,
+                            backendUnavailableMessage,
+                            null,
+                            cancellationToken);
+                    }
+
+                    var processedCount = 0;
+                    await EnsureRemoteSyncSchemaAsync(remoteContext, cancellationToken);
 
                     if (pendingOperations.Count > 0)
-                    {
-                        MarkBatchFailed(pendingOperations, backendUnavailableMessage, DateTime.UtcNow);
-                        await localContext.SaveChangesAsync(cancellationToken);
-                    }
-
-                    return new RemoteSyncRunResult(
-                        RemoteSyncRunStatus.BackendUnavailable,
-                        pendingOperations.Count,
-                        backendUnavailableMessage);
-                }
-
-                var processedCount = 0;
-                await EnsureRemoteSyncSchemaAsync(remoteContext, cancellationToken);
-
-                if (pendingOperations.Count > 0)
-                {
-                    try
-                    {
                         processedCount += await PushPendingBatchAsync(localContext, remoteContext, pendingOperations, cancellationToken);
-                    }
-                    catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+
+                    var hasPendingLocalOperations = await localContext.SyncOperations.AnyAsync(cancellationToken);
+                    if (!hasPendingLocalOperations)
                     {
-                        MarkBatchFailed(pendingOperations, ex.Message, DateTime.UtcNow);
-                        await localContext.SaveChangesAsync(cancellationToken);
-                        _logger.LogWarning(ex, LogMessages.RemoteSyncFailed, pendingOperations.Count);
-                        return new RemoteSyncRunResult(RemoteSyncRunStatus.Failed, pendingOperations.Count, ex.Message);
+                        processedCount += await PullRemoteBatchAsync(localContext, remoteContext, cancellationToken);
+                        processedCount += await PullRemoteDeletesAsync(localContext, remoteContext, cancellationToken);
                     }
-                }
 
-                var hasPendingLocalOperations = await localContext.SyncOperations.AnyAsync(cancellationToken);
-                if (!hasPendingLocalOperations)
+                    return processedCount > 0
+                        ? new RemoteSyncRunResult(RemoteSyncRunStatus.Synced, processedCount)
+                        : RemoteSyncRunResult.NothingToSync;
+                }
+                catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
                 {
-                    processedCount += await PullRemoteBatchAsync(localContext, remoteContext, cancellationToken);
-                    processedCount += await PullRemoteDeletesAsync(localContext, remoteContext, cancellationToken);
-                }
+                    var status = IsBackendUnavailable(ex)
+                        ? RemoteSyncRunStatus.BackendUnavailable
+                        : RemoteSyncRunStatus.Failed;
 
-                return processedCount > 0
-                    ? new RemoteSyncRunResult(RemoteSyncRunStatus.Synced, processedCount)
-                    : RemoteSyncRunResult.NothingToSync;
+                    return await HandleRemoteFailureAsync(
+                        localContext,
+                        pendingOperations,
+                        status,
+                        ex.Message,
+                        ex,
+                        cancellationToken);
+                }
             }
             finally
             {
@@ -365,6 +367,41 @@ namespace Birds.Infrastructure.Services
                 ON "BirdTombstones" ("DeletedAtUtc");
                 """,
                 cancellationToken);
+        }
+
+        private async Task<RemoteSyncRunResult> HandleRemoteFailureAsync(BirdDbContext localContext,
+                                                                         IReadOnlyCollection<SyncOperation> pendingOperations,
+                                                                         RemoteSyncRunStatus status,
+                                                                         string errorMessage,
+                                                                         Exception? exception,
+                                                                         CancellationToken cancellationToken)
+        {
+            if (pendingOperations.Count > 0)
+            {
+                MarkBatchFailed(pendingOperations, errorMessage, DateTime.UtcNow);
+                await localContext.SaveChangesAsync(cancellationToken);
+            }
+
+            if (exception is not null)
+                _logger.LogWarning(exception, LogMessages.RemoteSyncFailed, pendingOperations.Count);
+
+            return new RemoteSyncRunResult(status, pendingOperations.Count, errorMessage);
+        }
+
+        private static bool IsBackendUnavailable(Exception exception)
+        {
+            if (exception is TimeoutException or OperationCanceledException)
+                return true;
+
+            return exception switch
+            {
+                NpgsqlException => true,
+                DbUpdateException dbUpdateException when dbUpdateException.InnerException is not null
+                    => IsBackendUnavailable(dbUpdateException.InnerException),
+                _ when exception.InnerException is not null
+                    => IsBackendUnavailable(exception.InnerException),
+                _ => false
+            };
         }
 
         private static void MarkBatchFailed(IEnumerable<SyncOperation> operations, string errorMessage, DateTime attemptUtc)

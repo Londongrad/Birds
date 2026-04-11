@@ -92,6 +92,7 @@ namespace Birds.Tests.Infrastructure
             (await remoteVerifyContext.Birds.CountAsync()).Should().Be(0);
             var tombstone = await remoteVerifyContext.BirdTombstones.SingleAsync();
             tombstone.BirdId.Should().Be(bird.Id);
+            tombstone.DeletedAtUtc.Kind.Should().Be(DateTimeKind.Unspecified);
 
             await using var localContext = _localDb.CreateContext();
             (await localContext.SyncOperations.CountAsync()).Should().Be(0);

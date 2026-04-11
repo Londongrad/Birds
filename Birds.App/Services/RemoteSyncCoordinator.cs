@@ -46,7 +46,26 @@ namespace Birds.App.Services
 
             for (var pass = 0; pass < MaxBootstrapPasses; pass++)
             {
-                var result = await _remoteSyncService.SyncPendingAsync(cancellationToken);
+                RemoteSyncRunResult result;
+                try
+                {
+                    result = await _remoteSyncService.SyncPendingAsync(cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    await _remoteSyncStatusReporter.SetResultAsync(
+                        RemoteSyncDisplayState.Error,
+                        totalProcessed,
+                        ex.Message,
+                        cancellationToken);
+                    Log.Error(ex, LogMessages.RemoteSyncLoopFailed);
+                    return;
+                }
+
                 totalProcessed += result.ProcessedCount;
 
                 switch (result.Status)
@@ -98,11 +117,6 @@ namespace Birds.App.Services
             {
                 Log.Information(LogMessages.RemoteSyncStopped);
             }
-            catch (Exception ex)
-            {
-                await _remoteSyncStatusReporter.SetLoopFailedAsync(ex.Message, CancellationToken.None);
-                Log.Error(ex, LogMessages.RemoteSyncLoopFailed);
-            }
         }
 
         internal async Task<TimeSpan> RunSingleIterationAsync(CancellationToken stoppingToken)
@@ -113,23 +127,36 @@ namespace Birds.App.Services
                 return TimeSpan.FromSeconds(15);
             }
 
-            await _remoteSyncStatusReporter.SetSyncingAsync(stoppingToken);
-
-            var result = await _remoteSyncService.SyncPendingAsync(stoppingToken);
-            await _remoteSyncStatusReporter.SetResultAsync(
-                ToDisplayState(result.Status),
-                result.ProcessedCount,
-                result.ErrorMessage,
-                stoppingToken);
-
-            return result.Status switch
+            try
             {
-                RemoteSyncRunStatus.Synced => TimeSpan.FromSeconds(3),
-                RemoteSyncRunStatus.NothingToSync => TimeSpan.FromSeconds(12),
-                RemoteSyncRunStatus.BackendUnavailable => TimeSpan.FromSeconds(20),
-                RemoteSyncRunStatus.Failed => TimeSpan.FromSeconds(30),
-                _ => TimeSpan.FromSeconds(15)
-            };
+                await _remoteSyncStatusReporter.SetSyncingAsync(stoppingToken);
+
+                var result = await _remoteSyncService.SyncPendingAsync(stoppingToken);
+                await _remoteSyncStatusReporter.SetResultAsync(
+                    ToDisplayState(result.Status),
+                    result.ProcessedCount,
+                    result.ErrorMessage,
+                    stoppingToken);
+
+                return result.Status switch
+                {
+                    RemoteSyncRunStatus.Synced => TimeSpan.FromSeconds(3),
+                    RemoteSyncRunStatus.NothingToSync => TimeSpan.FromSeconds(12),
+                    RemoteSyncRunStatus.BackendUnavailable => TimeSpan.FromSeconds(20),
+                    RemoteSyncRunStatus.Failed => TimeSpan.FromSeconds(30),
+                    _ => TimeSpan.FromSeconds(15)
+                };
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                await _remoteSyncStatusReporter.SetLoopFailedAsync(ex.Message, CancellationToken.None);
+                Log.Error(ex, LogMessages.RemoteSyncLoopFailed);
+                return TimeSpan.FromSeconds(30);
+            }
         }
 
         private static RemoteSyncDisplayState ToDisplayState(RemoteSyncRunStatus status)

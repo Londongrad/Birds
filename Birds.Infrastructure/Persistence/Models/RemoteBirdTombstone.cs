@@ -13,14 +13,20 @@ namespace Birds.Infrastructure.Persistence.Models
             return new RemoteBirdTombstone
             {
                 BirdId = birdId,
-                DeletedAtUtc = deletedAtUtc
+                DeletedAtUtc = NormalizeForStorage(deletedAtUtc)
             };
         }
 
         public void AdvanceTo(DateTime deletedAtUtc)
         {
-            if (deletedAtUtc > DeletedAtUtc)
-                DeletedAtUtc = deletedAtUtc;
+            var normalized = NormalizeForStorage(deletedAtUtc);
+            if (normalized > DeletedAtUtc)
+                DeletedAtUtc = normalized;
         }
+
+        private static DateTime NormalizeForStorage(DateTime value)
+            => value.Kind == DateTimeKind.Unspecified
+                ? value
+                : DateTime.SpecifyKind(value, DateTimeKind.Unspecified);
     }
 }
