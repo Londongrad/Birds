@@ -43,9 +43,6 @@ namespace Birds.UI.Services.Preferences
         [ObservableProperty]
         private bool showSyncStatusIndicator = AppPreferencesState.DefaultShowSyncStatusIndicator;
 
-        [ObservableProperty]
-        private bool reduceMotion;
-
         public JsonAppPreferencesService(IAppPreferencesPathProvider pathProvider)
         {
             _pathProvider = pathProvider;
@@ -59,7 +56,6 @@ namespace Birds.UI.Services.Preferences
             autoExportEnabled = state.AutoExportEnabled;
             showNotificationBadge = state.ShowNotificationBadge;
             showSyncStatusIndicator = state.ShowSyncStatusIndicator;
-            reduceMotion = state.ReduceMotion;
         }
 
         public void ResetToDefaults()
@@ -72,7 +68,6 @@ namespace Birds.UI.Services.Preferences
             AutoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
             ShowNotificationBadge = true;
             ShowSyncStatusIndicator = AppPreferencesState.DefaultShowSyncStatusIndicator;
-            ReduceMotion = false;
         }
 
         partial void OnSelectedLanguageChanged(string value) => SaveState();
@@ -106,8 +101,6 @@ namespace Birds.UI.Services.Preferences
         partial void OnShowNotificationBadgeChanged(bool value) => SaveState();
 
         partial void OnShowSyncStatusIndicatorChanged(bool value) => SaveState();
-
-        partial void OnReduceMotionChanged(bool value) => SaveState();
 
         private AppPreferencesState LoadState()
         {
@@ -146,8 +139,7 @@ namespace Birds.UI.Services.Preferences
                         CustomExportPath = CustomExportPath?.Trim() ?? string.Empty,
                         AutoExportEnabled = AutoExportEnabled,
                         ShowNotificationBadge = ShowNotificationBadge,
-                        ShowSyncStatusIndicator = ShowSyncStatusIndicator,
-                        ReduceMotion = ReduceMotion
+                        ShowSyncStatusIndicator = ShowSyncStatusIndicator
                     },
                     JsonOptions);
 

@@ -96,6 +96,16 @@
             <Setter Property="HorizontalAlignment" Value="Stretch" />
         </Style>
 
+        <Style x:Key="SectionBodyStackStyle" TargetType="StackPanel">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+
+        <Style x:Key="SettingsRowContentStackStyle" TargetType="StackPanel">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,12,0" />
+        </Style>
+
         <Style x:Key="SettingsToggleRowStyle" TargetType="Border">
             <Setter Property="Margin" Value="0,20,0,0" />
             <Setter Property="Padding" Value="10,14" />
@@ -639,7 +649,7 @@
                     <Border
                         Margin="0,24,0,0"
                         Style="{StaticResource SectionCardStyle}">
-                        <StackPanel>
+                        <StackPanel Style="{StaticResource SectionBodyStackStyle}">
                             <TextBlock
                                 Style="{StaticResource SectionTitleStyle}"
                                 Text="{loc:Loc Key=Settings.Interface.Title}" />
@@ -735,47 +745,13 @@
                                 </Grid>
                             </Grid>
 
-                            <Border
-                                HorizontalAlignment="Stretch"
-                                Style="{StaticResource DangerRowStyle}">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <StackPanel
-                                        Grid.Column="0"
-                                        HorizontalAlignment="Left"
-                                        Margin="0,0,12,0"
-                                        VerticalAlignment="Center">
-                                        <TextBlock
-                                            Style="{StaticResource FieldLabelStyle}"
-                                            Margin="0,0,0,4"
-                                            Text="{loc:Loc Key=Settings.MotionLabel}" />
-                                        <TextBlock
-                                            FontSize="12"
-                                            Foreground="{StaticResource SecondaryTextBrush}"
-                                            Text="{Binding MotionHint}"
-                                            TextWrapping="Wrap" />
-                                    </StackPanel>
-
-                                    <CheckBox
-                                        Grid.Column="1"
-                                        Margin="14,0,0,0"
-                                        HorizontalAlignment="Right"
-                                        IsChecked="{Binding ReduceMotion, Mode=TwoWay}"
-                                        Style="{StaticResource ToggleSwitchStyle}"
-                                        VerticalAlignment="Center" />
-                                </Grid>
-                            </Border>
                         </StackPanel>
                     </Border>
 
                     <Border
                         Margin="0,18,0,0"
                         Style="{StaticResource SectionCardStyle}">
-                        <StackPanel >
+                        <StackPanel Style="{StaticResource SectionBodyStackStyle}">
                             <TextBlock 
                                 Style="{StaticResource SectionTitleStyle}"
                                 Text="{loc:Loc Key=Settings.Notifications.Title}" />
@@ -794,9 +770,7 @@
 
                                     <StackPanel
                                         Grid.Column="0"
-                                        HorizontalAlignment="Left"
-                                        Margin="0,0,12,0"
-                                        VerticalAlignment="Center">
+                                        Style="{StaticResource SettingsRowContentStackStyle}">
                                         <TextBlock
                                             Style="{StaticResource FieldLabelStyle}"
                                             Margin="0,0,0,4"
@@ -830,9 +804,7 @@
 
                                     <StackPanel
                                         Grid.Column="0"
-                                        HorizontalAlignment="Left"
-                                        Margin="0,0,12,0"
-                                        VerticalAlignment="Center">
+                                        Style="{StaticResource SettingsRowContentStackStyle}">
                                         <TextBlock
                                             Style="{StaticResource FieldLabelStyle}"
                                             Margin="0,0,0,4"
@@ -859,7 +831,7 @@
                     <Border
                         Margin="0,18,0,0"
                         Style="{StaticResource SectionCardStyle}">
-                        <StackPanel>
+                        <StackPanel Style="{StaticResource SectionBodyStackStyle}">
                             <TextBlock
                                 Style="{StaticResource SectionTitleStyle}"
                                 Text="{loc:Loc Key=Settings.Data.Title}" />
@@ -877,8 +849,7 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel
-                                        HorizontalAlignment="Left"
-                                        VerticalAlignment="Center">
+                                        Style="{StaticResource SettingsRowContentStackStyle}">
                                         <TextBlock
                                             Style="{StaticResource FieldLabelStyle}"
                                             Margin="0,0,0,4"
@@ -910,8 +881,7 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel
-                                        HorizontalAlignment="Left"
-                                        VerticalAlignment="Center">
+                                        Style="{StaticResource SettingsRowContentStackStyle}">
                                         <TextBlock
                                             Style="{StaticResource FieldLabelStyle}"
                                             Margin="0,0,0,4"
@@ -944,8 +914,7 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel
-                                        HorizontalAlignment="Left"
-                                        VerticalAlignment="Center">
+                                        Style="{StaticResource SettingsRowContentStackStyle}">
                                         <TextBlock
                                             Style="{StaticResource FieldLabelStyle}"
                                             Margin="0,0,0,4"
@@ -1080,6 +1049,9 @@
                                         <Button
                                             Grid.Column="5"
                                             Command="{Binding SyncNowCommand}"
+                                            Margin="12,0,0,0"
+                                            MinWidth="148"
+                                            Padding="18,0"
                                             Style="{StaticResource DataActionButtonStyle}"
                                             VerticalAlignment="Center">
                                             <TextBlock Text="{loc:Loc Key=Settings.SyncAction.SyncNow}" />
@@ -1208,7 +1180,7 @@
 
                                     <StackPanel
                                         Grid.Row="0"
-                                        HorizontalAlignment="Left">
+                                        Style="{StaticResource SettingsRowContentStackStyle}">
                                         <TextBlock
                                             Style="{StaticResource FieldLabelStyle}"
                                             Margin="0,0,0,4"
@@ -1234,8 +1206,7 @@
                                         </Grid.ColumnDefinitions>
 
                                         <StackPanel
-                                            HorizontalAlignment="Left"
-                                            VerticalAlignment="Center">
+                                            Style="{StaticResource SettingsRowContentStackStyle}">
                                             <TextBlock
                                                 Style="{StaticResource FieldLabelStyle}"
                                                 Margin="0,0,0,4"
@@ -1265,7 +1236,7 @@
                         Margin="0,18,0,0"
                         Style="{StaticResource SectionCardStyle}"
                         BorderBrush="{StaticResource DangerButtonBorderBrush}">
-                        <StackPanel>
+                        <StackPanel Style="{StaticResource SectionBodyStackStyle}">
                             <TextBlock
                                 Style="{StaticResource DangerSectionTitleStyle}"
                                 Text="{loc:Loc Key=Settings.Danger.Title}" />
@@ -1290,9 +1261,7 @@
                                         </Grid.ColumnDefinitions>
 
                                         <StackPanel
-                                            HorizontalAlignment="Left"
-                                            Margin="0,0,12,0"
-                                            VerticalAlignment="Center">
+                                            Style="{StaticResource SettingsRowContentStackStyle}">
                                             <TextBlock
                                                 Style="{StaticResource FieldLabelStyle}"
                                                 Margin="0,0,0,4"
@@ -1371,9 +1340,7 @@
                                         </Grid.ColumnDefinitions>
 
                                         <StackPanel
-                                            HorizontalAlignment="Left"
-                                            Margin="0,0,12,0"
-                                            VerticalAlignment="Center">
+                                            Style="{StaticResource SettingsRowContentStackStyle}">
                                             <TextBlock
                                                 Style="{StaticResource FieldLabelStyle}"
                                                 Margin="0,0,0,4"

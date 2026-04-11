@@ -27,7 +27,5 @@ namespace Birds.UI.Services.Preferences
         public bool ShowNotificationBadge { get; init; } = true;
 
         public bool ShowSyncStatusIndicator { get; init; } = DefaultShowSyncStatusIndicator;
-
-        public bool ReduceMotion { get; init; }
     }
 }

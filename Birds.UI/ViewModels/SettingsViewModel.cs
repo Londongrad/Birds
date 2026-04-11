@@ -142,9 +142,6 @@ namespace Birds.UI.ViewModels
         private bool showSyncStatusIndicator = AppPreferencesState.DefaultShowSyncStatusIndicator;
 
         [ObservableProperty]
-        private bool reduceMotion;
-
-        [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(RemoteSyncRecentActivityToggleLabel))]
         private bool isRemoteSyncRecentActivityExpanded;
 
@@ -210,11 +207,6 @@ namespace Birds.UI.ViewModels
             ShowSyncStatusIndicator
                 ? _localization.GetString("Settings.SyncIndicatorHint.Enabled")
                 : _localization.GetString("Settings.SyncIndicatorHint.Disabled");
-
-        public string MotionHint =>
-            ReduceMotion
-                ? _localization.GetString("Settings.MotionHint.Enabled")
-                : _localization.GetString("Settings.MotionHint.Disabled");
 
         public string ExportPathHint =>
             _localization.GetString("Settings.Data.ExportHint", ResolveExportPath());
@@ -611,20 +603,6 @@ namespace Birds.UI.ViewModels
             OnPropertyChanged(nameof(SyncIndicatorHint));
         }
 
-        partial void OnReduceMotionChanged(bool value)
-        {
-            if (_isSynchronizingSelections)
-            {
-                OnPropertyChanged(nameof(MotionHint));
-                return;
-            }
-
-            if (_preferences.ReduceMotion != value)
-                _preferences.ReduceMotion = value;
-
-            OnPropertyChanged(nameof(MotionHint));
-        }
-
         private void OnPreferencesChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName is nameof(IAppPreferencesService.SelectedLanguage)
@@ -634,8 +612,7 @@ namespace Birds.UI.ViewModels
                 or nameof(IAppPreferencesService.CustomExportPath)
                 or nameof(IAppPreferencesService.AutoExportEnabled)
                 or nameof(IAppPreferencesService.ShowNotificationBadge)
-                or nameof(IAppPreferencesService.ShowSyncStatusIndicator)
-                or nameof(IAppPreferencesService.ReduceMotion))
+                or nameof(IAppPreferencesService.ShowSyncStatusIndicator))
             {
                 ReloadFromPreferences(reapplyTheme: true);
             }
@@ -658,7 +635,6 @@ namespace Birds.UI.ViewModels
             OnPropertyChanged(nameof(AutoExportHint));
             OnPropertyChanged(nameof(NotificationsHint));
             OnPropertyChanged(nameof(SyncIndicatorHint));
-            OnPropertyChanged(nameof(MotionHint));
             OnPropertyChanged(nameof(ExportPathHint));
             OnPropertyChanged(nameof(ImportHint));
             OnPropertyChanged(nameof(RemoteSyncStatusLabel));
@@ -731,7 +707,6 @@ namespace Birds.UI.ViewModels
                 AutoExportEnabled = _preferences.AutoExportEnabled;
                 ShowNotificationBadge = _preferences.ShowNotificationBadge;
                 ShowSyncStatusIndicator = _preferences.ShowSyncStatusIndicator;
-                ReduceMotion = _preferences.ReduceMotion;
             }
             finally
             {
@@ -748,7 +723,6 @@ namespace Birds.UI.ViewModels
             OnPropertyChanged(nameof(AutoExportHint));
             OnPropertyChanged(nameof(NotificationsHint));
             OnPropertyChanged(nameof(SyncIndicatorHint));
-            OnPropertyChanged(nameof(MotionHint));
             OnPropertyChanged(nameof(ExportPathHint));
             OnPropertyChanged(nameof(ImportHint));
         }

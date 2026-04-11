@@ -20,8 +20,6 @@ namespace Birds.UI.Services.Preferences.Interfaces
 
         bool ShowSyncStatusIndicator { get; set; }
 
-        bool ReduceMotion { get; set; }
-
         void ResetToDefaults();
     }
 }
