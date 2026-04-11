@@ -1,11 +1,10 @@
-namespace Birds.Application.Interfaces
+namespace Birds.Application.Interfaces;
+
+public interface IDatabaseMaintenanceService
 {
-    public interface IDatabaseMaintenanceService
-    {
-        bool CanResetLocalDatabase { get; }
+    bool CanResetLocalDatabase { get; }
 
-        Task<int> ClearBirdRecordsAsync(CancellationToken cancellationToken = default);
+    Task<int> ClearBirdRecordsAsync(CancellationToken cancellationToken = default);
 
-        Task ResetLocalDatabaseAsync(CancellationToken cancellationToken = default);
-    }
+    Task ResetLocalDatabaseAsync(CancellationToken cancellationToken = default);
 }

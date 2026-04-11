@@ -1,11 +1,10 @@
 using Birds.Shared.Sync;
 
-namespace Birds.App.Services
-{
-    public interface IRemoteSyncCoordinator : IRemoteSyncController
-    {
-        void Start(CancellationToken stoppingToken);
+namespace Birds.App.Services;
 
-        Task BootstrapLocalStoreAsync(CancellationToken cancellationToken);
-    }
+public interface IRemoteSyncCoordinator : IRemoteSyncController
+{
+    void Start(CancellationToken stoppingToken);
+
+    Task BootstrapLocalStoreAsync(CancellationToken cancellationToken);
 }

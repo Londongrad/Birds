@@ -1,7 +1,6 @@
-namespace Birds.UI.Services.Preferences.Interfaces
+namespace Birds.UI.Services.Preferences.Interfaces;
+
+public interface IAppPreferencesPathProvider
 {
-    public interface IAppPreferencesPathProvider
-    {
-        string GetPreferencesPath();
-    }
+    string GetPreferencesPath();
 }

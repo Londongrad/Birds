@@ -5,23 +5,22 @@ using Birds.Application.Mappings;
 using Birds.Shared.Constants;
 using MediatR;
 
-namespace Birds.Application.Commands.CreateBird
+namespace Birds.Application.Commands.CreateBird;
+
+public class CreateBirdCommandHandler(IBirdRepository birdRepository)
+    : IRequestHandler<CreateBirdCommand, Result<BirdDTO>>
 {
-    public class CreateBirdCommandHandler(IBirdRepository birdRepository)
-        : IRequestHandler<CreateBirdCommand, Result<BirdDTO>>
+    public async Task<Result<BirdDTO>> Handle(CreateBirdCommand request, CancellationToken cancellationToken)
     {
-        public async Task<Result<BirdDTO>> Handle(CreateBirdCommand request, CancellationToken cancellationToken)
-        {
-            if (request == null)
-                return Result<BirdDTO>.Failure(ErrorMessages.RequestCannotBeNull);
+        if (request == null)
+            return Result<BirdDTO>.Failure(ErrorMessages.RequestCannotBeNull);
 
-            var bird = request.ToEntity();
+        var bird = request.ToEntity();
 
-            await birdRepository.AddAsync(bird, cancellationToken);
+        await birdRepository.AddAsync(bird, cancellationToken);
 
-            var birdDTO = bird.ToDto();
+        var birdDTO = bird.ToDto();
 
-            return Result<BirdDTO>.Success(birdDTO);
-        }
+        return Result<BirdDTO>.Success(birdDTO);
     }
 }

@@ -45,10 +45,13 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource ThemeInsetBackgroundBrush}" />
-                            <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
+                            <Setter TargetName="ButtonBorder" Property="Background"
+                                    Value="{DynamicResource ThemeInsetBackgroundBrush}" />
+                            <Setter TargetName="ButtonBorder" Property="BorderBrush"
+                                    Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
                             <Setter TargetName="AccentBar" Property="Opacity" Value="0.5" />
-                            <Setter TargetName="AccentBar" Property="Background" Value="{DynamicResource ThemeMutedTextBrush}" />
+                            <Setter TargetName="AccentBar" Property="Background"
+                                    Value="{DynamicResource ThemeMutedTextBrush}" />
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
@@ -80,10 +83,13 @@
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
                             <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
-                            <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource ThemeCardBackgroundBrush}" />
-                            <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
+                            <Setter TargetName="ButtonBorder" Property="Background"
+                                    Value="{DynamicResource ThemeCardBackgroundBrush}" />
+                            <Setter TargetName="ButtonBorder" Property="BorderBrush"
+                                    Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
                             <Setter TargetName="AccentBar" Property="Opacity" Value="1" />
-                            <Setter TargetName="AccentBar" Property="Background" Value="{DynamicResource ThemePrimaryTextBrush}" />
+                            <Setter TargetName="AccentBar" Property="Background"
+                                    Value="{DynamicResource ThemePrimaryTextBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

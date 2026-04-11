@@ -1,79 +1,79 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<OutputType>WinExe</OutputType>
-		<TargetFramework>net9.0-windows</TargetFramework>
-		<Nullable>enable</Nullable>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<UseWPF>true</UseWPF>
-		<ApplicationIcon>..\Birds.UI\wwwroot\Images\bird.ico</ApplicationIcon>
-	</PropertyGroup>
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net9.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UseWPF>true</UseWPF>
+        <ApplicationIcon>..\Birds.UI\wwwroot\Images\bird.ico</ApplicationIcon>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<None Remove="appsettings.json" />
-		<None Remove="birds.db-shm" />
-		<None Remove="birds.db-wal" />
-	</ItemGroup>
+    <ItemGroup>
+        <None Remove="appsettings.json"/>
+        <None Remove="birds.db-shm"/>
+        <None Remove="birds.db-wal"/>
+    </ItemGroup>
 
-	<ItemGroup>
-		<Compile Update="App.SingleInstance.cs">
-			<DependentUpon>App.xaml</DependentUpon>
-		</Compile>
+    <ItemGroup>
+        <Compile Update="App.SingleInstance.cs">
+            <DependentUpon>App.xaml</DependentUpon>
+        </Compile>
 
-		<Compile Update="App.Bootstrap.cs">
-			<DependentUpon>App.xaml</DependentUpon>
-		</Compile>
+        <Compile Update="App.Bootstrap.cs">
+            <DependentUpon>App.xaml</DependentUpon>
+        </Compile>
 
-		<Compile Update="App.Exceptions.cs">
-			<DependentUpon>App.xaml</DependentUpon>
-		</Compile>
+        <Compile Update="App.Exceptions.cs">
+            <DependentUpon>App.xaml</DependentUpon>
+        </Compile>
 
-		<Compile Update="App.Host.cs">
-			<DependentUpon>App.xaml</DependentUpon>
-		</Compile>
+        <Compile Update="App.Host.cs">
+            <DependentUpon>App.xaml</DependentUpon>
+        </Compile>
 
-		<Compile Update="App.Background.cs">
-			<DependentUpon>App.xaml</DependentUpon>
-		</Compile>
-		
-		<Compile Update="App.Helpers.cs">
-			<DependentUpon>App.xaml</DependentUpon>
-		</Compile>
+        <Compile Update="App.Background.cs">
+            <DependentUpon>App.xaml</DependentUpon>
+        </Compile>
 
-		<Compile Update="App.Serilog.cs">
-			<DependentUpon>App.xaml</DependentUpon>
-		</Compile>
-	</ItemGroup>
+        <Compile Update="App.Helpers.cs">
+            <DependentUpon>App.xaml</DependentUpon>
+        </Compile>
 
-	<ItemGroup>
-		<Content Include="appsettings.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
+        <Compile Update="App.Serilog.cs">
+            <DependentUpon>App.xaml</DependentUpon>
+        </Compile>
+    </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="DotNetEnv" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Design">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="Microsoft.Extensions.Hosting" />
-		<PackageReference Include="Serilog" />
-		<PackageReference Include="Serilog.Extensions.Hosting" />
-		<PackageReference Include="Serilog.Settings.Configuration" />
-		<PackageReference Include="Serilog.Sinks.Debug" />
-		<PackageReference Include="Serilog.Sinks.File" />
-	</ItemGroup>
+    <ItemGroup>
+        <Content Include="appsettings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\Birds.Infrastructure\Birds.Infrastructure.csproj" />
-		<ProjectReference Include="..\Birds.UI\Birds.UI.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="DotNetEnv"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Extensions.Hosting"/>
+        <PackageReference Include="Serilog"/>
+        <PackageReference Include="Serilog.Extensions.Hosting"/>
+        <PackageReference Include="Serilog.Settings.Configuration"/>
+        <PackageReference Include="Serilog.Sinks.Debug"/>
+        <PackageReference Include="Serilog.Sinks.File"/>
+    </ItemGroup>
 
-	<ProjectExtensions>
-		<VisualStudio>
-			<UserProperties />
-		</VisualStudio>
-	</ProjectExtensions>
+    <ItemGroup>
+        <ProjectReference Include="..\Birds.Infrastructure\Birds.Infrastructure.csproj"/>
+        <ProjectReference Include="..\Birds.UI\Birds.UI.csproj"/>
+    </ItemGroup>
+
+    <ProjectExtensions>
+        <VisualStudio>
+            <UserProperties/>
+        </VisualStudio>
+    </ProjectExtensions>
 
 </Project>

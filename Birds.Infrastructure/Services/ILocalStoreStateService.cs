@@ -1,7 +1,6 @@
-namespace Birds.Infrastructure.Services
+namespace Birds.Infrastructure.Services;
+
+public interface ILocalStoreStateService
 {
-    public interface ILocalStoreStateService
-    {
-        Task<LocalStoreStateSnapshot> GetSnapshotAsync(CancellationToken cancellationToken);
-    }
+    Task<LocalStoreStateSnapshot> GetSnapshotAsync(CancellationToken cancellationToken);
 }

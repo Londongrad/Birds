@@ -4,6 +4,7 @@ using Birds.Application.Exceptions;
 using Birds.Domain.Common.Exceptions;
 using Birds.Shared.Constants;
 using FluentAssertions;
+using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -37,7 +38,7 @@ public class ExceptionHandlingBehaviorTests
     {
         var behavior = new ExceptionHandlingBehavior<DummyRequest, Result>(_loggerMock.Object);
         var request = new DummyRequest();
-        RequestHandlerDelegate<Result> next = cancellationToken => throw new FluentValidation.ValidationException("Invalid!");
+        RequestHandlerDelegate<Result> next = cancellationToken => throw new ValidationException("Invalid!");
 
         var result = await behavior.Handle(request, next, CancellationToken.None);
 
@@ -81,7 +82,8 @@ public class ExceptionHandlingBehaviorTests
     {
         var behavior = new ExceptionHandlingBehavior<DummyRequest, Result>(_loggerMock.Object);
         var request = new DummyRequest();
-        RequestHandlerDelegate<Result> next = cancellationToken => throw new InvalidOperationException("Something failed");
+        RequestHandlerDelegate<Result> next = cancellationToken =>
+            throw new InvalidOperationException("Something failed");
 
         var result = await behavior.Handle(request, next, CancellationToken.None);
 
@@ -105,5 +107,6 @@ public class ExceptionHandlingBehaviorTests
     }
 
     public sealed class DummyRequest
-    { }
+    {
+    }
 }

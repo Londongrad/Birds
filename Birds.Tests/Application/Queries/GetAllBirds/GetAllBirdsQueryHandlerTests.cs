@@ -8,91 +8,92 @@ using Birds.Shared.Constants;
 using FluentAssertions;
 using Moq;
 
-namespace Birds.Tests.Application.Queries.GetAllBirds
+namespace Birds.Tests.Application.Queries.GetAllBirds;
+
+public class GetAllBirdsQueryHandlerTests
 {
-    public class GetAllBirdsQueryHandlerTests
+    private readonly Mock<IBirdRepository> _repo = new();
+
+    [Fact]
+    public async Task Handle_Should_Return_Success_With_Mapped_List()
     {
-        private readonly Mock<IBirdRepository> _repo = new();
-
-        [Fact]
-        public async Task Handle_Should_Return_Success_With_Mapped_List()
+        var birds = new List<Bird>
         {
-            var birds = new List<Bird>
-            {
-                Bird.Restore(Guid.NewGuid(), (BirdsName)1, "sparrow",
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(-10)), null, true),
-                Bird.Restore(Guid.NewGuid(), (BirdsName)5, "tit",
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(-20)), null, true),
-            }.AsReadOnly();
+            Bird.Restore(Guid.NewGuid(), (BirdsName)1, "sparrow",
+                DateOnly.FromDateTime(DateTime.Now.AddDays(-10)), null, true),
+            Bird.Restore(Guid.NewGuid(), (BirdsName)5, "tit",
+                DateOnly.FromDateTime(DateTime.Now.AddDays(-20)), null, true)
+        }.AsReadOnly();
 
-            _repo.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
-                 .ReturnsAsync(birds);
+        _repo.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(birds);
 
-            var expected = new List<BirdDTO>
-            {
-                new(birds[0].Id, birds[0].Name.ToDisplayName(), birds[0].Description, birds[0].Arrival, birds[0].Departure, birds[0].IsAlive, birds[0].CreatedAt, birds[0].UpdatedAt),
-                new(birds[1].Id, birds[1].Name.ToDisplayName(), birds[1].Description, birds[1].Arrival, birds[1].Departure, birds[1].IsAlive, birds[1].CreatedAt, birds[1].UpdatedAt),
-            }.AsReadOnly();
-
-            var handler = new GetAllBirdsQueryHandler(_repo.Object);
-
-            var result = await handler.Handle(new GetAllBirdsQuery(), CancellationToken.None);
-
-            result.IsSuccess.Should().BeTrue();
-            result.Value.Should().NotBeNull();
-            result.Value.Should().HaveCount(2);
-            result.Value.Should().BeEquivalentTo(expected);
-
-            _repo.Verify(r => r.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
-            _repo.VerifyNoOtherCalls();
-        }
-
-        [Fact]
-        public async Task Handle_Should_Return_Failure_When_Query_Is_Null()
+        var expected = new List<BirdDTO>
         {
-            var handler = new GetAllBirdsQueryHandler(_repo.Object);
+            new(birds[0].Id, birds[0].Name.ToDisplayName(), birds[0].Description, birds[0].Arrival, birds[0].Departure,
+                birds[0].IsAlive, birds[0].CreatedAt, birds[0].UpdatedAt),
+            new(birds[1].Id, birds[1].Name.ToDisplayName(), birds[1].Description, birds[1].Arrival, birds[1].Departure,
+                birds[1].IsAlive, birds[1].CreatedAt, birds[1].UpdatedAt)
+        }.AsReadOnly();
 
-            var result = await handler.Handle(null!, CancellationToken.None);
+        var handler = new GetAllBirdsQueryHandler(_repo.Object);
 
-            result.IsSuccess.Should().BeFalse();
-            result.Error.Should().Be(ErrorMessages.QueryCannotBeNull);
+        var result = await handler.Handle(new GetAllBirdsQuery(), CancellationToken.None);
 
-            _repo.VerifyNoOtherCalls();
-        }
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value.Should().HaveCount(2);
+        result.Value.Should().BeEquivalentTo(expected);
 
-        [Fact]
-        public async Task Handle_Should_Return_Success_With_Empty_List_When_No_Birds()
-        {
-            _repo.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
-                 .ReturnsAsync((IReadOnlyList<Bird>)new List<Bird>().AsReadOnly());
+        _repo.Verify(r => r.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _repo.VerifyNoOtherCalls();
+    }
 
-            var handler = new GetAllBirdsQueryHandler(_repo.Object);
+    [Fact]
+    public async Task Handle_Should_Return_Failure_When_Query_Is_Null()
+    {
+        var handler = new GetAllBirdsQueryHandler(_repo.Object);
 
-            var result = await handler.Handle(new GetAllBirdsQuery(), CancellationToken.None);
+        var result = await handler.Handle(null!, CancellationToken.None);
 
-            result.IsSuccess.Should().BeTrue();
-            result.Value.Should().NotBeNull();
-            result.Value.Should().BeEmpty();
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Be(ErrorMessages.QueryCannotBeNull);
 
-            _repo.Verify(r => r.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
-            _repo.VerifyNoOtherCalls();
-        }
+        _repo.VerifyNoOtherCalls();
+    }
 
-        [Fact]
-        public async Task Handle_Should_Return_Failure_When_Repository_Returns_Null()
-        {
-            _repo.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
-                 .ReturnsAsync((IReadOnlyList<Bird>)null!);
+    [Fact]
+    public async Task Handle_Should_Return_Success_With_Empty_List_When_No_Birds()
+    {
+        _repo.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Bird>().AsReadOnly());
 
-            var handler = new GetAllBirdsQueryHandler(_repo.Object);
+        var handler = new GetAllBirdsQueryHandler(_repo.Object);
 
-            var result = await handler.Handle(new GetAllBirdsQuery(), CancellationToken.None);
+        var result = await handler.Handle(new GetAllBirdsQuery(), CancellationToken.None);
 
-            result.IsSuccess.Should().BeFalse();
-            result.Error.Should().Be(ErrorMessages.UnexpectedError);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value.Should().BeEmpty();
 
-            _repo.Verify(r => r.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
-            _repo.VerifyNoOtherCalls();
-        }
+        _repo.Verify(r => r.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _repo.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Handle_Should_Return_Failure_When_Repository_Returns_Null()
+    {
+        _repo.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync((IReadOnlyList<Bird>)null!);
+
+        var handler = new GetAllBirdsQueryHandler(_repo.Object);
+
+        var result = await handler.Handle(new GetAllBirdsQuery(), CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Be(ErrorMessages.UnexpectedError);
+
+        _repo.Verify(r => r.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _repo.VerifyNoOtherCalls();
     }
 }

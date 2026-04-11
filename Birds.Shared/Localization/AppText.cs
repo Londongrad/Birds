@@ -1,10 +1,11 @@
 using System.Globalization;
 
-namespace Birds.Shared.Localization
+namespace Birds.Shared.Localization;
+
+public static class AppText
 {
-    public static class AppText
-    {
-        private static readonly IReadOnlyDictionary<string, string> Russian = new Dictionary<string, string>(StringComparer.Ordinal)
+    private static readonly IReadOnlyDictionary<string, string> Russian =
+        new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["Language.Russian"] = "Русский",
             ["Language.English"] = "English",
@@ -73,7 +74,8 @@ namespace Birds.Shared.Localization
             ["Statistics.TopDayLabel"] = "Самый продуктивный день: ",
             ["Statistics.LongestBreakLabel"] = "Самый большой перерыв: ",
             ["Statistics.OverviewTitle"] = "Обзор статистики",
-            ["Statistics.FilterSummary.All"] = "Показывается общая картина по всему архиву. При желании её можно сузить до конкретного года.",
+            ["Statistics.FilterSummary.All"] =
+                "Показывается общая картина по всему архиву. При желании её можно сузить до конкретного года.",
             ["Statistics.FilterSummary.Year"] = "Показывается статистика только за {0} год.",
             ["Statistics.Card.Total"] = "Всего записей в выборке",
             ["Statistics.Card.Alive"] = "Сейчас под наблюдением",
@@ -82,14 +84,17 @@ namespace Birds.Shared.Localization
             ["Statistics.Section.Species.Title"] = "Распределение по видам",
             ["Statistics.Section.Species.Description"] = "Какие виды чаще всего встречаются в текущей выборке.",
             ["Statistics.Section.Highlights.Title"] = "Ключевые наблюдения",
-            ["Statistics.Section.Highlights.Description"] = "Короткая выжимка по пиковым периодам и средней длительности содержания.",
-            ["Statistics.Section.OverviewBreakDescription"] = "Самый заметный промежуток без новых поступлений в архиве.",
+            ["Statistics.Section.Highlights.Description"] =
+                "Короткая выжимка по пиковым периодам и средней длительности содержания.",
+            ["Statistics.Section.OverviewBreakDescription"] =
+                "Самый заметный промежуток без новых поступлений в архиве.",
             ["Statistics.Section.Months.Title"] = "Поступления по месяцам",
             ["Statistics.Section.Months.Description"] = "Помесячная активность внутри текущей выборки.",
             ["Statistics.Section.Years.Title"] = "Обзор по годам",
             ["Statistics.Section.Years.Description"] = "Сколько записей приходится на каждый год во всём архиве.",
             ["Statistics.Section.Keeping.Title"] = "Максимальная длительность содержания",
-            ["Statistics.Section.Keeping.Description"] = "Самый долгий срок содержания для каждого вида в текущей выборке.",
+            ["Statistics.Section.Keeping.Description"] =
+                "Самый долгий срок содержания для каждого вида в текущей выборке.",
             ["Statistics.Highlight.AverageKeeping"] = "Средний срок содержания",
             ["Statistics.Highlight.TopMonth"] = "Пиковый месяц",
             ["Statistics.Highlight.TopWeek"] = "Пиковая неделя",
@@ -97,7 +102,8 @@ namespace Birds.Shared.Localization
             ["Statistics.Highlight.LongestBreak"] = "Самый длинный перерыв",
             ["Statistics.AverageKeepingValue"] = "В среднем {0} дней",
             ["Statistics.EmptyTitle"] = "Статистика пока пуста",
-            ["Statistics.EmptyDescription"] = "В этой выборке ещё нет записей. Попробуйте выбрать другой год или добавить птиц в архив.",
+            ["Statistics.EmptyDescription"] =
+                "В этой выборке ещё нет записей. Попробуйте выбрать другой год или добавить птиц в архив.",
             ["Statistics.Tab.Overview"] = "Обзор",
             ["Statistics.Tab.Distribution"] = "Распределение",
             ["Statistics.Tab.Keeping"] = "Содержание",
@@ -122,14 +128,16 @@ namespace Birds.Shared.Localization
             ["Settings.DateFormat.MonthDayYear"] = "12/31/2026",
             ["Settings.DateFormat.YearMonthDay"] = "2026-12-31",
             ["Settings.Notifications.Title"] = "Уведомления",
-            ["Settings.Notifications.Description"] = "Можно оставить историю уведомлений и при этом убрать навязчивый индикатор новых событий.",
+            ["Settings.Notifications.Description"] =
+                "Можно оставить историю уведомлений и при этом убрать навязчивый индикатор новых событий.",
             ["Settings.NotificationBadgeLabel"] = "Показывать индикатор новых уведомлений",
             ["Settings.SyncIndicatorLabel"] = "Показывать плашку синхронизации",
             ["Settings.SyncIndicatorLabel"] = "Показывать плашку синхронизации",
             ["Settings.AutoExportLabel"] = "Автоэкспорт снимка",
             ["Settings.SyncStatusLabel"] = "Состояние синхронизации",
             ["Settings.Data.Title"] = "Данные",
-            ["Settings.Data.Description"] = "Вручную экспортируйте текущий снимок или импортируйте JSON-файл, созданный приложением.",
+            ["Settings.Data.Description"] =
+                "Вручную экспортируйте текущий снимок или импортируйте JSON-файл, созданный приложением.",
             ["Settings.ExportPathLabel"] = "Путь экспорта",
             ["Settings.ExportPathButton"] = "Изменить путь",
             ["Settings.ExportLabel"] = "Экспорт данных",
@@ -141,41 +149,61 @@ namespace Birds.Shared.Localization
             ["Settings.ImportButton"] = "Импортировать",
             ["Settings.Data.ExportHint"] = "Путь экспорта: {0}",
             ["Settings.Data.ExportActionHint"] = "Экспортирует текущий снимок в выбранный JSON-файл.",
-            ["Settings.Data.ImportHint.Merge"] = "Импорт объединяет записи по Id: новые добавляются, совпадающие обновляются, а локальные записи вне файла не удаляются.",
-            ["Settings.Data.ImportHint.Replace"] = "Импорт полностью заменяет текущий архив снимком из файла. Локальные записи, которых нет в файле, будут удалены.",
+            ["Settings.Data.ImportHint.Merge"] =
+                "Импорт объединяет записи по Id: новые добавляются, совпадающие обновляются, а локальные записи вне файла не удаляются.",
+            ["Settings.Data.ImportHint.Replace"] =
+                "Импорт полностью заменяет текущий архив снимком из файла. Локальные записи, которых нет в файле, будут удалены.",
             ["Settings.ResetTitle"] = "Сброс к стандартным значениям",
             ["Settings.ResetDescription"] = "Полезно, если захочется быстро вернуть базовые параметры интерфейса.",
             ["Settings.ResetButton"] = "Сбросить",
             ["Settings.Danger.Title"] = "Опасная зона",
-            ["Settings.Danger.Description"] = "Необратимые действия с данными. Перед ними лучше сделать экспорт резервной копии.",
+            ["Settings.Danger.Description"] =
+                "Необратимые действия с данными. Перед ними лучше сделать экспорт резервной копии.",
             ["Settings.Danger.ClearTitle"] = "Очистить все записи о птицах",
-            ["Settings.Danger.ClearDescription"] = "Удаляет все записи из архива, но не трогает структуру базы и настройки приложения.",
+            ["Settings.Danger.ClearDescription"] =
+                "Удаляет все записи из архива, но не трогает структуру базы и настройки приложения.",
             ["Settings.Danger.ClearButton"] = "Очистить архив",
             ["Settings.Danger.ClearConfirm"] = "Да, очистить архив",
             ["Settings.Danger.ResetTitle"] = "Сбросить локальную SQLite-базу",
-            ["Settings.Danger.ResetDescription"] = "Полностью пересоздаёт локальную базу данных. Используйте это только для полного сброса рабочего окружения.",
+            ["Settings.Danger.ResetDescription"] =
+                "Полностью пересоздаёт локальную базу данных. Используйте это только для полного сброса рабочего окружения.",
             ["Settings.Danger.ResetButton"] = "Сбросить базу",
             ["Settings.Danger.ResetConfirm"] = "Да, сбросить базу",
             ["Settings.Danger.Cancel"] = "Отмена",
             ["Settings.Danger.ConfirmClearHint"] = "Подтвердите очистку архива. Это действие нельзя отменить.",
-            ["Settings.Danger.ConfirmResetHint"] = "Подтвердите полный сброс локальной SQLite-базы. Все записи будут удалены без возможности восстановления.",
+            ["Settings.Danger.ConfirmResetHint"] =
+                "Подтвердите полный сброс локальной SQLite-базы. Все записи будут удалены без возможности восстановления.",
             ["Settings.Danger.ResetUnavailable"] = "Полный сброс базы доступен только в локальном SQLite-режиме.",
-            ["Settings.LanguageHint.Russian"] = "Русский язык включен для всего интерфейса, уведомлений и сообщений валидации.",
-            ["Settings.LanguageHint.English"] = "English is now used for the interface, notifications and validation messages.",
+            ["Settings.LanguageHint.Russian"] =
+                "Русский язык включен для всего интерфейса, уведомлений и сообщений валидации.",
+            ["Settings.LanguageHint.English"] =
+                "English is now used for the interface, notifications and validation messages.",
             ["Settings.ThemeHint.Graphite"] = "Строгая графитовая палитра с нейтральным акцентом.",
             ["Settings.ThemeHint.Steel"] = "Холодная стальная палитра с более выраженным синим тоном.",
-            ["Settings.DateFormatHint.DayMonthYear"] = "Сначала день, затем месяц и год. Подходит для привычного локального чтения даты.",
-            ["Settings.DateFormatHint.MonthDayYear"] = "Сначала месяц, затем день и год. Удобно, если хочется американский порядок дат.",
-            ["Settings.DateFormatHint.YearMonthDay"] = "Сначала год, затем месяц и день. Хорошо подходит для строгого и сортируемого формата.",
-            ["Settings.ImportModeHint.Merge"] = "Безопасный режим: импорт дополняет архив и обновляет совпадающие записи, не трогая остальные.",
-            ["Settings.ImportModeHint.Replace"] = "Режим восстановления снимка: текущий архив будет синхронизирован с файлом и лишние локальные записи исчезнут.",
-            ["Settings.NotificationsHint.Enabled"] = "Индикатор новых уведомлений будет показываться рядом с кнопкой центра уведомлений.",
-            ["Settings.NotificationsHint.Disabled"] = "Красный индикатор скрыт, но сама история уведомлений остаётся доступной.",
-            ["Settings.SyncIndicatorHint.Enabled"] = "Плашка синхронизации будет показываться рядом с центром уведомлений.",
-            ["Settings.SyncIndicatorHint.Disabled"] = "Плашка синхронизации скрыта, но подробный статус остаётся доступным в настройках.",
-            ["Settings.SyncIndicatorHint.Enabled"] = "Плашка состояния синхронизации будет показываться рядом с центром уведомлений.",
-            ["Settings.SyncIndicatorHint.Disabled"] = "Плашка состояния синхронизации скрыта, но подробный статус остаётся доступным в настройках.",
-            ["Settings.AutoExportHint.Enabled"] = "После успешных изменений и при закрытии приложения экспортный снимок будет обновляться автоматически.",
+            ["Settings.DateFormatHint.DayMonthYear"] =
+                "Сначала день, затем месяц и год. Подходит для привычного локального чтения даты.",
+            ["Settings.DateFormatHint.MonthDayYear"] =
+                "Сначала месяц, затем день и год. Удобно, если хочется американский порядок дат.",
+            ["Settings.DateFormatHint.YearMonthDay"] =
+                "Сначала год, затем месяц и день. Хорошо подходит для строгого и сортируемого формата.",
+            ["Settings.ImportModeHint.Merge"] =
+                "Безопасный режим: импорт дополняет архив и обновляет совпадающие записи, не трогая остальные.",
+            ["Settings.ImportModeHint.Replace"] =
+                "Режим восстановления снимка: текущий архив будет синхронизирован с файлом и лишние локальные записи исчезнут.",
+            ["Settings.NotificationsHint.Enabled"] =
+                "Индикатор новых уведомлений будет показываться рядом с кнопкой центра уведомлений.",
+            ["Settings.NotificationsHint.Disabled"] =
+                "Красный индикатор скрыт, но сама история уведомлений остаётся доступной.",
+            ["Settings.SyncIndicatorHint.Enabled"] =
+                "Плашка синхронизации будет показываться рядом с центром уведомлений.",
+            ["Settings.SyncIndicatorHint.Disabled"] =
+                "Плашка синхронизации скрыта, но подробный статус остаётся доступным в настройках.",
+            ["Settings.SyncIndicatorHint.Enabled"] =
+                "Плашка состояния синхронизации будет показываться рядом с центром уведомлений.",
+            ["Settings.SyncIndicatorHint.Disabled"] =
+                "Плашка состояния синхронизации скрыта, но подробный статус остаётся доступным в настройках.",
+            ["Settings.AutoExportHint.Enabled"] =
+                "После успешных изменений и при закрытии приложения экспортный снимок будет обновляться автоматически.",
             ["Settings.AutoExportHint.Disabled"] = "Автоэкспорт отключён. Снимок будет обновляться только вручную.",
             ["Settings.SyncStatus.Disabled"] = "Локально",
             ["Settings.SyncStatus.Syncing"] = "Синхронизация",
@@ -183,15 +211,20 @@ namespace Birds.Shared.Localization
             ["Settings.SyncStatus.Paused"] = "На паузе",
             ["Settings.SyncStatus.Offline"] = "Оффлайн",
             ["Settings.SyncStatus.Error"] = "Ошибка",
-            ["Settings.SyncStatusHint.Disabled"] = "Удалённая синхронизация не настроена. Приложение работает только с локальной SQLite-базой.",
+            ["Settings.SyncStatusHint.Disabled"] =
+                "Удалённая синхронизация не настроена. Приложение работает только с локальной SQLite-базой.",
             ["Settings.SyncStatusHint.Syncing"] = "Локальные изменения сейчас отправляются в удалённый backend.",
-            ["Settings.SyncStatusHint.SyncingWithLastSuccess"] = "Идёт синхронизация. Последний успешный обмен был: {0}.",
+            ["Settings.SyncStatusHint.SyncingWithLastSuccess"] =
+                "Идёт синхронизация. Последний успешный обмен был: {0}.",
             ["Settings.SyncStatusHint.Synced"] = "Локальный архив синхронизирован с удалённым backend.",
             ["Settings.SyncStatusHint.SyncedWithTimestamp"] = "Последняя успешная синхронизация: {0}.",
             ["Settings.SyncStatusHint.Paused"] = "Автоматическая синхронизация поставлена на паузу.",
-            ["Settings.SyncStatusHint.PausedWithLastSuccess"] = "Автоматическая синхронизация на паузе. Последний успешный обмен был: {0}.",
-            ["Settings.SyncStatusHint.Offline"] = "Удалённый backend сейчас недоступен. Локальные изменения останутся в очереди и синхронизируются автоматически после восстановления соединения.",
-            ["Settings.SyncStatusHint.Error"] = "Последняя попытка синхронизации завершилась ошибкой. Локальные изменения останутся в очереди до следующей успешной попытки.",
+            ["Settings.SyncStatusHint.PausedWithLastSuccess"] =
+                "Автоматическая синхронизация на паузе. Последний успешный обмен был: {0}.",
+            ["Settings.SyncStatusHint.Offline"] =
+                "Удалённый backend сейчас недоступен. Локальные изменения останутся в очереди и синхронизируются автоматически после восстановления соединения.",
+            ["Settings.SyncStatusHint.Error"] =
+                "Последняя попытка синхронизации завершилась ошибкой. Локальные изменения останутся в очереди до следующей успешной попытки.",
             ["Settings.SyncStatusHint.PendingCount"] = "В локальной очереди: {0}.",
             ["Settings.SyncStatusHint.LastError"] = "Последняя деталь: {0}",
             ["Settings.SyncMeta.PendingLabel"] = "В очереди",
@@ -233,7 +266,8 @@ namespace Birds.Shared.Localization
             ["Exception.Source.UiDispatcher"] = "Диспетчер UI",
             ["Exception.Source.AppDomain"] = "Домен приложения",
             ["Exception.Source.UnobservedTask"] = "Неотслеженная задача",
-            ["Exception.InvalidOperation"] = "ExceptionHandlingBehavior может обрабатывать только ответы типа Result или Result<T>. Фактический тип: {0}",
+            ["Exception.InvalidOperation"] =
+                "ExceptionHandlingBehavior может обрабатывать только ответы типа Result или Result<T>. Фактический тип: {0}",
             ["Exception.NotFound"] = "{0} с ключом '{1}' не найден.",
             ["Exception.ValidationFailure"] = "Ошибка валидации: {0}",
             ["Exception.NotFoundFailure"] = "Не найдено: {0}",
@@ -260,12 +294,15 @@ namespace Birds.Shared.Localization
             ["Info.AutoExportSucceeded"] = "Автоэкспорт выполнен. Путь: {0}",
             ["Info.ExportSucceeded"] = "Экспорт выполнен. Путь: {0}",
             ["Info.ImportMergedSucceeded"] = "Импорт завершён. Обработано: {0}, добавлено: {1}, обновлено: {2}.",
-            ["Info.ImportReplacedSucceeded"] = "Снимок восстановлен. Обработано: {0}, добавлено: {1}, обновлено: {2}, удалено: {3}.",
+            ["Info.ImportReplacedSucceeded"] =
+                "Снимок восстановлен. Обработано: {0}, добавлено: {1}, обновлено: {2}, удалено: {3}.",
             ["Info.BirdRecordsCleared"] = "Архив очищен. Удалено записей: {0}.",
             ["Info.LocalDatabaseReset"] = "Локальная база данных сброшена.",
-            ["Info.SyncConflictResolved"] = "\u0421\u0438\u043D\u0445\u0440\u043E\u043D\u0438\u0437\u0430\u0446\u0438\u044F \u0440\u0430\u0437\u0440\u0435\u0448\u0438\u043B\u0430 {0} \u043A\u043E\u043D\u0444\u043B\u0438\u043A\u0442(\u043E\u0432) \u0432 \u043F\u043E\u043B\u044C\u0437\u0443 \u0431\u043E\u043B\u0435\u0435 \u043D\u043E\u0432\u043E\u0439 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0439 \u0432\u0435\u0440\u0441\u0438\u0438.",
+            ["Info.SyncConflictResolved"] =
+                "\u0421\u0438\u043D\u0445\u0440\u043E\u043D\u0438\u0437\u0430\u0446\u0438\u044F \u0440\u0430\u0437\u0440\u0435\u0448\u0438\u043B\u0430 {0} \u043A\u043E\u043D\u0444\u043B\u0438\u043A\u0442(\u043E\u0432) \u0432 \u043F\u043E\u043B\u044C\u0437\u0443 \u0431\u043E\u043B\u0435\u0435 \u043D\u043E\u0432\u043E\u0439 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0439 \u0432\u0435\u0440\u0441\u0438\u0438.",
 
-            ["Error.BirdLoadFailed"] = "Не удалось загрузить данные о птицах из базы данных.\nПроверьте подключение или перезапустите приложение.",
+            ["Error.BirdLoadFailed"] =
+                "Не удалось загрузить данные о птицах из базы данных.\nПроверьте подключение или перезапустите приложение.",
             ["Error.UnknownError"] = "Неизвестная ошибка.",
             ["Error.UnexpectedError"] = "Непредвиденная ошибка.",
             ["Error.CannotSaveBird"] = "Не удалось сохранить птицу!",
@@ -274,13 +311,17 @@ namespace Birds.Shared.Localization
             ["Error.RequestCannotBeNull"] = "Запрос не может быть null.",
             ["Error.QueryCannotBeNull"] = "Query не может быть null.",
             ["Error.ConnectionStringNotFound"] = "Строка подключения к базе данных не найдена.",
-            ["Error.ConnectionStringNotFoundFor"] = "Строка подключения к базе данных не найдена. Ожидалась одна из: {0}.",
-            ["Error.InvalidDatabaseProvider"] = "Неподдерживаемый провайдер базы данных '{0}'. Используйте 'Sqlite' или 'Postgres'.",
-            ["Error.InvalidDatabaseSeedingMode"] = "Неподдерживаемый режим сидинга '{0}'. Используйте 'None', 'SeedIfEmpty' или 'RecreateAndSeed'.",
+            ["Error.ConnectionStringNotFoundFor"] =
+                "Строка подключения к базе данных не найдена. Ожидалась одна из: {0}.",
+            ["Error.InvalidDatabaseProvider"] =
+                "Неподдерживаемый провайдер базы данных '{0}'. Используйте 'Sqlite' или 'Postgres'.",
+            ["Error.InvalidDatabaseSeedingMode"] =
+                "Неподдерживаемый режим сидинга '{0}'. Используйте 'None', 'SeedIfEmpty' или 'RecreateAndSeed'.",
             ["Error.ImportPathCannotBeEmpty"] = "Путь к файлу импорта не указан.",
             ["Error.ImportFileNotFound"] = "Файл импорта не найден: {0}",
             ["Error.ImportPayloadCannotBeNull"] = "Импортируемый набор данных отсутствует.",
-            ["Error.InvalidImportFileFormat"] = "Не удалось разобрать файл импорта. Ожидался JSON-формат приложения Birds.",
+            ["Error.InvalidImportFileFormat"] =
+                "Не удалось разобрать файл импорта. Ожидался JSON-формат приложения Birds.",
             ["Error.UnsupportedImportVersion"] = "Файл импорта имеет неподдерживаемую версию: {0}.",
             ["Error.ImportContainsDuplicateIds"] = "Файл импорта содержит дублирующийся Id: {0}.",
             ["Error.InvalidImportedBirdName"] = "Импорт прерван: неизвестное имя птицы '{0}'.",
@@ -300,7 +341,8 @@ namespace Birds.Shared.Localization
             ["Validation.InvalidDateRange"] = "Дата должна быть в диапазоне от {0:dd-MM-yyyy} до {1:dd-MM-yyyy}.",
             ["Validation.DateIsNotValid"] = "Укажите корректную дату.",
             ["Validation.DateCannotBeInTheFuture"] = "Дата не может быть из будущего (не позже {0:dd-MM-yyyy}).",
-            ["Validation.DepartureLaterThenArrival"] = "Дата выбытия не может быть раньше даты прибытия ({0:dd-MM-yyyy}).",
+            ["Validation.DepartureLaterThenArrival"] =
+                "Дата выбытия не может быть раньше даты прибытия ({0:dd-MM-yyyy}).",
 
             ["BirdName.Воробей"] = "Воробей",
             ["BirdName.Щегол"] = "Щегол",
@@ -312,7 +354,8 @@ namespace Birds.Shared.Localization
             ["BirdName.Unknown"] = "Неизвестно"
         };
 
-        private static readonly IReadOnlyDictionary<string, string> English = new Dictionary<string, string>(StringComparer.Ordinal)
+    private static readonly IReadOnlyDictionary<string, string> English =
+        new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["Language.Russian"] = "Russian",
             ["Language.English"] = "English",
@@ -338,7 +381,8 @@ namespace Birds.Shared.Localization
             ["AddBird.DescriptionLabel"] = "Description",
             ["AddBird.DescriptionHint"] = "Description is optional. Up to 200 characters.",
             ["AddBird.OneTimeTitle"] = "One-time keeping",
-            ["AddBird.OneTimeHint"] = "If the bird arrived and left on the same day, the departure date will be filled automatically.",
+            ["AddBird.OneTimeHint"] =
+                "If the bird arrived and left on the same day, the departure date will be filled automatically.",
             ["AddBird.Save"] = "Save entry",
 
             ["Bird.CreatedLabel"] = "Created: ",
@@ -381,7 +425,8 @@ namespace Birds.Shared.Localization
             ["Statistics.TopDayLabel"] = "Most productive day: ",
             ["Statistics.LongestBreakLabel"] = "Longest break: ",
             ["Statistics.OverviewTitle"] = "Statistics overview",
-            ["Statistics.FilterSummary.All"] = "Showing the full archive picture. You can narrow it down to a single year at any time.",
+            ["Statistics.FilterSummary.All"] =
+                "Showing the full archive picture. You can narrow it down to a single year at any time.",
             ["Statistics.FilterSummary.Year"] = "Showing statistics only for {0}.",
             ["Statistics.Card.Total"] = "Records in scope",
             ["Statistics.Card.Alive"] = "Currently under care",
@@ -390,14 +435,16 @@ namespace Birds.Shared.Localization
             ["Statistics.Section.Species.Title"] = "Species distribution",
             ["Statistics.Section.Species.Description"] = "Which species appear most often in the current scope.",
             ["Statistics.Section.Highlights.Title"] = "Highlights",
-            ["Statistics.Section.Highlights.Description"] = "A quick readout of peak periods and average keeping duration.",
+            ["Statistics.Section.Highlights.Description"] =
+                "A quick readout of peak periods and average keeping duration.",
             ["Statistics.Section.OverviewBreakDescription"] = "The most noticeable gap without new archive arrivals.",
             ["Statistics.Section.Months.Title"] = "Arrivals by month",
             ["Statistics.Section.Months.Description"] = "Monthly activity inside the current scope.",
             ["Statistics.Section.Years.Title"] = "Year overview",
             ["Statistics.Section.Years.Description"] = "How many records belong to each year across the whole archive.",
             ["Statistics.Section.Keeping.Title"] = "Maximum keeping duration",
-            ["Statistics.Section.Keeping.Description"] = "The longest keeping period for each species in the current scope.",
+            ["Statistics.Section.Keeping.Description"] =
+                "The longest keeping period for each species in the current scope.",
             ["Statistics.Highlight.AverageKeeping"] = "Average keeping duration",
             ["Statistics.Highlight.TopMonth"] = "Peak month",
             ["Statistics.Highlight.TopWeek"] = "Peak week",
@@ -405,7 +452,8 @@ namespace Birds.Shared.Localization
             ["Statistics.Highlight.LongestBreak"] = "Longest quiet break",
             ["Statistics.AverageKeepingValue"] = "Average of {0} days",
             ["Statistics.EmptyTitle"] = "No statistics yet",
-            ["Statistics.EmptyDescription"] = "There are no records in this scope yet. Try another year or add birds to the archive.",
+            ["Statistics.EmptyDescription"] =
+                "There are no records in this scope yet. Try another year or add birds to the archive.",
             ["Statistics.Tab.Overview"] = "Overview",
             ["Statistics.Tab.Distribution"] = "Distribution",
             ["Statistics.Tab.Keeping"] = "Keeping",
@@ -430,14 +478,16 @@ namespace Birds.Shared.Localization
             ["Settings.DateFormat.MonthDayYear"] = "12/31/2026",
             ["Settings.DateFormat.YearMonthDay"] = "2026-12-31",
             ["Settings.Notifications.Title"] = "Notifications",
-            ["Settings.Notifications.Description"] = "You can keep notification history while hiding the distracting unread indicator.",
+            ["Settings.Notifications.Description"] =
+                "You can keep notification history while hiding the distracting unread indicator.",
             ["Settings.NotificationBadgeLabel"] = "Show unread notification badge",
             ["Settings.SyncIndicatorLabel"] = "Show sync status chip",
             ["Settings.SyncIndicatorLabel"] = "Show sync status chip",
             ["Settings.AutoExportLabel"] = "Automatic snapshot export",
             ["Settings.SyncStatusLabel"] = "Cloud sync status",
             ["Settings.Data.Title"] = "Data",
-            ["Settings.Data.Description"] = "Export the current snapshot manually or import a JSON file produced by the application.",
+            ["Settings.Data.Description"] =
+                "Export the current snapshot manually or import a JSON file produced by the application.",
             ["Settings.ExportPathLabel"] = "Export location",
             ["Settings.ExportPathButton"] = "Change path",
             ["Settings.ExportLabel"] = "Export data",
@@ -449,57 +499,85 @@ namespace Birds.Shared.Localization
             ["Settings.ImportButton"] = "Import",
             ["Settings.Data.ExportHint"] = "Export location: {0}",
             ["Settings.Data.ExportActionHint"] = "Exports the current snapshot to the selected JSON file.",
-            ["Settings.Data.ImportHint.Merge"] = "Import merges records by Id: new entries are added, matching ones are updated, and local records outside the file remain untouched.",
-            ["Settings.Data.ImportHint.Replace"] = "Import replaces the current archive with the snapshot from the file. Local records missing from the file will be removed.",
+            ["Settings.Data.ImportHint.Merge"] =
+                "Import merges records by Id: new entries are added, matching ones are updated, and local records outside the file remain untouched.",
+            ["Settings.Data.ImportHint.Replace"] =
+                "Import replaces the current archive with the snapshot from the file. Local records missing from the file will be removed.",
             ["Settings.ResetTitle"] = "Reset to defaults",
             ["Settings.ResetDescription"] = "Useful when you want to quickly return to the default interface settings.",
             ["Settings.ResetButton"] = "Reset",
             ["Settings.Danger.Title"] = "Danger zone",
-            ["Settings.Danger.Description"] = "Irreversible data actions. It is best to export a backup before using them.",
+            ["Settings.Danger.Description"] =
+                "Irreversible data actions. It is best to export a backup before using them.",
             ["Settings.Danger.ClearTitle"] = "Clear all bird records",
-            ["Settings.Danger.ClearDescription"] = "Removes every bird record from the archive while keeping the database structure and application settings intact.",
+            ["Settings.Danger.ClearDescription"] =
+                "Removes every bird record from the archive while keeping the database structure and application settings intact.",
             ["Settings.Danger.ClearButton"] = "Clear archive",
             ["Settings.Danger.ClearConfirm"] = "Yes, clear archive",
             ["Settings.Danger.ResetTitle"] = "Reset local SQLite database",
-            ["Settings.Danger.ResetDescription"] = "Recreates the local database from scratch. Use this only when you want a complete local reset.",
+            ["Settings.Danger.ResetDescription"] =
+                "Recreates the local database from scratch. Use this only when you want a complete local reset.",
             ["Settings.Danger.ResetButton"] = "Reset database",
             ["Settings.Danger.ResetConfirm"] = "Yes, reset database",
             ["Settings.Danger.Cancel"] = "Cancel",
             ["Settings.Danger.ConfirmClearHint"] = "Confirm clearing the archive. This action cannot be undone.",
-            ["Settings.Danger.ConfirmResetHint"] = "Confirm resetting the local SQLite database. All records will be removed without recovery.",
-            ["Settings.Danger.ResetUnavailable"] = "Full database reset is available only when the application uses local SQLite.",
-            ["Settings.LanguageHint.Russian"] = "Russian is now used for the interface, notifications and validation messages.",
-            ["Settings.LanguageHint.English"] = "English is now used for the interface, notifications and validation messages.",
+            ["Settings.Danger.ConfirmResetHint"] =
+                "Confirm resetting the local SQLite database. All records will be removed without recovery.",
+            ["Settings.Danger.ResetUnavailable"] =
+                "Full database reset is available only when the application uses local SQLite.",
+            ["Settings.LanguageHint.Russian"] =
+                "Russian is now used for the interface, notifications and validation messages.",
+            ["Settings.LanguageHint.English"] =
+                "English is now used for the interface, notifications and validation messages.",
             ["Settings.ThemeHint.Graphite"] = "A restrained graphite palette with a neutral accent.",
             ["Settings.ThemeHint.Steel"] = "A colder steel palette with a clearer blue tone.",
-            ["Settings.DateFormatHint.DayMonthYear"] = "Day comes first, then month and year. Good for a familiar local reading order.",
-            ["Settings.DateFormatHint.MonthDayYear"] = "Month comes first, then day and year. Useful if you prefer the US-style order.",
-            ["Settings.DateFormatHint.YearMonthDay"] = "Year comes first, then month and day. Works well for a strict sortable format.",
-            ["Settings.ImportModeHint.Merge"] = "Safe mode: the import enriches the archive and updates matching records without touching the rest.",
-            ["Settings.ImportModeHint.Replace"] = "Snapshot restore mode: the current archive will be synchronized with the file and extra local records will be removed.",
-            ["Settings.NotificationsHint.Enabled"] = "The unread badge will be shown next to the notification center button.",
-            ["Settings.NotificationsHint.Disabled"] = "The red unread badge is hidden, but the notification history stays available.",
-            ["Settings.SyncIndicatorHint.Enabled"] = "The synchronization chip will be shown next to the notification center button.",
-            ["Settings.SyncIndicatorHint.Disabled"] = "The synchronization chip is hidden, but the detailed status remains available in settings.",
-            ["Settings.SyncIndicatorHint.Enabled"] = "The synchronization status chip will be shown next to the notification center button.",
-            ["Settings.SyncIndicatorHint.Disabled"] = "The synchronization status chip is hidden, but the detailed status remains available in settings.",
-            ["Settings.AutoExportHint.Enabled"] = "After successful changes and on application shutdown the export snapshot will be refreshed automatically.",
-            ["Settings.AutoExportHint.Disabled"] = "Auto-export is disabled. The snapshot will only be updated manually.",
+            ["Settings.DateFormatHint.DayMonthYear"] =
+                "Day comes first, then month and year. Good for a familiar local reading order.",
+            ["Settings.DateFormatHint.MonthDayYear"] =
+                "Month comes first, then day and year. Useful if you prefer the US-style order.",
+            ["Settings.DateFormatHint.YearMonthDay"] =
+                "Year comes first, then month and day. Works well for a strict sortable format.",
+            ["Settings.ImportModeHint.Merge"] =
+                "Safe mode: the import enriches the archive and updates matching records without touching the rest.",
+            ["Settings.ImportModeHint.Replace"] =
+                "Snapshot restore mode: the current archive will be synchronized with the file and extra local records will be removed.",
+            ["Settings.NotificationsHint.Enabled"] =
+                "The unread badge will be shown next to the notification center button.",
+            ["Settings.NotificationsHint.Disabled"] =
+                "The red unread badge is hidden, but the notification history stays available.",
+            ["Settings.SyncIndicatorHint.Enabled"] =
+                "The synchronization chip will be shown next to the notification center button.",
+            ["Settings.SyncIndicatorHint.Disabled"] =
+                "The synchronization chip is hidden, but the detailed status remains available in settings.",
+            ["Settings.SyncIndicatorHint.Enabled"] =
+                "The synchronization status chip will be shown next to the notification center button.",
+            ["Settings.SyncIndicatorHint.Disabled"] =
+                "The synchronization status chip is hidden, but the detailed status remains available in settings.",
+            ["Settings.AutoExportHint.Enabled"] =
+                "After successful changes and on application shutdown the export snapshot will be refreshed automatically.",
+            ["Settings.AutoExportHint.Disabled"] =
+                "Auto-export is disabled. The snapshot will only be updated manually.",
             ["Settings.SyncStatus.Disabled"] = "Local only",
             ["Settings.SyncStatus.Syncing"] = "Syncing",
             ["Settings.SyncStatus.Synced"] = "Synced",
             ["Settings.SyncStatus.Paused"] = "Paused",
             ["Settings.SyncStatus.Offline"] = "Offline",
             ["Settings.SyncStatus.Error"] = "Error",
-            ["Settings.SyncStatusHint.Disabled"] = "Remote synchronization is not configured. The application is using only the local SQLite store.",
-            ["Settings.SyncStatusHint.Syncing"] = "Local changes are currently being synchronized with the remote backend.",
-            ["Settings.SyncStatusHint.SyncingWithLastSuccess"] = "Synchronization is in progress. The last successful exchange was at {0}.",
+            ["Settings.SyncStatusHint.Disabled"] =
+                "Remote synchronization is not configured. The application is using only the local SQLite store.",
+            ["Settings.SyncStatusHint.Syncing"] =
+                "Local changes are currently being synchronized with the remote backend.",
+            ["Settings.SyncStatusHint.SyncingWithLastSuccess"] =
+                "Synchronization is in progress. The last successful exchange was at {0}.",
             ["Settings.SyncStatusHint.Synced"] = "The local archive is synchronized with the remote backend.",
             ["Settings.SyncStatusHint.SyncedWithTimestamp"] = "Last successful sync: {0}.",
             ["Settings.SyncStatusHint.Paused"] = "Automatic synchronization is paused.",
-            ["Settings.SyncStatusHint.PausedWithLastSuccess"] = "Automatic synchronization is paused. The last successful exchange was at {0}.",
-            ["Settings.SyncStatusHint.Offline"] = "The remote backend is currently unavailable. Local changes will stay queued and synchronize automatically when the connection returns.",
-            ["Settings.SyncStatusHint.Error"] = "The latest synchronization attempt failed. Local changes will stay queued until the next successful attempt.",
+            ["Settings.SyncStatusHint.PausedWithLastSuccess"] =
+                "Automatic synchronization is paused. The last successful exchange was at {0}.",
+            ["Settings.SyncStatusHint.Offline"] =
+                "The remote backend is currently unavailable. Local changes will stay queued and synchronize automatically when the connection returns.",
+            ["Settings.SyncStatusHint.Error"] =
+                "The latest synchronization attempt failed. Local changes will stay queued until the next successful attempt.",
             ["Settings.SyncStatusHint.PendingCount"] = "Queued local changes: {0}.",
             ["Settings.SyncStatusHint.LastError"] = "Latest detail: {0}",
             ["Settings.SyncMeta.PendingLabel"] = "Pending",
@@ -507,7 +585,8 @@ namespace Birds.Shared.Localization
             ["Settings.SyncMeta.LastSuccessLabel"] = "Last success",
             ["Settings.SyncMeta.Never"] = "Never",
             ["Settings.SyncMeta.RecentActivityLabel"] = "Recent activity",
-            ["Settings.SyncMeta.RecentActivityEmpty"] = "No synchronization events have been recorded in this session yet.",
+            ["Settings.SyncMeta.RecentActivityEmpty"] =
+                "No synchronization events have been recorded in this session yet.",
             ["Settings.SyncMeta.RecentActivityExpand"] = "Show",
             ["Settings.SyncMeta.RecentActivityCollapse"] = "Hide",
             ["Settings.SyncAction.SyncNow"] = "Sync now",
@@ -523,7 +602,8 @@ namespace Birds.Shared.Localization
             ["Notification.UnreadLabel"] = "Unread: ",
             ["Notification.Clear"] = "Clear",
             ["Notification.EmptyTitle"] = "Nothing here yet",
-            ["Notification.EmptyDescription"] = "The history of actions and important application messages will appear here.",
+            ["Notification.EmptyDescription"] =
+                "The history of actions and important application messages will appear here.",
             ["Notification.New"] = "New",
             ["Notification.Type.Info"] = "Info",
             ["Notification.Type.Success"] = "Success",
@@ -541,7 +621,8 @@ namespace Birds.Shared.Localization
             ["Exception.Source.UiDispatcher"] = "UI Dispatcher",
             ["Exception.Source.AppDomain"] = "AppDomain",
             ["Exception.Source.UnobservedTask"] = "Unobserved Task",
-            ["Exception.InvalidOperation"] = "ExceptionHandlingBehavior can only handle responses of type Result or Result<T>. Actual type: {0}",
+            ["Exception.InvalidOperation"] =
+                "ExceptionHandlingBehavior can only handle responses of type Result or Result<T>. Actual type: {0}",
             ["Exception.NotFound"] = "{0} with key '{1}' was not found.",
             ["Exception.ValidationFailure"] = "Validation error: {0}",
             ["Exception.NotFoundFailure"] = "Not found: {0}",
@@ -568,12 +649,14 @@ namespace Birds.Shared.Localization
             ["Info.AutoExportSucceeded"] = "Auto-export succeeded. Path: {0}",
             ["Info.ExportSucceeded"] = "Export completed. Path: {0}",
             ["Info.ImportMergedSucceeded"] = "Import completed. Processed: {0}, added: {1}, updated: {2}.",
-            ["Info.ImportReplacedSucceeded"] = "Snapshot restored. Processed: {0}, added: {1}, updated: {2}, removed: {3}.",
+            ["Info.ImportReplacedSucceeded"] =
+                "Snapshot restored. Processed: {0}, added: {1}, updated: {2}, removed: {3}.",
             ["Info.BirdRecordsCleared"] = "Archive cleared. Records removed: {0}.",
             ["Info.LocalDatabaseReset"] = "Local database has been reset.",
             ["Info.SyncConflictResolved"] = "Cloud sync resolved {0} conflict(s) using the newer remote version.",
 
-            ["Error.BirdLoadFailed"] = "Failed to load bird data from the database.\nPlease check your connection or restart the application.",
+            ["Error.BirdLoadFailed"] =
+                "Failed to load bird data from the database.\nPlease check your connection or restart the application.",
             ["Error.UnknownError"] = "Unknown error.",
             ["Error.UnexpectedError"] = "Unexpected error.",
             ["Error.CannotSaveBird"] = "Unable to save bird!",
@@ -584,11 +667,13 @@ namespace Birds.Shared.Localization
             ["Error.ConnectionStringNotFound"] = "Database connection string not found.",
             ["Error.ConnectionStringNotFoundFor"] = "Database connection string not found. Expected one of: {0}.",
             ["Error.InvalidDatabaseProvider"] = "Unsupported database provider '{0}'. Use 'Sqlite' or 'Postgres'.",
-            ["Error.InvalidDatabaseSeedingMode"] = "Unsupported database seeding mode '{0}'. Use 'None', 'SeedIfEmpty' or 'RecreateAndSeed'.",
+            ["Error.InvalidDatabaseSeedingMode"] =
+                "Unsupported database seeding mode '{0}'. Use 'None', 'SeedIfEmpty' or 'RecreateAndSeed'.",
             ["Error.ImportPathCannotBeEmpty"] = "The import file path is missing.",
             ["Error.ImportFileNotFound"] = "Import file not found: {0}",
             ["Error.ImportPayloadCannotBeNull"] = "The imported data payload is missing.",
-            ["Error.InvalidImportFileFormat"] = "Unable to parse the import file. A Birds application JSON export was expected.",
+            ["Error.InvalidImportFileFormat"] =
+                "Unable to parse the import file. A Birds application JSON export was expected.",
             ["Error.UnsupportedImportVersion"] = "The import file uses an unsupported version: {0}.",
             ["Error.ImportContainsDuplicateIds"] = "The import file contains a duplicate Id: {0}.",
             ["Error.InvalidImportedBirdName"] = "Import aborted: unknown bird name '{0}'.",
@@ -608,7 +693,8 @@ namespace Birds.Shared.Localization
             ["Validation.InvalidDateRange"] = "The date must be between {0:dd-MM-yyyy} and {1:dd-MM-yyyy}.",
             ["Validation.DateIsNotValid"] = "Specify a valid date.",
             ["Validation.DateCannotBeInTheFuture"] = "The date cannot be in the future (no later than {0:dd-MM-yyyy}).",
-            ["Validation.DepartureLaterThenArrival"] = "Departure date cannot be earlier than arrival date ({0:dd-MM-yyyy}).",
+            ["Validation.DepartureLaterThenArrival"] =
+                "Departure date cannot be earlier than arrival date ({0:dd-MM-yyyy}).",
 
             ["BirdName.Воробей"] = "Sparrow",
             ["BirdName.Щегол"] = "Goldfinch",
@@ -620,34 +706,35 @@ namespace Birds.Shared.Localization
             ["BirdName.Unknown"] = "Unknown"
         };
 
-        public static string Get(string key, CultureInfo? culture = null)
-        {
-            var dictionary = SelectDictionary(culture);
-            if (dictionary.TryGetValue(key, out var value))
-                return value;
+    public static string Get(string key, CultureInfo? culture = null)
+    {
+        var dictionary = SelectDictionary(culture);
+        if (dictionary.TryGetValue(key, out var value))
+            return value;
 
-            return Russian.TryGetValue(key, out var fallback)
-                ? fallback
-                : key;
-        }
+        return Russian.TryGetValue(key, out var fallback)
+            ? fallback
+            : key;
+    }
 
-        public static string Format(string key, params object[] args)
-            => string.Format(CultureInfo.CurrentCulture, Get(key), args);
+    public static string Format(string key, params object[] args)
+    {
+        return string.Format(CultureInfo.CurrentCulture, Get(key), args);
+    }
 
-        public static string Format(CultureInfo? culture, string key, params object[] args)
-        {
-            var actualCulture = culture ?? CultureInfo.CurrentCulture;
-            return string.Format(actualCulture, Get(key, actualCulture), args);
-        }
+    public static string Format(CultureInfo? culture, string key, params object[] args)
+    {
+        var actualCulture = culture ?? CultureInfo.CurrentCulture;
+        return string.Format(actualCulture, Get(key, actualCulture), args);
+    }
 
-        private static IReadOnlyDictionary<string, string> SelectDictionary(CultureInfo? culture)
-        {
-            var effectiveCulture = culture
-                ?? CultureInfo.DefaultThreadCurrentUICulture
-                ?? CultureInfo.CurrentUICulture;
+    private static IReadOnlyDictionary<string, string> SelectDictionary(CultureInfo? culture)
+    {
+        var effectiveCulture = culture
+                               ?? CultureInfo.DefaultThreadCurrentUICulture
+                               ?? CultureInfo.CurrentUICulture;
 
-            var language = AppLanguages.Normalize(effectiveCulture.Name);
-            return language == AppLanguages.English ? English : Russian;
-        }
+        var language = AppLanguages.Normalize(effectiveCulture.Name);
+        return language == AppLanguages.English ? English : Russian;
     }
 }

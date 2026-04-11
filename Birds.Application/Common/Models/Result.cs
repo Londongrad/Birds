@@ -1,76 +1,87 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace Birds.Application.Common.Models
+namespace Birds.Application.Common.Models;
+
+/// <summary>
+///     Represents a basic operation result indicating success or failure.
+/// </summary>
+public class Result
 {
-    /// <summary>
-    /// Represents a basic operation result indicating success or failure.
-    /// </summary>
-    public class Result
+    private Result(bool isSuccess, string? error)
     {
-        /// <summary>
-        /// Indicates whether the operation was successful.
-        /// </summary>
-        public bool IsSuccess { get; }
-
-        /// <summary>
-        /// Gets an error message if the operation failed.
-        /// </summary>
-        public string? Error { get; }
-
-        private Result(bool isSuccess, string? error)
-        {
-            IsSuccess = isSuccess;
-            Error = error;
-        }
-
-        /// <summary>
-        /// Creates a successful result.
-        /// </summary>
-        public static Result Success() => new(true, null);
-
-        /// <summary>
-        /// Creates a failed result with the specified error message.
-        /// </summary>
-        public static Result Failure(string error) => new(false, error);
+        IsSuccess = isSuccess;
+        Error = error;
     }
 
     /// <summary>
-    /// Represents a result of an operation that returns a value of type <typeparamref name="T"/>.
+    ///     Indicates whether the operation was successful.
     /// </summary>
-    /// <typeparam name="T">Type of the value returned if the operation succeeds.</typeparam>
-    public class Result<T>
+    public bool IsSuccess { get; }
+
+    /// <summary>
+    ///     Gets an error message if the operation failed.
+    /// </summary>
+    public string? Error { get; }
+
+    /// <summary>
+    ///     Creates a successful result.
+    /// </summary>
+    public static Result Success()
     {
-        /// <summary>
-        /// Indicates whether the operation was successful.
-        /// </summary>
-        [MemberNotNullWhen(true, nameof(Value))]
-        public bool IsSuccess { get; }  
+        return new Result(true, null);
+    }
 
-        /// <summary>
-        /// Gets an error message if the operation failed.
-        /// </summary>
-        public string? Error { get; }
+    /// <summary>
+    ///     Creates a failed result with the specified error message.
+    /// </summary>
+    public static Result Failure(string error)
+    {
+        return new Result(false, error);
+    }
+}
 
-        /// <summary>
-        /// Gets the value of the operation if it succeeded.
-        /// </summary>
-        public T? Value { get; }
+/// <summary>
+///     Represents a result of an operation that returns a value of type <typeparamref name="T" />.
+/// </summary>
+/// <typeparam name="T">Type of the value returned if the operation succeeds.</typeparam>
+public class Result<T>
+{
+    private Result(bool isSuccess, string? error, T? value)
+    {
+        IsSuccess = isSuccess;
+        Error = error;
+        Value = value;
+    }
 
-        private Result(bool isSuccess, string? error, T? value)
-        {
-            IsSuccess = isSuccess;
-            Error = error;
-            Value = value;
-        }
+    /// <summary>
+    ///     Indicates whether the operation was successful.
+    /// </summary>
+    [MemberNotNullWhen(true, nameof(Value))]
+    public bool IsSuccess { get; }
 
-        /// <summary>
-        /// Creates a successful result with the specified value.
-        /// </summary>
-        public static Result<T> Success(T value) => new(true, null, value);
+    /// <summary>
+    ///     Gets an error message if the operation failed.
+    /// </summary>
+    public string? Error { get; }
 
-        /// <summary>
-        /// Creates a failed result with the specified error message.
-        /// </summary>
-        public static Result<T> Failure(string error) => new(false, error, default);
+    /// <summary>
+    ///     Gets the value of the operation if it succeeded.
+    /// </summary>
+    public T? Value { get; }
+
+    /// <summary>
+    ///     Creates a successful result with the specified value.
+    /// </summary>
+    public static Result<T> Success(T value)
+    {
+        return new Result<T>(true, null, value);
+    }
+
+    /// <summary>
+    ///     Creates a failed result with the specified error message.
+    /// </summary>
+    public static Result<T> Failure(string error)
+    {
+        return new Result<T>(false, error, default);
     }
 }

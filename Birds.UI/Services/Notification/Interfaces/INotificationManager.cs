@@ -1,29 +1,27 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using Birds.UI.Services.Notification;
 
-namespace Birds.UI.Services.Notification.Interfaces
+namespace Birds.UI.Services.Notification.Interfaces;
+
+public interface INotificationManager : INotifyPropertyChanged
 {
-    public interface INotificationManager : INotifyPropertyChanged
-    {
-        ReadOnlyObservableCollection<NotificationToast> ActiveNotifications { get; }
+    ReadOnlyObservableCollection<NotificationToast> ActiveNotifications { get; }
 
-        int UnreadCount { get; }
+    int UnreadCount { get; }
 
-        bool HasNotifications { get; }
+    bool HasNotifications { get; }
 
-        bool HasRecentOperationStatus { get; }
+    bool HasRecentOperationStatus { get; }
 
-        NotificationType? RecentOperationStatusType { get; }
+    NotificationType? RecentOperationStatusType { get; }
 
-        void ShowNotification(string message, NotificationOptions options);
+    void ShowNotification(string message, NotificationOptions options);
 
-        void ShowLocalizedNotification(string messageKey, NotificationOptions options, params object[] args);
+    void ShowLocalizedNotification(string messageKey, NotificationOptions options, params object[] args);
 
-        void DismissNotification(NotificationToast notification);
+    void DismissNotification(NotificationToast notification);
 
-        void ClearNotifications();
+    void ClearNotifications();
 
-        void MarkAllAsRead();
-    }
+    void MarkAllAsRead();
 }

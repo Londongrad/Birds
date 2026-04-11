@@ -50,14 +50,6 @@
             <Setter Property="CornerRadius" Value="16" />
         </Style>
 
-        <Style
-            x:Key="DangerSectionCardStyle"
-            BasedOn="{StaticResource SectionCardStyle}"
-            TargetType="Border">
-            <Setter Property="Padding" Value="0,22,0,22" />
-            <Setter Property="BorderBrush" Value="{StaticResource DangerButtonBorderBrush}" />
-        </Style>
-
         <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="18" />
             <Setter Property="FontWeight" Value="SemiBold" />
@@ -119,7 +111,6 @@
             x:Key="DangerRowStyle"
             BasedOn="{StaticResource SettingsToggleRowStyle}"
             TargetType="Border">
-            <Setter Property="Padding" Value="10,14" />
         </Style>
 
         <Style x:Key="SettingsComboBoxItemStyle" TargetType="ComboBoxItem">
@@ -142,10 +133,12 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsHighlighted" Value="True">
-                                <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource InsetBackgroundBrush}" />
+                                <Setter TargetName="ItemBorder" Property="Background"
+                                        Value="{StaticResource InsetBackgroundBrush}" />
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource AccentButtonBrush}" />
+                                <Setter TargetName="ItemBorder" Property="Background"
+                                        Value="{StaticResource AccentButtonBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -228,10 +221,12 @@
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
+                                <Setter TargetName="FieldBorder" Property="BorderBrush"
+                                        Value="{StaticResource FieldBorderHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderFocusBrush}" />
+                                <Setter TargetName="FieldBorder" Property="BorderBrush"
+                                        Value="{StaticResource FieldBorderFocusBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -273,11 +268,14 @@
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
+                                <Setter TargetName="Track" Property="BorderBrush"
+                                        Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Track" Property="Background" Value="{DynamicResource ThemeToggleTrackOnBrush}" />
-                                <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource ThemeToggleBorderOnBrush}" />
+                                <Setter TargetName="Track" Property="Background"
+                                        Value="{DynamicResource ThemeToggleTrackOnBrush}" />
+                                <Setter TargetName="Track" Property="BorderBrush"
+                                        Value="{DynamicResource ThemeToggleBorderOnBrush}" />
                             </Trigger>
                             <EventTrigger RoutedEvent="ToggleButton.Checked">
                                 <BeginStoryboard>
@@ -341,7 +339,8 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource AccentButtonHoverBrush}" />
+                                <Setter TargetName="ButtonBorder" Property="Background"
+                                        Value="{StaticResource AccentButtonHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.94" />
@@ -399,7 +398,8 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource DangerButtonHoverBrush}" />
+                                <Setter TargetName="ButtonBorder" Property="Background"
+                                        Value="{StaticResource DangerButtonHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.94" />
@@ -431,7 +431,8 @@
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="11" />
             <Style.Triggers>
-                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Syncing}">
+                <DataTrigger Binding="{Binding RemoteSyncStatus}"
+                             Value="{x:Static sync:RemoteSyncDisplayState.Syncing}">
                     <Setter Property="BorderBrush" Value="{StaticResource FieldBorderFocusBrush}" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Synced}">
@@ -442,7 +443,8 @@
                     <Setter Property="Background" Value="{StaticResource AccentButtonBrush}" />
                     <Setter Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Offline}">
+                <DataTrigger Binding="{Binding RemoteSyncStatus}"
+                             Value="{x:Static sync:RemoteSyncDisplayState.Offline}">
                     <Setter Property="BorderBrush" Value="{StaticResource FieldBorderFocusBrush}" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Error}">
@@ -455,7 +457,8 @@
         <Style x:Key="SettingsSyncStatusDotStyle" TargetType="Ellipse">
             <Setter Property="Fill" Value="{StaticResource SecondaryTextBrush}" />
             <Style.Triggers>
-                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Syncing}">
+                <DataTrigger Binding="{Binding RemoteSyncStatus}"
+                             Value="{x:Static sync:RemoteSyncDisplayState.Syncing}">
                     <Setter Property="Fill" Value="{StaticResource FieldBorderFocusBrush}" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Synced}">
@@ -464,7 +467,8 @@
                 <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Paused}">
                     <Setter Property="Fill" Value="{StaticResource FieldBorderHoverBrush}" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Offline}">
+                <DataTrigger Binding="{Binding RemoteSyncStatus}"
+                             Value="{x:Static sync:RemoteSyncDisplayState.Offline}">
                     <Setter Property="Fill" Value="{StaticResource FieldBorderFocusBrush}" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Error}">
@@ -519,7 +523,6 @@
             BasedOn="{StaticResource DataActionButtonStyle}"
             TargetType="Button">
             <Setter Property="MinWidth" Value="104" />
-            <Setter Property="Height" Value="40" />
             <Setter Property="Margin" Value="0" />
             <Setter Property="Padding" Value="16,0" />
         </Style>
@@ -529,8 +532,6 @@
             BasedOn="{StaticResource DangerActionButtonStyle}"
             TargetType="Button">
             <Setter Property="MinWidth" Value="136" />
-            <Setter Property="Height" Value="40" />
-            <Setter Property="Margin" Value="0" />
             <Setter Property="Padding" Value="16,0" />
         </Style>
 
@@ -614,10 +615,12 @@
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
+                                <Setter TargetName="FieldBorder" Property="BorderBrush"
+                                        Value="{StaticResource FieldBorderHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderFocusBrush}" />
+                                <Setter TargetName="FieldBorder" Property="BorderBrush"
+                                        Value="{StaticResource FieldBorderFocusBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -631,7 +634,6 @@
             <Border
                 MaxWidth="860"
                 Padding="28"
-                HorizontalAlignment="Stretch"
                 VerticalAlignment="Top"
                 Style="{StaticResource SettingsCardStyle}">
                 <StackPanel HorizontalAlignment="Stretch">
@@ -752,12 +754,12 @@
                         Margin="0,18,0,0"
                         Style="{StaticResource SectionCardStyle}">
                         <StackPanel Style="{StaticResource SectionBodyStackStyle}">
-                            <TextBlock 
+                            <TextBlock
                                 Style="{StaticResource SectionTitleStyle}"
                                 Text="{loc:Loc Key=Settings.Notifications.Title}" />
-                            <TextBlock 
-                                       Style="{StaticResource SectionSubtitleStyle}"
-                                       Text="{loc:Loc Key=Settings.Notifications.Description}" />
+                            <TextBlock
+                                Style="{StaticResource SectionSubtitleStyle}"
+                                Text="{loc:Loc Key=Settings.Notifications.Description}" />
 
                             <Border
                                 HorizontalAlignment="Stretch"
@@ -980,7 +982,6 @@
                                         Grid.Row="1"
                                         Grid.ColumnSpan="2"
                                         Style="{StaticResource FieldHintStyle}"
-                                        Margin="0,8,0,0"
                                         Text="{Binding RemoteSyncStatusHint}" />
 
                                     <Grid
@@ -1097,7 +1098,8 @@
                                                 <Style TargetType="TextBlock" BasedOn="{StaticResource FieldHintStyle}">
                                                     <Setter Property="Visibility" Value="Visible" />
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding HasRemoteSyncRecentActivity}" Value="True">
+                                                        <DataTrigger Binding="{Binding HasRemoteSyncRecentActivity}"
+                                                                     Value="True">
                                                             <Setter Property="Visibility" Value="Collapsed" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
@@ -1111,7 +1113,8 @@
                                                 <Style TargetType="ItemsControl">
                                                     <Setter Property="Visibility" Value="Collapsed" />
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding HasRemoteSyncRecentActivity}" Value="True">
+                                                        <DataTrigger Binding="{Binding HasRemoteSyncRecentActivity}"
+                                                                     Value="True">
                                                             <Setter Property="Visibility" Value="Visible" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
@@ -1359,7 +1362,8 @@
                                                     <Style TargetType="TextBlock">
                                                         <Setter Property="Visibility" Value="Collapsed" />
                                                         <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding SupportsLocalDatabaseReset}" Value="False">
+                                                            <DataTrigger Binding="{Binding SupportsLocalDatabaseReset}"
+                                                                         Value="False">
                                                                 <Setter Property="Visibility" Value="Visible" />
                                                             </DataTrigger>
                                                         </Style.Triggers>

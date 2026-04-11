@@ -16,32 +16,46 @@ namespace Birds.Tests.UI.Services;
 public static class TestHelpers
 {
     // ---------- Policies ----------
-    public static AsyncRetryPolicy<Result<IReadOnlyList<BirdDTO>>> RetryNoDelay(int retries) =>
-        Policy.HandleResult<Result<IReadOnlyList<BirdDTO>>>(r => !r.IsSuccess)
-              .WaitAndRetryAsync(retries, _ => TimeSpan.Zero);
+    public static AsyncRetryPolicy<Result<IReadOnlyList<BirdDTO>>> RetryNoDelay(int retries)
+    {
+        return Policy.HandleResult<Result<IReadOnlyList<BirdDTO>>>(r => !r.IsSuccess)
+            .WaitAndRetryAsync(retries, _ => TimeSpan.Zero);
+    }
 
     // ---------- Sample data ----------
-    public static DateOnly Today() => DateOnly.FromDateTime(DateTime.Now);
+    public static DateOnly Today()
+    {
+        return DateOnly.FromDateTime(DateTime.Now);
+    }
 
     public static BirdDTO Bird(Guid? id = null, string? name = "Воробей", string? desc = null,
-                               DateOnly? arrival = null, DateOnly? departure = null, bool isAlive = true) =>
-        new(id ?? Guid.NewGuid(), name!, desc, arrival ?? Today(), departure, isAlive, null, null);
+        DateOnly? arrival = null, DateOnly? departure = null, bool isAlive = true)
+    {
+        return new BirdDTO(id ?? Guid.NewGuid(), name!, desc, arrival ?? Today(), departure, isAlive, null, null);
+    }
 
-    public static IReadOnlyList<BirdDTO> Birds(params BirdDTO[] items) =>
-        (items.Length == 0
+    public static IReadOnlyList<BirdDTO> Birds(params BirdDTO[] items)
+    {
+        return (items.Length == 0
             ? new[] { Bird(name: "Sparrow", desc: "d"), Bird(name: "Tit", desc: "d") }
             : items).ToList().AsReadOnly();
+    }
 
     // ---------- Mediator setups ----------
-    public static void SetupGetAllBirdsSuccess(this Mock<IMediator> mediator, IReadOnlyList<BirdDTO>? value = null) =>
+    public static void SetupGetAllBirdsSuccess(this Mock<IMediator> mediator, IReadOnlyList<BirdDTO>? value = null)
+    {
         mediator.Setup(m => m.Send(It.IsAny<GetAllBirdsQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Result<IReadOnlyList<BirdDTO>>.Success(value ?? Birds()));
+            .ReturnsAsync(Result<IReadOnlyList<BirdDTO>>.Success(value ?? Birds()));
+    }
 
-    public static void SetupGetAllBirdsFailure(this Mock<IMediator> mediator, string error = "db down") =>
+    public static void SetupGetAllBirdsFailure(this Mock<IMediator> mediator, string error = "db down")
+    {
         mediator.Setup(m => m.Send(It.IsAny<GetAllBirdsQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Result<IReadOnlyList<BirdDTO>>.Failure(error));
+            .ReturnsAsync(Result<IReadOnlyList<BirdDTO>>.Failure(error));
+    }
 
-    public static void SetupGetAllBirdsSequence(this Mock<IMediator> mediator, params Result<IReadOnlyList<BirdDTO>>[] results)
+    public static void SetupGetAllBirdsSequence(this Mock<IMediator> mediator,
+        params Result<IReadOnlyList<BirdDTO>>[] results)
     {
         var seq = mediator.SetupSequence(m => m.Send(It.IsAny<GetAllBirdsQuery>(), It.IsAny<CancellationToken>()));
         foreach (var r in results) seq = seq.ReturnsAsync(r);
@@ -75,8 +89,8 @@ public static class TestHelpers
             mediator,
             logger.Object,
             notify.Object,
-            autoExportCoordinator: autoExport.Object,
-            uiDispatcher: new InlineUiDispatcher(),
-            retryPolicy: RetryNoDelay(retries));
+            autoExport.Object,
+            new InlineUiDispatcher(),
+            RetryNoDelay(retries));
     }
 }

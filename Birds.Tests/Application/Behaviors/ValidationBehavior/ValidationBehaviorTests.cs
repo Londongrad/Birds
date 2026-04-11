@@ -8,80 +8,82 @@ using FluentAssertions;
 using FluentValidation;
 using MediatR;
 
-namespace Birds.Tests.Application.Behaviors.ValidationBehavior
+namespace Birds.Tests.Application.Behaviors.ValidationBehavior;
+
+public class ValidationBehaviorTests
 {
-    public class ValidationBehaviorTests
+    [Fact]
+    public async Task Handle_ValidRequest_PassesThroughAndCallsNext()
     {
-        [Fact]
-        public async Task Handle_ValidRequest_PassesThroughAndCallsNext()
+        var validators = new List<IValidator<CreateBirdCommand>> { new CreateBirdCommandValidator() };
+        var behavior = new ValidationBehavior<CreateBirdCommand, Result<BirdDTO>>(validators);
+
+        var cmd = new CreateBirdCommand(
+            (BirdsName)1,
+            "ok",
+            DateOnly.FromDateTime(DateTime.Now));
+
+        var nextCalled = false;
+        RequestHandlerDelegate<Result<BirdDTO>> next = cancellationToken =>
         {
-            var validators = new List<IValidator<CreateBirdCommand>> { new CreateBirdCommandValidator() };
-            var behavior = new ValidationBehavior<CreateBirdCommand, Result<BirdDTO>>(validators);
+            nextCalled = true;
+            return Task.FromResult(Result<BirdDTO>.Success(new BirdDTO(
+                Guid.NewGuid(), cmd.Name.ToString(), cmd.Description, cmd.Arrival, cmd.Departure, cmd.IsAlive, null,
+                null)));
+        };
 
-            var cmd = new CreateBirdCommand(
-                (BirdsName)1,
-                "ok",
-                DateOnly.FromDateTime(DateTime.Now));
+        var result = await behavior.Handle(cmd, next, CancellationToken.None);
 
-            var nextCalled = false;
-            RequestHandlerDelegate<Result<BirdDTO>> next = (cancellationToken) =>
-            {
-                nextCalled = true;
-                return Task.FromResult(Result<BirdDTO>.Success(new BirdDTO(
-                    Guid.NewGuid(), cmd.Name.ToString(), cmd.Description, cmd.Arrival, cmd.Departure, cmd.IsAlive, null, null)));
-            };
+        nextCalled.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
+    }
 
-            var result = await behavior.Handle(cmd, next, CancellationToken.None);
+    [Fact]
+    public async Task Handle_InvalidRequest_ThrowsValidationException_AndDoesNotCallNext()
+    {
+        var validators = new List<IValidator<CreateBirdCommand>> { new CreateBirdCommandValidator() };
+        var behavior = new ValidationBehavior<CreateBirdCommand, Result<BirdDTO>>(validators);
 
-            nextCalled.Should().BeTrue();
-            result.IsSuccess.Should().BeTrue();
-        }
+        var invalid = new CreateBirdCommand(
+            (BirdsName)1,
+            new string('x', BirdValidationRules.DescriptionMaxLength + 1),
+            DateOnly.FromDateTime(DateTime.Now.AddDays(1))
+        );
 
-        [Fact]
-        public async Task Handle_InvalidRequest_ThrowsValidationException_AndDoesNotCallNext()
+        var nextCalled = false;
+        RequestHandlerDelegate<Result<BirdDTO>> next = cancellationToken =>
         {
-            var validators = new List<IValidator<CreateBirdCommand>> { new CreateBirdCommandValidator() };
-            var behavior = new ValidationBehavior<CreateBirdCommand, Result<BirdDTO>>(validators);
+            nextCalled = true;
+            return Task.FromResult(Result<BirdDTO>.Success(default!));
+        };
 
-            var invalid = new CreateBirdCommand(
-                (BirdsName)1,
-                new string('x', BirdValidationRules.DescriptionMaxLength + 1),
-                DateOnly.FromDateTime(DateTime.Now.AddDays(1))
-            );
+        Func<Task> act = async () => await behavior.Handle(invalid, next, CancellationToken.None);
 
-            var nextCalled = false;
-            RequestHandlerDelegate<Result<BirdDTO>> next = (cancellationToken) =>
-            {
-                nextCalled = true;
-                return Task.FromResult(Result<BirdDTO>.Success(default!));
-            };
+        await act.Should().ThrowAsync<ValidationException>()
+            .WithMessage("*Arrival date cannot be in the future*")
+            .WithMessage($"*Description must not exceed {BirdValidationRules.DescriptionMaxLength} characters*");
+        nextCalled.Should().BeFalse();
+    }
 
-            Func<Task> act = async () => await behavior.Handle(invalid, next, CancellationToken.None);
+    [Fact]
+    public async Task Handle_NoValidators_JustCallsNext()
+    {
+        var behavior =
+            new ValidationBehavior<CreateBirdCommand, Result<BirdDTO>>(
+                Enumerable.Empty<IValidator<CreateBirdCommand>>());
 
-            await act.Should().ThrowAsync<ValidationException>()
-                .WithMessage("*Arrival date cannot be in the future*")
-                .WithMessage($"*Description must not exceed {BirdValidationRules.DescriptionMaxLength} characters*");
-            nextCalled.Should().BeFalse();
-        }
+        var cmd = new CreateBirdCommand((BirdsName)1, null, DateOnly.FromDateTime(DateTime.Now));
 
-        [Fact]
-        public async Task Handle_NoValidators_JustCallsNext()
+        var nextCalled = false;
+        RequestHandlerDelegate<Result<BirdDTO>> next = cancellationToken =>
         {
-            var behavior = new ValidationBehavior<CreateBirdCommand, Result<BirdDTO>>(Enumerable.Empty<IValidator<CreateBirdCommand>>());
+            nextCalled = true;
+            return Task.FromResult(Result<BirdDTO>.Success(default!));
+        };
 
-            var cmd = new CreateBirdCommand((BirdsName)1, null, DateOnly.FromDateTime(DateTime.Now));
+        var result = await behavior.Handle(cmd, next, CancellationToken.None);
 
-            var nextCalled = false;
-            RequestHandlerDelegate<Result<BirdDTO>> next = (cancellationToken) =>
-            {
-                nextCalled = true;
-                return Task.FromResult(Result<BirdDTO>.Success(default!));
-            };
-
-            var result = await behavior.Handle(cmd, next, CancellationToken.None);
-
-            nextCalled.Should().BeTrue();
-            result.IsSuccess.Should().BeTrue();
-        }
+        nextCalled.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
     }
 }

@@ -37,12 +37,16 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsHighlighted" Value="True">
-                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource ThemeNotificationActionBrush}" />
-                            <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderFocusBrush}" />
+                            <Setter TargetName="ItemBorder" Property="Background"
+                                    Value="{DynamicResource ThemeNotificationActionBrush}" />
+                            <Setter TargetName="ItemBorder" Property="BorderBrush"
+                                    Value="{DynamicResource ThemeFieldBorderFocusBrush}" />
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource ThemeNotificationActionBrush}" />
-                            <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{DynamicResource ThemeAccentButtonBorderBrush}" />
+                            <Setter TargetName="ItemBorder" Property="Background"
+                                    Value="{DynamicResource ThemeNotificationActionBrush}" />
+                            <Setter TargetName="ItemBorder" Property="BorderBrush"
+                                    Value="{DynamicResource ThemeAccentButtonBorderBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -73,10 +77,12 @@
         </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter TargetName="ToggleBorder" Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
+                <Setter TargetName="ToggleBorder" Property="BorderBrush"
+                        Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
             </Trigger>
             <Trigger Property="IsChecked" Value="True">
-                <Setter TargetName="ToggleBorder" Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderFocusBrush}" />
+                <Setter TargetName="ToggleBorder" Property="BorderBrush"
+                        Value="{DynamicResource ThemeFieldBorderFocusBrush}" />
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
@@ -246,8 +252,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource ThemeNotificationCardHoverBrush}" />
-                            <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{DynamicResource ThemeNotificationCardHoverBrush}" />
+                            <Setter TargetName="ButtonBorder" Property="Background"
+                                    Value="{DynamicResource ThemeNotificationCardHoverBrush}" />
+                            <Setter TargetName="ButtonBorder" Property="BorderBrush"
+                                    Value="{DynamicResource ThemeNotificationCardHoverBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.9" />
@@ -295,8 +303,6 @@
         <Setter Property="Width" Value="Auto" />
         <Setter Property="Height" Value="Auto" />
         <Setter Property="Padding" Value="14,12" />
-        <Setter Property="TextWrapping" Value="Wrap" />
-        <Setter Property="AcceptsReturn" Value="True" />
         <Setter Property="VerticalContentAlignment" Value="Top" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
         <Setter Property="Background" Value="{DynamicResource ThemeFieldBackgroundBrush}" />
@@ -306,7 +312,6 @@
         <Setter Property="FontSize" Value="14" />
         <Setter Property="MinHeight" Value="56" />
         <Setter Property="MaxHeight" Value="72" />
-        <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
     </Style>
 
     <Style
@@ -315,7 +320,6 @@
         TargetType="DatePicker">
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="Width" Value="Auto" />
-        <Setter Property="Height" Value="40" />
         <Setter Property="Background" Value="{DynamicResource ThemeFieldBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderBrush}" />
         <Setter Property="FontSize" Value="15" />
@@ -369,11 +373,14 @@
 
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderFocusBrush}" />
+                            <Setter TargetName="Track" Property="BorderBrush"
+                                    Value="{DynamicResource ThemeFieldBorderFocusBrush}" />
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="Track" Property="Background" Value="{DynamicResource ThemeToggleTrackOnBrush}" />
-                            <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource ThemeToggleBorderOnBrush}" />
+                            <Setter TargetName="Track" Property="Background"
+                                    Value="{DynamicResource ThemeToggleTrackOnBrush}" />
+                            <Setter TargetName="Track" Property="BorderBrush"
+                                    Value="{DynamicResource ThemeToggleBorderOnBrush}" />
                             <Setter TargetName="Thumb" Property="Margin" Value="21,0,0,0" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
@@ -418,7 +425,8 @@
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsAlive}" Value="False">
                                     <Setter Property="BorderBrush" Value="{DynamicResource ThemeStatusDeadBorderBrush}" />
-                                    <Setter Property="Background" Value="{DynamicResource ThemeStatusDeadBackgroundBrush}" />
+                                    <Setter Property="Background"
+                                            Value="{DynamicResource ThemeStatusDeadBackgroundBrush}" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
@@ -592,7 +600,9 @@
                                     BasedOn="{StaticResource BirdCardInlineErrorStyle}"
                                     TargetType="TextBlock">
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ElementName=SpeciesField, Path=(Validation.HasError)}" Value="True">
+                                        <DataTrigger
+                                            Binding="{Binding ElementName=SpeciesField, Path=(Validation.HasError)}"
+                                            Value="True">
                                             <Setter Property="Visibility" Value="Visible" />
                                         </DataTrigger>
                                     </Style.Triggers>
@@ -663,7 +673,9 @@
                                 BasedOn="{StaticResource BirdCardInlineErrorStyle}"
                                 TargetType="TextBlock">
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding ElementName=DescriptionField, Path=(Validation.HasError)}" Value="True">
+                                    <DataTrigger
+                                        Binding="{Binding ElementName=DescriptionField, Path=(Validation.HasError)}"
+                                        Value="True">
                                         <Setter Property="Visibility" Value="Visible" />
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -790,9 +802,10 @@
                                         TargetType="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Stretch" />
                                         <Setter Property="TextWrapping" Value="NoWrap" />
-                                        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding ElementName=DepartureField, Path=(Validation.HasError)}" Value="True">
+                                            <DataTrigger
+                                                Binding="{Binding ElementName=DepartureField, Path=(Validation.HasError)}"
+                                                Value="True">
                                                 <Setter Property="Visibility" Value="Visible" />
                                             </DataTrigger>
                                         </Style.Triggers>

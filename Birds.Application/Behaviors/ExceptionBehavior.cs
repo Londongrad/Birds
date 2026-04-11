@@ -1,80 +1,79 @@
-﻿using Birds.Application.Common.Models;
+﻿using System.Reflection;
+using Birds.Application.Common.Models;
 using Birds.Application.Exceptions;
 using Birds.Domain.Common.Exceptions;
 using Birds.Shared.Constants;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using System.Reflection;
 
-namespace Birds.Application.Behaviors
+namespace Birds.Application.Behaviors;
+
+/// <summary>
+///     Centralized exception handling behavior for MediatR requests.
+///     Converts unexpected exceptions into <see cref="Result" /> or <see cref="Result{T}" /> failures.
+/// </summary>
+public class ExceptionHandlingBehavior<TRequest, TResponse>(
+    ILogger<ExceptionHandlingBehavior<TRequest, TResponse>> logger)
+    : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
 {
-    /// <summary>
-    /// Centralized exception handling behavior for MediatR requests.
-    /// Converts unexpected exceptions into <see cref="Result"/> or <see cref="Result{T}"/> failures.
-    /// </summary>
-    public class ExceptionHandlingBehavior<TRequest, TResponse>(
-        ILogger<ExceptionHandlingBehavior<TRequest, TResponse>> logger) 
-        : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
+    private readonly ILogger<ExceptionHandlingBehavior<TRequest, TResponse>> _logger = logger;
+
+    public async Task<TResponse> Handle(
+        TRequest request,
+        RequestHandlerDelegate<TResponse> next,
+        CancellationToken cancellationToken)
     {
-        private readonly ILogger<ExceptionHandlingBehavior<TRequest, TResponse>> _logger = logger;
-
-        public async Task<TResponse> Handle(
-            TRequest request,
-            RequestHandlerDelegate<TResponse> next,
-            CancellationToken cancellationToken)
+        try
         {
-            try
-            {
-                return await next();
-            }
-            catch (ValidationException ex)
-            {
-                _logger.LogWarning(ex, LogMessages.ValidationFailed, typeof(TRequest).Name);
-                return CreateFailureResponse(ExceptionMessages.ValidationFailure(ex.Message));
-            }
-            catch (DomainValidationException ex)
-            {
-                _logger.LogWarning(ex, LogMessages.DomainRuleViolation, typeof(TRequest).Name);
-                return CreateFailureResponse(ex.Message);
-            }
-            catch (NotFoundException ex)
-            {
-                _logger.LogWarning(ex, LogMessages.EntityNotFound, typeof(TRequest).Name);
-                return CreateFailureResponse(ExceptionMessages.NotFoundFailure(ex.Message));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, LogMessages.UnhandledException, typeof(TRequest).Name);
-                return CreateFailureResponse(ExceptionMessages.UnexpectedFailure(ex.Message));
-            }
+            return await next();
+        }
+        catch (ValidationException ex)
+        {
+            _logger.LogWarning(ex, LogMessages.ValidationFailed, typeof(TRequest).Name);
+            return CreateFailureResponse(ExceptionMessages.ValidationFailure(ex.Message));
+        }
+        catch (DomainValidationException ex)
+        {
+            _logger.LogWarning(ex, LogMessages.DomainRuleViolation, typeof(TRequest).Name);
+            return CreateFailureResponse(ex.Message);
+        }
+        catch (NotFoundException ex)
+        {
+            _logger.LogWarning(ex, LogMessages.EntityNotFound, typeof(TRequest).Name);
+            return CreateFailureResponse(ExceptionMessages.NotFoundFailure(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, LogMessages.UnhandledException, typeof(TRequest).Name);
+            return CreateFailureResponse(ExceptionMessages.UnexpectedFailure(ex.Message));
+        }
+    }
+
+    /// <summary>
+    ///     Creates a failed <see cref="Result" /> or <see cref="Result{T}" /> depending on <typeparamref name="TResponse" />.
+    /// </summary>
+    private static TResponse CreateFailureResponse(string errorMessage)
+    {
+        var responseType = typeof(TResponse);
+
+        // Case 1: Result<T>
+        if (responseType.IsGenericType && responseType.GetGenericTypeDefinition() == typeof(Result<>))
+        {
+            var failureMethod = responseType.GetMethod("Failure", BindingFlags.Public | BindingFlags.Static);
+            var failure = failureMethod?.Invoke(null, new object[] { errorMessage });
+            return (TResponse)failure!;
         }
 
-        /// <summary>
-        /// Creates a failed <see cref="Result"/> or <see cref="Result{T}"/> depending on <typeparamref name="TResponse"/>.
-        /// </summary>
-        private static TResponse CreateFailureResponse(string errorMessage)
+        // Case 2: Result (non-generic)
+        if (responseType == typeof(Result))
         {
-            var responseType = typeof(TResponse);
-
-            // Case 1: Result<T>
-            if (responseType.IsGenericType && responseType.GetGenericTypeDefinition() == typeof(Result<>))
-            {
-                var failureMethod = responseType.GetMethod("Failure", BindingFlags.Public | BindingFlags.Static);
-                var failure = failureMethod?.Invoke(null, new object[] { errorMessage });
-                return (TResponse)failure!;
-            }
-
-            // Case 2: Result (non-generic)
-            if (responseType == typeof(Result))
-            {
-                var failure = Result.Failure(errorMessage);
-                return (TResponse)(object)failure;
-            }
-
-            // Case 3: Anything else → throw, because it’s not a Result
-            throw new InvalidOperationException(
-                ExceptionMessages.InvalidOperation(responseType.Name));
+            var failure = Result.Failure(errorMessage);
+            return (TResponse)(object)failure;
         }
+
+        // Case 3: Anything else → throw, because it’s not a Result
+        throw new InvalidOperationException(
+            ExceptionMessages.InvalidOperation(responseType.Name));
     }
 }

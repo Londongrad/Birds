@@ -1,12 +1,11 @@
 ﻿using System.Windows.Controls;
 
-namespace Birds.UI.Views.UserControls
+namespace Birds.UI.Views.UserControls;
+
+public partial class BirdStatisticsView : UserControl
 {
-    public partial class BirdStatisticsView : UserControl
+    public BirdStatisticsView()
     {
-        public BirdStatisticsView()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

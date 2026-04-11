@@ -5,30 +5,29 @@ using Birds.Application.Mappings;
 using Birds.Shared.Constants;
 using MediatR;
 
-namespace Birds.Application.Commands.UpdateBird
+namespace Birds.Application.Commands.UpdateBird;
+
+public class UpdateBirdCommandHandler(IBirdRepository birdRepository)
+    : IRequestHandler<UpdateBirdCommand, Result<BirdDTO>>
 {
-    public class UpdateBirdCommandHandler(IBirdRepository birdRepository)
-        : IRequestHandler<UpdateBirdCommand, Result<BirdDTO>>
+    public async Task<Result<BirdDTO>> Handle(UpdateBirdCommand request, CancellationToken cancellationToken)
     {
-        public async Task<Result<BirdDTO>> Handle(UpdateBirdCommand request, CancellationToken cancellationToken)
-        {
-            if (request is null)
-                return Result<BirdDTO>.Failure(ErrorMessages.RequestCannotBeNull);
+        if (request is null)
+            return Result<BirdDTO>.Failure(ErrorMessages.RequestCannotBeNull);
 
-            var bird = await birdRepository.GetByIdAsync(request.Id, cancellationToken);
+        var bird = await birdRepository.GetByIdAsync(request.Id, cancellationToken);
 
-            bird.Update(
-                request.Name,
-                request.Description,
-                request.Arrival,
-                request.Departure,
-                request.IsAlive);
+        bird.Update(
+            request.Name,
+            request.Description,
+            request.Arrival,
+            request.Departure,
+            request.IsAlive);
 
-            await birdRepository.UpdateAsync(bird, cancellationToken);
+        await birdRepository.UpdateAsync(bird, cancellationToken);
 
-            var birdDTO = bird.ToDto();
+        var birdDTO = bird.ToDto();
 
-            return Result<BirdDTO>.Success(birdDTO);
-        }
+        return Result<BirdDTO>.Success(birdDTO);
     }
 }

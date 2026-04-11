@@ -1,23 +1,23 @@
+using System.IO;
 using Birds.App.Services;
 using Birds.Shared.Constants;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
-using System.IO;
 
 namespace Birds.App;
 
 /// <summary>
-/// Centralized Serilog setup: bootstrap logger for very-early startup
-/// and full host-integrated configuration with file sinks.
+///     Centralized Serilog setup: bootstrap logger for very-early startup
+///     and full host-integrated configuration with file sinks.
 /// </summary>
 internal static class SerilogSetup
 {
     public static string CurrentLogsDirectory { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Minimal bootstrap logger so early startup messages are not lost
-    /// before the Host is built.
+    ///     Minimal bootstrap logger so early startup messages are not lost
+    ///     before the Host is built.
     /// </summary>
     public static void InitBootstrapLogger()
     {
@@ -27,7 +27,7 @@ internal static class SerilogSetup
             .MinimumLevel.Debug()
             .Enrich.FromLogContext()
             .WriteTo.File(
-                path: Path.Combine(logsDir, "bootstrap-.log"),
+                Path.Combine(logsDir, "bootstrap-.log"),
                 rollingInterval: RollingInterval.Day,
                 retainedFileCountLimit: 5,
                 rollOnFileSizeLimit: true,
@@ -40,32 +40,32 @@ internal static class SerilogSetup
     }
 
     /// <summary>
-    /// Full Serilog configuration used by Host. Reads levels/enrichers from appsettings
-    /// and appends file sinks with a stable absolute path.
+    ///     Full Serilog configuration used by Host. Reads levels/enrichers from appsettings
+    ///     and appends file sinks with a stable absolute path.
     /// </summary>
     public static void Configure(HostBuilderContext ctx, IServiceProvider services, LoggerConfiguration cfg)
     {
         var logsDir = ResolveAndEnsureLogsDirectory(ctx.HostingEnvironment.ContentRootPath);
 
         cfg.ReadFrom.Configuration(ctx.Configuration)
-          .ReadFrom.Services(services)
-          .Enrich.FromLogContext()
-          .WriteTo.File(
-              path: Path.Combine(logsDir, "app-.log"),
-              rollingInterval: RollingInterval.Day,
-              retainedFileCountLimit: 10,
-              rollOnFileSizeLimit: true,
-              shared: true,
-              outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
-          .WriteTo.File(
-              path: Path.Combine(logsDir, "error-.log"),
-              rollingInterval: RollingInterval.Day,
-              retainedFileCountLimit: 14,
-              rollOnFileSizeLimit: true,
-              shared: true,
-              restrictedToMinimumLevel: LogEventLevel.Error,
-              outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
-          .WriteTo.Debug();
+            .ReadFrom.Services(services)
+            .Enrich.FromLogContext()
+            .WriteTo.File(
+                Path.Combine(logsDir, "app-.log"),
+                rollingInterval: RollingInterval.Day,
+                retainedFileCountLimit: 10,
+                rollOnFileSizeLimit: true,
+                shared: true,
+                outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+            .WriteTo.File(
+                Path.Combine(logsDir, "error-.log"),
+                rollingInterval: RollingInterval.Day,
+                retainedFileCountLimit: 14,
+                rollOnFileSizeLimit: true,
+                shared: true,
+                restrictedToMinimumLevel: LogEventLevel.Error,
+                outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+            .WriteTo.Debug();
     }
 
     private static string ResolveAndEnsureLogsDirectory(string? startPath)

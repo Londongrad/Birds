@@ -2,7 +2,6 @@
     x:Class="Birds.App.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="clr-namespace:Birds.App"
     xmlns:v="clr-namespace:Birds.UI.Views.UserControls;assembly=Birds.UI"
     xmlns:vm="clr-namespace:Birds.UI.ViewModels;assembly=Birds.UI">
     <Application.Resources>
@@ -49,7 +48,8 @@
                 <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdStatisticsView/TextBlock.xaml" />
                 <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdStatisticsView/StatsBirdButton.xaml" />
                 <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdStatisticsView/ComboBoxYears.xaml" />
-                <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdStatisticsView/MetricCardBorder.xaml" />
+                <ResourceDictionary
+                    Source="/Birds.UI;component/wwwroot/Themes/BirdStatisticsView/MetricCardBorder.xaml" />
                 <ResourceDictionary Source="/Birds.UI;component/wwwroot/Themes/BirdStatisticsView/TabControl.xaml" />
 
                 <!-- ================ -->

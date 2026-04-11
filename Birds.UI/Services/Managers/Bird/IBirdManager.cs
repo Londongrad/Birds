@@ -1,66 +1,65 @@
+using System.ComponentModel;
 using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
 using Birds.UI.Services.Stores.BirdStore;
-using System.ComponentModel;
 
-namespace Birds.UI.Services.Managers.Bird
+namespace Birds.UI.Services.Managers.Bird;
+
+/// <summary>
+///     Provides high-level operations for managing the bird collection.
+///     Acts as a facade over <see cref="IBirdStore" />, <see cref="BirdStoreInitializer" />,
+///     and MediatR commands for create/update/delete.
+/// </summary>
+public interface IBirdManager : INotifyPropertyChanged
 {
     /// <summary>
-    /// Provides high-level operations for managing the bird collection.
-    /// Acts as a facade over <see cref="IBirdStore"/>, <see cref="BirdStoreInitializer"/>,
-    /// and MediatR commands for create/update/delete.
+    ///     Indicates that a recent delete operation can still be undone.
     /// </summary>
-    public interface IBirdManager : INotifyPropertyChanged
-    {
-        /// <summary>
-        /// Reloads the entire bird collection from the database.
-        /// </summary>
-        Task ReloadAsync(CancellationToken cancellationToken);
+    bool HasPendingDeleteUndo { get; }
 
-        /// <summary>
-        /// Adds a new bird and updates the store accordingly.
-        /// Handles offline recovery if the store is not yet initialized.
-        /// </summary>
-        Task<Result<BirdDTO>> AddAsync(BirdCreateDTO newBird, CancellationToken cancellationToken);
+    /// <summary>
+    ///     A monotonic counter that changes whenever a new undo window is opened.
+    /// </summary>
+    int PendingDeleteUndoVersion { get; }
 
-        /// <summary>
-        /// Updates an existing bird and refreshes the collection if required.
-        /// </summary>
-        Task<Result<BirdDTO>> UpdateAsync(BirdUpdateDTO updatedBird, CancellationToken cancellationToken);
+    /// <summary>
+    ///     The amount of time the undo affordance stays active.
+    /// </summary>
+    TimeSpan PendingDeleteUndoDuration { get; }
 
-        /// <summary>
-        /// Deletes a bird by ID and refreshes the collection if required.
-        /// </summary>
-        Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken);
+    /// <summary>
+    ///     Gets the current collection of birds (shared store reference).
+    /// </summary>
+    IBirdStore Store { get; }
 
-        /// <summary>
-        /// Indicates that a recent delete operation can still be undone.
-        /// </summary>
-        bool HasPendingDeleteUndo { get; }
+    /// <summary>
+    ///     Reloads the entire bird collection from the database.
+    /// </summary>
+    Task ReloadAsync(CancellationToken cancellationToken);
 
-        /// <summary>
-        /// A monotonic counter that changes whenever a new undo window is opened.
-        /// </summary>
-        int PendingDeleteUndoVersion { get; }
+    /// <summary>
+    ///     Adds a new bird and updates the store accordingly.
+    ///     Handles offline recovery if the store is not yet initialized.
+    /// </summary>
+    Task<Result<BirdDTO>> AddAsync(BirdCreateDTO newBird, CancellationToken cancellationToken);
 
-        /// <summary>
-        /// The amount of time the undo affordance stays active.
-        /// </summary>
-        TimeSpan PendingDeleteUndoDuration { get; }
+    /// <summary>
+    ///     Updates an existing bird and refreshes the collection if required.
+    /// </summary>
+    Task<Result<BirdDTO>> UpdateAsync(BirdUpdateDTO updatedBird, CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Restores the most recently deleted bird while the undo window is still active.
-        /// </summary>
-        Task UndoPendingDeleteAsync(CancellationToken cancellationToken);
+    /// <summary>
+    ///     Deletes a bird by ID and refreshes the collection if required.
+    /// </summary>
+    Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Forces any deferred operations, such as pending deletes, to be committed immediately.
-        /// </summary>
-        Task FlushPendingOperationsAsync(CancellationToken cancellationToken);
+    /// <summary>
+    ///     Restores the most recently deleted bird while the undo window is still active.
+    /// </summary>
+    Task UndoPendingDeleteAsync(CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Gets the current collection of birds (shared store reference).
-        /// </summary>
-        IBirdStore Store { get; }
-    }
+    /// <summary>
+    ///     Forces any deferred operations, such as pending deletes, to be committed immediately.
+    /// </summary>
+    Task FlushPendingOperationsAsync(CancellationToken cancellationToken);
 }

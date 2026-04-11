@@ -110,8 +110,10 @@
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="ButtonBorder" Property="Background" Value="#16222E" />
-                                                    <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+                                                    <Setter TargetName="ButtonBorder" Property="Background"
+                                                            Value="#16222E" />
+                                                    <Setter Property="Foreground"
+                                                            Value="{StaticResource PrimaryTextBrush}" />
                                                 </Trigger>
                                                 <Trigger Property="IsPressed" Value="True">
                                                     <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.85" />
@@ -124,10 +126,12 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
+                                <Setter TargetName="FieldBorder" Property="BorderBrush"
+                                        Value="{StaticResource FieldBorderHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderFocusBrush}" />
+                                <Setter TargetName="FieldBorder" Property="BorderBrush"
+                                        Value="{StaticResource FieldBorderFocusBrush}" />
                             </Trigger>
                             <Trigger Property="Text" Value="">
                                 <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible" />
@@ -261,10 +265,12 @@
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
+                                <Setter TargetName="FieldBorder" Property="BorderBrush"
+                                        Value="{StaticResource FieldBorderHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderFocusBrush}" />
+                                <Setter TargetName="FieldBorder" Property="BorderBrush"
+                                        Value="{StaticResource FieldBorderFocusBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -298,8 +304,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource AccentButtonHoverBrush}" />
-                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{StaticResource AccentButtonBorderBrush}" />
+                                <Setter TargetName="ButtonBorder" Property="Background"
+                                        Value="{StaticResource AccentButtonHoverBrush}" />
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush"
+                                        Value="{StaticResource AccentButtonBorderBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.94" />
@@ -447,7 +455,8 @@
                             </ListBox.Style>
                             <ListBox.ItemTemplate>
                                 <DataTemplate DataType="{x:Type dto:BirdDTO}">
-                                    <local:BirdItemControl DataContext="{Binding Converter={StaticResource BirdVmConverter}}" />
+                                    <local:BirdItemControl
+                                        DataContext="{Binding Converter={StaticResource BirdVmConverter}}" />
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>

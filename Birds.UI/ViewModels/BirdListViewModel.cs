@@ -1,3 +1,7 @@
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Windows.Data;
 using Birds.Application.DTOs;
 using Birds.Application.DTOs.Helpers;
 using Birds.Domain.Enums;
@@ -9,158 +13,155 @@ using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Views.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Windows.Data;
 
-namespace Birds.UI.ViewModels
+namespace Birds.UI.ViewModels;
+
+public partial class BirdListViewModel : ObservableObject
 {
-    public partial class BirdListViewModel : ObservableObject
+    private readonly IBirdManager _birdManager;
+    private readonly ILocalizationService _localization;
+
+    [ObservableProperty] private IReadOnlyList<FilterOption> filters = Array.Empty<FilterOption>();
+
+    [ObservableProperty] private string? searchText;
+
+    [ObservableProperty] private FilterOption selectedFilter = null!;
+
+    public BirdListViewModel(IBirdManager birdManager, ILocalizationService localization)
     {
-        private readonly IBirdManager _birdManager;
-        private readonly ILocalizationService _localization;
+        _birdManager = birdManager;
+        _localization = localization;
 
-        public BirdListViewModel(IBirdManager birdManager, ILocalizationService localization)
+        Birds = birdManager.Store.Birds;
+        Filters = CreateFilters();
+
+        BirdsView = new ListCollectionView(Birds)
         {
-            _birdManager = birdManager;
-            _localization = localization;
+            CustomSort = new BirdComparer(),
+            Filter = FilterBirds
+        };
 
-            Birds = birdManager.Store.Birds;
-            Filters = CreateFilters();
+        SelectedFilter = Filters[0];
 
-            BirdsView = new ListCollectionView(Birds)
+        birdManager.Store.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(birdManager.Store.LoadState))
             {
-                CustomSort = new BirdComparer(),
-                Filter = FilterBirds
-            };
+                OnPropertyChanged(nameof(IsLoading));
+                OnPropertyChanged(nameof(IsFailed));
+                ReloadBirdsCommand.NotifyCanExecuteChanged();
+            }
+        };
 
-            SelectedFilter = Filters[0];
+        if (Birds is INotifyCollectionChanged birdsChanged)
+            birdsChanged.CollectionChanged += OnBirdsCollectionChanged;
 
-            birdManager.Store.PropertyChanged += (_, e) =>
-            {
-                if (e.PropertyName == nameof(birdManager.Store.LoadState))
-                {
-                    OnPropertyChanged(nameof(IsLoading));
-                    OnPropertyChanged(nameof(IsFailed));
-                    ReloadBirdsCommand.NotifyCanExecuteChanged();
-                }
-            };
+        _localization.LanguageChanged += OnLanguageChanged;
+    }
 
-            if (Birds is INotifyCollectionChanged birdsChanged)
-                birdsChanged.CollectionChanged += OnBirdsCollectionChanged;
+    public ObservableCollection<BirdDTO> Birds { get; }
+    public static Array BirdNames => Enum.GetValues(typeof(BirdsName));
+    public ICollectionView BirdsView { get; }
 
-            _localization.LanguageChanged += OnLanguageChanged;
-        }
+    public bool IsLoading => _birdManager.Store.LoadState == LoadState.Loading;
 
-        public ObservableCollection<BirdDTO> Birds { get; }
-        public static Array BirdNames => Enum.GetValues(typeof(BirdsName));
-        public ICollectionView BirdsView { get; }
+    public bool IsFailed => _birdManager.Store.LoadState == LoadState.Failed;
 
-        public bool IsLoading => _birdManager.Store.LoadState == LoadState.Loading;
+    public int BirdCount => BirdsView.Cast<object>().Count();
 
-        public bool IsFailed => _birdManager.Store.LoadState == LoadState.Failed;
+    partial void OnSelectedFilterChanged(FilterOption value)
+    {
+        BirdsView.Refresh();
+        OnPropertyChanged(nameof(BirdCount));
+    }
 
-        public int BirdCount => BirdsView.Cast<object>().Count();
+    partial void OnSearchTextChanged(string? value)
+    {
+        BirdsView.Refresh();
+        OnPropertyChanged(nameof(BirdCount));
+    }
 
-        [ObservableProperty]
-        private IReadOnlyList<FilterOption> filters = Array.Empty<FilterOption>();
+    public bool FilterBirds(object obj)
+    {
+        if (obj is not BirdDTO bird)
+            return false;
 
-        [ObservableProperty] private FilterOption selectedFilter = null!;
-        [ObservableProperty] private string? searchText;
+        if (!MatchesSearchText(bird))
+            return false;
 
-        partial void OnSelectedFilterChanged(FilterOption value)
+        if (SelectedFilter is null)
+            return true;
+
+        return SelectedFilter.Filter switch
         {
-            BirdsView.Refresh();
-            OnPropertyChanged(nameof(BirdCount));
-        }
+            BirdFilter.All => true,
+            BirdFilter.Alive => bird.IsAlive && bird.Departure is null,
+            BirdFilter.Dead => !bird.IsAlive,
+            BirdFilter.DepartedButAlive => bird.IsAlive && bird.Departure is not null,
+            BirdFilter.BySpecies => BirdEnumHelper.ParseBirdName(bird.Name) == SelectedFilter.Species,
+            _ => true
+        };
+    }
 
-        partial void OnSearchTextChanged(string? value)
+    [RelayCommand]
+    private async Task ReloadBirdsAsync()
+    {
+        await _birdManager.ReloadAsync(CancellationToken.None);
+    }
+
+    [RelayCommand]
+    private void ClearSearch()
+    {
+        SearchText = string.Empty;
+    }
+
+    private void OnLanguageChanged(object? sender, EventArgs e)
+    {
+        var selectedFilter = SelectedFilter;
+
+        Filters = CreateFilters();
+        SelectedFilter =
+            Filters.FirstOrDefault(x => x.Filter == selectedFilter.Filter && x.Species == selectedFilter.Species)
+            ?? Filters[0];
+
+        BirdsView.Refresh();
+        OnPropertyChanged(nameof(BirdCount));
+    }
+
+    private static IReadOnlyList<FilterOption> CreateFilters()
+    {
+        var filters = new List<FilterOption>
         {
-            BirdsView.Refresh();
-            OnPropertyChanged(nameof(BirdCount));
-        }
+            new(BirdFilter.All, AppText.Get("BirdList.Filter.All")),
+            new(BirdFilter.Alive, AppText.Get("BirdList.Filter.Alive")),
+            new(BirdFilter.Dead, AppText.Get("BirdList.Filter.Dead")),
+            new(BirdFilter.DepartedButAlive, AppText.Get("BirdList.Filter.Released"))
+        };
 
-        public bool FilterBirds(object obj)
-        {
-            if (obj is not BirdDTO bird)
-                return false;
+        filters.AddRange(Enum.GetValues<BirdsName>().Select(FilterOption.SpeciesFilter));
 
-            if (!MatchesSearchText(bird))
-                return false;
+        return filters;
+    }
 
-            if (SelectedFilter is null)
-                return true;
+    private bool MatchesSearchText(BirdDTO bird)
+    {
+        if (string.IsNullOrWhiteSpace(SearchText))
+            return true;
 
-            return SelectedFilter.Filter switch
-            {
-                BirdFilter.All => true,
-                BirdFilter.Alive => bird.IsAlive && bird.Departure is null,
-                BirdFilter.Dead => !bird.IsAlive,
-                BirdFilter.DepartedButAlive => bird.IsAlive && bird.Departure is not null,
-                BirdFilter.BySpecies => BirdEnumHelper.ParseBirdName(bird.Name) == SelectedFilter.Species,
-                _ => true
-            };
-        }
+        var text = SearchText.Trim();
+        var species = BirdEnumHelper.ParseBirdName(bird.Name);
+        var localizedName = species?.ToDisplayName() ?? bird.Name;
 
-        [RelayCommand]
-        private async Task ReloadBirdsAsync()
-        {
-            await _birdManager.ReloadAsync(CancellationToken.None);
-        }
+        return localizedName.Contains(text, StringComparison.CurrentCultureIgnoreCase)
+               || bird.Name?.Contains(text, StringComparison.CurrentCultureIgnoreCase) == true
+               || _localization.FormatDate(bird.Arrival).Contains(text, StringComparison.CurrentCultureIgnoreCase)
+               || (bird.Departure is { } departure && _localization.FormatDate(departure)
+                   .Contains(text, StringComparison.CurrentCultureIgnoreCase))
+               || bird.Description?.Contains(text, StringComparison.CurrentCultureIgnoreCase) == true;
+    }
 
-        [RelayCommand]
-        private void ClearSearch()
-        {
-            SearchText = string.Empty;
-        }
-
-        private void OnLanguageChanged(object? sender, EventArgs e)
-        {
-            var selectedFilter = SelectedFilter;
-
-            Filters = CreateFilters();
-            SelectedFilter = Filters.FirstOrDefault(x => x.Filter == selectedFilter.Filter && x.Species == selectedFilter.Species)
-                ?? Filters[0];
-
-            BirdsView.Refresh();
-            OnPropertyChanged(nameof(BirdCount));
-        }
-
-        private static IReadOnlyList<FilterOption> CreateFilters()
-        {
-            var filters = new List<FilterOption>
-            {
-                new(BirdFilter.All, AppText.Get("BirdList.Filter.All")),
-                new(BirdFilter.Alive, AppText.Get("BirdList.Filter.Alive")),
-                new(BirdFilter.Dead, AppText.Get("BirdList.Filter.Dead")),
-                new(BirdFilter.DepartedButAlive, AppText.Get("BirdList.Filter.Released"))
-            };
-
-            filters.AddRange(Enum.GetValues<BirdsName>().Select(FilterOption.SpeciesFilter));
-
-            return filters;
-        }
-
-        private bool MatchesSearchText(BirdDTO bird)
-        {
-            if (string.IsNullOrWhiteSpace(SearchText))
-                return true;
-
-            var text = SearchText.Trim();
-            var species = BirdEnumHelper.ParseBirdName(bird.Name);
-            var localizedName = species?.ToDisplayName() ?? bird.Name;
-
-            return localizedName.Contains(text, StringComparison.CurrentCultureIgnoreCase)
-                || (bird.Name?.Contains(text, StringComparison.CurrentCultureIgnoreCase) == true)
-                || _localization.FormatDate(bird.Arrival).Contains(text, StringComparison.CurrentCultureIgnoreCase)
-                || (bird.Departure is { } departure && _localization.FormatDate(departure).Contains(text, StringComparison.CurrentCultureIgnoreCase))
-                || (bird.Description?.Contains(text, StringComparison.CurrentCultureIgnoreCase) == true);
-        }
-
-        private void OnBirdsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            OnPropertyChanged(nameof(BirdCount));
-        }
+    private void OnBirdsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        OnPropertyChanged(nameof(BirdCount));
     }
 }

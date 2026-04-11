@@ -1,10 +1,9 @@
-﻿namespace Birds.UI.Services.Notification
+﻿namespace Birds.UI.Services.Notification;
+
+public enum NotificationType
 {
-    public enum NotificationType
-    {
-        Success,
-        Error,
-        Info,
-        Warning
-    }
+    Success,
+    Error,
+    Info,
+    Warning
 }

@@ -1,22 +1,20 @@
-using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace Birds.Shared.Sync
+namespace Birds.Shared.Sync;
+
+public interface IRemoteSyncStatusSource : INotifyPropertyChanged
 {
-    public interface IRemoteSyncStatusSource : INotifyPropertyChanged
-    {
-        RemoteSyncDisplayState Status { get; }
+    RemoteSyncDisplayState Status { get; }
 
-        DateTime? LastSuccessfulSyncAtUtc { get; }
+    DateTime? LastSuccessfulSyncAtUtc { get; }
 
-        DateTime? LastAttemptAtUtc { get; }
+    DateTime? LastAttemptAtUtc { get; }
 
-        string? LastErrorMessage { get; }
+    string? LastErrorMessage { get; }
 
-        int LastProcessedCount { get; }
+    int LastProcessedCount { get; }
 
-        int PendingOperationCount { get; }
+    int PendingOperationCount { get; }
 
-        IReadOnlyList<RemoteSyncActivityEntry> RecentActivity { get; }
-    }
+    IReadOnlyList<RemoteSyncActivityEntry> RecentActivity { get; }
 }

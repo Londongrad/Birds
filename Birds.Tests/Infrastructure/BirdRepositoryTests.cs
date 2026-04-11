@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Birds.Application.Exceptions;
 using Birds.Domain.Entities;
 using Birds.Domain.Enums;
@@ -6,231 +7,232 @@ using Birds.Infrastructure.Repositories;
 using Birds.Shared.Constants;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
 
-namespace Birds.Tests.Infrastructure
+namespace Birds.Tests.Infrastructure;
+
+public class BirdRepositoryTests : IAsyncLifetime
 {
-    public class BirdRepositoryTests : IAsyncLifetime
+    private SqliteInMemoryDb _db = null!;
+
+    public Task InitializeAsync()
     {
-        private SqliteInMemoryDb _db = null!;
+        _db = new SqliteInMemoryDb();
+        return Task.CompletedTask;
+    }
 
-        public Task InitializeAsync()
-        {
-            _db = new SqliteInMemoryDb();
-            return Task.CompletedTask;
-        }
+    public async Task DisposeAsync()
+    {
+        await _db.DisposeAsync();
+    }
 
-        public async Task DisposeAsync() => await _db.DisposeAsync();
+    [Fact]
+    public async Task Add_Then_GetById_Should_Return_Same_Entity()
+    {
+        var repo = new BirdRepository(_db.CreateFactory());
+        var species = Enum.GetValues<BirdsName>()[0];
 
-        [Fact]
-        public async Task Add_Then_GetById_Should_Return_Same_Entity()
-        {
-            var repo = new BirdRepository(_db.CreateFactory());
-            var species = Enum.GetValues<BirdsName>()[0];
+        var bird = Bird.Create(
+            species,
+            "sparrow",
+            DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
 
-            var bird = Bird.Create(
-                name: species,
-                description: "sparrow",
-                arrival: DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
+        await repo.AddAsync(bird);
+        var found = await repo.GetByIdAsync(bird.Id);
 
-            await repo.AddAsync(bird);
-            var found = await repo.GetByIdAsync(bird.Id);
+        found.Id.Should().Be(bird.Id);
+        found.Name.Should().Be(bird.Name);
+    }
 
-            found.Id.Should().Be(bird.Id);
-            found.Name.Should().Be(bird.Name);
-        }
+    [Fact]
+    public async Task GetById_When_NotExists_Should_Throw_NotFound()
+    {
+        var repo = new BirdRepository(_db.CreateFactory());
 
-        [Fact]
-        public async Task GetById_When_NotExists_Should_Throw_NotFound()
-        {
-            var repo = new BirdRepository(_db.CreateFactory());
+        Func<Task> act = async () => await repo.GetByIdAsync(Guid.NewGuid());
 
-            Func<Task> act = async () => await repo.GetByIdAsync(Guid.NewGuid());
+        await act.Should().ThrowAsync<NotFoundException>()
+            .WithMessage(ExceptionMessages.NotFound("Bird", "*"));
+    }
 
-            await act.Should().ThrowAsync<NotFoundException>()
-                     .WithMessage(ExceptionMessages.NotFound("Bird", "*"));
-        }
+    [Fact]
+    public async Task GetAll_Should_Return_AsNoTracking_Entities()
+    {
+        var ctx = _db.CreateContext();
+        var repo = new BirdRepository(_db.CreateFactory());
+        var firstSpecies = Enum.GetValues<BirdsName>()[0];
+        var secondSpecies = Enum.GetValues<BirdsName>()[1];
 
-        [Fact]
-        public async Task GetAll_Should_Return_AsNoTracking_Entities()
-        {
-            var ctx = _db.CreateContext();
-            var repo = new BirdRepository(_db.CreateFactory());
-            var firstSpecies = Enum.GetValues<BirdsName>()[0];
-            var secondSpecies = Enum.GetValues<BirdsName>()[1];
+        var b1 = Bird.Create(firstSpecies, "tit", DateOnly.FromDateTime(DateTime.Now.AddDays(-5)));
+        var b2 = Bird.Create(secondSpecies, "sparrow", DateOnly.FromDateTime(DateTime.Now.AddDays(-4)));
+        await repo.AddAsync(b1);
+        await repo.AddAsync(b2);
 
-            var b1 = Bird.Create(firstSpecies, "tit", DateOnly.FromDateTime(DateTime.Now.AddDays(-5)));
-            var b2 = Bird.Create(secondSpecies, "sparrow", DateOnly.FromDateTime(DateTime.Now.AddDays(-4)));
-            await repo.AddAsync(b1);
-            await repo.AddAsync(b2);
+        var list = await repo.GetAllAsync();
+        list.Should().HaveCount(2);
 
-            var list = await repo.GetAllAsync();
-            list.Should().HaveCount(2);
+        foreach (var e in list)
+            ctx.Entry(e).State.Should().Be(EntityState.Detached);
+    }
 
-            foreach (var e in list)
-                ctx.Entry(e).State.Should().Be(EntityState.Detached);
-        }
+    [Fact]
+    public async Task Update_Should_Persist_Changes()
+    {
+        var repo = new BirdRepository(_db.CreateFactory());
+        var originalSpecies = Enum.GetValues<BirdsName>()[0];
+        var updatedSpecies = Enum.GetValues<BirdsName>()[2];
 
-        [Fact]
-        public async Task Update_Should_Persist_Changes()
-        {
-            var repo = new BirdRepository(_db.CreateFactory());
-            var originalSpecies = Enum.GetValues<BirdsName>()[0];
-            var updatedSpecies = Enum.GetValues<BirdsName>()[2];
+        var bird = Bird.Create(originalSpecies, "old", DateOnly.FromDateTime(DateTime.Now.AddDays(-10)));
+        await repo.AddAsync(bird);
 
-            var bird = Bird.Create(originalSpecies, "old", DateOnly.FromDateTime(DateTime.Now.AddDays(-10)));
-            await repo.AddAsync(bird);
+        bird.Update(updatedSpecies, "new", bird.Arrival, bird.Departure, true);
+        await repo.UpdateAsync(bird);
 
-            bird.Update(updatedSpecies, "new", bird.Arrival, bird.Departure, true);
-            await repo.UpdateAsync(bird);
+        var repo2 = new BirdRepository(_db.CreateFactory());
+        var again = await repo2.GetByIdAsync(bird.Id);
 
-            var repo2 = new BirdRepository(_db.CreateFactory());
-            var again = await repo2.GetByIdAsync(bird.Id);
+        again.Name.Should().Be(updatedSpecies);
+        again.Description.Should().Be("new");
+    }
 
-            again.Name.Should().Be(updatedSpecies);
-            again.Description.Should().Be("new");
-        }
+    [Fact]
+    public async Task Remove_Should_Delete_Row()
+    {
+        var repo = new BirdRepository(_db.CreateFactory());
+        var species = Enum.GetValues<BirdsName>()[0];
 
-        [Fact]
-        public async Task Remove_Should_Delete_Row()
-        {
-            var repo = new BirdRepository(_db.CreateFactory());
-            var species = Enum.GetValues<BirdsName>()[0];
+        var bird = Bird.Create(species, "to delete", DateOnly.FromDateTime(DateTime.Now.AddDays(-2)));
+        await repo.AddAsync(bird);
+        await repo.RemoveAsync(bird);
+        Func<Task> act = async () => await repo.GetByIdAsync(bird.Id);
 
-            var bird = Bird.Create(species, "to delete", DateOnly.FromDateTime(DateTime.Now.AddDays(-2)));
-            await repo.AddAsync(bird);
-            await repo.RemoveAsync(bird);
-            Func<Task> act = async () => await repo.GetByIdAsync(bird.Id);
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
 
-            await act.Should().ThrowAsync<NotFoundException>();
-        }
+    [Fact]
+    public async Task Upsert_Should_Add_And_Update_Birds_In_One_Pass()
+    {
+        var repo = new BirdRepository(_db.CreateFactory());
+        var primarySpecies = Enum.GetValues<BirdsName>()[0];
+        var secondarySpecies = Enum.GetValues<BirdsName>()[1];
 
-        [Fact]
-        public async Task Upsert_Should_Add_And_Update_Birds_In_One_Pass()
-        {
-            var repo = new BirdRepository(_db.CreateFactory());
-            var primarySpecies = Enum.GetValues<BirdsName>()[0];
-            var secondarySpecies = Enum.GetValues<BirdsName>()[1];
+        var existing = Bird.Create(primarySpecies, "old", DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
+        await repo.AddAsync(existing);
 
-            var existing = Bird.Create(primarySpecies, "old", DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
-            await repo.AddAsync(existing);
+        var updated = Bird.Restore(
+            existing.Id,
+            primarySpecies,
+            "updated",
+            existing.Arrival,
+            existing.Departure,
+            existing.IsAlive,
+            existing.CreatedAt,
+            existing.UpdatedAt);
 
-            var updated = Bird.Restore(
-                existing.Id,
-                primarySpecies,
-                "updated",
-                existing.Arrival,
-                existing.Departure,
-                existing.IsAlive,
-                existing.CreatedAt,
-                existing.UpdatedAt);
+        var added = Bird.Create(secondarySpecies, "new", DateOnly.FromDateTime(DateTime.Now.AddDays(-1)));
 
-            var added = Bird.Create(secondarySpecies, "new", DateOnly.FromDateTime(DateTime.Now.AddDays(-1)));
+        var result = await repo.UpsertAsync(new[] { updated, added });
+        var list = await repo.GetAllAsync();
 
-            var result = await repo.UpsertAsync(new[] { updated, added });
-            var list = await repo.GetAllAsync();
+        result.Added.Should().Be(1);
+        result.Updated.Should().Be(1);
+        list.Should().HaveCount(2);
+        list.Should().Contain(x => x.Id == existing.Id && x.Description == "updated");
+        list.Should().Contain(x => x.Id == added.Id);
+    }
 
-            result.Added.Should().Be(1);
-            result.Updated.Should().Be(1);
-            list.Should().HaveCount(2);
-            list.Should().Contain(x => x.Id == existing.Id && x.Description == "updated");
-            list.Should().Contain(x => x.Id == added.Id);
-        }
+    [Fact]
+    public async Task ReplaceWithSnapshot_Should_Remove_Missing_Birds_And_Upsert_Current_Ones()
+    {
+        var repo = new BirdRepository(_db.CreateFactory());
+        var species = Enum.GetValues<BirdsName>();
 
-        [Fact]
-        public async Task ReplaceWithSnapshot_Should_Remove_Missing_Birds_And_Upsert_Current_Ones()
-        {
-            var repo = new BirdRepository(_db.CreateFactory());
-            var species = Enum.GetValues<BirdsName>();
+        var retained = Bird.Create(species[0], "retain", DateOnly.FromDateTime(DateTime.Now.AddDays(-4)));
+        var removed = Bird.Create(species[1], "remove", DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
+        await repo.AddAsync(retained);
+        await repo.AddAsync(removed);
 
-            var retained = Bird.Create(species[0], "retain", DateOnly.FromDateTime(DateTime.Now.AddDays(-4)));
-            var removed = Bird.Create(species[1], "remove", DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
-            await repo.AddAsync(retained);
-            await repo.AddAsync(removed);
+        var updatedRetained = Bird.Restore(
+            retained.Id,
+            retained.Name,
+            "updated retain",
+            retained.Arrival,
+            retained.Departure,
+            retained.IsAlive,
+            retained.CreatedAt,
+            retained.UpdatedAt);
+        var added = Bird.Create(species[2], "added", DateOnly.FromDateTime(DateTime.Now.AddDays(-1)));
 
-            var updatedRetained = Bird.Restore(
-                retained.Id,
-                retained.Name,
-                "updated retain",
-                retained.Arrival,
-                retained.Departure,
-                retained.IsAlive,
-                retained.CreatedAt,
-                retained.UpdatedAt);
-            var added = Bird.Create(species[2], "added", DateOnly.FromDateTime(DateTime.Now.AddDays(-1)));
+        var result = await repo.ReplaceWithSnapshotAsync(new[] { updatedRetained, added });
+        var list = await repo.GetAllAsync();
 
-            var result = await repo.ReplaceWithSnapshotAsync(new[] { updatedRetained, added });
-            var list = await repo.GetAllAsync();
+        result.Added.Should().Be(1);
+        result.Updated.Should().Be(1);
+        result.Removed.Should().Be(1);
+        list.Should().HaveCount(2);
+        list.Should().Contain(x => x.Id == retained.Id && x.Description == "updated retain");
+        list.Should().Contain(x => x.Id == added.Id);
+        list.Should().NotContain(x => x.Id == removed.Id);
+    }
 
-            result.Added.Should().Be(1);
-            result.Updated.Should().Be(1);
-            result.Removed.Should().Be(1);
-            list.Should().HaveCount(2);
-            list.Should().Contain(x => x.Id == retained.Id && x.Description == "updated retain");
-            list.Should().Contain(x => x.Id == added.Id);
-            list.Should().NotContain(x => x.Id == removed.Id);
-        }
+    [Fact]
+    public async Task Add_Should_Queue_Pending_Upsert_Sync_Operation()
+    {
+        var repo = new BirdRepository(_db.CreateFactory());
+        var species = Enum.GetValues<BirdsName>()[0];
+        var bird = Bird.Create(species, "queued", DateOnly.FromDateTime(DateTime.Now.AddDays(-2)));
 
-        [Fact]
-        public async Task Add_Should_Queue_Pending_Upsert_Sync_Operation()
-        {
-            var repo = new BirdRepository(_db.CreateFactory());
-            var species = Enum.GetValues<BirdsName>()[0];
-            var bird = Bird.Create(species, "queued", DateOnly.FromDateTime(DateTime.Now.AddDays(-2)));
+        await repo.AddAsync(bird);
 
-            await repo.AddAsync(bird);
+        await using var context = _db.CreateContext();
+        var operation = await context.SyncOperations.SingleAsync();
 
-            await using var context = _db.CreateContext();
-            var operation = await context.SyncOperations.SingleAsync();
+        operation.AggregateId.Should().Be(bird.Id);
+        operation.OperationType.Should().Be(SyncOperationType.Upsert);
 
-            operation.AggregateId.Should().Be(bird.Id);
-            operation.OperationType.Should().Be(SyncOperationType.Upsert);
+        using var payload = JsonDocument.Parse(operation.PayloadJson);
+        payload.RootElement.GetProperty("Id").GetGuid().Should().Be(bird.Id);
+        payload.RootElement.GetProperty("Name").GetString().Should().Be(bird.Name.ToString());
+    }
 
-            using var payload = JsonDocument.Parse(operation.PayloadJson);
-            payload.RootElement.GetProperty("Id").GetGuid().Should().Be(bird.Id);
-            payload.RootElement.GetProperty("Name").GetString().Should().Be(bird.Name.ToString());
-        }
+    [Fact]
+    public async Task Update_Should_Coalesce_To_A_Single_Pending_Upsert_Operation()
+    {
+        var repo = new BirdRepository(_db.CreateFactory());
+        var species = Enum.GetValues<BirdsName>();
+        var bird = Bird.Create(species[0], "before", DateOnly.FromDateTime(DateTime.Now.AddDays(-5)));
+        await repo.AddAsync(bird);
 
-        [Fact]
-        public async Task Update_Should_Coalesce_To_A_Single_Pending_Upsert_Operation()
-        {
-            var repo = new BirdRepository(_db.CreateFactory());
-            var species = Enum.GetValues<BirdsName>();
-            var bird = Bird.Create(species[0], "before", DateOnly.FromDateTime(DateTime.Now.AddDays(-5)));
-            await repo.AddAsync(bird);
+        bird.Update(species[1], "after", bird.Arrival, bird.Departure, bird.IsAlive);
+        await repo.UpdateAsync(bird);
 
-            bird.Update(species[1], "after", bird.Arrival, bird.Departure, bird.IsAlive);
-            await repo.UpdateAsync(bird);
+        await using var context = _db.CreateContext();
+        var operations = await context.SyncOperations.ToListAsync();
 
-            await using var context = _db.CreateContext();
-            var operations = await context.SyncOperations.ToListAsync();
+        operations.Should().HaveCount(1);
+        operations[0].OperationType.Should().Be(SyncOperationType.Upsert);
 
-            operations.Should().HaveCount(1);
-            operations[0].OperationType.Should().Be(SyncOperationType.Upsert);
+        using var payload = JsonDocument.Parse(operations[0].PayloadJson);
+        payload.RootElement.GetProperty("Description").GetString().Should().Be("after");
+        payload.RootElement.GetProperty("Name").GetString().Should().Be(species[1].ToString());
+    }
 
-            using var payload = JsonDocument.Parse(operations[0].PayloadJson);
-            payload.RootElement.GetProperty("Description").GetString().Should().Be("after");
-            payload.RootElement.GetProperty("Name").GetString().Should().Be(species[1].ToString());
-        }
+    [Fact]
+    public async Task Remove_Should_Replace_Pending_Upsert_With_Delete_Operation()
+    {
+        var repo = new BirdRepository(_db.CreateFactory());
+        var species = Enum.GetValues<BirdsName>()[0];
+        var bird = Bird.Create(species, "delete me", DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
+        await repo.AddAsync(bird);
 
-        [Fact]
-        public async Task Remove_Should_Replace_Pending_Upsert_With_Delete_Operation()
-        {
-            var repo = new BirdRepository(_db.CreateFactory());
-            var species = Enum.GetValues<BirdsName>()[0];
-            var bird = Bird.Create(species, "delete me", DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
-            await repo.AddAsync(bird);
+        await repo.RemoveAsync(bird);
 
-            await repo.RemoveAsync(bird);
+        await using var context = _db.CreateContext();
+        var operations = await context.SyncOperations.ToListAsync();
 
-            await using var context = _db.CreateContext();
-            var operations = await context.SyncOperations.ToListAsync();
+        operations.Should().HaveCount(1);
+        operations[0].OperationType.Should().Be(SyncOperationType.Delete);
 
-            operations.Should().HaveCount(1);
-            operations[0].OperationType.Should().Be(SyncOperationType.Delete);
-
-            using var payload = JsonDocument.Parse(operations[0].PayloadJson);
-            payload.RootElement.GetProperty("Id").GetGuid().Should().Be(bird.Id);
-        }
+        using var payload = JsonDocument.Parse(operations[0].PayloadJson);
+        payload.RootElement.GetProperty("Id").GetGuid().Should().Be(bird.Id);
     }
 }

@@ -1,7 +1,6 @@
-namespace Birds.Infrastructure.Services
+namespace Birds.Infrastructure.Services;
+
+public interface IRemoteSyncService
 {
-    public interface IRemoteSyncService
-    {
-        Task<RemoteSyncRunResult> SyncPendingAsync(CancellationToken cancellationToken);
-    }
+    Task<RemoteSyncRunResult> SyncPendingAsync(CancellationToken cancellationToken);
 }

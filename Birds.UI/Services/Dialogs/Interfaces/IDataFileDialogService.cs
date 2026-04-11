@@ -1,9 +1,8 @@
-namespace Birds.UI.Services.Dialogs.Interfaces
-{
-    public interface IDataFileDialogService
-    {
-        string? PickImportPath(string suggestedPath);
+namespace Birds.UI.Services.Dialogs.Interfaces;
 
-        string? PickExportPath(string suggestedPath);
-    }
+public interface IDataFileDialogService
+{
+    string? PickImportPath(string suggestedPath);
+
+    string? PickExportPath(string suggestedPath);
 }

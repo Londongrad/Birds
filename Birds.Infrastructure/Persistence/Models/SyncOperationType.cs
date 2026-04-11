@@ -1,8 +1,7 @@
-namespace Birds.Infrastructure.Persistence.Models
+namespace Birds.Infrastructure.Persistence.Models;
+
+public enum SyncOperationType
 {
-    public enum SyncOperationType
-    {
-        Upsert = 1,
-        Delete = 2
-    }
+    Upsert = 1,
+    Delete = 2
 }

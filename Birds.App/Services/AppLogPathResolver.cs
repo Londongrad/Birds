@@ -1,61 +1,60 @@
 using System.IO;
 
-namespace Birds.App.Services
+namespace Birds.App.Services;
+
+internal static class AppLogPathResolver
 {
-    internal static class AppLogPathResolver
+    public static string ResolveLogsDirectory(string? startPath = null)
     {
-        public static string ResolveLogsDirectory(string? startPath = null)
-        {
-            var root = TryResolveRepositoryRoot(startPath)
-                ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Birds");
+        var root = TryResolveRepositoryRoot(startPath)
+                   ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Birds");
 
-            return Path.Combine(root, "logs");
+        return Path.Combine(root, "logs");
+    }
+
+    private static string? TryResolveRepositoryRoot(string? startPath)
+    {
+        var current = ResolveStartDirectory(startPath);
+
+        while (current is not null)
+        {
+            if (IsRepositoryRoot(current))
+                return current.FullName;
+
+            current = current.Parent;
         }
 
-        private static string? TryResolveRepositoryRoot(string? startPath)
+        return null;
+    }
+
+    private static DirectoryInfo ResolveStartDirectory(string? startPath)
+    {
+        var candidate = string.IsNullOrWhiteSpace(startPath)
+            ? AppContext.BaseDirectory
+            : startPath;
+
+        var fullPath = Path.GetFullPath(candidate);
+        var directoryPath = File.Exists(fullPath)
+            ? Path.GetDirectoryName(fullPath)!
+            : fullPath;
+
+        return new DirectoryInfo(directoryPath);
+    }
+
+    private static bool IsRepositoryRoot(DirectoryInfo directory)
+    {
+        try
         {
-            var current = ResolveStartDirectory(startPath);
-
-            while (current is not null)
-            {
-                if (IsRepositoryRoot(current))
-                    return current.FullName;
-
-                current = current.Parent;
-            }
-
-            return null;
+            return directory.EnumerateFiles("*.sln").Any()
+                   || Directory.Exists(Path.Combine(directory.FullName, ".git"));
         }
-
-        private static DirectoryInfo ResolveStartDirectory(string? startPath)
+        catch (UnauthorizedAccessException)
         {
-            var candidate = string.IsNullOrWhiteSpace(startPath)
-                ? AppContext.BaseDirectory
-                : startPath;
-
-            var fullPath = Path.GetFullPath(candidate);
-            var directoryPath = File.Exists(fullPath)
-                ? Path.GetDirectoryName(fullPath)!
-                : fullPath;
-
-            return new DirectoryInfo(directoryPath);
+            return false;
         }
-
-        private static bool IsRepositoryRoot(DirectoryInfo directory)
+        catch (IOException)
         {
-            try
-            {
-                return directory.EnumerateFiles("*.sln").Any()
-                       || Directory.Exists(Path.Combine(directory.FullName, ".git"));
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return false;
-            }
-            catch (IOException)
-            {
-                return false;
-            }
+            return false;
         }
     }
 }

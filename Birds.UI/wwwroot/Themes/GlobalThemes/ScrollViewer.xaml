@@ -23,10 +23,12 @@
                         SnapsToDevicePixels="True" />
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ThumbBody" Property="Background" Value="{StaticResource ScrollThumbHoverBrush}" />
+                            <Setter TargetName="ThumbBody" Property="Background"
+                                    Value="{StaticResource ScrollThumbHoverBrush}" />
                         </Trigger>
                         <Trigger Property="IsDragging" Value="True">
-                            <Setter TargetName="ThumbBody" Property="Background" Value="{StaticResource ScrollThumbDraggingBrush}" />
+                            <Setter TargetName="ThumbBody" Property="Background"
+                                    Value="{StaticResource ScrollThumbDraggingBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -89,7 +91,8 @@
                         </Trigger>
 
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="TrackBackground" Property="Background" Value="{StaticResource ScrollTrackHoverBrush}" />
+                            <Setter TargetName="TrackBackground" Property="Background"
+                                    Value="{StaticResource ScrollTrackHoverBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

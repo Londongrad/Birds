@@ -10,17 +10,17 @@ namespace Birds.App;
 public partial class App
 {
     /// <summary>
-    /// Starts, on a background thread, the full data bootstrap for the application:
-    /// prepares the database and then loads the shared bird collection for the UI.
+    ///     Starts, on a background thread, the full data bootstrap for the application:
+    ///     prepares the database and then loads the shared bird collection for the UI.
     /// </summary>
     /// <param name="host">
-    /// The fully built <see cref="IHost"/> used to resolve services required by the
-    /// initializer and to obtain <see cref="IHostApplicationLifetime"/> for cancellation.
+    ///     The fully built <see cref="IHost" /> used to resolve services required by the
+    ///     initializer and to obtain <see cref="IHostApplicationLifetime" /> for cancellation.
     /// </param>
     /// <remarks>
-    /// Fire-and-forget: returns immediately while work continues in the background.
-    /// Errors are not thrown to the caller; they are logged via Serilog. Cancellation
-    /// is observed through <see cref="IHostApplicationLifetime.ApplicationStopping"/>.
+    ///     Fire-and-forget: returns immediately while work continues in the background.
+    ///     Errors are not thrown to the caller; they are logged via Serilog. Cancellation
+    ///     is observed through <see cref="IHostApplicationLifetime.ApplicationStopping" />.
     /// </remarks>
     internal void StartBackgroundInitialization(IHost host)
     {

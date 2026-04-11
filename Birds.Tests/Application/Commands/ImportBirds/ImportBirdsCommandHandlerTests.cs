@@ -7,111 +7,113 @@ using Birds.Domain.Enums;
 using FluentAssertions;
 using Moq;
 
-namespace Birds.Tests.Application.Commands.ImportBirds
+namespace Birds.Tests.Application.Commands.ImportBirds;
+
+public class ImportBirdsCommandHandlerTests
 {
-    public class ImportBirdsCommandHandlerTests
+    [Fact]
+    public async Task Handle_Should_Upsert_Birds_And_Return_Snapshot()
     {
-        [Fact]
-        public async Task Handle_Should_Upsert_Birds_And_Return_Snapshot()
-        {
-            var repository = new Mock<IBirdRepository>();
-            var species = Enum.GetValues<BirdsName>()[0];
-            var importedBird = new BirdDTO(
-                Guid.NewGuid(),
-                "Sparrow",
-                "note",
-                new DateOnly(2026, 4, 1),
-                null,
-                true,
-                DateTime.UtcNow.AddDays(-2),
-                DateTime.UtcNow.AddDays(-1));
+        var repository = new Mock<IBirdRepository>();
+        var species = Enum.GetValues<BirdsName>()[0];
+        var importedBird = new BirdDTO(
+            Guid.NewGuid(),
+            "Sparrow",
+            "note",
+            new DateOnly(2026, 4, 1),
+            null,
+            true,
+            DateTime.UtcNow.AddDays(-2),
+            DateTime.UtcNow.AddDays(-1));
 
-            repository.Setup(x => x.UpsertAsync(It.IsAny<IReadOnlyCollection<Bird>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new UpsertBirdsResult(1, 0));
-            repository.Setup(x => x.ReplaceWithSnapshotAsync(It.IsAny<IReadOnlyCollection<Bird>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new UpsertBirdsResult(1, 0, 0));
-            repository.Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new[]
-                {
-                    Bird.Restore(
-                        importedBird.Id,
-                        species,
-                        importedBird.Description,
-                        importedBird.Arrival,
-                        importedBird.Departure,
-                        importedBird.IsAlive,
-                        importedBird.CreatedAt,
-                        importedBird.UpdatedAt)
-                });
+        repository.Setup(x => x.UpsertAsync(It.IsAny<IReadOnlyCollection<Bird>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UpsertBirdsResult(1, 0));
+        repository.Setup(x =>
+                x.ReplaceWithSnapshotAsync(It.IsAny<IReadOnlyCollection<Bird>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UpsertBirdsResult(1, 0));
+        repository.Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[]
+            {
+                Bird.Restore(
+                    importedBird.Id,
+                    species,
+                    importedBird.Description,
+                    importedBird.Arrival,
+                    importedBird.Departure,
+                    importedBird.IsAlive,
+                    importedBird.CreatedAt,
+                    importedBird.UpdatedAt)
+            });
 
-            var sut = new ImportBirdsCommandHandler(repository.Object);
+        var sut = new ImportBirdsCommandHandler(repository.Object);
 
-            var result = await sut.Handle(new ImportBirdsCommand(new[] { importedBird }), CancellationToken.None);
+        var result = await sut.Handle(new ImportBirdsCommand(new[] { importedBird }), CancellationToken.None);
 
-            result.IsSuccess.Should().BeTrue();
-            result.Value!.Added.Should().Be(1);
-            result.Value.Updated.Should().Be(0);
-            result.Value.Removed.Should().Be(0);
-            result.Value.Snapshot.Should().ContainSingle(x => x.Id == importedBird.Id);
-            repository.Verify(
-                x => x.UpsertAsync(
-                    It.Is<IReadOnlyCollection<Bird>>(items => items.Count == 1),
-                    It.IsAny<CancellationToken>()),
-                Times.Once);
-        }
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.Added.Should().Be(1);
+        result.Value.Updated.Should().Be(0);
+        result.Value.Removed.Should().Be(0);
+        result.Value.Snapshot.Should().ContainSingle(x => x.Id == importedBird.Id);
+        repository.Verify(
+            x => x.UpsertAsync(
+                It.Is<IReadOnlyCollection<Bird>>(items => items.Count == 1),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
 
-        [Fact]
-        public async Task Handle_Should_Fail_For_Unknown_Bird_Name()
-        {
-            var repository = new Mock<IBirdRepository>();
-            var sut = new ImportBirdsCommandHandler(repository.Object);
+    [Fact]
+    public async Task Handle_Should_Fail_For_Unknown_Bird_Name()
+    {
+        var repository = new Mock<IBirdRepository>();
+        var sut = new ImportBirdsCommandHandler(repository.Object);
 
-            var result = await sut.Handle(
-                new ImportBirdsCommand(new[]
-                {
-                    new BirdDTO(Guid.NewGuid(), "UnknownBird", null, new DateOnly(2026, 4, 1), null, true, null, null)
-                }),
-                CancellationToken.None);
+        var result = await sut.Handle(
+            new ImportBirdsCommand(new[]
+            {
+                new BirdDTO(Guid.NewGuid(), "UnknownBird", null, new DateOnly(2026, 4, 1), null, true, null, null)
+            }),
+            CancellationToken.None);
 
-            result.IsSuccess.Should().BeFalse();
-            repository.Verify(x => x.UpsertAsync(It.IsAny<IReadOnlyCollection<Bird>>(), It.IsAny<CancellationToken>()), Times.Never);
-        }
+        result.IsSuccess.Should().BeFalse();
+        repository.Verify(x => x.UpsertAsync(It.IsAny<IReadOnlyCollection<Bird>>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
 
-        [Fact]
-        public async Task Handle_Should_Replace_Snapshot_When_Mode_Is_Replace()
-        {
-            var repository = new Mock<IBirdRepository>();
-            var importedBird = new BirdDTO(
-                Guid.NewGuid(),
-                "Sparrow",
-                "note",
-                new DateOnly(2026, 4, 1),
-                null,
-                true,
-                DateTime.UtcNow.AddDays(-2),
-                DateTime.UtcNow.AddDays(-1));
+    [Fact]
+    public async Task Handle_Should_Replace_Snapshot_When_Mode_Is_Replace()
+    {
+        var repository = new Mock<IBirdRepository>();
+        var importedBird = new BirdDTO(
+            Guid.NewGuid(),
+            "Sparrow",
+            "note",
+            new DateOnly(2026, 4, 1),
+            null,
+            true,
+            DateTime.UtcNow.AddDays(-2),
+            DateTime.UtcNow.AddDays(-1));
 
-            repository.Setup(x => x.ReplaceWithSnapshotAsync(It.IsAny<IReadOnlyCollection<Bird>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new UpsertBirdsResult(1, 0, 3));
-            repository.Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Array.Empty<Bird>());
+        repository.Setup(x =>
+                x.ReplaceWithSnapshotAsync(It.IsAny<IReadOnlyCollection<Bird>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UpsertBirdsResult(1, 0, 3));
+        repository.Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<Bird>());
 
-            var sut = new ImportBirdsCommandHandler(repository.Object);
+        var sut = new ImportBirdsCommandHandler(repository.Object);
 
-            var result = await sut.Handle(
-                new ImportBirdsCommand(new[] { importedBird }, BirdImportMode.Replace),
-                CancellationToken.None);
+        var result = await sut.Handle(
+            new ImportBirdsCommand(new[] { importedBird }, BirdImportMode.Replace),
+            CancellationToken.None);
 
-            result.IsSuccess.Should().BeTrue();
-            result.Value!.Removed.Should().Be(3);
-            repository.Verify(
-                x => x.ReplaceWithSnapshotAsync(
-                    It.Is<IReadOnlyCollection<Bird>>(items => items.Count == 1),
-                    It.IsAny<CancellationToken>()),
-                Times.Once);
-            repository.Verify(
-                x => x.UpsertAsync(It.IsAny<IReadOnlyCollection<Bird>>(), It.IsAny<CancellationToken>()),
-                Times.Never);
-        }
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.Removed.Should().Be(3);
+        repository.Verify(
+            x => x.ReplaceWithSnapshotAsync(
+                It.Is<IReadOnlyCollection<Bird>>(items => items.Count == 1),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+        repository.Verify(
+            x => x.UpsertAsync(It.IsAny<IReadOnlyCollection<Bird>>(), It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 }

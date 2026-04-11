@@ -1,9 +1,9 @@
-using Birds.App;
+using System.Globalization;
+using System.Reflection;
 using Birds.Shared.Constants;
 using Birds.Shared.Localization;
 using FluentAssertions;
-using System.Globalization;
-using System.Reflection;
+using Npgsql;
 
 namespace Birds.Tests.App.Services
 {
@@ -45,7 +45,7 @@ namespace Birds.Tests.App.Services
                 CultureInfo.CurrentUICulture = culture;
 
                 var source = ExceptionMessages.AppDomain;
-                var message = BuildUserMessage(new Npgsql.FakeNpgsqlException(), source);
+                var message = BuildUserMessage(new FakeNpgsqlException(), source);
 
                 message.Should().Be(ExceptionMessages.DatabaseConnection(source));
             }
@@ -58,7 +58,7 @@ namespace Birds.Tests.App.Services
 
         private static string BuildUserMessage(Exception exception, string source)
         {
-            var method = typeof(global::Birds.App.App)
+            var method = typeof(Birds.App.App)
                 .GetMethod("BuildUserMessage", BindingFlags.NonPublic | BindingFlags.Static);
 
             method.Should().NotBeNull();

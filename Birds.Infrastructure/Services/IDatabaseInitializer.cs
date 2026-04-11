@@ -1,7 +1,6 @@
-namespace Birds.Infrastructure.Services
+namespace Birds.Infrastructure.Services;
+
+public interface IDatabaseInitializer
 {
-    public interface IDatabaseInitializer
-    {
-        Task InitializeAsync(CancellationToken cancellationToken);
-    }
+    Task InitializeAsync(CancellationToken cancellationToken);
 }

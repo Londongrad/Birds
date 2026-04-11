@@ -1,38 +1,37 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 
-namespace Birds.UI.Services.Localization.Interfaces
+namespace Birds.UI.Services.Localization.Interfaces;
+
+public interface ILocalizationService
 {
-    public interface ILocalizationService
-    {
-        ReadOnlyCollection<string> SupportedLanguages { get; }
+    ReadOnlyCollection<string> SupportedLanguages { get; }
 
-        CultureInfo CurrentCulture { get; }
+    CultureInfo CurrentCulture { get; }
 
-        string CurrentLanguage { get; }
+    string CurrentLanguage { get; }
 
-        string CurrentDateFormat { get; }
+    string CurrentDateFormat { get; }
 
-        string this[string key] { get; }
+    string this[string key] { get; }
 
-        event EventHandler? LanguageChanged;
+    event EventHandler? LanguageChanged;
 
-        string GetString(string key);
+    string GetString(string key);
 
-        string GetString(string key, params object[] args);
+    string GetString(string key, params object[] args);
 
-        bool ApplyLanguage(string? language);
+    bool ApplyLanguage(string? language);
 
-        bool ApplyDateFormat(string? dateFormat);
+    bool ApplyDateFormat(string? dateFormat);
 
-        string FormatDate(DateOnly value, DateDisplayStyle style = DateDisplayStyle.Short);
+    string FormatDate(DateOnly value, DateDisplayStyle style = DateDisplayStyle.Short);
 
-        string FormatDate(DateOnly? value, DateDisplayStyle style = DateDisplayStyle.Short, string? fallback = null);
+    string FormatDate(DateOnly? value, DateDisplayStyle style = DateDisplayStyle.Short, string? fallback = null);
 
-        string FormatDateTime(DateTime value);
+    string FormatDateTime(DateTime value);
 
-        string FormatDateTime(DateTime? value, string? fallback = null);
+    string FormatDateTime(DateTime? value, string? fallback = null);
 
-        void LoadSavedLanguage();
-    }
+    void LoadSavedLanguage();
 }

@@ -2,19 +2,18 @@ using Birds.Domain.Entities;
 using Birds.Infrastructure.Persistence.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Birds.Infrastructure.Persistence
+namespace Birds.Infrastructure.Persistence;
+
+public class BirdDbContext(DbContextOptions<BirdDbContext> options) : DbContext(options)
 {
-    public class BirdDbContext(DbContextOptions<BirdDbContext> options) : DbContext(options)
+    public DbSet<Bird> Birds => Set<Bird>();
+    public DbSet<SyncOperation> SyncOperations => Set<SyncOperation>();
+    public DbSet<RemoteSyncCursor> RemoteSyncCursors => Set<RemoteSyncCursor>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        public DbSet<Bird> Birds => Set<Bird>();
-        public DbSet<SyncOperation> SyncOperations => Set<SyncOperation>();
-        public DbSet<RemoteSyncCursor> RemoteSyncCursors => Set<RemoteSyncCursor>();
+        base.OnModelCreating(modelBuilder);
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(BirdDbContext).Assembly);
-        }
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(BirdDbContext).Assembly);
     }
 }

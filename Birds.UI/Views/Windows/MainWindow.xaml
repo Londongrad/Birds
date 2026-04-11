@@ -54,10 +54,12 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeTitleBarButtonHoverBrush}" />
+                                <Setter TargetName="ButtonSurface" Property="Background"
+                                        Value="{DynamicResource ThemeTitleBarButtonHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeTitleBarButtonPressedBrush}" />
+                                <Setter TargetName="ButtonSurface" Property="Background"
+                                        Value="{DynamicResource ThemeTitleBarButtonPressedBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -84,15 +86,18 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeTitleBarButtonHoverBrush}" />
+                                <Setter TargetName="ButtonSurface" Property="Background"
+                                        Value="{DynamicResource ThemeTitleBarButtonHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeTitleBarButtonPressedBrush}" />
+                                <Setter TargetName="ButtonSurface" Property="Background"
+                                        Value="{DynamicResource ThemeTitleBarButtonPressedBrush}" />
                             </Trigger>
                             <DataTrigger
                                 Binding="{Binding DataContext.IsNotificationCenterOpen, RelativeSource={RelativeSource AncestorType=Window}}"
                                 Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeTitleBarButtonHoverBrush}" />
+                                <Setter TargetName="ButtonSurface" Property="Background"
+                                        Value="{DynamicResource ThemeTitleBarButtonHoverBrush}" />
                                 <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
                             </DataTrigger>
                             <DataTrigger
@@ -124,10 +129,12 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeCloseHoverBrush}" />
+                                <Setter TargetName="ButtonSurface" Property="Background"
+                                        Value="{DynamicResource ThemeCloseHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeClosePressedBrush}" />
+                                <Setter TargetName="ButtonSurface" Property="Background"
+                                        Value="{DynamicResource ThemeClosePressedBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -160,11 +167,14 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeAccentButtonHoverBrush}" />
-                                <Setter TargetName="ButtonSurface" Property="BorderBrush" Value="{DynamicResource ThemeAccentButtonBorderBrush}" />
+                                <Setter TargetName="ButtonSurface" Property="Background"
+                                        Value="{DynamicResource ThemeAccentButtonHoverBrush}" />
+                                <Setter TargetName="ButtonSurface" Property="BorderBrush"
+                                        Value="{DynamicResource ThemeAccentButtonBorderBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeTitleBarButtonPressedBrush}" />
+                                <Setter TargetName="ButtonSurface" Property="Background"
+                                        Value="{DynamicResource ThemeTitleBarButtonPressedBrush}" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.45" />
@@ -196,11 +206,13 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeTitleBarButtonHoverBrush}" />
+                                <Setter TargetName="ButtonSurface" Property="Background"
+                                        Value="{DynamicResource ThemeTitleBarButtonHoverBrush}" />
                                 <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeTitleBarButtonPressedBrush}" />
+                                <Setter TargetName="ButtonSurface" Property="Background"
+                                        Value="{DynamicResource ThemeTitleBarButtonPressedBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -267,8 +279,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource ThemeNotificationCardHoverBrush}" />
-                                <Setter TargetName="ButtonSurface" Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
+                                <Setter TargetName="ButtonSurface" Property="Background"
+                                        Value="{DynamicResource ThemeNotificationCardHoverBrush}" />
+                                <Setter TargetName="ButtonSurface" Property="BorderBrush"
+                                        Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="ButtonSurface" Property="Opacity" Value="0.92" />
@@ -292,7 +306,8 @@
                 <DataTrigger Binding="{Binding ShouldShowRemoteSyncStatus}" Value="True">
                     <Setter Property="Visibility" Value="Visible" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Syncing}">
+                <DataTrigger Binding="{Binding RemoteSyncStatus}"
+                             Value="{x:Static sync:RemoteSyncDisplayState.Syncing}">
                     <Setter Property="Background" Value="{DynamicResource ThemeNotificationActionBrush}" />
                     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBadgeBrush}" />
                 </DataTrigger>
@@ -304,7 +319,8 @@
                     <Setter Property="Background" Value="{DynamicResource ThemeNotificationActionBrush}" />
                     <Setter Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Offline}">
+                <DataTrigger Binding="{Binding RemoteSyncStatus}"
+                             Value="{x:Static sync:RemoteSyncDisplayState.Offline}">
                     <Setter Property="Background" Value="{DynamicResource ThemeNotificationActionBrush}" />
                     <Setter Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderFocusBrush}" />
                 </DataTrigger>
@@ -318,7 +334,8 @@
         <Style x:Key="RemoteSyncStatusDotStyle" TargetType="Ellipse">
             <Setter Property="Fill" Value="{DynamicResource ThemeSecondaryTextBrush}" />
             <Style.Triggers>
-                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Syncing}">
+                <DataTrigger Binding="{Binding RemoteSyncStatus}"
+                             Value="{x:Static sync:RemoteSyncDisplayState.Syncing}">
                     <Setter Property="Fill" Value="{DynamicResource ThemeBadgeBrush}" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Synced}">
@@ -327,7 +344,8 @@
                 <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Paused}">
                     <Setter Property="Fill" Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Offline}">
+                <DataTrigger Binding="{Binding RemoteSyncStatus}"
+                             Value="{x:Static sync:RemoteSyncDisplayState.Offline}">
                     <Setter Property="Fill" Value="{DynamicResource ThemeFieldBorderFocusBrush}" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Error}">
@@ -909,28 +927,45 @@
                                                     </Grid>
                                                 </Border>
                                                 <DataTemplate.Triggers>
-                                                    <Trigger SourceName="NotificationCard" Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="NotificationCard" Property="Background" Value="{DynamicResource ThemeNotificationCardHoverBrush}" />
-                                                        <Setter TargetName="NotificationCard" Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
+                                                    <Trigger SourceName="NotificationCard" Property="IsMouseOver"
+                                                             Value="True">
+                                                        <Setter TargetName="NotificationCard" Property="Background"
+                                                                Value="{DynamicResource ThemeNotificationCardHoverBrush}" />
+                                                        <Setter TargetName="NotificationCard" Property="BorderBrush"
+                                                                Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
                                                     </Trigger>
                                                     <DataTrigger Binding="{Binding IsRead}" Value="False">
-                                                        <Setter TargetName="NotificationCard" Property="BorderBrush" Value="{DynamicResource ThemeNotificationUnreadBorderBrush}" />
+                                                        <Setter TargetName="NotificationCard" Property="BorderBrush"
+                                                                Value="{DynamicResource ThemeNotificationUnreadBorderBrush}" />
                                                     </DataTrigger>
-                                                    <DataTrigger Binding="{Binding Type}" Value="{x:Static notify:NotificationType.Success}">
-                                                        <Setter TargetName="NotificationAccent" Property="Background" Value="#48A975" />
-                                                        <Setter TargetName="NotificationTypePill" Property="Background" Value="#163124" />
-                                                        <Setter TargetName="NotificationTypeText" Property="Foreground" Value="#BCEFCF" />
+                                                    <DataTrigger Binding="{Binding Type}"
+                                                                 Value="{x:Static notify:NotificationType.Success}">
+                                                        <Setter TargetName="NotificationAccent" Property="Background"
+                                                                Value="#48A975" />
+                                                        <Setter TargetName="NotificationTypePill" Property="Background"
+                                                                Value="#163124" />
+                                                        <Setter TargetName="NotificationTypeText" Property="Foreground"
+                                                                Value="#BCEFCF" />
                                                     </DataTrigger>
-                                                    <DataTrigger Binding="{Binding Type}" Value="{x:Static notify:NotificationType.Warning}">
-                                                        <Setter TargetName="NotificationAccent" Property="Background" Value="#D38E4A" />
-                                                        <Setter TargetName="NotificationTypePill" Property="Background" Value="#392615" />
-                                                        <Setter TargetName="NotificationTypeText" Property="Foreground" Value="#FFD6A5" />
+                                                    <DataTrigger Binding="{Binding Type}"
+                                                                 Value="{x:Static notify:NotificationType.Warning}">
+                                                        <Setter TargetName="NotificationAccent" Property="Background"
+                                                                Value="#D38E4A" />
+                                                        <Setter TargetName="NotificationTypePill" Property="Background"
+                                                                Value="#392615" />
+                                                        <Setter TargetName="NotificationTypeText" Property="Foreground"
+                                                                Value="#FFD6A5" />
                                                     </DataTrigger>
-                                                    <DataTrigger Binding="{Binding Type}" Value="{x:Static notify:NotificationType.Error}">
-                                                        <Setter TargetName="NotificationAccent" Property="Background" Value="#C76363" />
-                                                        <Setter TargetName="NotificationTypePill" Property="Background" Value="#3B1C1C" />
-                                                        <Setter TargetName="NotificationTypeText" Property="Foreground" Value="#FFC4C4" />
-                                                        <Setter TargetName="NotificationTitle" Property="Foreground" Value="#FFF0F0" />
+                                                    <DataTrigger Binding="{Binding Type}"
+                                                                 Value="{x:Static notify:NotificationType.Error}">
+                                                        <Setter TargetName="NotificationAccent" Property="Background"
+                                                                Value="#C76363" />
+                                                        <Setter TargetName="NotificationTypePill" Property="Background"
+                                                                Value="#3B1C1C" />
+                                                        <Setter TargetName="NotificationTypeText" Property="Foreground"
+                                                                Value="#FFC4C4" />
+                                                        <Setter TargetName="NotificationTitle" Property="Foreground"
+                                                                Value="#FFF0F0" />
                                                     </DataTrigger>
                                                 </DataTemplate.Triggers>
                                             </DataTemplate>

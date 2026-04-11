@@ -96,12 +96,16 @@
     <SolidColorBrush x:Key="ThemeDangerButtonHoverBrush" Color="{StaticResource ThemeDangerButtonHoverColor}" />
     <SolidColorBrush x:Key="ThemeDangerButtonBorderBrush" Color="{StaticResource ThemeDangerButtonBorderColor}" />
     <SolidColorBrush x:Key="ThemeDangerButtonForegroundBrush" Color="{StaticResource ThemeDangerButtonForegroundColor}" />
-    <SolidColorBrush x:Key="ThemeNotificationPanelBackgroundBrush" Color="{StaticResource ThemeNotificationPanelBackgroundColor}" />
-    <SolidColorBrush x:Key="ThemeNotificationPanelBorderBrush" Color="{StaticResource ThemeNotificationPanelBorderColor}" />
-    <SolidColorBrush x:Key="ThemeNotificationCardBackgroundBrush" Color="{StaticResource ThemeNotificationCardBackgroundColor}" />
+    <SolidColorBrush x:Key="ThemeNotificationPanelBackgroundBrush"
+                     Color="{StaticResource ThemeNotificationPanelBackgroundColor}" />
+    <SolidColorBrush x:Key="ThemeNotificationPanelBorderBrush"
+                     Color="{StaticResource ThemeNotificationPanelBorderColor}" />
+    <SolidColorBrush x:Key="ThemeNotificationCardBackgroundBrush"
+                     Color="{StaticResource ThemeNotificationCardBackgroundColor}" />
     <SolidColorBrush x:Key="ThemeNotificationCardHoverBrush" Color="{StaticResource ThemeNotificationCardHoverColor}" />
     <SolidColorBrush x:Key="ThemeNotificationCardBorderBrush" Color="{StaticResource ThemeNotificationCardBorderColor}" />
-    <SolidColorBrush x:Key="ThemeNotificationUnreadBorderBrush" Color="{StaticResource ThemeNotificationUnreadBorderColor}" />
+    <SolidColorBrush x:Key="ThemeNotificationUnreadBorderBrush"
+                     Color="{StaticResource ThemeNotificationUnreadBorderColor}" />
     <SolidColorBrush x:Key="ThemeNotificationActionBrush" Color="{StaticResource ThemeNotificationActionColor}" />
     <SolidColorBrush x:Key="ThemeToggleTrackOffBrush" Color="{StaticResource ThemeToggleTrackOffColor}" />
     <SolidColorBrush x:Key="ThemeToggleBorderOffBrush" Color="{StaticResource ThemeToggleBorderOffColor}" />

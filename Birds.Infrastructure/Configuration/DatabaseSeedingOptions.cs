@@ -1,17 +1,16 @@
-namespace Birds.Infrastructure.Configuration
+namespace Birds.Infrastructure.Configuration;
+
+public sealed class DatabaseSeedingOptions(
+    DatabaseSeedingMode mode,
+    int recordCount,
+    int batchSize,
+    int randomSeed)
 {
-    public sealed class DatabaseSeedingOptions(
-        DatabaseSeedingMode mode,
-        int recordCount,
-        int batchSize,
-        int randomSeed)
-    {
-        public DatabaseSeedingMode Mode { get; } = mode;
+    public DatabaseSeedingMode Mode { get; } = mode;
 
-        public int RecordCount { get; } = recordCount;
+    public int RecordCount { get; } = recordCount;
 
-        public int BatchSize { get; } = batchSize;
+    public int BatchSize { get; } = batchSize;
 
-        public int RandomSeed { get; } = randomSeed;
-    }
+    public int RandomSeed { get; } = randomSeed;
 }

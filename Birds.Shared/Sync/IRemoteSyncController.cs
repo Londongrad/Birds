@@ -1,13 +1,12 @@
-namespace Birds.Shared.Sync
+namespace Birds.Shared.Sync;
+
+public interface IRemoteSyncController
 {
-    public interface IRemoteSyncController
-    {
-        bool IsConfigured { get; }
+    bool IsConfigured { get; }
 
-        Task SyncNowAsync(CancellationToken cancellationToken);
+    Task SyncNowAsync(CancellationToken cancellationToken);
 
-        Task PauseAsync(CancellationToken cancellationToken);
+    Task PauseAsync(CancellationToken cancellationToken);
 
-        Task ResumeAsync(CancellationToken cancellationToken);
-    }
+    Task ResumeAsync(CancellationToken cancellationToken);
 }

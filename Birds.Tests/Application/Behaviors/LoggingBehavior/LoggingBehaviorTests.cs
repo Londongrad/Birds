@@ -6,33 +6,33 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Moq;
 
-namespace Birds.Tests.Application.Behaviors.LoggingBehavior
+namespace Birds.Tests.Application.Behaviors.LoggingBehavior;
+
+public class LoggingBehaviorTests
 {
-    public class LoggingBehaviorTests
+    [Fact]
+    public async Task Logs_Before_And_After_And_CallsNext()
     {
-        [Fact]
-        public async Task Logs_Before_And_After_And_CallsNext()
-        {
-            // Arrange
-            var logger = new Mock<ILogger<LoggingBehavior<CreateBirdCommand, string>>>();
-            var behavior = new LoggingBehavior<CreateBirdCommand, string>(logger.Object);
+        // Arrange
+        var logger = new Mock<ILogger<LoggingBehavior<CreateBirdCommand, string>>>();
+        var behavior = new LoggingBehavior<CreateBirdCommand, string>(logger.Object);
 
-            var cmd = new CreateBirdCommand(
-                BirdsName.Воробей,
-                "ok",
-                DateOnly.FromDateTime(DateTime.Now)
-            );
+        var cmd = new CreateBirdCommand(
+            BirdsName.Воробей,
+            "ok",
+            DateOnly.FromDateTime(DateTime.Now)
+        );
 
-            RequestHandlerDelegate<string> next = (cancellationToken) => Task.FromResult("OK");
+        RequestHandlerDelegate<string> next = cancellationToken => Task.FromResult("OK");
 
-            // Act
-            var result = await behavior.Handle(cmd, next, CancellationToken.None);
+        // Act
+        var result = await behavior.Handle(cmd, next, CancellationToken.None);
 
-            // Assert
-            result.Should().Be("OK");
+        // Assert
+        result.Should().Be("OK");
 
-            // "Handling {RequestName}"
-            logger.Verify(x => x.Log(
+        // "Handling {RequestName}"
+        logger.Verify(x => x.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
                 It.Is<It.IsAnyType>((v, _) =>
@@ -42,10 +42,10 @@ namespace Birds.Tests.Application.Behaviors.LoggingBehavior
                     v.ToString()!.IndexOf(nameof(CreateBirdCommand), StringComparison.OrdinalIgnoreCase) >= 0),
                 It.IsAny<Exception?>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
+            Times.Once);
 
-            // "Handled {RequestName}"
-            logger.Verify(x => x.Log(
+        // "Handled {RequestName}"
+        logger.Verify(x => x.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
                 It.Is<It.IsAnyType>((v, _) =>
@@ -54,32 +54,32 @@ namespace Birds.Tests.Application.Behaviors.LoggingBehavior
                     v.ToString()!.IndexOf(nameof(CreateBirdCommand), StringComparison.OrdinalIgnoreCase) >= 0),
                 It.IsAny<Exception?>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
-        }
+            Times.Once);
+    }
 
-        [Fact]
-        public async Task Logs_Before_And_Rethrows_When_Next_Throws_No_AfterLog()
-        {
-            // Arrange
-            var logger = new Mock<ILogger<LoggingBehavior<CreateBirdCommand, string>>>();
-            var behavior = new LoggingBehavior<CreateBirdCommand, string>(logger.Object);
+    [Fact]
+    public async Task Logs_Before_And_Rethrows_When_Next_Throws_No_AfterLog()
+    {
+        // Arrange
+        var logger = new Mock<ILogger<LoggingBehavior<CreateBirdCommand, string>>>();
+        var behavior = new LoggingBehavior<CreateBirdCommand, string>(logger.Object);
 
-            var cmd = new CreateBirdCommand(
-                BirdsName.Воробей,
-                "ok",
-                DateOnly.FromDateTime(DateTime.Now)
-            );
+        var cmd = new CreateBirdCommand(
+            BirdsName.Воробей,
+            "ok",
+            DateOnly.FromDateTime(DateTime.Now)
+        );
 
-            RequestHandlerDelegate<string> next = (cancellationToken) => throw new InvalidOperationException("boom");
+        RequestHandlerDelegate<string> next = cancellationToken => throw new InvalidOperationException("boom");
 
-            // Act
-            Func<Task> act = async () => await behavior.Handle(cmd, next, CancellationToken.None);
+        // Act
+        Func<Task> act = async () => await behavior.Handle(cmd, next, CancellationToken.None);
 
-            // Assert
-            await act.Should().ThrowAsync<InvalidOperationException>();
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>();
 
-            // Был "Handling ..."
-            logger.Verify(x => x.Log(
+        // Был "Handling ..."
+        logger.Verify(x => x.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
                 It.Is<It.IsAnyType>((v, _) =>
@@ -88,10 +88,10 @@ namespace Birds.Tests.Application.Behaviors.LoggingBehavior
                     v.ToString()!.IndexOf(nameof(CreateBirdCommand), StringComparison.OrdinalIgnoreCase) >= 0),
                 It.IsAny<Exception?>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
+            Times.Once);
 
-            // Не было "Handled ..." (упали раньше)
-            logger.Verify(x => x.Log(
+        // Не было "Handled ..." (упали раньше)
+        logger.Verify(x => x.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
                 It.Is<It.IsAnyType>((v, _) =>
@@ -100,7 +100,6 @@ namespace Birds.Tests.Application.Behaviors.LoggingBehavior
                     v.ToString()!.IndexOf(nameof(CreateBirdCommand), StringComparison.OrdinalIgnoreCase) >= 0),
                 It.IsAny<Exception?>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Never);
-        }
+            Times.Never);
     }
 }

@@ -61,10 +61,12 @@
                             <Setter TargetName="border" Property="Opacity" Value="0.56" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="true">
-                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource TextBox.MouseOver.Border}" />
+                            <Setter TargetName="border" Property="BorderBrush"
+                                    Value="{StaticResource TextBox.MouseOver.Border}" />
                         </Trigger>
                         <Trigger Property="IsKeyboardFocused" Value="true">
-                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource TextBox.Focus.Border}" />
+                            <Setter TargetName="border" Property="BorderBrush"
+                                    Value="{StaticResource TextBox.Focus.Border}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -81,7 +83,8 @@
                     <Condition Property="IsInactiveSelectionHighlightEnabled" Value="true" />
                     <Condition Property="IsSelectionActive" Value="false" />
                 </MultiTrigger.Conditions>
-                <Setter Property="SelectionBrush" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}" />
+                <Setter Property="SelectionBrush"
+                        Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}" />
             </MultiTrigger>
         </Style.Triggers>
     </Style>

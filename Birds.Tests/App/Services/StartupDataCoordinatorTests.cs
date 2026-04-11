@@ -1,6 +1,5 @@
 using Birds.App.Services;
 using Birds.Infrastructure.Services;
-using Birds.Shared.Constants;
 using Birds.Tests.Helpers;
 using Birds.Tests.UI.Services;
 using Birds.UI.Enums;
@@ -10,123 +9,122 @@ using FluentAssertions;
 using MediatR;
 using Moq;
 
-namespace Birds.Tests.App.Services
+namespace Birds.Tests.App.Services;
+
+public sealed class StartupDataCoordinatorTests
 {
-    public sealed class StartupDataCoordinatorTests
+    [Fact]
+    public async Task InitializeAsync_WhenDatabaseInitializationSucceeds_LoadsBirdStore()
     {
-        [Fact]
-        public async Task InitializeAsync_WhenDatabaseInitializationSucceeds_LoadsBirdStore()
-        {
-            var birdStore = new BirdStore();
-            var databaseInitializer = new Mock<IDatabaseInitializer>();
-            var localStoreStateService = new Mock<ILocalStoreStateService>();
-            var remoteSyncCoordinator = new Mock<IRemoteSyncCoordinator>();
-            localStoreStateService
-                .Setup(x => x.GetSnapshotAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new LocalStoreStateSnapshot(1, 0));
-            var mediator = new Mock<IMediator>();
-            mediator.SetupGetAllBirdsSuccess(TestHelpers.Birds(TestHelpers.Bird(name: "Sparrow")));
+        var birdStore = new BirdStore();
+        var databaseInitializer = new Mock<IDatabaseInitializer>();
+        var localStoreStateService = new Mock<ILocalStoreStateService>();
+        var remoteSyncCoordinator = new Mock<IRemoteSyncCoordinator>();
+        localStoreStateService
+            .Setup(x => x.GetSnapshotAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new LocalStoreStateSnapshot(1, 0));
+        var mediator = new Mock<IMediator>();
+        mediator.SetupGetAllBirdsSuccess(TestHelpers.Birds(TestHelpers.Bird(name: "Sparrow")));
 
-            var birdStoreInitializer = TestHelpers.MakeInitializer(
-                birdStore,
-                mediator.Object,
-                out var notificationService,
-                out _);
+        var birdStoreInitializer = TestHelpers.MakeInitializer(
+            birdStore,
+            mediator.Object,
+            out var notificationService,
+            out _);
 
-            var coordinator = new StartupDataCoordinator(
-                databaseInitializer.Object,
-                localStoreStateService.Object,
-                remoteSyncCoordinator.Object,
-                birdStoreInitializer,
-                birdStore,
-                notificationService.Object,
-                new InlineUiDispatcher());
+        var coordinator = new StartupDataCoordinator(
+            databaseInitializer.Object,
+            localStoreStateService.Object,
+            remoteSyncCoordinator.Object,
+            birdStoreInitializer,
+            birdStore,
+            notificationService.Object,
+            new InlineUiDispatcher());
 
-            await coordinator.InitializeAsync(CancellationToken.None);
+        await coordinator.InitializeAsync(CancellationToken.None);
 
-            birdStore.LoadState.Should().Be(LoadState.Loaded);
-            birdStore.Birds.Should().HaveCount(1);
-            databaseInitializer.Verify(x => x.InitializeAsync(It.IsAny<CancellationToken>()), Times.Once);
-            localStoreStateService.Verify(x => x.GetSnapshotAsync(It.IsAny<CancellationToken>()), Times.Once);
-            remoteSyncCoordinator.Verify(x => x.BootstrapLocalStoreAsync(It.IsAny<CancellationToken>()), Times.Never);
-            remoteSyncCoordinator.Verify(x => x.Start(It.IsAny<CancellationToken>()), Times.Once);
-        }
+        birdStore.LoadState.Should().Be(LoadState.Loaded);
+        birdStore.Birds.Should().HaveCount(1);
+        databaseInitializer.Verify(x => x.InitializeAsync(It.IsAny<CancellationToken>()), Times.Once);
+        localStoreStateService.Verify(x => x.GetSnapshotAsync(It.IsAny<CancellationToken>()), Times.Once);
+        remoteSyncCoordinator.Verify(x => x.BootstrapLocalStoreAsync(It.IsAny<CancellationToken>()), Times.Never);
+        remoteSyncCoordinator.Verify(x => x.Start(It.IsAny<CancellationToken>()), Times.Once);
+    }
 
-        [Fact]
-        public async Task InitializeAsync_WhenLocalStoreIsEmptyAndClean_BootstrapsRemoteSyncBeforeLoadingBirdStore()
-        {
-            var birdStore = new BirdStore();
-            var databaseInitializer = new Mock<IDatabaseInitializer>();
-            var localStoreStateService = new Mock<ILocalStoreStateService>();
-            var remoteSyncCoordinator = new Mock<IRemoteSyncCoordinator>();
-            localStoreStateService
-                .Setup(x => x.GetSnapshotAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new LocalStoreStateSnapshot(0, 0));
+    [Fact]
+    public async Task InitializeAsync_WhenLocalStoreIsEmptyAndClean_BootstrapsRemoteSyncBeforeLoadingBirdStore()
+    {
+        var birdStore = new BirdStore();
+        var databaseInitializer = new Mock<IDatabaseInitializer>();
+        var localStoreStateService = new Mock<ILocalStoreStateService>();
+        var remoteSyncCoordinator = new Mock<IRemoteSyncCoordinator>();
+        localStoreStateService
+            .Setup(x => x.GetSnapshotAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new LocalStoreStateSnapshot(0, 0));
 
-            var mediator = new Mock<IMediator>();
-            mediator.SetupGetAllBirdsSuccess(TestHelpers.Birds(TestHelpers.Bird(name: "Sparrow")));
+        var mediator = new Mock<IMediator>();
+        mediator.SetupGetAllBirdsSuccess(TestHelpers.Birds(TestHelpers.Bird(name: "Sparrow")));
 
-            var birdStoreInitializer = TestHelpers.MakeInitializer(
-                birdStore,
-                mediator.Object,
-                out var notificationService,
-                out _);
+        var birdStoreInitializer = TestHelpers.MakeInitializer(
+            birdStore,
+            mediator.Object,
+            out var notificationService,
+            out _);
 
-            var coordinator = new StartupDataCoordinator(
-                databaseInitializer.Object,
-                localStoreStateService.Object,
-                remoteSyncCoordinator.Object,
-                birdStoreInitializer,
-                birdStore,
-                notificationService.Object,
-                new InlineUiDispatcher());
+        var coordinator = new StartupDataCoordinator(
+            databaseInitializer.Object,
+            localStoreStateService.Object,
+            remoteSyncCoordinator.Object,
+            birdStoreInitializer,
+            birdStore,
+            notificationService.Object,
+            new InlineUiDispatcher());
 
-            await coordinator.InitializeAsync(CancellationToken.None);
+        await coordinator.InitializeAsync(CancellationToken.None);
 
-            remoteSyncCoordinator.Verify(x => x.BootstrapLocalStoreAsync(It.IsAny<CancellationToken>()), Times.Once);
-            remoteSyncCoordinator.Verify(x => x.Start(It.IsAny<CancellationToken>()), Times.Once);
-            birdStore.LoadState.Should().Be(LoadState.Loaded);
-        }
+        remoteSyncCoordinator.Verify(x => x.BootstrapLocalStoreAsync(It.IsAny<CancellationToken>()), Times.Once);
+        remoteSyncCoordinator.Verify(x => x.Start(It.IsAny<CancellationToken>()), Times.Once);
+        birdStore.LoadState.Should().Be(LoadState.Loaded);
+    }
 
-        [Fact]
-        public async Task InitializeAsync_WhenDatabaseInitializationFails_MarksStoreAsFailedAndNotifies()
-        {
-            var birdStore = new BirdStore();
-            var databaseInitializer = new Mock<IDatabaseInitializer>();
-            var localStoreStateService = new Mock<ILocalStoreStateService>();
-            var remoteSyncCoordinator = new Mock<IRemoteSyncCoordinator>();
-            databaseInitializer
-                .Setup(x => x.InitializeAsync(It.IsAny<CancellationToken>()))
-                .ThrowsAsync(new InvalidOperationException("db init failed"));
+    [Fact]
+    public async Task InitializeAsync_WhenDatabaseInitializationFails_MarksStoreAsFailedAndNotifies()
+    {
+        var birdStore = new BirdStore();
+        var databaseInitializer = new Mock<IDatabaseInitializer>();
+        var localStoreStateService = new Mock<ILocalStoreStateService>();
+        var remoteSyncCoordinator = new Mock<IRemoteSyncCoordinator>();
+        databaseInitializer
+            .Setup(x => x.InitializeAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("db init failed"));
 
-            var mediator = new Mock<IMediator>();
-            var birdStoreInitializer = TestHelpers.MakeInitializer(
-                birdStore,
-                mediator.Object,
-                out var notificationService,
-                out _);
+        var mediator = new Mock<IMediator>();
+        var birdStoreInitializer = TestHelpers.MakeInitializer(
+            birdStore,
+            mediator.Object,
+            out var notificationService,
+            out _);
 
-            var coordinator = new StartupDataCoordinator(
-                databaseInitializer.Object,
-                localStoreStateService.Object,
-                remoteSyncCoordinator.Object,
-                birdStoreInitializer,
-                birdStore,
-                notificationService.Object,
-                new InlineUiDispatcher());
+        var coordinator = new StartupDataCoordinator(
+            databaseInitializer.Object,
+            localStoreStateService.Object,
+            remoteSyncCoordinator.Object,
+            birdStoreInitializer,
+            birdStore,
+            notificationService.Object,
+            new InlineUiDispatcher());
 
-            var act = async () => await coordinator.InitializeAsync(CancellationToken.None);
+        var act = async () => await coordinator.InitializeAsync(CancellationToken.None);
 
-            await act.Should().ThrowAsync<InvalidOperationException>();
-            birdStore.LoadState.Should().Be(LoadState.Failed);
-            mediator.VerifyNoOtherCalls();
-            notificationService.Verify(
-                x => x.ShowLocalized(
-                    "Error.BirdLoadFailed",
-                    It.Is<NotificationOptions>(o => o.Type == NotificationType.Error),
-                    It.IsAny<object[]>()),
-                Times.Once);
-            remoteSyncCoordinator.Verify(x => x.Start(It.IsAny<CancellationToken>()), Times.Never);
-        }
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        birdStore.LoadState.Should().Be(LoadState.Failed);
+        mediator.VerifyNoOtherCalls();
+        notificationService.Verify(
+            x => x.ShowLocalized(
+                "Error.BirdLoadFailed",
+                It.Is<NotificationOptions>(o => o.Type == NotificationType.Error),
+                It.IsAny<object[]>()),
+            Times.Once);
+        remoteSyncCoordinator.Verify(x => x.Start(It.IsAny<CancellationToken>()), Times.Never);
     }
 }

@@ -1,74 +1,73 @@
+using System.Text.Json;
 using Birds.UI.Services.Import;
 using FluentAssertions;
-using System.Text.Json;
 
-namespace Birds.Tests.UI.Services
+namespace Birds.Tests.UI.Services;
+
+public class JsonImportServiceTests
 {
-    public class JsonImportServiceTests
+    [Fact]
+    public async Task ImportAsync_Should_Read_Versioned_Envelope()
     {
-        [Fact]
-        public async Task ImportAsync_Should_Read_Versioned_Envelope()
-        {
-            var sut = new JsonImportService();
-            var path = Path.Combine(Path.GetTempPath(), $"birds-import-{Guid.NewGuid():N}.json");
+        var sut = new JsonImportService();
+        var path = Path.Combine(Path.GetTempPath(), $"birds-import-{Guid.NewGuid():N}.json");
 
-            try
+        try
+        {
+            var payload = new
             {
-                var payload = new
+                version = 1,
+                exportedAt = DateTime.UtcNow,
+                items = new[]
                 {
-                    version = 1,
-                    exportedAt = DateTime.UtcNow,
-                    items = new[]
+                    new
                     {
-                        new
-                        {
-                            id = Guid.NewGuid(),
-                            name = "Sparrow",
-                            description = "note",
-                            arrival = new DateOnly(2026, 4, 1),
-                            departure = (DateOnly?)null,
-                            isAlive = true,
-                            createdAt = (DateTime?)null,
-                            updatedAt = (DateTime?)null
-                        }
+                        id = Guid.NewGuid(),
+                        name = "Sparrow",
+                        description = "note",
+                        arrival = new DateOnly(2026, 4, 1),
+                        departure = (DateOnly?)null,
+                        isAlive = true,
+                        createdAt = (DateTime?)null,
+                        updatedAt = (DateTime?)null
                     }
-                };
+                }
+            };
 
-                await File.WriteAllTextAsync(path, JsonSerializer.Serialize(payload));
+            await File.WriteAllTextAsync(path, JsonSerializer.Serialize(payload));
 
-                var result = await sut.ImportAsync(path, CancellationToken.None);
+            var result = await sut.ImportAsync(path, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
-                result.Value.Should().ContainSingle();
-                result.Value!.Single().Name.Should().Be("Sparrow");
-            }
-            finally
-            {
-                if (File.Exists(path))
-                    File.Delete(path);
-            }
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().ContainSingle();
+            result.Value!.Single().Name.Should().Be("Sparrow");
         }
-
-        [Fact]
-        public async Task ImportAsync_Should_Fail_For_Unsupported_Version()
+        finally
         {
-            var sut = new JsonImportService();
-            var path = Path.Combine(Path.GetTempPath(), $"birds-import-{Guid.NewGuid():N}.json");
+            if (File.Exists(path))
+                File.Delete(path);
+        }
+    }
 
-            try
-            {
-                await File.WriteAllTextAsync(path, """{"version":2,"items":[]}""");
+    [Fact]
+    public async Task ImportAsync_Should_Fail_For_Unsupported_Version()
+    {
+        var sut = new JsonImportService();
+        var path = Path.Combine(Path.GetTempPath(), $"birds-import-{Guid.NewGuid():N}.json");
 
-                var result = await sut.ImportAsync(path, CancellationToken.None);
+        try
+        {
+            await File.WriteAllTextAsync(path, """{"version":2,"items":[]}""");
 
-                result.IsSuccess.Should().BeFalse();
-                result.Error.Should().NotBeNullOrWhiteSpace();
-            }
-            finally
-            {
-                if (File.Exists(path))
-                    File.Delete(path);
-            }
+            var result = await sut.ImportAsync(path, CancellationToken.None);
+
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Should().NotBeNullOrWhiteSpace();
+        }
+        finally
+        {
+            if (File.Exists(path))
+                File.Delete(path);
         }
     }
 }

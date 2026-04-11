@@ -4,6 +4,7 @@ using Birds.Application.Exceptions;
 using Birds.Domain.Common.Exceptions;
 using Birds.Shared.Constants;
 using FluentAssertions;
+using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -23,7 +24,8 @@ public class ExceptionHandlingBehaviorGenericTests
     public async Task Handle_ShouldReturnGenericResult_WhenNoExceptionThrown()
     {
         var behavior = new ExceptionHandlingBehavior<DummyRequest, Result<string>>(_loggerMock.Object);
-        RequestHandlerDelegate<Result<string>> next = cancellationToken => Task.FromResult(Result<string>.Success("ok"));
+        RequestHandlerDelegate<Result<string>>
+            next = cancellationToken => Task.FromResult(Result<string>.Success("ok"));
 
         var result = await behavior.Handle(new DummyRequest(), next, CancellationToken.None);
 
@@ -36,7 +38,8 @@ public class ExceptionHandlingBehaviorGenericTests
     public async Task Handle_ShouldReturnGenericFailureAndLogWarning_WhenValidationExceptionThrown()
     {
         var behavior = new ExceptionHandlingBehavior<DummyRequest, Result<string>>(_loggerMock.Object);
-        RequestHandlerDelegate<Result<string>> next = cancellationToken => throw new FluentValidation.ValidationException("Invalid value!");
+        RequestHandlerDelegate<Result<string>> next = cancellationToken =>
+            throw new ValidationException("Invalid value!");
 
         var result = await behavior.Handle(new DummyRequest(), next, CancellationToken.None);
 
@@ -49,7 +52,8 @@ public class ExceptionHandlingBehaviorGenericTests
     public async Task Handle_ShouldReturnGenericFailureAndLogWarning_WhenDomainValidationExceptionThrown()
     {
         var behavior = new ExceptionHandlingBehavior<DummyRequest, Result<string>>(_loggerMock.Object);
-        RequestHandlerDelegate<Result<string>> next = cancellationToken => throw new DomainValidationException("Broken rule");
+        RequestHandlerDelegate<Result<string>> next = cancellationToken =>
+            throw new DomainValidationException("Broken rule");
 
         var result = await behavior.Handle(new DummyRequest(), next, CancellationToken.None);
 
@@ -77,7 +81,8 @@ public class ExceptionHandlingBehaviorGenericTests
     public async Task Handle_ShouldReturnGenericFailureAndLogError_WhenUnhandledExceptionThrown()
     {
         var behavior = new ExceptionHandlingBehavior<DummyRequest, Result<string>>(_loggerMock.Object);
-        RequestHandlerDelegate<Result<string>> next = cancellationToken => throw new InvalidOperationException("Something went wrong");
+        RequestHandlerDelegate<Result<string>> next = cancellationToken =>
+            throw new InvalidOperationException("Something went wrong");
 
         var result = await behavior.Handle(new DummyRequest(), next, CancellationToken.None);
 
@@ -87,5 +92,6 @@ public class ExceptionHandlingBehaviorGenericTests
     }
 
     public sealed class DummyRequest
-    { }
+    {
+    }
 }

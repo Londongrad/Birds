@@ -1,35 +1,37 @@
-namespace Birds.Infrastructure.Persistence.Models
+namespace Birds.Infrastructure.Persistence.Models;
+
+public sealed class RemoteBirdTombstone
 {
-    public sealed class RemoteBirdTombstone
+    private RemoteBirdTombstone()
     {
-        public Guid BirdId { get; private set; }
-        public DateTime DeletedAtUtc { get; private set; }
+    }
 
-        private RemoteBirdTombstone()
-        { }
+    public Guid BirdId { get; private set; }
+    public DateTime DeletedAtUtc { get; private set; }
 
-        public static RemoteBirdTombstone Create(Guid birdId, DateTime deletedAtUtc)
+    public static RemoteBirdTombstone Create(Guid birdId, DateTime deletedAtUtc)
+    {
+        return new RemoteBirdTombstone
         {
-            return new RemoteBirdTombstone
-            {
-                BirdId = birdId,
-                DeletedAtUtc = NormalizeForStorage(deletedAtUtc)
-            };
-        }
+            BirdId = birdId,
+            DeletedAtUtc = NormalizeForStorage(deletedAtUtc)
+        };
+    }
 
-        public void AdvanceTo(DateTime deletedAtUtc)
+    public void AdvanceTo(DateTime deletedAtUtc)
+    {
+        var normalized = NormalizeForStorage(deletedAtUtc);
+        if (normalized > DeletedAtUtc)
+            DeletedAtUtc = normalized;
+    }
+
+    private static DateTime NormalizeForStorage(DateTime value)
+    {
+        return value.Kind switch
         {
-            var normalized = NormalizeForStorage(deletedAtUtc);
-            if (normalized > DeletedAtUtc)
-                DeletedAtUtc = normalized;
-        }
-
-        private static DateTime NormalizeForStorage(DateTime value)
-            => value.Kind switch
-            {
-                DateTimeKind.Utc => DateTime.SpecifyKind(value.ToLocalTime(), DateTimeKind.Unspecified),
-                DateTimeKind.Local => DateTime.SpecifyKind(value, DateTimeKind.Unspecified),
-                _ => value
-            };
+            DateTimeKind.Utc => DateTime.SpecifyKind(value.ToLocalTime(), DateTimeKind.Unspecified),
+            DateTimeKind.Local => DateTime.SpecifyKind(value, DateTimeKind.Unspecified),
+            _ => value
+        };
     }
 }

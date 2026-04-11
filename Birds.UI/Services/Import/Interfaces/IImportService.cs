@@ -1,10 +1,9 @@
 using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
 
-namespace Birds.UI.Services.Import.Interfaces
+namespace Birds.UI.Services.Import.Interfaces;
+
+public interface IImportService
 {
-    public interface IImportService
-    {
-        Task<Result<IReadOnlyList<BirdDTO>>> ImportAsync(string path, CancellationToken cancellationToken);
-    }
+    Task<Result<IReadOnlyList<BirdDTO>>> ImportAsync(string path, CancellationToken cancellationToken);
 }

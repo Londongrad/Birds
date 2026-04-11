@@ -1,113 +1,114 @@
 ﻿using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
-using Birds.Shared.Constants;
 using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.ViewModels.Base;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace Birds.UI.ViewModels
+namespace Birds.UI.ViewModels;
+
+/// <summary>
+///     ViewModel for the "Add Bird" view.
+///     Inherits common fields and validation rules from <see cref="BirdValidationBaseViewModel" />.
+/// </summary>
+/// <remarks>
+///     Contains commands for saving a new bird and notifying the user about the result.
+/// </remarks>
+public partial class AddBirdViewModel : BirdValidationBaseViewModel
 {
     /// <summary>
-    /// ViewModel for the "Add Bird" view.
-    /// Inherits common fields and validation rules from <see cref="BirdValidationBaseViewModel"/>.
+    ///     Creates a new instance of <see cref="AddBirdViewModel" />.
     /// </summary>
-    /// <remarks>
-    /// Contains commands for saving a new bird and notifying the user about the result.
-    /// </remarks>
-    public partial class AddBirdViewModel : BirdValidationBaseViewModel
+    /// <param name="mediator">The MediatR mediator used to send application commands.</param>
+    /// <param name="notification">The user notification service.</param>
+    public AddBirdViewModel(INotificationService notification, IBirdManager birdManager)
     {
-        #region [ Fields ]
+        _notification = notification;
+        _birdManager = birdManager;
 
-        private readonly INotificationService _notification;
-        private readonly IBirdManager _birdManager;
+        // When validation errors change — update the Save command availability
+        ErrorsChanged += (_, __) => SaveCommand.NotifyCanExecuteChanged();
 
-        #endregion [ Fields ]
-
-        /// <summary>
-        /// Creates a new instance of <see cref="AddBirdViewModel"/>.
-        /// </summary>
-        /// <param name="mediator">The MediatR mediator used to send application commands.</param>
-        /// <param name="notification">The user notification service.</param>
-        public AddBirdViewModel(INotificationService notification, IBirdManager birdManager)
-        {
-            _notification = notification;
-            _birdManager = birdManager;
-
-            // When validation errors change — update the Save command availability
-            ErrorsChanged += (_, __) => SaveCommand.NotifyCanExecuteChanged();
-
-            // Run initial validation so that the Save button is disabled by default
-            ValidateAllProperties();
-        }
-
-        #region [ Observable Properties ]
-
-        [ObservableProperty]
-        private bool isBusy; // Indicates whether the add operation is in progress
-
-        [ObservableProperty]
-        private bool isOneTime;
-
-        #endregion [ Observable Properties ]
-
-        #region [ Methods ]
-
-        /// <summary>
-        /// Determines whether the Save command can be executed.
-        /// </summary>
-        private bool CanSave() => !HasErrors && !IsBusy;
-
-        #endregion [ Methods ]
-
-        #region [ Commands ]
-
-        /// <summary>
-        /// Command to save a new bird to the system.
-        /// </summary>
-        [RelayCommand(CanExecute = nameof(CanSave))]
-        private async Task SaveAsync()
-        {
-            // Force validation of all properties before saving
-            ValidateAllProperties();
-            if (HasErrors)
-                return;
-
-            IsBusy = true; // Disable button
-            Result<BirdDTO> result;
-            SaveCommand.NotifyCanExecuteChanged();
-
-            _notification.ShowInfoLocalized("Info.AddingBird");
-
-            var dto = new BirdCreateDTO(
-                SelectedBirdName ?? default,
-                Description,
-                Arrival,
-                IsOneTime ? Arrival : null,
-                !IsOneTime
-            );
-
-            try
-            {
-                result = await _birdManager.AddAsync(dto, CancellationToken.None);
-            }
-            finally
-            {
-                IsBusy = false; // Enable button again
-                SaveCommand.NotifyCanExecuteChanged();
-            }
-
-            if (result.IsSuccess)
-            {
-                _notification.ShowSuccessLocalized("Info.BirdAdded");
-                // Reset the description after successful save
-                Description = string.Empty;
-            }
-            else
-                _notification.ShowErrorLocalized("Error.CannotSaveBird");
-        }
-
-        #endregion [ Commands ]
+        // Run initial validation so that the Save button is disabled by default
+        ValidateAllProperties();
     }
+
+    #region [ Methods ]
+
+    /// <summary>
+    ///     Determines whether the Save command can be executed.
+    /// </summary>
+    private bool CanSave()
+    {
+        return !HasErrors && !IsBusy;
+    }
+
+    #endregion [ Methods ]
+
+    #region [ Commands ]
+
+    /// <summary>
+    ///     Command to save a new bird to the system.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanSave))]
+    private async Task SaveAsync()
+    {
+        // Force validation of all properties before saving
+        ValidateAllProperties();
+        if (HasErrors)
+            return;
+
+        IsBusy = true; // Disable button
+        Result<BirdDTO> result;
+        SaveCommand.NotifyCanExecuteChanged();
+
+        _notification.ShowInfoLocalized("Info.AddingBird");
+
+        var dto = new BirdCreateDTO(
+            SelectedBirdName ?? default,
+            Description,
+            Arrival,
+            IsOneTime ? Arrival : null,
+            !IsOneTime
+        );
+
+        try
+        {
+            result = await _birdManager.AddAsync(dto, CancellationToken.None);
+        }
+        finally
+        {
+            IsBusy = false; // Enable button again
+            SaveCommand.NotifyCanExecuteChanged();
+        }
+
+        if (result.IsSuccess)
+        {
+            _notification.ShowSuccessLocalized("Info.BirdAdded");
+            // Reset the description after successful save
+            Description = string.Empty;
+        }
+        else
+        {
+            _notification.ShowErrorLocalized("Error.CannotSaveBird");
+        }
+    }
+
+    #endregion [ Commands ]
+
+    #region [ Fields ]
+
+    private readonly INotificationService _notification;
+    private readonly IBirdManager _birdManager;
+
+    #endregion [ Fields ]
+
+    #region [ Observable Properties ]
+
+    [ObservableProperty] private bool isBusy; // Indicates whether the add operation is in progress
+
+    [ObservableProperty] private bool isOneTime;
+
+    #endregion [ Observable Properties ]
 }

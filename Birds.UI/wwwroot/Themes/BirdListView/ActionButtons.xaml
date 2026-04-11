@@ -32,8 +32,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource ThemeNotificationCardHoverBrush}" />
-                            <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{DynamicResource ThemeNotificationUnreadBorderBrush}" />
+                            <Setter TargetName="ButtonBorder" Property="Background"
+                                    Value="{DynamicResource ThemeNotificationCardHoverBrush}" />
+                            <Setter TargetName="ButtonBorder" Property="BorderBrush"
+                                    Value="{DynamicResource ThemeNotificationUnreadBorderBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.88" />
@@ -68,8 +70,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource ThemeAccentButtonHoverBrush}" />
-                            <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{DynamicResource ThemeAccentButtonBorderBrush}" />
+                            <Setter TargetName="ButtonBorder" Property="Background"
+                                    Value="{DynamicResource ThemeAccentButtonHoverBrush}" />
+                            <Setter TargetName="ButtonBorder" Property="BorderBrush"
+                                    Value="{DynamicResource ThemeAccentButtonBorderBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.9" />
@@ -105,8 +109,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource ThemeDangerButtonHoverBrush}" />
-                            <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{DynamicResource ThemeDangerButtonBorderBrush}" />
+                            <Setter TargetName="ButtonBorder" Property="Background"
+                                    Value="{DynamicResource ThemeDangerButtonHoverBrush}" />
+                            <Setter TargetName="ButtonBorder" Property="BorderBrush"
+                                    Value="{DynamicResource ThemeDangerButtonBorderBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.9" />

@@ -135,24 +135,6 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="CardTitleStyle" TargetType="TextBlock">
-            <Setter Property="HorizontalAlignment" Value="Center" />
-            <Setter Property="TextAlignment" Value="Center" />
-            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
-            <Setter Property="FontSize" Value="24" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-        </Style>
-
-        <Style x:Key="CardSubtitleStyle" TargetType="TextBlock">
-            <Setter Property="Margin" Value="0,10,0,0" />
-            <Setter Property="MaxWidth" Value="520" />
-            <Setter Property="HorizontalAlignment" Value="Center" />
-            <Setter Property="TextAlignment" Value="Center" />
-            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="TextWrapping" Value="Wrap" />
-        </Style>
-
         <Style x:Key="FieldLabelStyle" TargetType="TextBlock">
             <Setter Property="Margin" Value="0,0,0,8" />
             <Setter Property="HorizontalAlignment" Value="Left" />
@@ -204,13 +186,16 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
+                                <Setter TargetName="FieldBorder" Property="BorderBrush"
+                                        Value="{StaticResource FieldBorderHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderFocusBrush}" />
+                                <Setter TargetName="FieldBorder" Property="BorderBrush"
+                                        Value="{StaticResource FieldBorderFocusBrush}" />
                             </Trigger>
                             <Trigger Property="Validation.HasError" Value="True">
-                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderErrorBrush}" />
+                                <Setter TargetName="FieldBorder" Property="BorderBrush"
+                                        Value="{StaticResource FieldBorderErrorBrush}" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="FieldBorder" Property="Opacity" Value="0.55" />
@@ -336,13 +321,16 @@
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
+                                <Setter TargetName="FieldBorder" Property="BorderBrush"
+                                        Value="{StaticResource FieldBorderHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderFocusBrush}" />
+                                <Setter TargetName="FieldBorder" Property="BorderBrush"
+                                        Value="{StaticResource FieldBorderFocusBrush}" />
                             </Trigger>
                             <Trigger Property="Validation.HasError" Value="True">
-                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderErrorBrush}" />
+                                <Setter TargetName="FieldBorder" Property="BorderBrush"
+                                        Value="{StaticResource FieldBorderErrorBrush}" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="FieldBorder" Property="Opacity" Value="0.55" />
@@ -514,47 +502,6 @@
                                     </Storyboard>
                                 </BeginStoryboard>
                             </EventTrigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="CheckBoxMarkStyle" TargetType="CheckBox">
-            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="CheckBox">
-                        <BulletDecorator Background="Transparent">
-                            <BulletDecorator.Bullet>
-                                <Border
-                                    x:Name="CheckBorder"
-                                    Width="18"
-                                    Height="18"
-                                    Margin="0,2,12,0"
-                                    Background="Transparent"
-                                    BorderBrush="{StaticResource FieldBorderBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="4">
-                                    <Path
-                                        x:Name="CheckMark"
-                                        Data="M 2 9 L 7 14 L 16 4"
-                                        Stroke="{StaticResource PrimaryTextBrush}"
-                                        StrokeThickness="1.7"
-                                        Stretch="Uniform"
-                                        Visibility="Collapsed" />
-                                </Border>
-                            </BulletDecorator.Bullet>
-                            <ContentPresenter VerticalAlignment="Top" />
-                        </BulletDecorator>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="CheckBorder" Property="BorderBrush" Value="{StaticResource FieldBorderFocusBrush}" />
-                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible" />
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="CheckBorder" Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
-                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -755,7 +702,9 @@
                                     BasedOn="{StaticResource ErrorTextStyle}"
                                     TargetType="TextBlock">
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ElementName=BirdNameField, Path=(Validation.HasError)}" Value="True">
+                                        <DataTrigger
+                                            Binding="{Binding ElementName=BirdNameField, Path=(Validation.HasError)}"
+                                            Value="True">
                                             <Setter Property="Visibility" Value="Visible" />
                                         </DataTrigger>
                                     </Style.Triggers>
@@ -763,7 +712,8 @@
                             </TextBlock.Style>
                         </TextBlock>
 
-                        <TextBlock Grid.Row="3" Margin="0,20,0,8" Style="{StaticResource FieldLabelStyle}" Text="{loc:Loc Key=AddBird.ArrivalLabel}" />
+                        <TextBlock Grid.Row="3" Margin="0,20,0,8" Style="{StaticResource FieldLabelStyle}"
+                                   Text="{loc:Loc Key=AddBird.ArrivalLabel}" />
                         <DatePicker
                             x:Name="ArrivalField"
                             Grid.Row="4"
@@ -781,7 +731,9 @@
                                     BasedOn="{StaticResource ErrorTextStyle}"
                                     TargetType="TextBlock">
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ElementName=ArrivalField, Path=(Validation.HasError)}" Value="True">
+                                        <DataTrigger
+                                            Binding="{Binding ElementName=ArrivalField, Path=(Validation.HasError)}"
+                                            Value="True">
                                             <Setter Property="Visibility" Value="Visible" />
                                         </DataTrigger>
                                     </Style.Triggers>
@@ -789,7 +741,8 @@
                             </TextBlock.Style>
                         </TextBlock>
 
-                        <TextBlock Grid.Row="6" Margin="0,20,0,8" Style="{StaticResource FieldLabelStyle}" Text="{loc:Loc Key=AddBird.DescriptionLabel}" />
+                        <TextBlock Grid.Row="6" Margin="0,20,0,8" Style="{StaticResource FieldLabelStyle}"
+                                   Text="{loc:Loc Key=AddBird.DescriptionLabel}" />
                         <TextBox
                             x:Name="DescriptionField"
                             Grid.Row="7"
@@ -821,7 +774,9 @@
                                     BasedOn="{StaticResource ErrorTextStyle}"
                                     TargetType="TextBlock">
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ElementName=DescriptionField, Path=(Validation.HasError)}" Value="True">
+                                        <DataTrigger
+                                            Binding="{Binding ElementName=DescriptionField, Path=(Validation.HasError)}"
+                                            Value="True">
                                             <Setter Property="Visibility" Value="Visible" />
                                         </DataTrigger>
                                     </Style.Triggers>
@@ -865,7 +820,6 @@
 
                         <Grid Grid.Row="3" Margin="0,10,0,0">
                             <Button
-                                HorizontalAlignment="Right"
                                 Command="{Binding SaveCommand}"
                                 Content="{loc:Loc Key=AddBird.Save}"
                                 Style="{StaticResource PrimaryButtonStyle}" />

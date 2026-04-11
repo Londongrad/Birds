@@ -1,8 +1,7 @@
-namespace Birds.Application.Commands.ImportBirds
+namespace Birds.Application.Commands.ImportBirds;
+
+public enum BirdImportMode
 {
-    public enum BirdImportMode
-    {
-        Merge = 0,
-        Replace = 1
-    }
+    Merge = 0,
+    Replace = 1
 }

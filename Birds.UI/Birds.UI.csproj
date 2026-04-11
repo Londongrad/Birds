@@ -1,60 +1,60 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net9.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <UseWPF>true</UseWPF>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net9.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <UseWPF>true</UseWPF>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="wwwroot\Images\add.png" />
-    <None Remove="wwwroot\Images\chart.png" />
-    <None Remove="wwwroot\Images\error.png" />
-    <None Remove="wwwroot\Images\info.png" />
-    <None Remove="wwwroot\Images\list.png" />
-    <None Remove="wwwroot\Images\success.png" />
-    <None Remove="wwwroot\Images\warning.png" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Remove="wwwroot\Images\add.png"/>
+        <None Remove="wwwroot\Images\chart.png"/>
+        <None Remove="wwwroot\Images\error.png"/>
+        <None Remove="wwwroot\Images\info.png"/>
+        <None Remove="wwwroot\Images\list.png"/>
+        <None Remove="wwwroot\Images\success.png"/>
+        <None Remove="wwwroot\Images\warning.png"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="wwwroot\Images\bird.ico" />
-  </ItemGroup>
+    <ItemGroup>
+        <Content Include="wwwroot\Images\bird.ico"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <Resource Include="wwwroot\Images\add.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="wwwroot\Images\chart.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="wwwroot\Images\error.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="wwwroot\Images\info.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="wwwroot\Images\list.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-  </ItemGroup>
+    <ItemGroup>
+        <Resource Include="wwwroot\Images\add.png">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="wwwroot\Images\chart.png">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="wwwroot\Images\error.png">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="wwwroot\Images\info.png">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="wwwroot\Images\list.png">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" />
-    <PackageReference Include="Polly" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="CommunityToolkit.Mvvm"/>
+        <PackageReference Include="Polly"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Birds.Application\Birds.Application.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Birds.Application\Birds.Application.csproj"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <Resource Include="wwwroot\Images\success.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="wwwroot\Images\warning.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-  </ItemGroup>
+    <ItemGroup>
+        <Resource Include="wwwroot\Images\success.png">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="wwwroot\Images\warning.png">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
+    </ItemGroup>
 
 </Project>

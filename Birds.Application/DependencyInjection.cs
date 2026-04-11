@@ -1,27 +1,23 @@
-﻿using Birds.Application.Behaviors;
+﻿using System.Reflection;
+using Birds.Application.Behaviors;
 using Birds.Application.Commands.CreateBird;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
-namespace Birds.Application
+namespace Birds.Application;
+
+public static class DependencyInjection
 {
-    public static class DependencyInjection
+    public static void AddApplication(this IServiceCollection services)
     {
-        public static void AddApplication(this IServiceCollection services)
-        {
-            services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
-            // Behaviors
-            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
-            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ExceptionHandlingBehavior<,>));
+        // Behaviors
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ExceptionHandlingBehavior<,>));
 
-            services.AddMediatR(cfg =>
-            {
-                cfg.RegisterServicesFromAssembly(typeof(CreateBirdCommandHandler).Assembly);
-            });
-        }
+        services.AddMediatR(cfg => { cfg.RegisterServicesFromAssembly(typeof(CreateBirdCommandHandler).Assembly); });
     }
 }

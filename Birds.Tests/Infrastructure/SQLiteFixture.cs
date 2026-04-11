@@ -2,39 +2,52 @@ using Birds.Infrastructure.Persistence;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
-namespace Birds.Tests.Infrastructure
+namespace Birds.Tests.Infrastructure;
+
+public sealed class SqliteInMemoryDb : IAsyncDisposable
 {
-    public sealed class SqliteInMemoryDb : IAsyncDisposable
+    private readonly SqliteConnection _conn;
+    private readonly DbContextOptions<BirdDbContext> _options;
+
+    public SqliteInMemoryDb()
     {
-        private readonly SqliteConnection _conn;
-        private readonly DbContextOptions<BirdDbContext> _options;
+        _conn = new SqliteConnection("Filename=:memory:");
+        _conn.Open();
+        _options = new DbContextOptionsBuilder<BirdDbContext>()
+            .UseSqlite(_conn)
+            .EnableSensitiveDataLogging()
+            .Options;
 
-        public SqliteInMemoryDb()
+        using var ctx = new BirdDbContext(_options);
+        ctx.Database.EnsureCreated();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _conn.DisposeAsync();
+    }
+
+    public BirdDbContext CreateContext()
+    {
+        return new BirdDbContext(_options);
+    }
+
+    public IDbContextFactory<BirdDbContext> CreateFactory()
+    {
+        return new TestBirdDbContextFactory(_options);
+    }
+
+    private sealed class TestBirdDbContextFactory(DbContextOptions<BirdDbContext> options)
+        : IDbContextFactory<BirdDbContext>
+    {
+        public BirdDbContext CreateDbContext()
         {
-            _conn = new SqliteConnection("Filename=:memory:");
-            _conn.Open();
-            _options = new DbContextOptionsBuilder<BirdDbContext>()
-                .UseSqlite(_conn)
-                .EnableSensitiveDataLogging()
-                .Options;
-
-            using var ctx = new BirdDbContext(_options);
-            ctx.Database.EnsureCreated();
+            return new BirdDbContext(options);
         }
 
-        public BirdDbContext CreateContext() => new(_options);
-
-        public IDbContextFactory<BirdDbContext> CreateFactory() => new TestBirdDbContextFactory(_options);
-
-        public async ValueTask DisposeAsync() => await _conn.DisposeAsync();
-
-        private sealed class TestBirdDbContextFactory(DbContextOptions<BirdDbContext> options)
-            : IDbContextFactory<BirdDbContext>
+        public ValueTask<BirdDbContext> CreateDbContextAsync(CancellationToken cancellationToken = default)
         {
-            public BirdDbContext CreateDbContext() => new(options);
-
-            public ValueTask<BirdDbContext> CreateDbContextAsync(CancellationToken cancellationToken = default)
-                => ValueTask.FromResult(CreateDbContext());
+            return ValueTask.FromResult(CreateDbContext());
         }
     }
 }

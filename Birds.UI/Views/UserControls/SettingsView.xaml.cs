@@ -1,12 +1,11 @@
 using System.Windows.Controls;
 
-namespace Birds.UI.Views.UserControls
+namespace Birds.UI.Views.UserControls;
+
+public partial class SettingsView : UserControl
 {
-    public partial class SettingsView : UserControl
+    public SettingsView()
     {
-        public SettingsView()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

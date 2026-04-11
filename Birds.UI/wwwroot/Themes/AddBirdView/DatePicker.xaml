@@ -69,10 +69,12 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ButtonSurface" Property="Background" Value="{StaticResource HoverBrush}" />
+                            <Setter TargetName="ButtonSurface" Property="Background"
+                                    Value="{StaticResource HoverBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="ButtonSurface" Property="Background" Value="{StaticResource PressedBrush}" />
+                            <Setter TargetName="ButtonSurface" Property="Background"
+                                    Value="{StaticResource PressedBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="ButtonSurface" Property="Opacity" Value="0.55" />
@@ -175,7 +177,8 @@
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="DayBorder" Property="Background" Value="{StaticResource SelectedBrush}" />
-                            <Setter TargetName="DayBorder" Property="BorderBrush" Value="{StaticResource SelectedBrush}" />
+                            <Setter TargetName="DayBorder" Property="BorderBrush"
+                                    Value="{StaticResource SelectedBrush}" />
                             <Setter Property="Foreground" Value="White" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -221,12 +224,15 @@
                             <Setter TargetName="CellBorder" Property="Background" Value="{StaticResource HoverBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="CellBorder" Property="Background" Value="{StaticResource SelectedBrush}" />
+                            <Setter TargetName="CellBorder" Property="Background"
+                                    Value="{StaticResource SelectedBrush}" />
                             <Setter Property="Foreground" Value="White" />
                         </Trigger>
                         <Trigger Property="HasSelectedDays" Value="True">
-                            <Setter TargetName="CellBorder" Property="Background" Value="{StaticResource SelectedBrush}" />
-                            <Setter TargetName="CellBorder" Property="BorderBrush" Value="{StaticResource SelectedBrush}" />
+                            <Setter TargetName="CellBorder" Property="Background"
+                                    Value="{StaticResource SelectedBrush}" />
+                            <Setter TargetName="CellBorder" Property="BorderBrush"
+                                    Value="{StaticResource SelectedBrush}" />
                             <Setter Property="Foreground" Value="White" />
                         </Trigger>
                         <Trigger Property="IsInactive" Value="True">
