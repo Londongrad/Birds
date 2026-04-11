@@ -2,6 +2,7 @@ using Birds.App.Services;
 using Birds.Infrastructure.Configuration;
 using Birds.Infrastructure.Services;
 using Birds.Shared.Sync;
+using Birds.UI.Services.Notification.Interfaces;
 using FluentAssertions;
 using Moq;
 
@@ -22,7 +23,8 @@ namespace Birds.Tests.App.Services
                 remoteSyncService.Object,
                 RemoteSyncRuntimeOptions.Disabled,
                 statusReporter.Object,
-                localStoreStateService.Object);
+                localStoreStateService.Object,
+                CreateNotificationService());
 
             var delay = await sut.RunSingleIterationAsync(CancellationToken.None);
 
@@ -52,7 +54,8 @@ namespace Birds.Tests.App.Services
                 remoteSyncService.Object,
                 new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
                 statusReporter.Object,
-                localStoreStateService.Object);
+                localStoreStateService.Object,
+                CreateNotificationService());
 
             var delay = await sut.RunSingleIterationAsync(CancellationToken.None);
 
@@ -80,7 +83,8 @@ namespace Birds.Tests.App.Services
                 remoteSyncService.Object,
                 new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
                 statusReporter.Object,
-                localStoreStateService.Object);
+                localStoreStateService.Object,
+                CreateNotificationService());
 
             var delay = await sut.RunSingleIterationAsync(CancellationToken.None);
 
@@ -114,7 +118,8 @@ namespace Birds.Tests.App.Services
                 remoteSyncService.Object,
                 new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
                 statusReporter.Object,
-                localStoreStateService.Object);
+                localStoreStateService.Object,
+                CreateNotificationService());
 
             await sut.BootstrapLocalStoreAsync(CancellationToken.None);
 
@@ -145,7 +150,8 @@ namespace Birds.Tests.App.Services
                 remoteSyncService.Object,
                 new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
                 statusReporter.Object,
-                localStoreStateService.Object);
+                localStoreStateService.Object,
+                CreateNotificationService());
 
             await sut.BootstrapLocalStoreAsync(CancellationToken.None);
         }
@@ -171,7 +177,8 @@ namespace Birds.Tests.App.Services
                 remoteSyncService.Object,
                 new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
                 statusReporter.Object,
-                localStoreStateService.Object);
+                localStoreStateService.Object,
+                CreateNotificationService());
 
             var delay = await sut.RunSingleIterationAsync(CancellationToken.None);
 
@@ -202,7 +209,8 @@ namespace Birds.Tests.App.Services
                 remoteSyncService.Object,
                 new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
                 statusReporter.Object,
-                localStoreStateService.Object);
+                localStoreStateService.Object,
+                CreateNotificationService());
 
             var act = () => sut.BootstrapLocalStoreAsync(CancellationToken.None);
 
@@ -222,7 +230,8 @@ namespace Birds.Tests.App.Services
                 remoteSyncService.Object,
                 new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
                 statusReporter.Object,
-                localStoreStateService.Object);
+                localStoreStateService.Object,
+                CreateNotificationService());
 
             await sut.PauseAsync(CancellationToken.None);
 
@@ -253,11 +262,83 @@ namespace Birds.Tests.App.Services
                 remoteSyncService.Object,
                 new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
                 statusReporter.Object,
-                localStoreStateService.Object);
+                localStoreStateService.Object,
+                CreateNotificationService());
 
             await sut.SyncNowAsync(CancellationToken.None);
 
             remoteSyncService.Verify(x => x.SyncPendingAsync(It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task RunSingleIterationAsync_WhenRemoteWinsDetected_Should_ShowConflictWarning()
+        {
+            var remoteSyncService = new Mock<IRemoteSyncService>();
+            var localStoreStateService = CreateLocalStateServiceMock(pendingOperationCount: 2);
+            remoteSyncService.Setup(x => x.SyncPendingAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RemoteSyncRunResult(RemoteSyncRunStatus.Synced, 3, null, 2));
+
+            var statusReporter = new Mock<IRemoteSyncStatusReporter>();
+            var sequence = new MockSequence();
+            statusReporter.InSequence(sequence)
+                .Setup(x => x.SetSyncingAsync(2, It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+            statusReporter.InSequence(sequence)
+                .Setup(x => x.SetResultAsync(RemoteSyncDisplayState.Synced, 3, 2, null, It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            var notificationService = new Mock<INotificationService>();
+
+            var sut = new RemoteSyncCoordinator(
+                remoteSyncService.Object,
+                new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+                statusReporter.Object,
+                localStoreStateService.Object,
+                notificationService.Object);
+
+            await sut.RunSingleIterationAsync(CancellationToken.None);
+
+            notificationService.Verify(
+                x => x.ShowWarningLocalized("Info.SyncConflictResolved", It.Is<object[]>(args => args.Length == 1 && (int)args[0] == 2)),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task BootstrapLocalStoreAsync_WhenRemoteWinsDetectedAcrossBatches_Should_ShowSingleAggregatedWarning()
+        {
+            var remoteSyncService = new Mock<IRemoteSyncService>();
+            var localStoreStateService = new Mock<ILocalStoreStateService>();
+            localStoreStateService.SetupSequence(x => x.GetSnapshotAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new LocalStoreStateSnapshot(0, 0))
+                .ReturnsAsync(new LocalStoreStateSnapshot(192, 0));
+            remoteSyncService.SetupSequence(x => x.SyncPendingAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RemoteSyncRunResult(RemoteSyncRunStatus.Synced, 128, null, 1))
+                .ReturnsAsync(new RemoteSyncRunResult(RemoteSyncRunStatus.Synced, 64, null, 2))
+                .ReturnsAsync(RemoteSyncRunResult.NothingToSync);
+
+            var statusReporter = new Mock<IRemoteSyncStatusReporter>();
+            var sequence = new MockSequence();
+            statusReporter.InSequence(sequence)
+                .Setup(x => x.SetSyncingAsync(0, It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+            statusReporter.InSequence(sequence)
+                .Setup(x => x.SetResultAsync(RemoteSyncDisplayState.Synced, 192, 0, null, It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            var notificationService = new Mock<INotificationService>();
+
+            var sut = new RemoteSyncCoordinator(
+                remoteSyncService.Object,
+                new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+                statusReporter.Object,
+                localStoreStateService.Object,
+                notificationService.Object);
+
+            await sut.BootstrapLocalStoreAsync(CancellationToken.None);
+
+            notificationService.Verify(
+                x => x.ShowWarningLocalized("Info.SyncConflictResolved", It.Is<object[]>(args => args.Length == 1 && (int)args[0] == 3)),
+                Times.Once);
         }
 
         private static Mock<ILocalStoreStateService> CreateLocalStateServiceMock(int birdCount = 0, int pendingOperationCount = 0)
@@ -267,5 +348,8 @@ namespace Birds.Tests.App.Services
                 .ReturnsAsync(new LocalStoreStateSnapshot(birdCount, pendingOperationCount));
             return mock;
         }
+
+        private static INotificationService CreateNotificationService()
+            => Mock.Of<INotificationService>();
     }
 }

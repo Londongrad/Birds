@@ -25,8 +25,11 @@ namespace Birds.Infrastructure.Persistence.Models
         }
 
         private static DateTime NormalizeForStorage(DateTime value)
-            => value.Kind == DateTimeKind.Unspecified
-                ? value
-                : DateTime.SpecifyKind(value, DateTimeKind.Unspecified);
+            => value.Kind switch
+            {
+                DateTimeKind.Utc => DateTime.SpecifyKind(value.ToLocalTime(), DateTimeKind.Unspecified),
+                DateTimeKind.Local => DateTime.SpecifyKind(value, DateTimeKind.Unspecified),
+                _ => value
+            };
     }
 }

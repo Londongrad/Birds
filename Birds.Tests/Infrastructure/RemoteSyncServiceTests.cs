@@ -36,7 +36,7 @@ namespace Birds.Tests.Infrastructure
             var bird = Bird.Create(
                 Enum.GetValues<BirdsName>()[0],
                 "sync me",
-                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-3)));
+                DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
             await repository.AddAsync(bird);
 
             var sut = CreateSut(_remoteDb.CreateFactory());
@@ -62,7 +62,7 @@ namespace Birds.Tests.Infrastructure
             var bird = Bird.Create(
                 Enum.GetValues<BirdsName>()[1],
                 "remove remotely",
-                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-4)));
+                DateOnly.FromDateTime(DateTime.Now.AddDays(-4)));
 
             await using (var remoteContext = _remoteDb.CreateContext())
             {
@@ -105,7 +105,7 @@ namespace Birds.Tests.Infrastructure
             var localBird = Bird.Create(
                 Enum.GetValues<BirdsName>()[0],
                 "local version",
-                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-3)));
+                DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
             await repository.AddAsync(localBird);
 
             var newerRemoteBird = Bird.Restore(
@@ -116,7 +116,7 @@ namespace Birds.Tests.Infrastructure
                 localBird.Departure,
                 localBird.IsAlive,
                 localBird.CreatedAt,
-                DateTime.UtcNow.AddMinutes(5));
+                DateTime.Now.AddMinutes(5));
 
             await using (var remoteContext = _remoteDb.CreateContext())
             {
@@ -129,6 +129,7 @@ namespace Birds.Tests.Infrastructure
             var result = await sut.SyncPendingAsync(CancellationToken.None);
 
             result.Status.Should().Be(RemoteSyncRunStatus.Synced);
+            result.RemoteWinsCount.Should().Be(1);
 
             await using (var remoteVerifyContext = _remoteDb.CreateContext())
             {
@@ -153,7 +154,7 @@ namespace Birds.Tests.Infrastructure
             var localBird = Bird.Create(
                 Enum.GetValues<BirdsName>()[1],
                 "delete me locally",
-                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-4)));
+                DateOnly.FromDateTime(DateTime.Now.AddDays(-4)));
             await repository.AddAsync(localBird);
             await repository.RemoveAsync(localBird);
 
@@ -165,7 +166,7 @@ namespace Birds.Tests.Infrastructure
                 localBird.Departure,
                 localBird.IsAlive,
                 localBird.CreatedAt,
-                DateTime.UtcNow.AddMinutes(5));
+                DateTime.Now.AddMinutes(5));
 
             await using (var remoteContext = _remoteDb.CreateContext())
             {
@@ -178,6 +179,7 @@ namespace Birds.Tests.Infrastructure
             var result = await sut.SyncPendingAsync(CancellationToken.None);
 
             result.Status.Should().Be(RemoteSyncRunStatus.Synced);
+            result.RemoteWinsCount.Should().Be(1);
 
             await using (var remoteVerifyContext = _remoteDb.CreateContext())
             {
@@ -201,11 +203,11 @@ namespace Birds.Tests.Infrastructure
                 Guid.NewGuid(),
                 Enum.GetValues<BirdsName>()[2],
                 "remote only",
-                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-6)),
+                DateOnly.FromDateTime(DateTime.Now.AddDays(-6)),
                 null,
                 true,
-                DateTime.UtcNow.AddDays(-6),
-                DateTime.UtcNow.AddDays(-2));
+                DateTime.Now.AddDays(-6),
+                DateTime.Now.AddDays(-2));
 
             await using (var remoteContext = _remoteDb.CreateContext())
             {
@@ -238,11 +240,11 @@ namespace Birds.Tests.Infrastructure
                 birdId,
                 Enum.GetValues<BirdsName>()[3],
                 "before pull",
-                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-8)),
+                DateOnly.FromDateTime(DateTime.Now.AddDays(-8)),
                 null,
                 true,
-                DateTime.UtcNow.AddDays(-8),
-                DateTime.UtcNow.AddDays(-5));
+                DateTime.Now.AddDays(-8),
+                DateTime.Now.AddDays(-5));
 
             await using (var remoteContext = _remoteDb.CreateContext())
             {
@@ -261,7 +263,7 @@ namespace Birds.Tests.Infrastructure
                 initialRemoteBird.Departure,
                 initialRemoteBird.IsAlive,
                 initialRemoteBird.CreatedAt,
-                DateTime.UtcNow.AddDays(-1));
+                DateTime.Now.AddDays(-1));
 
             await using (var remoteUpdateContext = _remoteDb.CreateContext())
             {
@@ -288,11 +290,11 @@ namespace Birds.Tests.Infrastructure
                 birdId,
                 Enum.GetValues<BirdsName>()[2],
                 "remote stale",
-                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-8)),
+                DateOnly.FromDateTime(DateTime.Now.AddDays(-8)),
                 null,
                 true,
-                DateTime.UtcNow.AddDays(-8),
-                DateTime.UtcNow.AddDays(-3));
+                DateTime.Now.AddDays(-8),
+                DateTime.Now.AddDays(-3));
 
             await using (var remoteContext = _remoteDb.CreateContext())
             {
@@ -310,7 +312,7 @@ namespace Birds.Tests.Infrastructure
                     remoteBird.Departure,
                     remoteBird.IsAlive,
                     remoteBird.CreatedAt,
-                    DateTime.UtcNow.AddMinutes(10)));
+                    DateTime.Now.AddMinutes(10)));
                 await localContext.SaveChangesAsync();
             }
 
@@ -319,6 +321,7 @@ namespace Birds.Tests.Infrastructure
             var result = await sut.SyncPendingAsync(CancellationToken.None);
 
             result.Status.Should().Be(RemoteSyncRunStatus.Synced);
+            result.RemoteWinsCount.Should().Be(0);
 
             await using var localVerifyContext = _localDb.CreateContext();
             var localBird = await localVerifyContext.Birds.SingleAsync(bird => bird.Id == birdId);
@@ -332,13 +335,13 @@ namespace Birds.Tests.Infrastructure
             var localBird = Bird.Create(
                 Enum.GetValues<BirdsName>()[4],
                 "delete locally",
-                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7)));
+                DateOnly.FromDateTime(DateTime.Now.AddDays(-7)));
             await repository.AddAsync(localBird);
 
             var sut = CreateSut(_remoteDb.CreateFactory());
             await sut.SyncPendingAsync(CancellationToken.None);
 
-            var deleteStamp = DateTime.UtcNow;
+            var deleteStamp = DateTime.Now;
             await using (var remoteContext = _remoteDb.CreateContext())
             {
                 remoteContext.Birds.RemoveRange(remoteContext.Birds.Where(bird => bird.Id == localBird.Id));
@@ -364,11 +367,11 @@ namespace Birds.Tests.Infrastructure
                 Guid.NewGuid(),
                 Enum.GetValues<BirdsName>()[4],
                 "local survives",
-                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7)),
+                DateOnly.FromDateTime(DateTime.Now.AddDays(-7)),
                 null,
                 true,
-                DateTime.UtcNow.AddDays(-7),
-                DateTime.UtcNow.AddMinutes(12));
+                DateTime.Now.AddDays(-7),
+                DateTime.Now.AddMinutes(12));
 
             await using (var localContext = _localDb.CreateContext())
             {
@@ -379,7 +382,7 @@ namespace Birds.Tests.Infrastructure
             await using (var remoteContext = _remoteDb.CreateContext())
             {
                 await remoteContext.BirdTombstones.AddAsync(
-                    RemoteBirdTombstone.Create(localBird.Id, DateTime.UtcNow.AddMinutes(-2)));
+                    RemoteBirdTombstone.Create(localBird.Id, DateTime.Now.AddMinutes(-2)));
                 await remoteContext.SaveChangesAsync();
             }
 
@@ -388,6 +391,7 @@ namespace Birds.Tests.Infrastructure
             var result = await sut.SyncPendingAsync(CancellationToken.None);
 
             result.Status.Should().Be(RemoteSyncRunStatus.Synced);
+            result.RemoteWinsCount.Should().Be(0);
 
             await using var localVerifyContext = _localDb.CreateContext();
             (await localVerifyContext.Birds.CountAsync(bird => bird.Id == localBird.Id)).Should().Be(1);
@@ -401,7 +405,7 @@ namespace Birds.Tests.Infrastructure
             var bird = Bird.Create(
                 Enum.GetValues<BirdsName>()[1],
                 "broken remote",
-                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-2)));
+                DateOnly.FromDateTime(DateTime.Now.AddDays(-2)));
             await repository.AddAsync(bird);
 
             var sut = CreateSut(brokenRemoteDb.CreateFactory());

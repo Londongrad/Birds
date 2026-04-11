@@ -15,6 +15,8 @@ namespace Birds.Infrastructure.Services
         IDbContextFactory<RemoteBirdDbContext> remoteContextFactory,
         ILogger<RemoteSyncService> logger) : IRemoteSyncService
     {
+        private readonly record struct PushBatchResult(int ProcessedCount, int RemoteWinsCount);
+
         private const int PushBatchSize = 128;
         private const int PullBatchSize = 128;
         private const string BirdsPullCursorKey = "Birds.Pull";
@@ -52,10 +54,15 @@ namespace Birds.Infrastructure.Services
                     }
 
                     var processedCount = 0;
+                    var remoteWinsCount = 0;
                     await EnsureRemoteSyncSchemaAsync(remoteContext, cancellationToken);
 
                     if (pendingOperations.Count > 0)
-                        processedCount += await PushPendingBatchAsync(localContext, remoteContext, pendingOperations, cancellationToken);
+                    {
+                        var pushResult = await PushPendingBatchAsync(localContext, remoteContext, pendingOperations, cancellationToken);
+                        processedCount += pushResult.ProcessedCount;
+                        remoteWinsCount += pushResult.RemoteWinsCount;
+                    }
 
                     var hasPendingLocalOperations = await localContext.SyncOperations.AnyAsync(cancellationToken);
                     if (!hasPendingLocalOperations)
@@ -65,7 +72,7 @@ namespace Birds.Infrastructure.Services
                     }
 
                     return processedCount > 0
-                        ? new RemoteSyncRunResult(RemoteSyncRunStatus.Synced, processedCount)
+                        ? new RemoteSyncRunResult(RemoteSyncRunStatus.Synced, processedCount, null, remoteWinsCount)
                         : RemoteSyncRunResult.NothingToSync;
                 }
                 catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
@@ -89,17 +96,18 @@ namespace Birds.Infrastructure.Services
             }
         }
 
-        private async Task<int> PushPendingBatchAsync(BirdDbContext localContext,
-                                                      RemoteBirdDbContext remoteContext,
-                                                      IReadOnlyCollection<SyncOperation> pendingOperations,
-                                                      CancellationToken cancellationToken)
+        private async Task<PushBatchResult> PushPendingBatchAsync(BirdDbContext localContext,
+                                                                  RemoteBirdDbContext remoteContext,
+                                                                  IReadOnlyCollection<SyncOperation> pendingOperations,
+                                                                  CancellationToken cancellationToken)
         {
-            await ApplyPushBatchAsync(localContext, remoteContext, pendingOperations, cancellationToken);
+            var remoteWinsCount = await ApplyPushBatchAsync(localContext, remoteContext, pendingOperations, cancellationToken);
             localContext.SyncOperations.RemoveRange(pendingOperations);
             await localContext.SaveChangesAsync(cancellationToken);
+            localContext.ChangeTracker.Clear();
 
             _logger.LogInformation(LogMessages.RemoteSyncProcessed, pendingOperations.Count);
-            return pendingOperations.Count;
+            return new PushBatchResult(pendingOperations.Count, remoteWinsCount);
         }
 
         private async Task<int> PullRemoteBatchAsync(BirdDbContext localContext,
@@ -256,11 +264,12 @@ namespace Birds.Infrastructure.Services
             return remoteDeletes.Count;
         }
 
-        private static async Task ApplyPushBatchAsync(BirdDbContext localContext,
-                                                      RemoteBirdDbContext remoteContext,
-                                                      IReadOnlyCollection<SyncOperation> pendingOperations,
-                                                      CancellationToken cancellationToken)
+        private static async Task<int> ApplyPushBatchAsync(BirdDbContext localContext,
+                                                           RemoteBirdDbContext remoteContext,
+                                                           IReadOnlyCollection<SyncOperation> pendingOperations,
+                                                           CancellationToken cancellationToken)
         {
+            var remoteWinsCount = 0;
             var upserts = pendingOperations
                 .Where(operation => operation.OperationType == SyncOperationType.Upsert)
                 .Select(operation => JsonSerializer.Deserialize<BirdSyncPayload>(operation.PayloadJson)
@@ -299,6 +308,8 @@ namespace Birds.Infrastructure.Services
                     if (existingRemoteTombstones.TryGetValue(payload.Id, out var remoteTombstone) &&
                         CompareStamps(remoteTombstone.DeletedAtUtc, localSyncStamp) >= 0)
                     {
+                        remoteWinsCount++;
+
                         if (existingLocalBirds.TryGetValue(payload.Id, out var localBird))
                             localContext.Birds.Remove(localBird);
 
@@ -308,6 +319,8 @@ namespace Birds.Infrastructure.Services
                     if (existingRemoteBirds.TryGetValue(payload.Id, out var remoteBird) &&
                         CompareStamps(GetSyncStamp(remoteBird), localSyncStamp) > 0)
                     {
+                        remoteWinsCount++;
+
                         var restoredRemoteBird = RestoreBird(remoteBird);
                         if (existingLocalBirds.TryGetValue(payload.Id, out var localBird))
                             localContext.Entry(localBird).CurrentValues.SetValues(restoredRemoteBird);
@@ -376,6 +389,8 @@ namespace Birds.Infrastructure.Services
                     if (existingRemoteBirds.TryGetValue(payload.Id, out var remoteBird) &&
                         CompareStamps(GetSyncStamp(remoteBird), deleteStamp) > 0)
                     {
+                        remoteWinsCount++;
+
                         var restoredRemoteBird = RestoreBird(remoteBird);
                         if (existingLocalBirds.TryGetValue(payload.Id, out var localBird))
                             localContext.Entry(localBird).CurrentValues.SetValues(restoredRemoteBird);
@@ -411,6 +426,7 @@ namespace Birds.Infrastructure.Services
             }
 
             await transaction.CommitAsync(cancellationToken);
+            return remoteWinsCount;
         }
 
         private static Bird RestoreBird(BirdSyncPayload payload)
@@ -454,7 +470,7 @@ namespace Birds.Infrastructure.Services
             {
                 DateTimeKind.Utc => value,
                 DateTimeKind.Local => value.ToUniversalTime(),
-                _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
+                _ => DateTime.SpecifyKind(value, DateTimeKind.Local).ToUniversalTime()
             };
 
         private static async Task EnsureRemoteSyncSchemaAsync(RemoteBirdDbContext remoteContext, CancellationToken cancellationToken)

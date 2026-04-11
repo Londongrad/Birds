@@ -2,6 +2,7 @@ using Birds.Infrastructure.Configuration;
 using Birds.Infrastructure.Services;
 using Birds.Shared.Sync;
 using Birds.Shared.Constants;
+using Birds.UI.Services.Notification.Interfaces;
 using Serilog;
 
 namespace Birds.App.Services
@@ -10,7 +11,8 @@ namespace Birds.App.Services
         IRemoteSyncService remoteSyncService,
         RemoteSyncRuntimeOptions remoteSyncOptions,
         IRemoteSyncStatusReporter remoteSyncStatusReporter,
-        ILocalStoreStateService localStoreStateService) : IRemoteSyncCoordinator
+        ILocalStoreStateService localStoreStateService,
+        INotificationService notificationService) : IRemoteSyncCoordinator
     {
         private const int MaxBootstrapPasses = 512;
 
@@ -18,6 +20,7 @@ namespace Birds.App.Services
         private readonly RemoteSyncRuntimeOptions _remoteSyncOptions = remoteSyncOptions;
         private readonly IRemoteSyncStatusReporter _remoteSyncStatusReporter = remoteSyncStatusReporter;
         private readonly ILocalStoreStateService _localStoreStateService = localStoreStateService;
+        private readonly INotificationService _notificationService = notificationService;
         private readonly SemaphoreSlim _runLock = new(1, 1);
         private readonly SemaphoreSlim _wakeSignal = new(0, int.MaxValue);
         private int _started;
@@ -50,6 +53,7 @@ namespace Birds.App.Services
             await PublishSyncingStateAsync(cancellationToken);
 
             var totalProcessed = 0;
+            var totalRemoteWins = 0;
 
             for (var pass = 0; pass < MaxBootstrapPasses; pass++)
             {
@@ -76,6 +80,7 @@ namespace Birds.App.Services
                 }
 
                 totalProcessed += result.ProcessedCount;
+                totalRemoteWins += result.RemoteWinsCount;
 
                 switch (result.Status)
                 {
@@ -90,6 +95,7 @@ namespace Birds.App.Services
                             syncedState.PendingOperationCount,
                             null,
                             cancellationToken);
+                        ShowConflictResolutionWarning(totalRemoteWins);
                         return;
 
                     default:
@@ -100,6 +106,7 @@ namespace Birds.App.Services
                             localState.PendingOperationCount,
                             result.ErrorMessage,
                             cancellationToken);
+                        ShowConflictResolutionWarning(totalRemoteWins);
                         return;
                 }
             }
@@ -112,6 +119,7 @@ namespace Birds.App.Services
                 finalState.PendingOperationCount,
                 bootstrapExceededMessage,
                 cancellationToken);
+            ShowConflictResolutionWarning(totalRemoteWins);
             Log.Warning(bootstrapExceededMessage);
         }
 
@@ -226,6 +234,7 @@ namespace Birds.App.Services
                     localState.PendingOperationCount,
                     result.ErrorMessage,
                     cancellationToken);
+                ShowConflictResolutionWarning(result.RemoteWinsCount);
 
                 return result;
             }
@@ -322,6 +331,14 @@ namespace Birds.App.Services
             {
                 // A wake request is already queued.
             }
+        }
+
+        private void ShowConflictResolutionWarning(int remoteWinsCount)
+        {
+            if (remoteWinsCount <= 0)
+                return;
+
+            _notificationService.ShowWarningLocalized("Info.SyncConflictResolved", remoteWinsCount);
         }
     }
 }

@@ -168,7 +168,7 @@ namespace Birds.Infrastructure.Repositories
 
             var ids = birds.Select(static bird => bird.Id).Distinct().ToArray();
             var existingOperations = await LoadPendingOperationsAsync(context, ids, cancellationToken);
-            var timestamp = DateTime.UtcNow;
+            var timestamp = DateTime.Now;
 
             foreach (var bird in birds)
             {

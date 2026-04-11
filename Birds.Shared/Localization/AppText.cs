@@ -222,6 +222,7 @@ namespace Birds.Shared.Localization
             ["Info.ImportReplacedSucceeded"] = "Снимок восстановлен. Обработано: {0}, добавлено: {1}, обновлено: {2}, удалено: {3}.",
             ["Info.BirdRecordsCleared"] = "Архив очищен. Удалено записей: {0}.",
             ["Info.LocalDatabaseReset"] = "Локальная база данных сброшена.",
+            ["Info.SyncConflictResolved"] = "\u0421\u0438\u043D\u0445\u0440\u043E\u043D\u0438\u0437\u0430\u0446\u0438\u044F \u0440\u0430\u0437\u0440\u0435\u0448\u0438\u043B\u0430 {0} \u043A\u043E\u043D\u0444\u043B\u0438\u043A\u0442(\u043E\u0432) \u0432 \u043F\u043E\u043B\u044C\u0437\u0443 \u0431\u043E\u043B\u0435\u0435 \u043D\u043E\u0432\u043E\u0439 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0439 \u0432\u0435\u0440\u0441\u0438\u0438.",
 
             ["Error.BirdLoadFailed"] = "Не удалось загрузить данные о птицах из базы данных.\nПроверьте подключение или перезапустите приложение.",
             ["Error.UnknownError"] = "Неизвестная ошибка.",
@@ -488,6 +489,7 @@ namespace Birds.Shared.Localization
             ["Info.ImportReplacedSucceeded"] = "Snapshot restored. Processed: {0}, added: {1}, updated: {2}, removed: {3}.",
             ["Info.BirdRecordsCleared"] = "Archive cleared. Records removed: {0}.",
             ["Info.LocalDatabaseReset"] = "Local database has been reset.",
+            ["Info.SyncConflictResolved"] = "Cloud sync resolved {0} conflict(s) using the newer remote version.",
 
             ["Error.BirdLoadFailed"] = "Failed to load bird data from the database.\nPlease check your connection or restart the application.",
             ["Error.UnknownError"] = "Unknown error.",
