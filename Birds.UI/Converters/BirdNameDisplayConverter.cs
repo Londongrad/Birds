@@ -1,5 +1,6 @@
 using Birds.Domain.Enums;
 using Birds.Domain.Extensions;
+using Birds.UI.Services.Localization;
 using System.Globalization;
 using System.Windows.Data;
 
@@ -9,7 +10,8 @@ namespace Birds.UI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
             => value is BirdsName birdName
-                ? birdName.ToDisplayName(culture)
+                // The edit ComboBox should follow the app language, not WPF's binding culture.
+                ? birdName.ToDisplayName(LocalizationService.Instance.CurrentCulture)
                 : Binding.DoNothing;
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
