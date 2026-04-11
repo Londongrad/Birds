@@ -94,7 +94,7 @@ namespace Birds.Infrastructure.Services
                                                       IReadOnlyCollection<SyncOperation> pendingOperations,
                                                       CancellationToken cancellationToken)
         {
-            await ApplyPushBatchAsync(remoteContext, pendingOperations, cancellationToken);
+            await ApplyPushBatchAsync(localContext, remoteContext, pendingOperations, cancellationToken);
             localContext.SyncOperations.RemoveRange(pendingOperations);
             await localContext.SaveChangesAsync(cancellationToken);
 
@@ -127,18 +127,27 @@ namespace Birds.Infrastructure.Services
                 return 0;
 
             var ids = remoteChanges.Select(change => change.Bird.Id).ToArray();
-            var existingIds = await localContext.Birds
+            var existingBirds = await localContext.Birds
                 .AsNoTracking()
                 .Where(bird => ids.Contains(bird.Id))
-                .Select(static bird => bird.Id)
-                .ToListAsync(cancellationToken);
+                .Select(bird => new
+                {
+                    Bird = bird,
+                    SyncStamp = bird.UpdatedAt ?? bird.CreatedAt
+                })
+                .ToDictionaryAsync(bird => bird.Bird.Id, cancellationToken);
 
-            var existingSet = existingIds.ToHashSet();
             var birdsToAdd = new List<Bird>();
             var birdsToUpdate = new List<Bird>();
 
             foreach (var change in remoteChanges)
             {
+                if (existingBirds.TryGetValue(change.Bird.Id, out var localBird) &&
+                    CompareStamps(localBird.SyncStamp, change.SyncStamp) > 0)
+                {
+                    continue;
+                }
+
                 var restored = Bird.Restore(
                     change.Bird.Id,
                     change.Bird.Name,
@@ -149,7 +158,7 @@ namespace Birds.Infrastructure.Services
                     change.Bird.CreatedAt,
                     change.Bird.UpdatedAt);
 
-                if (existingSet.Contains(change.Bird.Id))
+                if (existingBirds.ContainsKey(change.Bird.Id))
                     birdsToUpdate.Add(restored);
                 else
                     birdsToAdd.Add(restored);
@@ -222,6 +231,11 @@ namespace Birds.Infrastructure.Services
                     continue;
                 }
 
+                if (CompareStamps(GetSyncStamp(localBird), tombstone.DeletedAtUtc) > 0)
+                {
+                    continue;
+                }
+
                 if (localContext.Entry(localBird).State != EntityState.Deleted)
                     localContext.Birds.Remove(localBird);
             }
@@ -242,7 +256,8 @@ namespace Birds.Infrastructure.Services
             return remoteDeletes.Count;
         }
 
-        private static async Task ApplyPushBatchAsync(RemoteBirdDbContext remoteContext,
+        private static async Task ApplyPushBatchAsync(BirdDbContext localContext,
+                                                      RemoteBirdDbContext remoteContext,
                                                       IReadOnlyCollection<SyncOperation> pendingOperations,
                                                       CancellationToken cancellationToken)
         {
@@ -263,35 +278,53 @@ namespace Birds.Infrastructure.Services
             if (upserts.Count > 0)
             {
                 var ids = upserts.Select(static payload => payload.Id).ToArray();
-                var existingIds = await remoteContext.Birds
+                var existingRemoteBirds = await remoteContext.Birds
                     .AsNoTracking()
                     .Where(bird => ids.Contains(bird.Id))
-                    .Select(static bird => bird.Id)
-                    .ToListAsync(cancellationToken);
-
-                var existingSet = existingIds.ToHashSet();
+                    .ToDictionaryAsync(bird => bird.Id, cancellationToken);
+                var existingRemoteTombstones = await remoteContext.BirdTombstones
+                    .Where(tombstone => ids.Contains(tombstone.BirdId))
+                    .ToDictionaryAsync(tombstone => tombstone.BirdId, cancellationToken);
+                var existingLocalBirds = await localContext.Birds
+                    .Where(bird => ids.Contains(bird.Id))
+                    .ToDictionaryAsync(bird => bird.Id, cancellationToken);
                 var birdsToAdd = new List<Bird>();
                 var birdsToUpdate = new List<Bird>();
+                var tombstonesToRemove = new HashSet<Guid>();
 
                 foreach (var payload in upserts)
                 {
-                    if (!Enum.TryParse<BirdsName>(payload.Name, ignoreCase: true, out var parsedName))
-                        throw new InvalidOperationException($"Unknown bird species '{payload.Name}' in sync payload.");
+                    var localSyncStamp = GetSyncStamp(payload);
 
-                    var restored = Bird.Restore(
-                        payload.Id,
-                        parsedName,
-                        payload.Description,
-                        payload.Arrival,
-                        payload.Departure,
-                        payload.IsAlive,
-                        payload.CreatedAt,
-                        payload.UpdatedAt);
+                    if (existingRemoteTombstones.TryGetValue(payload.Id, out var remoteTombstone) &&
+                        CompareStamps(remoteTombstone.DeletedAtUtc, localSyncStamp) >= 0)
+                    {
+                        if (existingLocalBirds.TryGetValue(payload.Id, out var localBird))
+                            localContext.Birds.Remove(localBird);
 
-                    if (existingSet.Contains(payload.Id))
-                        birdsToUpdate.Add(restored);
+                        continue;
+                    }
+
+                    if (existingRemoteBirds.TryGetValue(payload.Id, out var remoteBird) &&
+                        CompareStamps(GetSyncStamp(remoteBird), localSyncStamp) > 0)
+                    {
+                        var restoredRemoteBird = RestoreBird(remoteBird);
+                        if (existingLocalBirds.TryGetValue(payload.Id, out var localBird))
+                            localContext.Entry(localBird).CurrentValues.SetValues(restoredRemoteBird);
+                        else
+                            await localContext.Birds.AddAsync(restoredRemoteBird, cancellationToken);
+
+                        continue;
+                    }
+
+                    var restoredLocalBird = RestoreBird(payload);
+
+                    if (existingRemoteBirds.ContainsKey(payload.Id))
+                        birdsToUpdate.Add(restoredLocalBird);
                     else
-                        birdsToAdd.Add(restored);
+                        birdsToAdd.Add(restoredLocalBird);
+
+                    tombstonesToRemove.Add(payload.Id);
                 }
 
                 if (birdsToAdd.Count > 0)
@@ -300,31 +333,63 @@ namespace Birds.Infrastructure.Services
                 if (birdsToUpdate.Count > 0)
                     remoteContext.Birds.UpdateRange(birdsToUpdate);
 
-                await remoteContext.SaveChangesAsync(cancellationToken);
+                if (birdsToAdd.Count > 0 || birdsToUpdate.Count > 0)
+                    await remoteContext.SaveChangesAsync(cancellationToken);
 
-                await remoteContext.BirdTombstones
-                    .Where(tombstone => ids.Contains(tombstone.BirdId))
-                    .ExecuteDeleteAsync(cancellationToken);
+                if (tombstonesToRemove.Count > 0)
+                {
+                    await remoteContext.BirdTombstones
+                        .Where(tombstone => tombstonesToRemove.Contains(tombstone.BirdId))
+                        .ExecuteDeleteAsync(cancellationToken);
+                }
             }
 
             if (deletes.Count > 0)
             {
                 var deleteIds = deletes.Select(static payload => payload.Id).ToArray();
-                await remoteContext.Birds
+                var existingRemoteBirds = await remoteContext.Birds
+                    .AsNoTracking()
                     .Where(bird => deleteIds.Contains(bird.Id))
-                    .ExecuteDeleteAsync(cancellationToken);
-
+                    .ToDictionaryAsync(bird => bird.Id, cancellationToken);
                 var existingTombstones = await remoteContext.BirdTombstones
                     .Where(tombstone => deleteIds.Contains(tombstone.BirdId))
                     .ToListAsync(cancellationToken);
-
+                var existingLocalBirds = await localContext.Birds
+                    .Where(bird => deleteIds.Contains(bird.Id))
+                    .ToDictionaryAsync(bird => bird.Id, cancellationToken);
                 var tombstoneMap = existingTombstones.ToDictionary(tombstone => tombstone.BirdId);
+                var remoteDeleteIds = new HashSet<Guid>();
 
                 foreach (var payload in deletes)
                 {
-                    if (tombstoneMap.TryGetValue(payload.Id, out var existingTombstone))
+                    var deleteStamp = NormalizeComparisonStamp(payload.DeletedAtUtc);
+
+                    if (tombstoneMap.TryGetValue(payload.Id, out var existingTombstone) &&
+                        CompareStamps(existingTombstone.DeletedAtUtc, deleteStamp) >= 0)
                     {
-                        existingTombstone.AdvanceTo(payload.DeletedAtUtc);
+                        if (existingLocalBirds.TryGetValue(payload.Id, out var localBird))
+                            localContext.Birds.Remove(localBird);
+
+                        continue;
+                    }
+
+                    if (existingRemoteBirds.TryGetValue(payload.Id, out var remoteBird) &&
+                        CompareStamps(GetSyncStamp(remoteBird), deleteStamp) > 0)
+                    {
+                        var restoredRemoteBird = RestoreBird(remoteBird);
+                        if (existingLocalBirds.TryGetValue(payload.Id, out var localBird))
+                            localContext.Entry(localBird).CurrentValues.SetValues(restoredRemoteBird);
+                        else
+                            await localContext.Birds.AddAsync(restoredRemoteBird, cancellationToken);
+
+                        continue;
+                    }
+
+                    remoteDeleteIds.Add(payload.Id);
+
+                    if (tombstoneMap.TryGetValue(payload.Id, out var matchingTombstone))
+                    {
+                        matchingTombstone.AdvanceTo(payload.DeletedAtUtc);
                     }
                     else
                     {
@@ -334,11 +399,63 @@ namespace Birds.Infrastructure.Services
                     }
                 }
 
-                await remoteContext.SaveChangesAsync(cancellationToken);
+                if (remoteDeleteIds.Count > 0)
+                {
+                    await remoteContext.Birds
+                        .Where(bird => remoteDeleteIds.Contains(bird.Id))
+                        .ExecuteDeleteAsync(cancellationToken);
+                }
+
+                if (remoteDeleteIds.Count > 0 || deletes.Count > 0)
+                    await remoteContext.SaveChangesAsync(cancellationToken);
             }
 
             await transaction.CommitAsync(cancellationToken);
         }
+
+        private static Bird RestoreBird(BirdSyncPayload payload)
+        {
+            if (!Enum.TryParse<BirdsName>(payload.Name, ignoreCase: true, out var parsedName))
+                throw new InvalidOperationException($"Unknown bird species '{payload.Name}' in sync payload.");
+
+            return Bird.Restore(
+                payload.Id,
+                parsedName,
+                payload.Description,
+                payload.Arrival,
+                payload.Departure,
+                payload.IsAlive,
+                payload.CreatedAt,
+                payload.UpdatedAt);
+        }
+
+        private static Bird RestoreBird(Bird bird)
+            => Bird.Restore(
+                bird.Id,
+                bird.Name,
+                bird.Description,
+                bird.Arrival,
+                bird.Departure,
+                bird.IsAlive,
+                bird.CreatedAt,
+                bird.UpdatedAt);
+
+        private static DateTime GetSyncStamp(Bird bird)
+            => NormalizeComparisonStamp(bird.UpdatedAt ?? bird.CreatedAt);
+
+        private static DateTime GetSyncStamp(BirdSyncPayload payload)
+            => NormalizeComparisonStamp(payload.UpdatedAt ?? payload.CreatedAt);
+
+        private static int CompareStamps(DateTime left, DateTime right)
+            => NormalizeComparisonStamp(left).CompareTo(NormalizeComparisonStamp(right));
+
+        private static DateTime NormalizeComparisonStamp(DateTime value)
+            => value.Kind switch
+            {
+                DateTimeKind.Utc => value,
+                DateTimeKind.Local => value.ToUniversalTime(),
+                _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
+            };
 
         private static async Task EnsureRemoteSyncSchemaAsync(RemoteBirdDbContext remoteContext, CancellationToken cancellationToken)
         {
