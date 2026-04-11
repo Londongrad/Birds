@@ -16,6 +16,7 @@ using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.Services.Preferences;
 using Birds.UI.Services.Preferences.Interfaces;
+using Birds.UI.Services.Shell.Interfaces;
 using Birds.UI.Services.Sync;
 using Birds.UI.Services.Theming;
 using Birds.UI.Services.Theming.Interfaces;
@@ -38,6 +39,7 @@ public partial class SettingsViewModel : ObservableObject
     private readonly IMediator _mediator;
     private readonly INotificationService _notificationService;
     private readonly IAppPreferencesService _preferences;
+    private readonly IPathNavigationService _pathNavigationService;
     private readonly IRemoteSyncController _remoteSyncController;
     private readonly IRemoteSyncStatusSource _remoteSyncStatus;
     private readonly IThemeService _themeService;
@@ -129,6 +131,7 @@ public partial class SettingsViewModel : ObservableObject
         IAutoExportCoordinator autoExportCoordinator,
         IImportService importService,
         IDataFileDialogService dataFileDialogService,
+        IPathNavigationService pathNavigationService,
         INotificationService notificationService,
         IMediator mediator,
         IDatabaseMaintenanceService databaseMaintenanceService,
@@ -144,6 +147,7 @@ public partial class SettingsViewModel : ObservableObject
         _autoExportCoordinator = autoExportCoordinator;
         _importService = importService;
         _dataFileDialogService = dataFileDialogService;
+        _pathNavigationService = pathNavigationService;
         _notificationService = notificationService;
         _mediator = mediator;
         _databaseMaintenanceService = databaseMaintenanceService;
@@ -305,6 +309,19 @@ public partial class SettingsViewModel : ObservableObject
 
         _preferences.CustomExportPath = Path.GetFullPath(selectedPath);
         OnPropertyChanged(nameof(ExportPathHint));
+    }
+
+    [RelayCommand(CanExecute = nameof(CanTransferData))]
+    private void OpenExportFolder()
+    {
+        var exportDirectory = Path.GetDirectoryName(ResolveExportPath());
+        if (string.IsNullOrWhiteSpace(exportDirectory))
+            exportDirectory = Environment.CurrentDirectory;
+
+        if (_pathNavigationService.OpenDirectory(exportDirectory))
+            return;
+
+        _notificationService.ShowErrorLocalized("Error.CannotOpenExportFolder");
     }
 
     [RelayCommand(CanExecute = nameof(CanTransferData))]

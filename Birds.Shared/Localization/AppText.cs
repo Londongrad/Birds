@@ -139,6 +139,7 @@ public static class AppText
             ["Settings.Data.Description"] =
                 "Вручную экспортируйте текущий снимок или импортируйте JSON-файл, созданный приложением.",
             ["Settings.ExportPathLabel"] = "Путь экспорта",
+            ["Settings.ExportFolderButton"] = "Открыть папку",
             ["Settings.ExportPathButton"] = "Изменить путь",
             ["Settings.ExportLabel"] = "Экспорт данных",
             ["Settings.ExportButton"] = "Экспортировать",
@@ -335,6 +336,7 @@ public static class AppText
             ["Error.InvalidImportedBirdName"] = "Импорт прерван: неизвестное имя птицы '{0}'.",
             ["Error.ImportFailed"] = "Не удалось импортировать данные о птицах.",
             ["Error.ExportFailed"] = "Не удалось экспортировать данные о птицах.",
+            ["Error.CannotOpenExportFolder"] = "Не удалось открыть папку экспорта.",
             ["Error.CannotClearBirdRecords"] = "Не удалось очистить архив птиц.",
             ["Error.CannotResetLocalDatabase"] = "Не удалось сбросить локальную базу данных.",
             ["Error.CannotRedownloadRemoteSnapshot"] = "Не удалось восстановить локальный снимок из удалённого backend.",
@@ -498,6 +500,7 @@ public static class AppText
             ["Settings.Data.Description"] =
                 "Export the current snapshot manually or import a JSON file produced by the application.",
             ["Settings.ExportPathLabel"] = "Export location",
+            ["Settings.ExportFolderButton"] = "Open folder",
             ["Settings.ExportPathButton"] = "Change path",
             ["Settings.ExportLabel"] = "Export data",
             ["Settings.ExportButton"] = "Export",
@@ -696,6 +699,7 @@ public static class AppText
             ["Error.InvalidImportedBirdName"] = "Import aborted: unknown bird name '{0}'.",
             ["Error.ImportFailed"] = "Unable to import bird data.",
             ["Error.ExportFailed"] = "Unable to export bird data.",
+            ["Error.CannotOpenExportFolder"] = "Unable to open the export folder.",
             ["Error.CannotClearBirdRecords"] = "Unable to clear bird records.",
             ["Error.CannotResetLocalDatabase"] = "Unable to reset the local database.",
             ["Error.CannotRedownloadRemoteSnapshot"] =

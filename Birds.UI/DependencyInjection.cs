@@ -15,6 +15,8 @@ using Birds.UI.Services.Notification;
 using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.Services.Preferences;
 using Birds.UI.Services.Preferences.Interfaces;
+using Birds.UI.Services.Shell;
+using Birds.UI.Services.Shell.Interfaces;
 using Birds.UI.Services.Stores.BirdStore;
 using Birds.UI.Services.Sync;
 using Birds.UI.Services.Theming;
@@ -55,6 +57,7 @@ public static class DependencyInjection
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<IDataFileDialogService, DataFileDialogService>();
         services.AddSingleton<IImportService, JsonImportService>();
+        services.AddSingleton<IPathNavigationService, PathNavigationService>();
 
         // Export Services
         services.AddSingleton<IExportService, JsonExportService>();

@@ -17,6 +17,7 @@ using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.Services.Preferences;
 using Birds.UI.Services.Preferences.Interfaces;
+using Birds.UI.Services.Shell.Interfaces;
 using Birds.UI.Services.Stores.BirdStore;
 using Birds.UI.Services.Theming;
 using Birds.UI.Services.Theming.Interfaces;
@@ -40,6 +41,7 @@ public class SettingsViewModelTests
     private readonly Mock<IMediator> _mediator = new();
     private readonly Mock<INotificationService> _notificationService = new();
     private readonly TestPreferencesService _preferences = new();
+    private readonly Mock<IPathNavigationService> _pathNavigationService = new();
     private readonly Mock<IRemoteSyncController> _remoteSyncController = new();
     private readonly TestRemoteSyncStatusSource _remoteSyncStatus = new();
     private readonly BirdStore _store = new();
@@ -341,6 +343,32 @@ public class SettingsViewModelTests
     }
 
     [Fact]
+    public void OpenExportFolderCommand_Should_Open_Directory_For_Current_Export_Path()
+    {
+        _preferences.CustomExportPath = "C:\\exports\\selected-birds.json";
+
+        var sut = CreateSut();
+
+        sut.OpenExportFolderCommand.Execute(null);
+
+        _pathNavigationService.Verify(x => x.OpenDirectory("C:\\exports"), Times.Once);
+    }
+
+    [Fact]
+    public void OpenExportFolderCommand_Should_ShowError_When_OpenFails()
+    {
+        _pathNavigationService.Setup(x => x.OpenDirectory(It.IsAny<string>())).Returns(false);
+
+        var sut = CreateSut();
+
+        sut.OpenExportFolderCommand.Execute(null);
+
+        _notificationService.Verify(
+            x => x.ShowErrorLocalized("Error.CannotOpenExportFolder", It.IsAny<object[]>()),
+            Times.Once);
+    }
+
+    [Fact]
     public async Task ImportDataCommand_Should_ApplyImportedSnapshot_And_ShowSuccess()
     {
         var importedBird =
@@ -464,6 +492,7 @@ public class SettingsViewModelTests
             _autoExportCoordinator.Object,
             _importService.Object,
             _dataFileDialogService.Object,
+            _pathNavigationService.Object,
             _notificationService.Object,
             _mediator.Object,
             _databaseMaintenanceService.Object,

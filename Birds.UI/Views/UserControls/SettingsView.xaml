@@ -871,13 +871,26 @@
                                             TextWrapping="Wrap" />
                                     </StackPanel>
 
-                                    <Button
+                                    <StackPanel
                                         Grid.Column="1"
-                                        Command="{Binding ChooseExportPathCommand}"
-                                        Style="{StaticResource DataActionButtonStyle}"
+                                        Orientation="Horizontal"
+                                        HorizontalAlignment="Right"
                                         VerticalAlignment="Center">
-                                        <TextBlock Text="{loc:Loc Key=Settings.ExportPathButton}" />
-                                    </Button>
+                                        <Button
+                                            Command="{Binding OpenExportFolderCommand}"
+                                            Style="{StaticResource DataActionButtonStyle}"
+                                            VerticalAlignment="Center">
+                                            <TextBlock Text="{loc:Loc Key=Settings.ExportFolderButton}" />
+                                        </Button>
+
+                                        <Button
+                                            Margin="12,0,0,0"
+                                            Command="{Binding ChooseExportPathCommand}"
+                                            Style="{StaticResource DataActionButtonStyle}"
+                                            VerticalAlignment="Center">
+                                            <TextBlock Text="{loc:Loc Key=Settings.ExportPathButton}" />
+                                        </Button>
+                                    </StackPanel>
                                 </Grid>
                             </Border>
 
