@@ -1,6 +1,7 @@
 using Birds.Domain.Entities;
 using Birds.Domain.Enums;
 using Birds.Infrastructure.Persistence;
+using Birds.Infrastructure.Persistence.Models;
 using Birds.Infrastructure.Repositories;
 using Birds.Infrastructure.Services;
 using FluentAssertions;
@@ -43,7 +44,7 @@ namespace Birds.Tests.Infrastructure
             var result = await sut.SyncPendingAsync(CancellationToken.None);
 
             result.Status.Should().Be(RemoteSyncRunStatus.Synced);
-            result.ProcessedCount.Should().Be(1);
+            result.ProcessedCount.Should().Be(2);
 
             await using var remoteContext = _remoteDb.CreateContext();
             var remoteBird = await remoteContext.Birds.SingleAsync();
@@ -85,10 +86,12 @@ namespace Birds.Tests.Infrastructure
             var result = await sut.SyncPendingAsync(CancellationToken.None);
 
             result.Status.Should().Be(RemoteSyncRunStatus.Synced);
-            result.ProcessedCount.Should().Be(1);
+            result.ProcessedCount.Should().Be(2);
 
             await using var remoteVerifyContext = _remoteDb.CreateContext();
             (await remoteVerifyContext.Birds.CountAsync()).Should().Be(0);
+            var tombstone = await remoteVerifyContext.BirdTombstones.SingleAsync();
+            tombstone.BirdId.Should().Be(bird.Id);
 
             await using var localContext = _localDb.CreateContext();
             (await localContext.SyncOperations.CountAsync()).Should().Be(0);
@@ -178,6 +181,38 @@ namespace Birds.Tests.Infrastructure
             var localBird = await localContext.Birds.SingleAsync(bird => bird.Id == birdId);
             localBird.Description.Should().Be("after pull");
             localBird.UpdatedAt.Should().Be(updatedRemoteBird.UpdatedAt);
+        }
+
+        [Fact]
+        public async Task SyncPendingAsync_WhenRemoteDeletionTombstoneExists_Should_DeleteLocalBird_And_AdvanceDeleteCursor()
+        {
+            var repository = new BirdRepository(_localDb.CreateFactory());
+            var localBird = Bird.Create(
+                Enum.GetValues<BirdsName>()[4],
+                "delete locally",
+                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7)));
+            await repository.AddAsync(localBird);
+
+            var sut = CreateSut(_remoteDb.CreateFactory());
+            await sut.SyncPendingAsync(CancellationToken.None);
+
+            var deleteStamp = DateTime.UtcNow;
+            await using (var remoteContext = _remoteDb.CreateContext())
+            {
+                remoteContext.Birds.RemoveRange(remoteContext.Birds.Where(bird => bird.Id == localBird.Id));
+                await remoteContext.BirdTombstones.AddAsync(RemoteBirdTombstone.Create(localBird.Id, deleteStamp));
+                await remoteContext.SaveChangesAsync();
+            }
+
+            var result = await sut.SyncPendingAsync(CancellationToken.None);
+
+            result.Status.Should().Be(RemoteSyncRunStatus.Synced);
+            result.ProcessedCount.Should().Be(1);
+
+            await using var localContext = _localDb.CreateContext();
+            (await localContext.Birds.CountAsync(bird => bird.Id == localBird.Id)).Should().Be(0);
+            var cursor = await localContext.RemoteSyncCursors.SingleAsync(c => c.CursorKey == "Birds.Deletes.Pull");
+            cursor.LastSyncedAtUtc.Should().Be(deleteStamp);
         }
 
         [Fact]

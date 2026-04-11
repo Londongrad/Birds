@@ -17,6 +17,7 @@ namespace Birds.Infrastructure.Services
         private const int PushBatchSize = 128;
         private const int PullBatchSize = 128;
         private const string BirdsPullCursorKey = "Birds.Pull";
+        private const string BirdDeletesPullCursorKey = "Birds.Deletes.Pull";
 
         private readonly IDbContextFactory<BirdDbContext> _localContextFactory = localContextFactory;
         private readonly IDbContextFactory<RemoteBirdDbContext> _remoteContextFactory = remoteContextFactory;
@@ -47,6 +48,7 @@ namespace Birds.Infrastructure.Services
                 }
 
                 var processedCount = 0;
+                await EnsureRemoteSyncSchemaAsync(remoteContext, cancellationToken);
 
                 if (pendingOperations.Count > 0)
                 {
@@ -67,6 +69,7 @@ namespace Birds.Infrastructure.Services
                 if (!hasPendingLocalOperations)
                 {
                     processedCount += await PullRemoteBatchAsync(localContext, remoteContext, cancellationToken);
+                    processedCount += await PullRemoteDeletesAsync(localContext, remoteContext, cancellationToken);
                 }
 
                 return processedCount > 0
@@ -167,6 +170,71 @@ namespace Birds.Infrastructure.Services
             return remoteChanges.Count;
         }
 
+        private async Task<int> PullRemoteDeletesAsync(BirdDbContext localContext,
+                                                       RemoteBirdDbContext remoteContext,
+                                                       CancellationToken cancellationToken)
+        {
+            var cursor = await localContext.RemoteSyncCursors
+                .SingleOrDefaultAsync(syncCursor => syncCursor.CursorKey == BirdDeletesPullCursorKey, cancellationToken);
+            var watermarkUtc = cursor?.LastSyncedAtUtc;
+
+            var remoteDeletes = await remoteContext.BirdTombstones
+                .AsNoTracking()
+                .Where(tombstone => watermarkUtc == null || tombstone.DeletedAtUtc > watermarkUtc.Value)
+                .OrderBy(tombstone => tombstone.DeletedAtUtc)
+                .ThenBy(tombstone => tombstone.BirdId)
+                .Take(PullBatchSize)
+                .ToListAsync(cancellationToken);
+
+            if (remoteDeletes.Count == 0)
+                return 0;
+
+            var ids = remoteDeletes.Select(static tombstone => tombstone.BirdId).ToArray();
+            var localBirds = await localContext.Birds
+                .Where(bird => ids.Contains(bird.Id))
+                .ToListAsync(cancellationToken);
+            var localBirdMap = localBirds.ToDictionary(bird => bird.Id);
+            var remoteCurrentBirds = await remoteContext.Birds
+                .AsNoTracking()
+                .Where(bird => ids.Contains(bird.Id))
+                .Select(bird => new
+                {
+                    bird.Id,
+                    SyncStamp = bird.UpdatedAt ?? bird.CreatedAt
+                })
+                .ToDictionaryAsync(bird => bird.Id, bird => bird.SyncStamp, cancellationToken);
+
+            foreach (var tombstone in remoteDeletes)
+            {
+                if (!localBirdMap.TryGetValue(tombstone.BirdId, out var localBird))
+                    continue;
+
+                if (remoteCurrentBirds.TryGetValue(tombstone.BirdId, out var remoteStamp) &&
+                    remoteStamp > tombstone.DeletedAtUtc)
+                {
+                    continue;
+                }
+
+                if (localContext.Entry(localBird).State != EntityState.Deleted)
+                    localContext.Birds.Remove(localBird);
+            }
+
+            var latestDeleteStamp = remoteDeletes[^1].DeletedAtUtc;
+            if (cursor is null)
+            {
+                cursor = RemoteSyncCursor.Create(BirdDeletesPullCursorKey, latestDeleteStamp);
+                await localContext.RemoteSyncCursors.AddAsync(cursor, cancellationToken);
+            }
+            else
+            {
+                cursor.AdvanceTo(latestDeleteStamp);
+            }
+
+            await localContext.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation(LogMessages.RemotePullProcessed, remoteDeletes.Count);
+            return remoteDeletes.Count;
+        }
+
         private static async Task ApplyPushBatchAsync(RemoteBirdDbContext remoteContext,
                                                       IReadOnlyCollection<SyncOperation> pendingOperations,
                                                       CancellationToken cancellationToken)
@@ -226,6 +294,10 @@ namespace Birds.Infrastructure.Services
                     remoteContext.Birds.UpdateRange(birdsToUpdate);
 
                 await remoteContext.SaveChangesAsync(cancellationToken);
+
+                await remoteContext.BirdTombstones
+                    .Where(tombstone => ids.Contains(tombstone.BirdId))
+                    .ExecuteDeleteAsync(cancellationToken);
             }
 
             if (deletes.Count > 0)
@@ -234,9 +306,60 @@ namespace Birds.Infrastructure.Services
                 await remoteContext.Birds
                     .Where(bird => deleteIds.Contains(bird.Id))
                     .ExecuteDeleteAsync(cancellationToken);
+
+                var existingTombstones = await remoteContext.BirdTombstones
+                    .Where(tombstone => deleteIds.Contains(tombstone.BirdId))
+                    .ToListAsync(cancellationToken);
+
+                var tombstoneMap = existingTombstones.ToDictionary(tombstone => tombstone.BirdId);
+
+                foreach (var payload in deletes)
+                {
+                    if (tombstoneMap.TryGetValue(payload.Id, out var existingTombstone))
+                    {
+                        existingTombstone.AdvanceTo(payload.DeletedAtUtc);
+                    }
+                    else
+                    {
+                        await remoteContext.BirdTombstones.AddAsync(
+                            RemoteBirdTombstone.Create(payload.Id, payload.DeletedAtUtc),
+                            cancellationToken);
+                    }
+                }
+
+                await remoteContext.SaveChangesAsync(cancellationToken);
             }
 
             await transaction.CommitAsync(cancellationToken);
+        }
+
+        private static async Task EnsureRemoteSyncSchemaAsync(RemoteBirdDbContext remoteContext, CancellationToken cancellationToken)
+        {
+            var providerName = remoteContext.Database.ProviderName ?? string.Empty;
+            var createTableSql = providerName.Contains("Npgsql", StringComparison.OrdinalIgnoreCase)
+                ? """
+                  CREATE TABLE IF NOT EXISTS "BirdTombstones" (
+                      "BirdId" uuid NOT NULL CONSTRAINT "PK_BirdTombstones" PRIMARY KEY,
+                      "DeletedAtUtc" timestamp without time zone NOT NULL
+                  );
+                  """
+                : """
+                  CREATE TABLE IF NOT EXISTS "BirdTombstones" (
+                      "BirdId" TEXT NOT NULL CONSTRAINT "PK_BirdTombstones" PRIMARY KEY,
+                      "DeletedAtUtc" TEXT NOT NULL
+                  );
+                  """;
+
+            await remoteContext.Database.ExecuteSqlRawAsync(
+                createTableSql,
+                cancellationToken);
+
+            await remoteContext.Database.ExecuteSqlRawAsync(
+                """
+                CREATE INDEX IF NOT EXISTS "IX_BirdTombstones_DeletedAtUtc"
+                ON "BirdTombstones" ("DeletedAtUtc");
+                """,
+                cancellationToken);
         }
 
         private static void MarkBatchFailed(IEnumerable<SyncOperation> operations, string errorMessage, DateTime attemptUtc)
