@@ -7,6 +7,7 @@ using Birds.UI.ViewModels;
 using FluentAssertions;
 using Moq;
 using System.Globalization;
+using System.Linq;
 
 namespace Birds.Tests.UI.ViewModels
 {
@@ -82,6 +83,40 @@ namespace Birds.Tests.UI.ViewModels
             sut.TopDay.Should().NotContain(" \u2014 ");
             sut.TopMonth.Should().NotContain(" \u2014 ");
             sut.TopWeek.Should().NotContain(" \u2014 ");
+        }
+
+        [Fact]
+        public void Distribution_Should_Build_Top_Species_And_Year_Bars()
+        {
+            var sut = CreateViewModel(
+                AppLanguages.English,
+                new BirdDTO(Guid.NewGuid(), "Sparrow", null, new DateOnly(2026, 1, 10), null, true, null, null),
+                new BirdDTO(Guid.NewGuid(), "Sparrow", null, new DateOnly(2026, 1, 11), null, true, null, null),
+                new BirdDTO(Guid.NewGuid(), "Goldfinch", null, new DateOnly(2025, 2, 10), null, true, null, null),
+                new BirdDTO(Guid.NewGuid(), "Amadin", null, new DateOnly(2025, 3, 10), null, true, null, null),
+                new BirdDTO(Guid.NewGuid(), "Great tit", null, new DateOnly(2024, 4, 10), null, true, null, null),
+                new BirdDTO(Guid.NewGuid(), "Nuthatch", null, new DateOnly(2024, 5, 10), null, true, null, null),
+                new BirdDTO(Guid.NewGuid(), "Chickadee", null, new DateOnly(2024, 6, 10), null, true, null, null),
+                new BirdDTO(Guid.NewGuid(), "Hawfinch", null, new DateOnly(2024, 7, 10), null, true, null, null));
+
+            sut.TopSpeciesStats.Should().HaveCount(7);
+            sut.TopSpeciesStats.First().Count.Should().Be(2);
+            sut.TopSpeciesStats.First().Ratio.Should().Be(1d);
+            sut.YearDistributionStats.Should().Contain(x => x.Label == "2026" && x.Count == 2);
+        }
+
+        [Fact]
+        public void MonthOfYear_Distribution_Should_Expose_All_Twelve_Months()
+        {
+            var sut = CreateViewModel(
+                AppLanguages.Russian,
+                new BirdDTO(Guid.NewGuid(), "Sparrow", null, new DateOnly(2026, 1, 10), null, true, null, null),
+                new BirdDTO(Guid.NewGuid(), "Goldfinch", null, new DateOnly(2026, 3, 12), null, true, null, null));
+
+            sut.MonthOfYearStats.Should().HaveCount(12);
+            sut.MonthOfYearStats.ElementAt(0).Count.Should().Be(1);
+            sut.MonthOfYearStats.ElementAt(1).Count.Should().Be(0);
+            sut.MonthOfYearStats.ElementAt(2).Count.Should().Be(1);
         }
 
         private static BirdStatisticsViewModel CreateViewModel(string language, params BirdDTO[] birds)

@@ -15,6 +15,7 @@ using CommunityToolkit.Mvvm.Input;
 namespace Birds.UI.ViewModels;
 
 public record StatItem(string Label, int Count);
+public record StatBarItem(string Label, int Count, double Ratio);
 
 public record YearFilterOption(int? Year, string Label);
 
@@ -65,6 +66,9 @@ public partial class BirdStatisticsViewModel : ObservableObject
     public ObservableCollection<StatItem> YearStats { get; } = new();
     public ObservableCollection<StatItem> MonthStats { get; } = new();
     public ObservableCollection<StatItem> LongestKeepingStats { get; } = new();
+    public ObservableCollection<StatBarItem> TopSpeciesStats { get; } = new();
+    public ObservableCollection<StatBarItem> YearDistributionStats { get; } = new();
+    public ObservableCollection<StatBarItem> MonthOfYearStats { get; } = new();
 
     public bool IsLoading => _birdStore.LoadState == LoadState.Loading;
     public bool HasBirds => TotalBirds > 0;
@@ -148,19 +152,33 @@ public partial class BirdStatisticsViewModel : ObservableObject
 
     private void UpdateSpeciesStats(IList<BirdDTO> filteredBirds)
     {
-        var byName = filteredBirds
+        var orderedItems = filteredBirds
             .GroupBy(b => BirdEnumHelper.ParseBirdName(b.Name)?.ToDisplayName() ?? b.Name);
 
         SpeciesStats.Clear();
-        foreach (var group in byName.OrderByDescending(g => g.Count()).ThenBy(g => g.Key))
-            SpeciesStats.Add(new StatItem(group.Key, group.Count()));
+        foreach (var item in orderedItems
+                     .Select(group => new StatItem(group.Key, group.Count()))
+                     .OrderByDescending(item => item.Count)
+                     .ThenBy(item => item.Label))
+        {
+            SpeciesStats.Add(item);
+        }
+
+        ReplaceBarItems(TopSpeciesStats, SpeciesStats);
     }
 
     private void UpdateYearStats()
     {
         YearStats.Clear();
-        foreach (var g in Birds.GroupBy(b => b.Arrival.Year).OrderByDescending(g => g.Key))
-            YearStats.Add(new StatItem(g.Key.ToString(), g.Count()));
+        foreach (var item in Birds
+                     .GroupBy(b => b.Arrival.Year)
+                     .OrderByDescending(g => g.Key)
+                     .Select(g => new StatItem(g.Key.ToString(), g.Count())))
+        {
+            YearStats.Add(item);
+        }
+
+        ReplaceBarItems(YearDistributionStats, YearStats);
     }
 
     private void UpdateMonthStats(IList<BirdDTO> filteredBirds)
@@ -175,6 +193,16 @@ public partial class BirdStatisticsViewModel : ObservableObject
             var label = _localization.FormatDate(firstOfMonth, DateDisplayStyle.MonthYearShort);
             MonthStats.Add(new StatItem(label, g.Count()));
         }
+
+        var byMonthOfYear = filteredBirds
+            .GroupBy(b => b.Arrival.Month)
+            .ToDictionary(g => g.Key, g => g.Count());
+
+        var monthOfYearItems = Enumerable.Range(1, 12)
+            .Select(month => new StatItem(GetMonthLabel(month), byMonthOfYear.GetValueOrDefault(month)))
+            .ToList();
+
+        ReplaceBarItems(MonthOfYearStats, monthOfYearItems);
     }
 
     private void UpdateAvailableYears()
@@ -333,7 +361,29 @@ public partial class BirdStatisticsViewModel : ObservableObject
         var start = DateOnly.FromDateTime(ISOWeek.ToDateTime(isoYear, isoWeek, DayOfWeek.Monday));
         var end = DateOnly.FromDateTime(ISOWeek.ToDateTime(isoYear, isoWeek, DayOfWeek.Sunday));
         return
-            $"{_localization.FormatDate(start, DateDisplayStyle.Medium)}\u2013{_localization.FormatDate(end, DateDisplayStyle.Medium)}";
+            $"{_localization.FormatDate(start, DateDisplayStyle.Medium)} \u2013 {_localization.FormatDate(end, DateDisplayStyle.Medium)}";
+    }
+
+    private void ReplaceBarItems(ObservableCollection<StatBarItem> target, IEnumerable<StatItem> items)
+    {
+        target.Clear();
+
+        var itemList = items.ToList();
+        var maxCount = itemList.Count > 0 ? itemList.Max(x => x.Count) : 0;
+
+        foreach (var item in itemList)
+        {
+            var ratio = maxCount <= 0 ? 0d : (double)item.Count / maxCount;
+            target.Add(new StatBarItem(item.Label, item.Count, ratio));
+        }
+    }
+
+    private string GetMonthLabel(int month)
+    {
+        var label = _localization.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(month);
+        return string.IsNullOrWhiteSpace(label)
+            ? month.ToString(CultureInfo.InvariantCulture)
+            : label;
     }
 
     private void RebuildYearFilters()

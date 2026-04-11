@@ -49,6 +49,12 @@
             <Setter Property="CornerRadius" Value="16" />
         </Style>
 
+        <Style x:Key="StatsDistributionCardStyle" BasedOn="{StaticResource StatsItemCardStyle}" TargetType="Border">
+            <Setter Property="Padding" Value="18" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="CornerRadius" Value="18" />
+        </Style>
+
         <Style x:Key="StatsCountBadgeStyle" TargetType="Border">
             <Setter Property="Padding" Value="10,4" />
             <Setter Property="Background" Value="{DynamicResource ThemeFieldBackgroundBrush}" />
@@ -58,11 +64,95 @@
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 
+        <DataTemplate x:Key="StatsDistributionBarTemplate">
+            <Border Margin="0,0,0,12" Padding="0" Background="Transparent">
+                <StackPanel MaxWidth="320" HorizontalAlignment="Center">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            FontSize="15"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource ThemePrimaryTextBrush}"
+                            Text="{Binding Label}"
+                            TextWrapping="Wrap" />
+                        <Border
+                            Grid.Column="1"
+                            Margin="14,0,0,0"
+                            Style="{StaticResource StatsCountBadgeStyle}">
+                            <TextBlock
+                                FontSize="14"
+                                FontWeight="Bold"
+                                Foreground="{DynamicResource ThemePrimaryTextBrush}"
+                                Text="{Binding Count}" />
+                        </Border>
+                    </Grid>
+                    <Grid Margin="0,10,0,0"
+                          Width="160"
+                          Height="4"
+                          HorizontalAlignment="Center">
+                        <Border
+                            Background="{DynamicResource ThemeFieldBackgroundBrush}"
+                            CornerRadius="999"
+                            Opacity="0.8" />
+                        <Border
+                            Background="{DynamicResource ThemeCardBorderBrush}"
+                            CornerRadius="999"
+                            Opacity="0.85"
+                            RenderTransformOrigin="0,0.5">
+                            <Border.RenderTransform>
+                                <ScaleTransform ScaleX="{Binding Ratio}" />
+                            </Border.RenderTransform>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="StatsMonthDistributionTemplate">
+            <Border
+                Margin="0"
+                Padding="16,14"
+                Background="{DynamicResource ThemeInsetBackgroundBrush}"
+                BorderBrush="{DynamicResource ThemeCardBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="16">
+                <StackPanel>
+                    <TextBlock
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource ThemeMutedTextBrush}"
+                        Text="{Binding Label}" />
+                    <TextBlock
+                        Margin="0,10,0,0"
+                        FontSize="24"
+                        FontWeight="Bold"
+                        Foreground="{DynamicResource ThemePrimaryTextBrush}"
+                        Text="{Binding Count}" />
+                    <Grid Margin="0,12,0,0" Height="5">
+                        <Border
+                            Background="{DynamicResource ThemeFieldBackgroundBrush}"
+                            CornerRadius="999" />
+                        <Border
+                            Background="{DynamicResource ThemeStatsSuccessBrush}"
+                            CornerRadius="999"
+                            RenderTransformOrigin="0,0.5">
+                            <Border.RenderTransform>
+                                <ScaleTransform ScaleX="{Binding Ratio}" />
+                            </Border.RenderTransform>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
         <Style x:Key="StatsFilterComboBoxStyle" BasedOn="{StaticResource ComboBox}" TargetType="ComboBox">
-            <Setter Property="Width" Value="212" />
-            <Setter Property="MinWidth" Value="212" />
-            <Setter Property="FontSize" Value="15" />
-            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="Width" Value="186" />
+            <Setter Property="MinWidth" Value="186" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Padding" Value="8,0" />
         </Style>
 
         <Style x:Key="StatsTabItemStyle" TargetType="TabItem">
@@ -132,7 +222,7 @@
                                 Grid.Row="0"
                                 ClipToBounds="False"
                                 HorizontalAlignment="Center"
-                                Margin="0,0,0,12"
+                                Margin="0,0,0,8"
                                 Background="Transparent"
                                 IsItemsHost="True"
                                 KeyboardNavigation.TabIndex="1"
@@ -150,7 +240,11 @@
         </Style>
 
         <DataTemplate x:Key="CountStatTemplate">
-            <Border Style="{StaticResource StatsItemCardStyle}">
+            <Border
+                MinHeight="72"
+                Padding="16,12"
+                HorizontalAlignment="Stretch"
+                Style="{StaticResource StatsItemCardStyle}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -212,16 +306,16 @@
             <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
                 <StackPanel MaxWidth="1120">
                     <Border
-                        Margin="0,0,0,18"
-                        Padding="12,10"
+                        Margin="0,0,0,10"
+                        Padding="10,8"
                         HorizontalAlignment="Center"
-                        Background="{DynamicResource ThemeInsetBackgroundBrush}"
+                        Background="{DynamicResource ThemeCardBackgroundBrush}"
                         BorderBrush="{DynamicResource ThemeCardBorderBrush}"
                         BorderThickness="1"
-                        CornerRadius="18">
+                        CornerRadius="16">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock
-                                Margin="0,0,12,0"
+                                Margin="0,0,10,0"
                                 VerticalAlignment="Center"
                                 FontSize="12"
                                 FontWeight="SemiBold"
@@ -235,7 +329,7 @@
                         </StackPanel>
                     </Border>
 
-                    <Border Margin="0,0,0,20">
+                    <Border Margin="0,0,0,12">
                         <Border.Style>
                             <Style BasedOn="{StaticResource StatsSectionCardStyle}" TargetType="Border">
                                 <Setter Property="Visibility" Value="Visible" />
@@ -255,14 +349,18 @@
                             <TabItem Header="{loc:Loc Key=Statistics.Tab.Overview}">
                                 <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                                               VerticalScrollBarVisibility="Visible">
-                                    <StackPanel Margin="0,10,0,0">
+                                    <StackPanel Margin="0,6,0,0">
                                         <TextBlock
-                                            FontSize="14"
-                                            Foreground="{DynamicResource ThemeSecondaryTextBrush}"
+                                            Margin="0,0,0,12"
+                                            MaxWidth="760"
+                                            HorizontalAlignment="Center"
+                                            FontSize="13"
+                                            Foreground="{DynamicResource ThemeMutedTextBrush}"
+                                            TextAlignment="Center"
                                             Text="{Binding FilterSummary}"
                                             TextWrapping="Wrap" />
 
-                                        <Grid Margin="0,14,0,18">
+                                        <Grid Margin="0,0,0,16">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="*" />
@@ -324,16 +422,21 @@
 
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="1.2*" />
-                                                <ColumnDefinition Width="0.8*" />
+                                                <ColumnDefinition Width="1.16*" />
+                                                <ColumnDefinition Width="0.84*" />
                                             </Grid.ColumnDefinitions>
 
                                             <Border Grid.Column="0" Margin="0,0,18,0"
                                                     Style="{StaticResource StatsItemCardStyle}">
                                                 <StackPanel>
-                                                    <TextBlock Style="{StaticResource StatsSectionTitleStyle}"
+                                                    <TextBlock HorizontalAlignment="Center"
+                                                               TextAlignment="Center"
+                                                               Style="{StaticResource StatsSectionTitleStyle}"
                                                                Text="{loc:Loc Key=Statistics.Section.Highlights.Title}" />
-                                                    <TextBlock Style="{StaticResource StatsSectionDescriptionStyle}"
+                                                    <TextBlock MaxWidth="420"
+                                                               HorizontalAlignment="Center"
+                                                               TextAlignment="Center"
+                                                               Style="{StaticResource StatsSectionDescriptionStyle}"
                                                                Text="{loc:Loc Key=Statistics.Section.Highlights.Description}" />
 
                                                     <UniformGrid Margin="0,18,0,0" Columns="2">
@@ -390,16 +493,27 @@
 
                                             <Border Grid.Column="1" Style="{StaticResource StatsItemCardStyle}">
                                                 <StackPanel>
-                                                    <TextBlock Style="{StaticResource StatsSectionTitleStyle}"
+                                                    <TextBlock HorizontalAlignment="Center"
+                                                               TextAlignment="Center"
+                                                               Style="{StaticResource StatsSectionTitleStyle}"
                                                                Text="{loc:Loc Key=Statistics.Highlight.LongestBreak}" />
-                                                    <TextBlock Style="{StaticResource StatsSectionDescriptionStyle}"
+                                                    <TextBlock MaxWidth="360"
+                                                               HorizontalAlignment="Center"
+                                                               TextAlignment="Center"
+                                                               Style="{StaticResource StatsSectionDescriptionStyle}"
                                                                Text="{loc:Loc Key=Statistics.Section.OverviewBreakDescription}" />
-                                                    <Border Margin="0,18,0,0"
-                                                            Style="{StaticResource StatsItemCardStyle}">
+                                                    <Border
+                                                        Margin="0,16,0,0"
+                                                        Padding="18,16"
+                                                        Background="{DynamicResource ThemeFieldBackgroundBrush}"
+                                                        BorderBrush="{DynamicResource ThemeCardBorderBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="14">
                                                         <TextBlock
-                                                            FontSize="18"
+                                                            FontSize="16"
                                                             FontWeight="SemiBold"
                                                             Foreground="{DynamicResource ThemePrimaryTextBrush}"
+                                                            TextAlignment="Center"
                                                             Text="{Binding LongestBreak}"
                                                             TextWrapping="Wrap" />
                                                     </Border>
@@ -413,7 +527,7 @@
                             <TabItem Header="{loc:Loc Key=Statistics.Tab.Distribution}">
                                 <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                                               VerticalScrollBarVisibility="Visible">
-                                    <Grid Margin="0,10,0,0">
+                                    <Grid Margin="0,4,0,0">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
@@ -423,71 +537,102 @@
                                             <ColumnDefinition Width="0.9*" />
                                         </Grid.ColumnDefinitions>
 
-                                        <Border Grid.Row="0" Grid.Column="0" Margin="0,0,18,18"
-                                                Style="{StaticResource StatsItemCardStyle}">
-                                            <Grid>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="*" />
-                                                </Grid.RowDefinitions>
-                                                <StackPanel Margin="0,0,0,16">
-                                                    <TextBlock Style="{StaticResource StatsSectionTitleStyle}"
-                                                               Text="{loc:Loc Key=Statistics.Section.Species.Title}" />
-                                                    <TextBlock Style="{StaticResource StatsSectionDescriptionStyle}"
-                                                               Text="{loc:Loc Key=Statistics.Section.Species.Description}" />
-                                                </StackPanel>
-                                                <ScrollViewer Grid.Row="1" MaxHeight="300"
-                                                              HorizontalScrollBarVisibility="Disabled"
-                                                              VerticalScrollBarVisibility="Auto">
-                                                    <ItemsControl ItemTemplate="{StaticResource CountStatTemplate}"
-                                                                  ItemsSource="{Binding SpeciesStats}" />
-                                                </ScrollViewer>
-                                            </Grid>
+                                        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,16"
+                                                Style="{StaticResource StatsDistributionCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock HorizontalAlignment="Center"
+                                                           TextAlignment="Center"
+                                                           Style="{StaticResource StatsSectionTitleStyle}"
+                                                           Text="{loc:Loc Key=Statistics.Section.Months.Title}" />
+                                                <TextBlock MaxWidth="420"
+                                                           HorizontalAlignment="Center"
+                                                           TextAlignment="Center"
+                                                           Style="{StaticResource StatsSectionDescriptionStyle}"
+                                                           Text="{loc:Loc Key=Statistics.Section.Months.Description}" />
+                                                <ItemsControl
+                                                    AlternationCount="12"
+                                                    Margin="0,18,0,0"
+                                                    HorizontalAlignment="Center"
+                                                    ItemTemplate="{StaticResource StatsMonthDistributionTemplate}"
+                                                    ItemsSource="{Binding MonthOfYearStats}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <UniformGrid Columns="4" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemContainerStyle>
+                                                        <Style TargetType="ContentPresenter">
+                                                            <Setter Property="Margin" Value="0,0,14,14" />
+                                                            <Style.Triggers>
+                                                                <Trigger Property="ItemsControl.AlternationIndex" Value="3">
+                                                                    <Setter Property="Margin" Value="0,0,0,14" />
+                                                                </Trigger>
+                                                                <Trigger Property="ItemsControl.AlternationIndex" Value="7">
+                                                                    <Setter Property="Margin" Value="0,0,0,14" />
+                                                                </Trigger>
+                                                                <Trigger Property="ItemsControl.AlternationIndex" Value="11">
+                                                                    <Setter Property="Margin" Value="0" />
+                                                                </Trigger>
+                                                                <Trigger Property="ItemsControl.AlternationIndex" Value="8">
+                                                                    <Setter Property="Margin" Value="0,0,14,0" />
+                                                                </Trigger>
+                                                                <Trigger Property="ItemsControl.AlternationIndex" Value="9">
+                                                                    <Setter Property="Margin" Value="0,0,14,0" />
+                                                                </Trigger>
+                                                                <Trigger Property="ItemsControl.AlternationIndex" Value="10">
+                                                                    <Setter Property="Margin" Value="0,0,14,0" />
+                                                                </Trigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </ItemsControl.ItemContainerStyle>
+                                                </ItemsControl>
+                                            </StackPanel>
                                         </Border>
 
-                                        <Border Grid.Row="0" Grid.Column="1" Margin="0,0,0,18"
-                                                Style="{StaticResource StatsItemCardStyle}">
-                                            <Grid>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="*" />
-                                                </Grid.RowDefinitions>
-                                                <StackPanel Margin="0,0,0,16">
-                                                    <TextBlock Style="{StaticResource StatsSectionTitleStyle}"
-                                                               Text="{loc:Loc Key=Statistics.Section.Years.Title}" />
-                                                    <TextBlock Style="{StaticResource StatsSectionDescriptionStyle}"
-                                                               Text="{loc:Loc Key=Statistics.Section.Years.Description}" />
-                                                </StackPanel>
-                                                <ScrollViewer Grid.Row="1" MaxHeight="300"
-                                                              HorizontalScrollBarVisibility="Disabled"
-                                                              VerticalScrollBarVisibility="Auto">
-                                                    <ItemsControl ItemTemplate="{StaticResource CountStatTemplate}"
-                                                                  ItemsSource="{Binding YearStats}" />
-                                                </ScrollViewer>
-                                            </Grid>
+                                        <Border Grid.Row="1" Grid.Column="0" Margin="0,0,18,0"
+                                                VerticalAlignment="Top"
+                                                Style="{StaticResource StatsDistributionCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock HorizontalAlignment="Center"
+                                                           TextAlignment="Center"
+                                                           Style="{StaticResource StatsSectionTitleStyle}"
+                                                           Text="{loc:Loc Key=Statistics.Section.Species.Title}" />
+                                                <TextBlock MaxWidth="360"
+                                                           HorizontalAlignment="Center"
+                                                           TextAlignment="Center"
+                                                           Style="{StaticResource StatsSectionDescriptionStyle}"
+                                                           Text="{loc:Loc Key=Statistics.Section.Species.Description}" />
+                                                <ItemsControl
+                                                    Margin="0,18,0,0"
+                                                    HorizontalAlignment="Center"
+                                                    MaxWidth="340"
+                                                    ItemTemplate="{StaticResource StatsDistributionBarTemplate}"
+                                                    ItemsSource="{Binding TopSpeciesStats}" />
+                                            </StackPanel>
                                         </Border>
 
-                                        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
-                                                Style="{StaticResource StatsItemCardStyle}">
-                                            <Grid>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="*" />
-                                                </Grid.RowDefinitions>
-                                                <StackPanel Margin="0,0,0,16">
-                                                    <TextBlock Style="{StaticResource StatsSectionTitleStyle}"
-                                                               Text="{loc:Loc Key=Statistics.Section.Months.Title}" />
-                                                    <TextBlock Style="{StaticResource StatsSectionDescriptionStyle}"
-                                                               Text="{loc:Loc Key=Statistics.Section.Months.Description}" />
-                                                </StackPanel>
-                                                <ScrollViewer Grid.Row="1" MaxHeight="300"
-                                                              HorizontalScrollBarVisibility="Disabled"
-                                                              VerticalScrollBarVisibility="Auto">
-                                                    <ItemsControl ItemTemplate="{StaticResource CountStatTemplate}"
-                                                                  ItemsSource="{Binding MonthStats}" />
-                                                </ScrollViewer>
-                                            </Grid>
+                                        <Border Grid.Row="1" Grid.Column="1"
+                                                VerticalAlignment="Top"
+                                                Style="{StaticResource StatsDistributionCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock HorizontalAlignment="Center"
+                                                           TextAlignment="Center"
+                                                           Style="{StaticResource StatsSectionTitleStyle}"
+                                                           Text="{loc:Loc Key=Statistics.Section.Years.Title}" />
+                                                <TextBlock MaxWidth="320"
+                                                           HorizontalAlignment="Center"
+                                                           TextAlignment="Center"
+                                                           Style="{StaticResource StatsSectionDescriptionStyle}"
+                                                           Text="{loc:Loc Key=Statistics.Section.Years.Description}" />
+                                                <ItemsControl
+                                                    Margin="0,18,0,0"
+                                                    HorizontalAlignment="Center"
+                                                    MaxWidth="320"
+                                                    ItemTemplate="{StaticResource StatsDistributionBarTemplate}"
+                                                    ItemsSource="{Binding YearDistributionStats}" />
+                                            </StackPanel>
                                         </Border>
+
                                     </Grid>
                                 </ScrollViewer>
                             </TabItem>
@@ -495,19 +640,19 @@
                             <TabItem Header="{loc:Loc Key=Statistics.Tab.Keeping}">
                                 <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                                               VerticalScrollBarVisibility="Visible">
-                                    <Border Margin="0,10,0,0" Style="{StaticResource StatsItemCardStyle}">
+                                    <Border Margin="0,4,0,0" Style="{StaticResource StatsItemCardStyle}">
                                         <Grid>
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="*" />
                                             </Grid.RowDefinitions>
-                                            <StackPanel Margin="0,0,0,16">
+                                            <StackPanel Margin="0,0,0,12">
                                                 <TextBlock Style="{StaticResource StatsSectionTitleStyle}"
                                                            Text="{loc:Loc Key=Statistics.Section.Keeping.Title}" />
                                                 <TextBlock Style="{StaticResource StatsSectionDescriptionStyle}"
                                                            Text="{loc:Loc Key=Statistics.Section.Keeping.Description}" />
                                             </StackPanel>
-                                            <ScrollViewer Grid.Row="1" MaxHeight="380"
+                                            <ScrollViewer Grid.Row="1" MaxHeight="340"
                                                           HorizontalScrollBarVisibility="Disabled"
                                                           VerticalScrollBarVisibility="Auto">
                                                 <ItemsControl ItemTemplate="{StaticResource DurationStatTemplate}"

@@ -8,6 +8,7 @@ using FluentAssertions;
 
 namespace Birds.Tests.UI.Services;
 
+[Collection("LocalizationService serial")]
 public sealed class LocalizationDisplayTests
 {
     [Fact]
