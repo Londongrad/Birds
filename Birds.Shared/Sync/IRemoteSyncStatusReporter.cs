@@ -2,15 +2,20 @@ namespace Birds.Shared.Sync
 {
     public interface IRemoteSyncStatusReporter
     {
-        Task SetDisabledAsync(CancellationToken cancellationToken = default);
+        Task SetDisabledAsync(int pendingOperationCount, CancellationToken cancellationToken = default);
 
-        Task SetSyncingAsync(CancellationToken cancellationToken = default);
+        Task SetPausedAsync(int pendingOperationCount, CancellationToken cancellationToken = default);
+
+        Task SetSyncingAsync(int pendingOperationCount, CancellationToken cancellationToken = default);
 
         Task SetResultAsync(RemoteSyncDisplayState status,
                             int processedCount,
+                            int pendingOperationCount,
                             string? errorMessage = null,
                             CancellationToken cancellationToken = default);
 
-        Task SetLoopFailedAsync(string errorMessage, CancellationToken cancellationToken = default);
+        Task SetLoopFailedAsync(string errorMessage,
+                                int pendingOperationCount,
+                                CancellationToken cancellationToken = default);
     }
 }

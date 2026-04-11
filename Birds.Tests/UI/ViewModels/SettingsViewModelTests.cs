@@ -42,6 +42,7 @@ namespace Birds.Tests.UI.ViewModels
         private readonly Mock<IMediator> _mediator = new();
         private readonly Mock<IDatabaseMaintenanceService> _databaseMaintenanceService = new();
         private readonly TestRemoteSyncStatusSource _remoteSyncStatus = new();
+        private readonly Mock<IRemoteSyncController> _remoteSyncController = new();
         private readonly BirdStore _store = new();
         private CultureInfo _culture = CultureInfo.GetCultureInfo(AppLanguages.English);
 
@@ -64,6 +65,13 @@ namespace Birds.Tests.UI.ViewModels
             _exportPathProvider.Setup(x => x.GetLatestPath(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns("C:\\temp\\birds.json");
             _databaseMaintenanceService.SetupGet(x => x.CanResetLocalDatabase).Returns(true);
+            _remoteSyncController.SetupGet(x => x.IsConfigured).Returns(true);
+            _remoteSyncController.Setup(x => x.SyncNowAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+            _remoteSyncController.Setup(x => x.PauseAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+            _remoteSyncController.Setup(x => x.ResumeAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
         }
 
         [Fact]
@@ -132,7 +140,9 @@ namespace Birds.Tests.UI.ViewModels
             _remoteSyncStatus.SetState(
                 RemoteSyncDisplayState.Offline,
                 new DateTime(2026, 4, 8, 10, 15, 0, DateTimeKind.Utc),
-                "backend unavailable");
+                "backend unavailable",
+                lastProcessedCount: 0,
+                pendingOperationCount: 3);
 
             var sut = CreateSut();
 
@@ -140,6 +150,38 @@ namespace Birds.Tests.UI.ViewModels
             sut.RemoteSyncStatusLabel.Should().Be(AppText.Get("Settings.SyncStatus.Offline", _culture));
             sut.RemoteSyncStatusHint.Should().Contain(AppText.Get("Settings.SyncStatusHint.Offline", _culture));
             sut.RemoteSyncStatusHint.Should().Contain("backend unavailable");
+            sut.RemoteSyncPendingCountValue.Should().Be("3");
+        }
+
+        [Fact]
+        public async Task SyncNowCommand_Should_Invoke_RemoteSyncController()
+        {
+            var sut = CreateSut();
+
+            await sut.SyncNowCommand.ExecuteAsync(null);
+
+            _remoteSyncController.Verify(x => x.SyncNowAsync(It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ToggleRemoteSyncPauseCommand_Should_Pause_When_CurrentlyActive()
+        {
+            var sut = CreateSut();
+
+            await sut.ToggleRemoteSyncPauseCommand.ExecuteAsync(null);
+
+            _remoteSyncController.Verify(x => x.PauseAsync(It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ToggleRemoteSyncPauseCommand_Should_Resume_When_CurrentlyPaused()
+        {
+            _remoteSyncStatus.SetState(RemoteSyncDisplayState.Paused, pendingOperationCount: 2);
+            var sut = CreateSut();
+
+            await sut.ToggleRemoteSyncPauseCommand.ExecuteAsync(null);
+
+            _remoteSyncController.Verify(x => x.ResumeAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -319,7 +361,8 @@ namespace Birds.Tests.UI.ViewModels
                 _notificationService.Object,
                 _mediator.Object,
                 _databaseMaintenanceService.Object,
-                _remoteSyncStatus);
+                _remoteSyncStatus,
+                _remoteSyncController.Object);
 
         private sealed class TestPreferencesService : IAppPreferencesService
         {
@@ -457,16 +500,20 @@ namespace Birds.Tests.UI.ViewModels
 
             public int LastProcessedCount { get; private set; }
 
+            public int PendingOperationCount { get; private set; }
+
             public void SetState(RemoteSyncDisplayState status,
                                  DateTime? lastSuccessfulSyncAtUtc = null,
                                  string? lastErrorMessage = null,
-                                 int lastProcessedCount = 0)
+                                 int lastProcessedCount = 0,
+                                 int pendingOperationCount = 0)
             {
                 Status = status;
                 LastSuccessfulSyncAtUtc = lastSuccessfulSyncAtUtc;
                 LastAttemptAtUtc = DateTime.UtcNow;
                 LastErrorMessage = lastErrorMessage;
                 LastProcessedCount = lastProcessedCount;
+                PendingOperationCount = pendingOperationCount;
                 RaiseAll();
             }
 
@@ -477,6 +524,7 @@ namespace Birds.Tests.UI.ViewModels
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LastAttemptAtUtc)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LastErrorMessage)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LastProcessedCount)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PendingOperationCount)));
             }
         }
     }

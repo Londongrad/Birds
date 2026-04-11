@@ -40,6 +40,7 @@ namespace Birds.UI.ViewModels
         private readonly IMediator _mediator;
         private readonly IDatabaseMaintenanceService _databaseMaintenanceService;
         private readonly IRemoteSyncStatusSource _remoteSyncStatus;
+        private readonly IRemoteSyncController _remoteSyncController;
         private bool _isSynchronizingSelections;
 
         private ReadOnlyCollection<LanguageOption> _availableLanguages =
@@ -66,7 +67,8 @@ namespace Birds.UI.ViewModels
                                  INotificationService notificationService,
                                  IMediator mediator,
                                  IDatabaseMaintenanceService databaseMaintenanceService,
-                                 IRemoteSyncStatusSource remoteSyncStatus)
+                                 IRemoteSyncStatusSource remoteSyncStatus,
+                                 IRemoteSyncController remoteSyncController)
         {
             _preferences = preferences;
             _themeService = themeService;
@@ -81,6 +83,7 @@ namespace Birds.UI.ViewModels
             _mediator = mediator;
             _databaseMaintenanceService = databaseMaintenanceService;
             _remoteSyncStatus = remoteSyncStatus;
+            _remoteSyncController = remoteSyncController;
 
             BuildAvailableLanguages();
             BuildAvailableThemes();
@@ -154,7 +157,14 @@ namespace Birds.UI.ViewModels
         [NotifyCanExecuteChangedFor(nameof(BeginResetLocalDatabaseCommand))]
         [NotifyCanExecuteChangedFor(nameof(ConfirmClearBirdRecordsCommand))]
         [NotifyCanExecuteChangedFor(nameof(ConfirmResetLocalDatabaseCommand))]
+        [NotifyCanExecuteChangedFor(nameof(SyncNowCommand))]
+        [NotifyCanExecuteChangedFor(nameof(ToggleRemoteSyncPauseCommand))]
         private bool isDangerZoneBusy;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(SyncNowCommand))]
+        [NotifyCanExecuteChangedFor(nameof(ToggleRemoteSyncPauseCommand))]
+        private bool isSyncControlBusy;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsDangerConfirmationVisible))]
@@ -218,6 +228,30 @@ namespace Birds.UI.ViewModels
 
         public string RemoteSyncStatusHint => RemoteSyncStatusTextFormatter.GetHint(_localization, _remoteSyncStatus);
 
+        public bool IsRemoteSyncConfigured => _remoteSyncController.IsConfigured;
+
+        public bool IsRemoteSyncPaused => RemoteSyncStatus == RemoteSyncDisplayState.Paused;
+
+        public bool IsRemoteSyncSyncing => RemoteSyncStatus == RemoteSyncDisplayState.Syncing;
+
+        public int RemoteSyncPendingOperationCount => _remoteSyncStatus.PendingOperationCount;
+
+        public string RemoteSyncPendingCountLabel => _localization.GetString("Settings.SyncMeta.PendingLabel");
+
+        public string RemoteSyncPendingCountValue => RemoteSyncPendingOperationCount == 0
+            ? _localization.GetString("Settings.SyncMeta.PendingNone")
+            : RemoteSyncPendingOperationCount.ToString(_localization.CurrentCulture);
+
+        public string RemoteSyncLastSuccessfulSyncLabel => _localization.GetString("Settings.SyncMeta.LastSuccessLabel");
+
+        public string RemoteSyncLastSuccessfulSyncValue => _remoteSyncStatus.LastSuccessfulSyncAtUtc.HasValue
+            ? _localization.FormatDateTime(ToLocalTime(_remoteSyncStatus.LastSuccessfulSyncAtUtc.Value))
+            : _localization.GetString("Settings.SyncMeta.Never");
+
+        public string RemoteSyncPauseActionLabel => IsRemoteSyncPaused
+            ? _localization.GetString("Settings.SyncAction.Resume")
+            : _localization.GetString("Settings.SyncAction.Pause");
+
         public bool SupportsLocalDatabaseReset => _databaseMaintenanceService.CanResetLocalDatabase;
 
         public bool IsDangerConfirmationVisible => IsConfirmingClearBirdRecords || IsConfirmingResetLocalDatabase;
@@ -265,6 +299,51 @@ namespace Birds.UI.ViewModels
             finally
             {
                 IsDataTransferBusy = false;
+            }
+        }
+
+        [RelayCommand(CanExecute = nameof(CanSyncNow))]
+        private async Task SyncNowAsync(CancellationToken cancellationToken)
+        {
+            if (!IsRemoteSyncConfigured)
+                return;
+
+            IsSyncControlBusy = true;
+            try
+            {
+                await _remoteSyncController.SyncNowAsync(cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                // User canceled or application is shutting down.
+            }
+            finally
+            {
+                IsSyncControlBusy = false;
+            }
+        }
+
+        [RelayCommand(CanExecute = nameof(CanToggleRemoteSyncPause))]
+        private async Task ToggleRemoteSyncPauseAsync(CancellationToken cancellationToken)
+        {
+            if (!IsRemoteSyncConfigured)
+                return;
+
+            IsSyncControlBusy = true;
+            try
+            {
+                if (IsRemoteSyncPaused)
+                    await _remoteSyncController.ResumeAsync(cancellationToken);
+                else
+                    await _remoteSyncController.PauseAsync(cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                // User canceled or application is shutting down.
+            }
+            finally
+            {
+                IsSyncControlBusy = false;
             }
         }
 
@@ -537,6 +616,11 @@ namespace Birds.UI.ViewModels
             OnPropertyChanged(nameof(ImportHint));
             OnPropertyChanged(nameof(RemoteSyncStatusLabel));
             OnPropertyChanged(nameof(RemoteSyncStatusHint));
+            OnPropertyChanged(nameof(RemoteSyncPendingCountLabel));
+            OnPropertyChanged(nameof(RemoteSyncPendingCountValue));
+            OnPropertyChanged(nameof(RemoteSyncLastSuccessfulSyncLabel));
+            OnPropertyChanged(nameof(RemoteSyncLastSuccessfulSyncValue));
+            OnPropertyChanged(nameof(RemoteSyncPauseActionLabel));
         }
 
         private void BuildAvailableLanguages()
@@ -643,6 +727,19 @@ namespace Birds.UI.ViewModels
 
         private bool CanStartDangerAction() => !IsDataTransferBusy && !IsDangerZoneBusy;
 
+        private bool CanSyncNow()
+            => IsRemoteSyncConfigured
+               && !IsDataTransferBusy
+               && !IsDangerZoneBusy
+               && !IsSyncControlBusy
+               && !IsRemoteSyncSyncing;
+
+        private bool CanToggleRemoteSyncPause()
+            => IsRemoteSyncConfigured
+               && !IsDataTransferBusy
+               && !IsDangerZoneBusy
+               && !IsSyncControlBusy;
+
         private bool CanConfirmClearBirdRecords()
             => IsConfirmingClearBirdRecords && CanStartDangerAction();
 
@@ -655,11 +752,21 @@ namespace Birds.UI.ViewModels
                 or nameof(IRemoteSyncStatusSource.LastSuccessfulSyncAtUtc)
                 or nameof(IRemoteSyncStatusSource.LastAttemptAtUtc)
                 or nameof(IRemoteSyncStatusSource.LastErrorMessage)
-                or nameof(IRemoteSyncStatusSource.LastProcessedCount))
+                or nameof(IRemoteSyncStatusSource.LastProcessedCount)
+                or nameof(IRemoteSyncStatusSource.PendingOperationCount))
             {
                 OnPropertyChanged(nameof(RemoteSyncStatus));
                 OnPropertyChanged(nameof(RemoteSyncStatusLabel));
                 OnPropertyChanged(nameof(RemoteSyncStatusHint));
+                OnPropertyChanged(nameof(IsRemoteSyncConfigured));
+                OnPropertyChanged(nameof(IsRemoteSyncPaused));
+                OnPropertyChanged(nameof(IsRemoteSyncSyncing));
+                OnPropertyChanged(nameof(RemoteSyncPendingOperationCount));
+                OnPropertyChanged(nameof(RemoteSyncPendingCountValue));
+                OnPropertyChanged(nameof(RemoteSyncLastSuccessfulSyncValue));
+                OnPropertyChanged(nameof(RemoteSyncPauseActionLabel));
+                SyncNowCommand.NotifyCanExecuteChanged();
+                ToggleRemoteSyncPauseCommand.NotifyCanExecuteChanged();
             }
         }
 
@@ -667,5 +774,14 @@ namespace Birds.UI.ViewModels
             => string.IsNullOrWhiteSpace(_preferences.CustomExportPath)
                 ? _exportPathProvider.GetLatestPath("birds")
                 : _preferences.CustomExportPath;
+
+        private static DateTime ToLocalTime(DateTime value)
+        {
+            var utc = value.Kind == DateTimeKind.Utc
+                ? value
+                : DateTime.SpecifyKind(value, DateTimeKind.Utc);
+
+            return utc.ToLocalTime();
+        }
     }
 }

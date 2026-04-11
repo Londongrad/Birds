@@ -412,6 +412,10 @@
                     <Setter Property="Background" Value="{DynamicResource ThemeStatusAliveBackgroundBrush}" />
                     <Setter Property="BorderBrush" Value="{DynamicResource ThemeStatusAliveBorderBrush}" />
                 </DataTrigger>
+                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Paused}">
+                    <Setter Property="Background" Value="{StaticResource AccentButtonBrush}" />
+                    <Setter Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
+                </DataTrigger>
                 <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Offline}">
                     <Setter Property="BorderBrush" Value="{StaticResource FieldBorderFocusBrush}" />
                 </DataTrigger>
@@ -430,6 +434,9 @@
                 </DataTrigger>
                 <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Synced}">
                     <Setter Property="Fill" Value="{DynamicResource ThemeStatusAliveBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Paused}">
+                    <Setter Property="Fill" Value="{StaticResource FieldBorderHoverBrush}" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Offline}">
                     <Setter Property="Fill" Value="{StaticResource FieldBorderFocusBrush}" />
@@ -873,6 +880,7 @@
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -910,6 +918,78 @@
                                         Style="{StaticResource FieldHintStyle}"
                                         Margin="0,8,0,0"
                                         Text="{Binding RemoteSyncStatusHint}" />
+
+                                    <Grid
+                                        Grid.Row="2"
+                                        Grid.ColumnSpan="2"
+                                        Margin="0,14,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="12" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border
+                                            Grid.Column="0"
+                                            Padding="10,8"
+                                            Background="{StaticResource FieldBackgroundBrush}"
+                                            BorderBrush="{StaticResource CardBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="10">
+                                            <StackPanel>
+                                                <TextBlock
+                                                    FontSize="11"
+                                                    Foreground="{StaticResource MutedTextBrush}"
+                                                    Text="{Binding RemoteSyncPendingCountLabel}" />
+                                                <TextBlock
+                                                    Margin="0,4,0,0"
+                                                    FontSize="12"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="{StaticResource PrimaryTextBrush}"
+                                                    Text="{Binding RemoteSyncPendingCountValue}" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border
+                                            Grid.Column="2"
+                                            Padding="10,8"
+                                            Background="{StaticResource FieldBackgroundBrush}"
+                                            BorderBrush="{StaticResource CardBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="10">
+                                            <StackPanel>
+                                                <TextBlock
+                                                    FontSize="11"
+                                                    Foreground="{StaticResource MutedTextBrush}"
+                                                    Text="{Binding RemoteSyncLastSuccessfulSyncLabel}" />
+                                                <TextBlock
+                                                    Margin="0,4,0,0"
+                                                    FontSize="12"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="{StaticResource PrimaryTextBrush}"
+                                                    Text="{Binding RemoteSyncLastSuccessfulSyncValue}" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Button
+                                            Grid.Column="4"
+                                            Command="{Binding ToggleRemoteSyncPauseCommand}"
+                                            Style="{StaticResource DataActionButtonStyle}"
+                                            VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding RemoteSyncPauseActionLabel}" />
+                                        </Button>
+
+                                        <Button
+                                            Grid.Column="5"
+                                            Command="{Binding SyncNowCommand}"
+                                            Style="{StaticResource DataActionButtonStyle}"
+                                            VerticalAlignment="Center">
+                                            <TextBlock Text="{loc:Loc Key=Settings.SyncAction.SyncNow}" />
+                                        </Button>
+                                    </Grid>
                                 </Grid>
                             </Border>
 

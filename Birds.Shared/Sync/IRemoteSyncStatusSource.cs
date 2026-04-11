@@ -13,5 +13,7 @@ namespace Birds.Shared.Sync
         string? LastErrorMessage { get; }
 
         int LastProcessedCount { get; }
+
+        int PendingOperationCount { get; }
     }
 }

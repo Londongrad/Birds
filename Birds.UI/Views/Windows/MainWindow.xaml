@@ -299,6 +299,10 @@
                     <Setter Property="Background" Value="{DynamicResource ThemeStatusAliveBackgroundBrush}" />
                     <Setter Property="BorderBrush" Value="{DynamicResource ThemeStatusAliveBorderBrush}" />
                 </DataTrigger>
+                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Paused}">
+                    <Setter Property="Background" Value="{DynamicResource ThemeNotificationActionBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
+                </DataTrigger>
                 <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Offline}">
                     <Setter Property="Background" Value="{DynamicResource ThemeTitleBarButtonHoverBrush}" />
                     <Setter Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderFocusBrush}" />
@@ -318,6 +322,9 @@
                 </DataTrigger>
                 <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Synced}">
                     <Setter Property="Fill" Value="{DynamicResource ThemeStatusAliveBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Paused}">
+                    <Setter Property="Fill" Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Offline}">
                     <Setter Property="Fill" Value="{DynamicResource ThemeFieldBorderFocusBrush}" />

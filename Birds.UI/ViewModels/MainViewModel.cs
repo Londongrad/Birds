@@ -112,6 +112,8 @@ namespace Birds.UI.ViewModels
 
         public bool IsRemoteSyncOffline => RemoteSyncStatus == RemoteSyncDisplayState.Offline;
 
+        public bool IsRemoteSyncPaused => RemoteSyncStatus == RemoteSyncDisplayState.Paused;
+
         public bool IsRemoteSyncError => RemoteSyncStatus == RemoteSyncDisplayState.Error;
 
         public string RemoteSyncStatusLabel => RemoteSyncStatusTextFormatter.GetLabel(_localization, RemoteSyncStatus);
@@ -215,13 +217,15 @@ namespace Birds.UI.ViewModels
                 or nameof(IRemoteSyncStatusSource.LastSuccessfulSyncAtUtc)
                 or nameof(IRemoteSyncStatusSource.LastAttemptAtUtc)
                 or nameof(IRemoteSyncStatusSource.LastErrorMessage)
-                or nameof(IRemoteSyncStatusSource.LastProcessedCount))
+                or nameof(IRemoteSyncStatusSource.LastProcessedCount)
+                or nameof(IRemoteSyncStatusSource.PendingOperationCount))
             {
                 OnPropertyChanged(nameof(RemoteSyncStatus));
                 OnPropertyChanged(nameof(HasRemoteSyncStatus));
                 OnPropertyChanged(nameof(IsRemoteSyncSynced));
                 OnPropertyChanged(nameof(IsRemoteSyncSyncing));
                 OnPropertyChanged(nameof(IsRemoteSyncOffline));
+                OnPropertyChanged(nameof(IsRemoteSyncPaused));
                 OnPropertyChanged(nameof(IsRemoteSyncError));
                 OnPropertyChanged(nameof(RemoteSyncStatusLabel));
                 OnPropertyChanged(nameof(RemoteSyncStatusHint));

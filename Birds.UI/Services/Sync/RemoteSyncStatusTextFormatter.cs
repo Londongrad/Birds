@@ -1,5 +1,6 @@
 using Birds.Shared.Sync;
 using Birds.UI.Services.Localization.Interfaces;
+using System.Linq;
 
 namespace Birds.UI.Services.Sync
 {
@@ -10,6 +11,7 @@ namespace Birds.UI.Services.Sync
             {
                 RemoteSyncDisplayState.Syncing => "Settings.SyncStatus.Syncing",
                 RemoteSyncDisplayState.Synced => "Settings.SyncStatus.Synced",
+                RemoteSyncDisplayState.Paused => "Settings.SyncStatus.Paused",
                 RemoteSyncDisplayState.Offline => "Settings.SyncStatus.Offline",
                 RemoteSyncDisplayState.Error => "Settings.SyncStatus.Error",
                 _ => "Settings.SyncStatus.Disabled"
@@ -20,26 +22,41 @@ namespace Birds.UI.Services.Sync
             var lastSuccess = source.LastSuccessfulSyncAtUtc.HasValue
                 ? FormatUtc(localization, source.LastSuccessfulSyncAtUtc.Value)
                 : null;
+            var pendingText = source.PendingOperationCount > 0
+                ? localization.GetString("Settings.SyncStatusHint.PendingCount", source.PendingOperationCount)
+                : null;
 
             return source.Status switch
             {
-                RemoteSyncDisplayState.Syncing => lastSuccess is null
-                    ? localization.GetString("Settings.SyncStatusHint.Syncing")
-                    : localization.GetString("Settings.SyncStatusHint.SyncingWithLastSuccess", lastSuccess),
-                RemoteSyncDisplayState.Synced => lastSuccess is null
-                    ? localization.GetString("Settings.SyncStatusHint.Synced")
-                    : localization.GetString("Settings.SyncStatusHint.SyncedWithTimestamp", lastSuccess),
+                RemoteSyncDisplayState.Syncing => Combine(
+                    lastSuccess is null
+                        ? localization.GetString("Settings.SyncStatusHint.Syncing")
+                        : localization.GetString("Settings.SyncStatusHint.SyncingWithLastSuccess", lastSuccess),
+                    pendingText),
+                RemoteSyncDisplayState.Synced => Combine(
+                    lastSuccess is null
+                        ? localization.GetString("Settings.SyncStatusHint.Synced")
+                        : localization.GetString("Settings.SyncStatusHint.SyncedWithTimestamp", lastSuccess),
+                    pendingText),
+                RemoteSyncDisplayState.Paused => Combine(
+                    lastSuccess is null
+                        ? localization.GetString("Settings.SyncStatusHint.Paused")
+                        : localization.GetString("Settings.SyncStatusHint.PausedWithLastSuccess", lastSuccess),
+                    pendingText),
                 RemoteSyncDisplayState.Offline => AppendErrorDetail(
-                    localization.GetString("Settings.SyncStatusHint.Offline"),
+                    Combine(localization.GetString("Settings.SyncStatusHint.Offline"), pendingText),
                     source.LastErrorMessage,
                     localization),
                 RemoteSyncDisplayState.Error => AppendErrorDetail(
-                    localization.GetString("Settings.SyncStatusHint.Error"),
+                    Combine(localization.GetString("Settings.SyncStatusHint.Error"), pendingText),
                     source.LastErrorMessage,
                     localization),
-                _ => localization.GetString("Settings.SyncStatusHint.Disabled")
+                _ => Combine(localization.GetString("Settings.SyncStatusHint.Disabled"), pendingText)
             };
         }
+
+        private static string Combine(params string?[] parts)
+            => string.Join(" ", parts.Where(part => !string.IsNullOrWhiteSpace(part)));
 
         private static string AppendErrorDetail(string baseText, string? errorMessage, ILocalizationService localization)
         {

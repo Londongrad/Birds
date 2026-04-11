@@ -5,7 +5,8 @@ namespace Birds.Shared.Sync
         Disabled = 0,
         Syncing = 1,
         Synced = 2,
-        Offline = 3,
-        Error = 4
+        Paused = 3,
+        Offline = 4,
+        Error = 5
     }
 }

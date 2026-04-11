@@ -1,6 +1,7 @@
 using Birds.App.Services;
 using Birds.Application;
 using Birds.Infrastructure;
+using Birds.Shared.Sync;
 using Birds.UI;
 using Birds.UI.Services.Export.Interfaces;
 using DotNetEnv;
@@ -40,7 +41,9 @@ namespace Birds.App
                     // Register export path provider (implementation lives in App, interface in UI)
                     services.AddSingleton<IExportPathProvider, AppExportPathProvider>();
                     services.AddSingleton<StartupDataCoordinator>();
-                    services.AddSingleton<IRemoteSyncCoordinator, RemoteSyncCoordinator>();
+                    services.AddSingleton<RemoteSyncCoordinator>();
+                    services.AddSingleton<IRemoteSyncCoordinator>(sp => sp.GetRequiredService<RemoteSyncCoordinator>());
+                    services.AddSingleton<IRemoteSyncController>(sp => sp.GetRequiredService<RemoteSyncCoordinator>());
 
                     // Register the Application layer (CQRS, Mediator, validators, etc.)
                     services.AddApplication();

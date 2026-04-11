@@ -14,6 +14,7 @@ namespace Birds.UI.Services.Sync
         private DateTime? _lastAttemptAtUtc;
         private string? _lastErrorMessage;
         private int _lastProcessedCount;
+        private int _pendingOperationCount;
 
         public RemoteSyncDisplayState Status
         {
@@ -45,7 +46,13 @@ namespace Birds.UI.Services.Sync
             private set => SetProperty(ref _lastProcessedCount, value);
         }
 
-        public Task SetDisabledAsync(CancellationToken cancellationToken = default)
+        public int PendingOperationCount
+        {
+            get => _pendingOperationCount;
+            private set => SetProperty(ref _pendingOperationCount, value);
+        }
+
+        public Task SetDisabledAsync(int pendingOperationCount, CancellationToken cancellationToken = default)
             => _uiDispatcher.InvokeAsync(() =>
             {
                 Status = RemoteSyncDisplayState.Disabled;
@@ -53,18 +60,29 @@ namespace Birds.UI.Services.Sync
                 LastSuccessfulSyncAtUtc = null;
                 LastErrorMessage = null;
                 LastProcessedCount = 0;
+                PendingOperationCount = pendingOperationCount;
             }, cancellationToken);
 
-        public Task SetSyncingAsync(CancellationToken cancellationToken = default)
+        public Task SetPausedAsync(int pendingOperationCount, CancellationToken cancellationToken = default)
+            => _uiDispatcher.InvokeAsync(() =>
+            {
+                Status = RemoteSyncDisplayState.Paused;
+                LastErrorMessage = null;
+                PendingOperationCount = pendingOperationCount;
+            }, cancellationToken);
+
+        public Task SetSyncingAsync(int pendingOperationCount, CancellationToken cancellationToken = default)
             => _uiDispatcher.InvokeAsync(() =>
             {
                 Status = RemoteSyncDisplayState.Syncing;
                 LastAttemptAtUtc = DateTime.UtcNow;
                 LastErrorMessage = null;
+                PendingOperationCount = pendingOperationCount;
             }, cancellationToken);
 
         public Task SetResultAsync(RemoteSyncDisplayState status,
                                    int processedCount,
+                                   int pendingOperationCount,
                                    string? errorMessage = null,
                                    CancellationToken cancellationToken = default)
             => _uiDispatcher.InvokeAsync(() =>
@@ -77,6 +95,7 @@ namespace Birds.UI.Services.Sync
                 LastErrorMessage = string.IsNullOrWhiteSpace(errorMessage)
                     ? null
                     : errorMessage;
+                PendingOperationCount = pendingOperationCount;
 
                 if (status == RemoteSyncDisplayState.Synced)
                     LastSuccessfulSyncAtUtc = attemptUtc;
@@ -84,12 +103,15 @@ namespace Birds.UI.Services.Sync
                     LastSuccessfulSyncAtUtc = null;
             }, cancellationToken);
 
-        public Task SetLoopFailedAsync(string errorMessage, CancellationToken cancellationToken = default)
+        public Task SetLoopFailedAsync(string errorMessage,
+                                       int pendingOperationCount,
+                                       CancellationToken cancellationToken = default)
             => _uiDispatcher.InvokeAsync(() =>
             {
                 Status = RemoteSyncDisplayState.Error;
                 LastAttemptAtUtc = DateTime.UtcNow;
                 LastProcessedCount = 0;
+                PendingOperationCount = pendingOperationCount;
                 LastErrorMessage = string.IsNullOrWhiteSpace(errorMessage)
                     ? null
                     : errorMessage;
