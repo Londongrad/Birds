@@ -6,6 +6,7 @@
     xmlns:loc="clr-namespace:Birds.UI.Services.Localization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:sync="clr-namespace:Birds.Shared.Sync;assembly=Birds.Shared"
+    xmlns:syncui="clr-namespace:Birds.UI.Services.Sync"
     xmlns:viewmodels="clr-namespace:Birds.UI.ViewModels"
     d:DataContext="{d:DesignInstance Type=viewmodels:SettingsViewModel}"
     d:DesignHeight="720"
@@ -447,6 +448,47 @@
             </Style.Triggers>
         </Style>
 
+        <Style x:Key="SettingsSyncActivityCardStyle" TargetType="Border">
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="Background" Value="{StaticResource FieldBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Status}" Value="{x:Static sync:RemoteSyncDisplayState.Synced}">
+                    <Setter Property="BorderBrush" Value="{DynamicResource ThemeStatusAliveBorderBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="{x:Static sync:RemoteSyncDisplayState.Paused}">
+                    <Setter Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="{x:Static sync:RemoteSyncDisplayState.Offline}">
+                    <Setter Property="BorderBrush" Value="{StaticResource FieldBorderFocusBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="{x:Static sync:RemoteSyncDisplayState.Error}">
+                    <Setter Property="BorderBrush" Value="{DynamicResource ThemeStatusDeadBorderBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SettingsSyncActivityDotStyle" TargetType="Ellipse">
+            <Setter Property="Fill" Value="{StaticResource SecondaryTextBrush}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Status}" Value="{x:Static sync:RemoteSyncDisplayState.Synced}">
+                    <Setter Property="Fill" Value="{DynamicResource ThemeStatusAliveBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="{x:Static sync:RemoteSyncDisplayState.Paused}">
+                    <Setter Property="Fill" Value="{StaticResource FieldBorderHoverBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="{x:Static sync:RemoteSyncDisplayState.Offline}">
+                    <Setter Property="Fill" Value="{StaticResource FieldBorderFocusBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="{x:Static sync:RemoteSyncDisplayState.Error}">
+                    <Setter Property="Fill" Value="{DynamicResource ThemeStatusDeadBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <Style
             x:Key="ConfirmSecondaryButtonStyle"
             BasedOn="{StaticResource DataActionButtonStyle}"
@@ -881,6 +923,8 @@
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -989,6 +1033,90 @@
                                             VerticalAlignment="Center">
                                             <TextBlock Text="{loc:Loc Key=Settings.SyncAction.SyncNow}" />
                                         </Button>
+                                    </Grid>
+
+                                    <TextBlock
+                                        Grid.Row="3"
+                                        Grid.ColumnSpan="2"
+                                        Style="{StaticResource FieldLabelStyle}"
+                                        Margin="0,16,0,0"
+                                        Text="{Binding RemoteSyncRecentActivityLabel}" />
+
+                                    <Grid
+                                        Grid.Row="4"
+                                        Grid.ColumnSpan="2"
+                                        Margin="0,10,0,0">
+                                        <TextBlock
+                                            Text="{Binding RemoteSyncRecentActivityEmpty}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock" BasedOn="{StaticResource FieldHintStyle}">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding HasRemoteSyncRecentActivity}" Value="True">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+
+                                        <ItemsControl
+                                            ItemsSource="{Binding RemoteSyncRecentActivityItems}">
+                                            <ItemsControl.Style>
+                                                <Style TargetType="ItemsControl">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding HasRemoteSyncRecentActivity}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ItemsControl.Style>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate DataType="{x:Type syncui:RemoteSyncActivityDisplayItem}">
+                                                    <Border Style="{StaticResource SettingsSyncActivityCardStyle}">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto" />
+                                                                <ColumnDefinition Width="10" />
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="Auto" />
+                                                            </Grid.ColumnDefinitions>
+
+                                                            <Ellipse
+                                                                Grid.Column="0"
+                                                                Width="7"
+                                                                Height="7"
+                                                                Margin="0,4,0,0"
+                                                                VerticalAlignment="Top"
+                                                                Style="{StaticResource SettingsSyncActivityDotStyle}" />
+
+                                                            <StackPanel Grid.Column="2">
+                                                                <TextBlock
+                                                                    FontSize="12"
+                                                                    FontWeight="SemiBold"
+                                                                    Foreground="{StaticResource PrimaryTextBrush}"
+                                                                    Text="{Binding Title}" />
+                                                                <TextBlock
+                                                                    Margin="0,4,0,0"
+                                                                    FontSize="11"
+                                                                    Foreground="{StaticResource MutedTextBrush}"
+                                                                    Text="{Binding Description}"
+                                                                    TextWrapping="Wrap" />
+                                                            </StackPanel>
+
+                                                            <TextBlock
+                                                                Grid.Column="3"
+                                                                Margin="12,0,0,0"
+                                                                VerticalAlignment="Top"
+                                                                FontSize="11"
+                                                                Foreground="{StaticResource MutedTextBrush}"
+                                                                Text="{Binding Timestamp}" />
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
                                     </Grid>
                                 </Grid>
                             </Border>

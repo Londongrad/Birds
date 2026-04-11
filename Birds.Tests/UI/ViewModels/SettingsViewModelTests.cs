@@ -154,6 +154,32 @@ namespace Birds.Tests.UI.ViewModels
         }
 
         [Fact]
+        public void RemoteSyncRecentActivity_Should_Project_Localized_Items()
+        {
+            _remoteSyncStatus.SetState(
+                RemoteSyncDisplayState.Synced,
+                new DateTime(2026, 4, 8, 10, 15, 0, DateTimeKind.Utc),
+                lastProcessedCount: 5,
+                pendingOperationCount: 1,
+                recentActivity:
+                [
+                    new RemoteSyncActivityEntry(
+                        RemoteSyncDisplayState.Synced,
+                        new DateTime(2026, 4, 8, 10, 15, 0, DateTimeKind.Utc),
+                        5,
+                        1)
+                ]);
+
+            var sut = CreateSut();
+
+            sut.HasRemoteSyncRecentActivity.Should().BeTrue();
+            sut.RemoteSyncRecentActivityLabel.Should().Be(AppText.Get("Settings.SyncMeta.RecentActivityLabel", _culture));
+            sut.RemoteSyncRecentActivityItems.Should().ContainSingle();
+            sut.RemoteSyncRecentActivityItems[0].Title.Should().Be(AppText.Get("Settings.SyncStatus.Synced", _culture));
+            sut.RemoteSyncRecentActivityItems[0].Description.Should().Be(AppText.Format(_culture, "Settings.SyncRecent.SyncedProcessed", 5));
+        }
+
+        [Fact]
         public async Task SyncNowCommand_Should_Invoke_RemoteSyncController()
         {
             var sut = CreateSut();
@@ -502,11 +528,14 @@ namespace Birds.Tests.UI.ViewModels
 
             public int PendingOperationCount { get; private set; }
 
+            public IReadOnlyList<RemoteSyncActivityEntry> RecentActivity { get; private set; } = Array.Empty<RemoteSyncActivityEntry>();
+
             public void SetState(RemoteSyncDisplayState status,
                                  DateTime? lastSuccessfulSyncAtUtc = null,
                                  string? lastErrorMessage = null,
                                  int lastProcessedCount = 0,
-                                 int pendingOperationCount = 0)
+                                 int pendingOperationCount = 0,
+                                 IReadOnlyList<RemoteSyncActivityEntry>? recentActivity = null)
             {
                 Status = status;
                 LastSuccessfulSyncAtUtc = lastSuccessfulSyncAtUtc;
@@ -514,6 +543,7 @@ namespace Birds.Tests.UI.ViewModels
                 LastErrorMessage = lastErrorMessage;
                 LastProcessedCount = lastProcessedCount;
                 PendingOperationCount = pendingOperationCount;
+                 RecentActivity = recentActivity ?? Array.Empty<RemoteSyncActivityEntry>();
                 RaiseAll();
             }
 
@@ -525,6 +555,7 @@ namespace Birds.Tests.UI.ViewModels
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LastErrorMessage)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LastProcessedCount)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PendingOperationCount)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RecentActivity)));
             }
         }
     }

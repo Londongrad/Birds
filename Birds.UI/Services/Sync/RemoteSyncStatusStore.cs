@@ -1,13 +1,17 @@
 using Birds.Shared.Sync;
 using Birds.UI.Threading.Abstractions;
 using CommunityToolkit.Mvvm.ComponentModel;
+using System.Collections.ObjectModel;
 
 namespace Birds.UI.Services.Sync
 {
-    public sealed class RemoteSyncStatusStore(IUiDispatcher uiDispatcher)
-        : ObservableObject, IRemoteSyncStatusSource, IRemoteSyncStatusReporter
+    public sealed class RemoteSyncStatusStore : ObservableObject, IRemoteSyncStatusSource, IRemoteSyncStatusReporter
     {
-        private readonly IUiDispatcher _uiDispatcher = uiDispatcher;
+        private const int MaxRecentActivityEntries = 6;
+
+        private readonly IUiDispatcher _uiDispatcher;
+        private readonly ObservableCollection<RemoteSyncActivityEntry> _recentActivity = [];
+        private readonly ReadOnlyObservableCollection<RemoteSyncActivityEntry> _recentActivityView;
 
         private RemoteSyncDisplayState _status = RemoteSyncDisplayState.Disabled;
         private DateTime? _lastSuccessfulSyncAtUtc;
@@ -15,6 +19,12 @@ namespace Birds.UI.Services.Sync
         private string? _lastErrorMessage;
         private int _lastProcessedCount;
         private int _pendingOperationCount;
+
+        public RemoteSyncStatusStore(IUiDispatcher uiDispatcher)
+        {
+            _uiDispatcher = uiDispatcher;
+            _recentActivityView = new ReadOnlyObservableCollection<RemoteSyncActivityEntry>(_recentActivity);
+        }
 
         public RemoteSyncDisplayState Status
         {
@@ -52,6 +62,8 @@ namespace Birds.UI.Services.Sync
             private set => SetProperty(ref _pendingOperationCount, value);
         }
 
+        public IReadOnlyList<RemoteSyncActivityEntry> RecentActivity => _recentActivityView;
+
         public Task SetDisabledAsync(int pendingOperationCount, CancellationToken cancellationToken = default)
             => _uiDispatcher.InvokeAsync(() =>
             {
@@ -61,6 +73,8 @@ namespace Birds.UI.Services.Sync
                 LastErrorMessage = null;
                 LastProcessedCount = 0;
                 PendingOperationCount = pendingOperationCount;
+                _recentActivity.Clear();
+                OnPropertyChanged(nameof(RecentActivity));
             }, cancellationToken);
 
         public Task SetPausedAsync(int pendingOperationCount, CancellationToken cancellationToken = default)
@@ -69,6 +83,7 @@ namespace Birds.UI.Services.Sync
                 Status = RemoteSyncDisplayState.Paused;
                 LastErrorMessage = null;
                 PendingOperationCount = pendingOperationCount;
+                TryAppendActivity(RemoteSyncDisplayState.Paused, DateTime.UtcNow, 0, pendingOperationCount);
             }, cancellationToken);
 
         public Task SetSyncingAsync(int pendingOperationCount, CancellationToken cancellationToken = default)
@@ -101,6 +116,8 @@ namespace Birds.UI.Services.Sync
                     LastSuccessfulSyncAtUtc = attemptUtc;
                 else if (status == RemoteSyncDisplayState.Disabled)
                     LastSuccessfulSyncAtUtc = null;
+
+                TryAppendActivity(status, attemptUtc, processedCount, pendingOperationCount, LastErrorMessage);
             }, cancellationToken);
 
         public Task SetLoopFailedAsync(string errorMessage,
@@ -115,6 +132,44 @@ namespace Birds.UI.Services.Sync
                 LastErrorMessage = string.IsNullOrWhiteSpace(errorMessage)
                     ? null
                     : errorMessage;
+                TryAppendActivity(RemoteSyncDisplayState.Error, LastAttemptAtUtc.Value, 0, pendingOperationCount, LastErrorMessage);
             }, cancellationToken);
+
+        private void TryAppendActivity(RemoteSyncDisplayState status,
+                                       DateTime occurredAtUtc,
+                                       int processedCount,
+                                       int pendingOperationCount,
+                                       string? errorMessage = null)
+        {
+            if (status is RemoteSyncDisplayState.Disabled or RemoteSyncDisplayState.Syncing)
+                return;
+
+            if (_recentActivity.Count > 0)
+            {
+                var latest = _recentActivity[0];
+                var isSameEntry = latest.Status == status
+                                  && latest.ProcessedCount == processedCount
+                                  && latest.PendingOperationCount == pendingOperationCount
+                                  && string.Equals(latest.ErrorMessage, errorMessage, StringComparison.Ordinal);
+
+                if (isSameEntry)
+                    return;
+
+                if (status == RemoteSyncDisplayState.Synced
+                    && processedCount == 0
+                    && latest.Status == RemoteSyncDisplayState.Synced
+                    && latest.ProcessedCount == 0)
+                {
+                    return;
+                }
+            }
+
+            _recentActivity.Insert(0, new RemoteSyncActivityEntry(status, occurredAtUtc, processedCount, pendingOperationCount, errorMessage));
+
+            while (_recentActivity.Count > MaxRecentActivityEntries)
+                _recentActivity.RemoveAt(_recentActivity.Count - 1);
+
+            OnPropertyChanged(nameof(RecentActivity));
+        }
     }
 }

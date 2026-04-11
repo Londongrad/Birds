@@ -248,6 +248,17 @@ namespace Birds.UI.ViewModels
             ? _localization.FormatDateTime(ToLocalTime(_remoteSyncStatus.LastSuccessfulSyncAtUtc.Value))
             : _localization.GetString("Settings.SyncMeta.Never");
 
+        public string RemoteSyncRecentActivityLabel => _localization.GetString("Settings.SyncMeta.RecentActivityLabel");
+
+        public string RemoteSyncRecentActivityEmpty => _localization.GetString("Settings.SyncMeta.RecentActivityEmpty");
+
+        public bool HasRemoteSyncRecentActivity => _remoteSyncStatus.RecentActivity.Count > 0;
+
+        public IReadOnlyList<RemoteSyncActivityDisplayItem> RemoteSyncRecentActivityItems
+            => _remoteSyncStatus.RecentActivity
+                .Select(CreateRemoteSyncActivityDisplayItem)
+                .ToArray();
+
         public string RemoteSyncPauseActionLabel => IsRemoteSyncPaused
             ? _localization.GetString("Settings.SyncAction.Resume")
             : _localization.GetString("Settings.SyncAction.Pause");
@@ -620,6 +631,10 @@ namespace Birds.UI.ViewModels
             OnPropertyChanged(nameof(RemoteSyncPendingCountValue));
             OnPropertyChanged(nameof(RemoteSyncLastSuccessfulSyncLabel));
             OnPropertyChanged(nameof(RemoteSyncLastSuccessfulSyncValue));
+            OnPropertyChanged(nameof(RemoteSyncRecentActivityLabel));
+            OnPropertyChanged(nameof(RemoteSyncRecentActivityEmpty));
+            OnPropertyChanged(nameof(HasRemoteSyncRecentActivity));
+            OnPropertyChanged(nameof(RemoteSyncRecentActivityItems));
             OnPropertyChanged(nameof(RemoteSyncPauseActionLabel));
         }
 
@@ -753,7 +768,8 @@ namespace Birds.UI.ViewModels
                 or nameof(IRemoteSyncStatusSource.LastAttemptAtUtc)
                 or nameof(IRemoteSyncStatusSource.LastErrorMessage)
                 or nameof(IRemoteSyncStatusSource.LastProcessedCount)
-                or nameof(IRemoteSyncStatusSource.PendingOperationCount))
+                or nameof(IRemoteSyncStatusSource.PendingOperationCount)
+                or nameof(IRemoteSyncStatusSource.RecentActivity))
             {
                 OnPropertyChanged(nameof(RemoteSyncStatus));
                 OnPropertyChanged(nameof(RemoteSyncStatusLabel));
@@ -764,10 +780,41 @@ namespace Birds.UI.ViewModels
                 OnPropertyChanged(nameof(RemoteSyncPendingOperationCount));
                 OnPropertyChanged(nameof(RemoteSyncPendingCountValue));
                 OnPropertyChanged(nameof(RemoteSyncLastSuccessfulSyncValue));
+                OnPropertyChanged(nameof(HasRemoteSyncRecentActivity));
+                OnPropertyChanged(nameof(RemoteSyncRecentActivityItems));
                 OnPropertyChanged(nameof(RemoteSyncPauseActionLabel));
                 SyncNowCommand.NotifyCanExecuteChanged();
                 ToggleRemoteSyncPauseCommand.NotifyCanExecuteChanged();
             }
+        }
+
+        private RemoteSyncActivityDisplayItem CreateRemoteSyncActivityDisplayItem(RemoteSyncActivityEntry entry)
+        {
+            var title = RemoteSyncStatusTextFormatter.GetLabel(_localization, entry.Status);
+            var description = entry.Status switch
+            {
+                RemoteSyncDisplayState.Synced when entry.ProcessedCount > 0
+                    => _localization.GetString("Settings.SyncRecent.SyncedProcessed", entry.ProcessedCount),
+                RemoteSyncDisplayState.Synced
+                    => _localization.GetString("Settings.SyncRecent.SyncedIdle"),
+                RemoteSyncDisplayState.Paused
+                    => _localization.GetString("Settings.SyncRecent.Paused"),
+                RemoteSyncDisplayState.Offline
+                    => string.IsNullOrWhiteSpace(entry.ErrorMessage)
+                        ? _localization.GetString("Settings.SyncRecent.Offline")
+                        : entry.ErrorMessage!,
+                RemoteSyncDisplayState.Error
+                    => string.IsNullOrWhiteSpace(entry.ErrorMessage)
+                        ? _localization.GetString("Settings.SyncRecent.Error")
+                        : entry.ErrorMessage!,
+                _ => _localization.GetString("Settings.SyncRecent.LocalOnly")
+            };
+
+            return new RemoteSyncActivityDisplayItem(
+                title,
+                description,
+                _localization.FormatDateTime(ToLocalTime(entry.OccurredAtUtc)),
+                entry.Status);
         }
 
         private string ResolveExportPath()

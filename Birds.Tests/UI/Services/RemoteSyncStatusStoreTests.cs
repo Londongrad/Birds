@@ -19,6 +19,9 @@ namespace Birds.Tests.UI.Services
             sut.PendingOperationCount.Should().Be(2);
             sut.LastSuccessfulSyncAtUtc.Should().NotBeNull();
             sut.LastErrorMessage.Should().BeNull();
+            sut.RecentActivity.Should().ContainSingle();
+            sut.RecentActivity[0].Status.Should().Be(RemoteSyncDisplayState.Synced);
+            sut.RecentActivity[0].ProcessedCount.Should().Be(4);
         }
 
         [Fact]
@@ -32,6 +35,8 @@ namespace Birds.Tests.UI.Services
             sut.LastErrorMessage.Should().Be("boom");
             sut.PendingOperationCount.Should().Be(3);
             sut.LastAttemptAtUtc.Should().NotBeNull();
+            sut.RecentActivity.Should().ContainSingle();
+            sut.RecentActivity[0].ErrorMessage.Should().Be("boom");
         }
 
         [Fact]
@@ -43,6 +48,19 @@ namespace Birds.Tests.UI.Services
 
             sut.Status.Should().Be(RemoteSyncDisplayState.Paused);
             sut.PendingOperationCount.Should().Be(5);
+            sut.RecentActivity.Should().ContainSingle();
+            sut.RecentActivity[0].Status.Should().Be(RemoteSyncDisplayState.Paused);
+        }
+
+        [Fact]
+        public async Task SetResultAsync_WhenRepeatedIdleSyncsOccur_Should_NotSpamRecentActivity()
+        {
+            var sut = new RemoteSyncStatusStore(new InlineUiDispatcher());
+
+            await sut.SetResultAsync(RemoteSyncDisplayState.Synced, 0, 0);
+            await sut.SetResultAsync(RemoteSyncDisplayState.Synced, 0, 0);
+
+            sut.RecentActivity.Should().ContainSingle();
         }
     }
 }

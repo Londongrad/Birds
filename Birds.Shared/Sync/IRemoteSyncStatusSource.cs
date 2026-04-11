@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace Birds.Shared.Sync
@@ -15,5 +16,7 @@ namespace Birds.Shared.Sync
         int LastProcessedCount { get; }
 
         int PendingOperationCount { get; }
+
+        IReadOnlyList<RemoteSyncActivityEntry> RecentActivity { get; }
     }
 }
