@@ -276,7 +276,7 @@ namespace Birds.UI.ViewModels
                     HeaderSubtitle = AppText.Get("Main.Header.Archive.Subtitle");
                     break;
                 case nameof(BirdStatisticsViewModel):
-                    ShowContentHeader = true;
+                    ShowContentHeader = false;
                     HeaderTitle = AppText.Get("Main.Header.Statistics.Title");
                     HeaderSubtitle = AppText.Get("Main.Header.Statistics.Subtitle");
                     break;

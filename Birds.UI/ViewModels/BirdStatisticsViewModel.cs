@@ -15,13 +15,16 @@ using System.Globalization;
 namespace Birds.UI.ViewModels
 {
     public record StatItem(string Label, int Count);
+    public record YearFilterOption(int? Year, string Label);
 
     public partial class BirdStatisticsViewModel : ObservableObject
     {
         [ObservableProperty] private int totalBirds;
+        [ObservableProperty] private int aliveCount;
         [ObservableProperty] private int releasedCount;
         [ObservableProperty] private int killCount;
 
+        [ObservableProperty] private string averageKeeping = "\u2014";
         [ObservableProperty] private string? topMonth;
         [ObservableProperty] private string? topWeek;
         [ObservableProperty] private string? topDay;
@@ -29,6 +32,8 @@ namespace Birds.UI.ViewModels
 
         [ObservableProperty] private int? selectedYear;
         [ObservableProperty] private IReadOnlyCollection<int> availableYears = Array.Empty<int>();
+        [ObservableProperty] private IReadOnlyCollection<YearFilterOption> yearFilters = Array.Empty<YearFilterOption>();
+        [ObservableProperty] private YearFilterOption? selectedYearFilter;
 
         public ObservableCollection<BirdDTO> Birds { get; }
         public ObservableCollection<StatItem> SpeciesStats { get; } = new();
@@ -37,6 +42,10 @@ namespace Birds.UI.ViewModels
         public ObservableCollection<StatItem> LongestKeepingStats { get; } = new();
 
         public bool IsLoading => _birdStore.LoadState == LoadState.Loading;
+        public bool HasBirds => TotalBirds > 0;
+        public string FilterSummary => SelectedYear is int year
+            ? _localization.GetString("Statistics.FilterSummary.Year", year)
+            : _localization.GetString("Statistics.FilterSummary.All");
 
         private readonly IBirdStore _birdStore;
         private readonly ILocalizationService _localization;
@@ -56,7 +65,11 @@ namespace Birds.UI.ViewModels
                     OnPropertyChanged(nameof(IsLoading));
             };
 
-            _localization.LanguageChanged += (_, _) => Recalculate();
+            _localization.LanguageChanged += (_, _) =>
+            {
+                OnPropertyChanged(nameof(FilterSummary));
+                Recalculate();
+            };
         }
 
         private void OnBirdsChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -64,7 +77,21 @@ namespace Birds.UI.ViewModels
             Recalculate();
         }
 
-        partial void OnSelectedYearChanged(int? value) => Recalculate();
+        partial void OnSelectedYearChanged(int? value)
+        {
+            UpdateSelectedYearFilter();
+            OnPropertyChanged(nameof(FilterSummary));
+            Recalculate();
+        }
+
+        partial void OnSelectedYearFilterChanged(YearFilterOption? value)
+        {
+            var year = value?.Year;
+            if (SelectedYear != year)
+                SelectedYear = year;
+        }
+
+        partial void OnTotalBirdsChanged(int value) => OnPropertyChanged(nameof(HasBirds));
 
         [RelayCommand] private void ClearYearFilter() => SelectedYear = null;
 
@@ -93,6 +120,7 @@ namespace Birds.UI.ViewModels
         private void CalculateCounts(IList<BirdDTO> filteredBirds)
         {
             int total = 0, released = 0, killed = 0;
+            int alive = Birds.Count(b => b.IsAlive && b.Departure == null);
 
             foreach (var b in filteredBirds)
             {
@@ -105,6 +133,7 @@ namespace Birds.UI.ViewModels
             }
 
             TotalBirds = total;
+            AliveCount = alive;
             ReleasedCount = released;
             KillCount = killed;
         }
@@ -115,14 +144,14 @@ namespace Birds.UI.ViewModels
                 .GroupBy(b => BirdEnumHelper.ParseBirdName(b.Name)?.ToDisplayName() ?? b.Name);
 
             SpeciesStats.Clear();
-            foreach (var group in byName.OrderByDescending(g => g.Count()))
+            foreach (var group in byName.OrderByDescending(g => g.Count()).ThenBy(g => g.Key))
                 SpeciesStats.Add(new StatItem(group.Key, group.Count()));
         }
 
         private void UpdateYearStats()
         {
             YearStats.Clear();
-            foreach (var g in Birds.GroupBy(b => b.Arrival.Year).OrderBy(g => g.Key))
+            foreach (var g in Birds.GroupBy(b => b.Arrival.Year).OrderByDescending(g => g.Key))
                 YearStats.Add(new StatItem(g.Key.ToString(), g.Count()));
         }
 
@@ -143,15 +172,29 @@ namespace Birds.UI.ViewModels
         private void UpdateAvailableYears()
         {
             AvailableYears = new SortedSet<int>(Birds.Select(b => b.Arrival.Year));
+            RebuildYearFilters();
         }
 
         private void CalculateAdditionalMetrics(IList<BirdDTO> filteredBirds)
         {
             if (filteredBirds.Count == 0)
             {
-                TopMonth = TopWeek = TopDay = LongestBreak = "\u2014";
+                AverageKeeping = TopMonth = TopWeek = TopDay = LongestBreak = "\u2014";
                 return;
             }
+
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            var averageKeepingDays = filteredBirds
+                .Select(b =>
+                {
+                    var end = b.Departure ?? today;
+                    return Math.Max(0, (end.ToDateTime(TimeOnly.MinValue) - b.Arrival.ToDateTime(TimeOnly.MinValue)).TotalDays);
+                })
+                .DefaultIfEmpty(0)
+                .Average();
+            AverageKeeping = _localization.GetString(
+                "Statistics.AverageKeepingValue",
+                (int)Math.Round(averageKeepingDays, MidpointRounding.AwayFromZero));
 
             var topMonthGroup = filteredBirds
                 .GroupBy(b => new { b.Arrival.Year, b.Arrival.Month })
@@ -162,7 +205,7 @@ namespace Birds.UI.ViewModels
             {
                 var firstOfMonth = new DateOnly(topMonthGroup.Key.Year, topMonthGroup.Key.Month, 1);
                 var label = _localization.FormatDate(firstOfMonth, DateDisplayStyle.MonthYearLong);
-                TopMonth = $"{label} \u2014 {AppText.Format("Statistics.CountBirds", topMonthGroup.Count())}";
+                TopMonth = $"{label} \u2013 {AppText.Format("Statistics.CountBirds", topMonthGroup.Count())}";
             }
             else
             {
@@ -187,7 +230,7 @@ namespace Birds.UI.ViewModels
                 int year = topWeekGroup.Key.Year;
                 int week = topWeekGroup.Key.Week;
                 string range = FormatIsoWeekRange(year, week);
-                TopWeek = $"{range} \u2014 {AppText.Format("Statistics.CountBirds", topWeekGroup.Count())}";
+                TopWeek = $"{range} \u2013 {AppText.Format("Statistics.CountBirds", topWeekGroup.Count())}";
             }
             else
             {
@@ -200,7 +243,7 @@ namespace Birds.UI.ViewModels
                 .FirstOrDefault();
 
             TopDay = topDayGroup != null
-                ? $"{_localization.FormatDate(topDayGroup.Key, DateDisplayStyle.Long)} \u2014 {AppText.Format("Statistics.CountBirds", topDayGroup.Count())}"
+                ? $"{_localization.FormatDate(topDayGroup.Key, DateDisplayStyle.Long)} \u2013 {AppText.Format("Statistics.CountBirds", topDayGroup.Count())}"
                 : "\u2014";
 
             CalculateLongestBreak(filteredBirds);
@@ -265,13 +308,41 @@ namespace Birds.UI.ViewModels
 
                 LongestKeepingStats.Add(new StatItem(group.Key, (int)maxDays));
             }
+
+            var ordered = LongestKeepingStats
+                .OrderByDescending(x => x.Count)
+                .ThenBy(x => x.Label)
+                .ToList();
+
+            LongestKeepingStats.Clear();
+            foreach (var item in ordered)
+                LongestKeepingStats.Add(item);
         }
 
         private string FormatIsoWeekRange(int isoYear, int isoWeek)
         {
             var start = DateOnly.FromDateTime(ISOWeek.ToDateTime(isoYear, isoWeek, DayOfWeek.Monday));
             var end = DateOnly.FromDateTime(ISOWeek.ToDateTime(isoYear, isoWeek, DayOfWeek.Sunday));
-            return $"{_localization.FormatDate(start, DateDisplayStyle.Medium)}\u2014{_localization.FormatDate(end, DateDisplayStyle.Medium)}";
+            return $"{_localization.FormatDate(start, DateDisplayStyle.Medium)}\u2013{_localization.FormatDate(end, DateDisplayStyle.Medium)}";
+        }
+
+        private void RebuildYearFilters()
+        {
+            YearFilters =
+            [
+                new YearFilterOption(null, _localization.GetString("Statistics.AllYears")),
+                .. AvailableYears
+                    .OrderByDescending(x => x)
+                    .Select(x => new YearFilterOption(x, x.ToString(CultureInfo.InvariantCulture)))
+            ];
+
+            UpdateSelectedYearFilter();
+        }
+
+        private void UpdateSelectedYearFilter()
+        {
+            SelectedYearFilter = YearFilters.FirstOrDefault(x => x.Year == SelectedYear)
+                ?? YearFilters.FirstOrDefault(x => x.Year is null);
         }
     }
 }
