@@ -19,7 +19,11 @@ namespace Birds.Tests.App.Services
         {
             var birdStore = new BirdStore();
             var databaseInitializer = new Mock<IDatabaseInitializer>();
+            var localStoreStateService = new Mock<ILocalStoreStateService>();
             var remoteSyncCoordinator = new Mock<IRemoteSyncCoordinator>();
+            localStoreStateService
+                .Setup(x => x.GetSnapshotAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new LocalStoreStateSnapshot(1, 0));
             var mediator = new Mock<IMediator>();
             mediator.SetupGetAllBirdsSuccess(TestHelpers.Birds(TestHelpers.Bird(name: "Sparrow")));
 
@@ -31,6 +35,7 @@ namespace Birds.Tests.App.Services
 
             var coordinator = new StartupDataCoordinator(
                 databaseInitializer.Object,
+                localStoreStateService.Object,
                 remoteSyncCoordinator.Object,
                 birdStoreInitializer,
                 birdStore,
@@ -42,7 +47,45 @@ namespace Birds.Tests.App.Services
             birdStore.LoadState.Should().Be(LoadState.Loaded);
             birdStore.Birds.Should().HaveCount(1);
             databaseInitializer.Verify(x => x.InitializeAsync(It.IsAny<CancellationToken>()), Times.Once);
+            localStoreStateService.Verify(x => x.GetSnapshotAsync(It.IsAny<CancellationToken>()), Times.Once);
+            remoteSyncCoordinator.Verify(x => x.BootstrapLocalStoreAsync(It.IsAny<CancellationToken>()), Times.Never);
             remoteSyncCoordinator.Verify(x => x.Start(It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task InitializeAsync_WhenLocalStoreIsEmptyAndClean_BootstrapsRemoteSyncBeforeLoadingBirdStore()
+        {
+            var birdStore = new BirdStore();
+            var databaseInitializer = new Mock<IDatabaseInitializer>();
+            var localStoreStateService = new Mock<ILocalStoreStateService>();
+            var remoteSyncCoordinator = new Mock<IRemoteSyncCoordinator>();
+            localStoreStateService
+                .Setup(x => x.GetSnapshotAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new LocalStoreStateSnapshot(0, 0));
+
+            var mediator = new Mock<IMediator>();
+            mediator.SetupGetAllBirdsSuccess(TestHelpers.Birds(TestHelpers.Bird(name: "Sparrow")));
+
+            var birdStoreInitializer = TestHelpers.MakeInitializer(
+                birdStore,
+                mediator.Object,
+                out var notificationService,
+                out _);
+
+            var coordinator = new StartupDataCoordinator(
+                databaseInitializer.Object,
+                localStoreStateService.Object,
+                remoteSyncCoordinator.Object,
+                birdStoreInitializer,
+                birdStore,
+                notificationService.Object,
+                new InlineUiDispatcher());
+
+            await coordinator.InitializeAsync(CancellationToken.None);
+
+            remoteSyncCoordinator.Verify(x => x.BootstrapLocalStoreAsync(It.IsAny<CancellationToken>()), Times.Once);
+            remoteSyncCoordinator.Verify(x => x.Start(It.IsAny<CancellationToken>()), Times.Once);
+            birdStore.LoadState.Should().Be(LoadState.Loaded);
         }
 
         [Fact]
@@ -50,6 +93,7 @@ namespace Birds.Tests.App.Services
         {
             var birdStore = new BirdStore();
             var databaseInitializer = new Mock<IDatabaseInitializer>();
+            var localStoreStateService = new Mock<ILocalStoreStateService>();
             var remoteSyncCoordinator = new Mock<IRemoteSyncCoordinator>();
             databaseInitializer
                 .Setup(x => x.InitializeAsync(It.IsAny<CancellationToken>()))
@@ -64,6 +108,7 @@ namespace Birds.Tests.App.Services
 
             var coordinator = new StartupDataCoordinator(
                 databaseInitializer.Object,
+                localStoreStateService.Object,
                 remoteSyncCoordinator.Object,
                 birdStoreInitializer,
                 birdStore,

@@ -3,6 +3,7 @@ using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
 using Birds.Application.Interfaces;
 using Birds.Shared.Localization;
+using Birds.Shared.Sync;
 using Birds.UI.Services.Dialogs.Interfaces;
 using Birds.UI.Services.Export.Interfaces;
 using Birds.UI.Services.Import;
@@ -40,6 +41,7 @@ namespace Birds.Tests.UI.ViewModels
         private readonly Mock<INotificationService> _notificationService = new();
         private readonly Mock<IMediator> _mediator = new();
         private readonly Mock<IDatabaseMaintenanceService> _databaseMaintenanceService = new();
+        private readonly TestRemoteSyncStatusSource _remoteSyncStatus = new();
         private readonly BirdStore _store = new();
         private CultureInfo _culture = CultureInfo.GetCultureInfo(AppLanguages.English);
 
@@ -122,6 +124,22 @@ namespace Birds.Tests.UI.ViewModels
 
             _preferences.AutoExportEnabled.Should().BeFalse();
             sut.AutoExportHint.Should().Be(AppText.Get("Settings.AutoExportHint.Disabled", _culture));
+        }
+
+        [Fact]
+        public void RemoteSyncStatus_Should_Project_Localized_Label_And_Hint()
+        {
+            _remoteSyncStatus.SetState(
+                RemoteSyncDisplayState.Offline,
+                new DateTime(2026, 4, 8, 10, 15, 0, DateTimeKind.Utc),
+                "backend unavailable");
+
+            var sut = CreateSut();
+
+            sut.RemoteSyncStatus.Should().Be(RemoteSyncDisplayState.Offline);
+            sut.RemoteSyncStatusLabel.Should().Be(AppText.Get("Settings.SyncStatus.Offline", _culture));
+            sut.RemoteSyncStatusHint.Should().Contain(AppText.Get("Settings.SyncStatusHint.Offline", _culture));
+            sut.RemoteSyncStatusHint.Should().Contain("backend unavailable");
         }
 
         [Fact]
@@ -300,7 +318,8 @@ namespace Birds.Tests.UI.ViewModels
                 _dataFileDialogService.Object,
                 _notificationService.Object,
                 _mediator.Object,
-                _databaseMaintenanceService.Object);
+                _databaseMaintenanceService.Object,
+                _remoteSyncStatus);
 
         private sealed class TestPreferencesService : IAppPreferencesService
         {
@@ -421,6 +440,43 @@ namespace Birds.Tests.UI.ViewModels
                 AutoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
                 ShowNotificationBadge = true;
                 ReduceMotion = false;
+            }
+        }
+
+        private sealed class TestRemoteSyncStatusSource : IRemoteSyncStatusSource
+        {
+            public event PropertyChangedEventHandler? PropertyChanged;
+
+            public RemoteSyncDisplayState Status { get; private set; } = RemoteSyncDisplayState.Disabled;
+
+            public DateTime? LastSuccessfulSyncAtUtc { get; private set; }
+
+            public DateTime? LastAttemptAtUtc { get; private set; }
+
+            public string? LastErrorMessage { get; private set; }
+
+            public int LastProcessedCount { get; private set; }
+
+            public void SetState(RemoteSyncDisplayState status,
+                                 DateTime? lastSuccessfulSyncAtUtc = null,
+                                 string? lastErrorMessage = null,
+                                 int lastProcessedCount = 0)
+            {
+                Status = status;
+                LastSuccessfulSyncAtUtc = lastSuccessfulSyncAtUtc;
+                LastAttemptAtUtc = DateTime.UtcNow;
+                LastErrorMessage = lastErrorMessage;
+                LastProcessedCount = lastProcessedCount;
+                RaiseAll();
+            }
+
+            private void RaiseAll()
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Status)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LastSuccessfulSyncAtUtc)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LastAttemptAtUtc)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LastErrorMessage)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LastProcessedCount)));
             }
         }
     }

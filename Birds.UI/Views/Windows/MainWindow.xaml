@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:notify="clr-namespace:Birds.UI.Services.Notification"
     xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+    xmlns:sync="clr-namespace:Birds.Shared.Sync;assembly=Birds.Shared"
     xmlns:vm="clr-namespace:Birds.UI.ViewModels"
     Title="{loc:Loc Key=Main.Header.Default.Title}"
     Width="1360"
@@ -277,6 +278,55 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="RemoteSyncStatusPillStyle" TargetType="Border">
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="Background" Value="{DynamicResource ThemeNotificationActionBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="11" />
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding HasRemoteSyncStatus}" Value="True">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Syncing}">
+                    <Setter Property="Background" Value="{DynamicResource ThemeTitleBarButtonHoverBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBadgeBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Synced}">
+                    <Setter Property="Background" Value="{DynamicResource ThemeStatusAliveBackgroundBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource ThemeStatusAliveBorderBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Offline}">
+                    <Setter Property="Background" Value="{DynamicResource ThemeTitleBarButtonHoverBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderFocusBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Error}">
+                    <Setter Property="Background" Value="{DynamicResource ThemeStatusDeadBackgroundBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource ThemeStatusDeadBorderBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="RemoteSyncStatusDotStyle" TargetType="Ellipse">
+            <Setter Property="Fill" Value="{DynamicResource ThemeSecondaryTextBrush}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Syncing}">
+                    <Setter Property="Fill" Value="{DynamicResource ThemeBadgeBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Synced}">
+                    <Setter Property="Fill" Value="{DynamicResource ThemeStatusAliveBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Offline}">
+                    <Setter Property="Fill" Value="{DynamicResource ThemeFieldBorderFocusBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Error}">
+                    <Setter Property="Fill" Value="{DynamicResource ThemeStatusDeadBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Border
@@ -376,6 +426,25 @@
                                 </Border.RenderTransform>
                             </Border>
                         </Grid>
+
+                        <Border
+                            Style="{StaticResource RemoteSyncStatusPillStyle}"
+                            ToolTip="{Binding RemoteSyncStatusHint}">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse
+                                    Width="6"
+                                    Height="6"
+                                    Margin="0,0,8,0"
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource RemoteSyncStatusDotStyle}" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontSize="11.5"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource ThemePrimaryTextBrush}"
+                                    Text="{Binding RemoteSyncStatusLabel}" />
+                            </StackPanel>
+                        </Border>
 
                         <Border
                             x:Name="QuickOperationIndicator"

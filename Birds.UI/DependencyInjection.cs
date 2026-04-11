@@ -14,12 +14,14 @@ using Birds.UI.Services.Localization;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Preferences;
 using Birds.UI.Services.Preferences.Interfaces;
+using Birds.UI.Services.Sync;
 using Birds.UI.Services.Stores.BirdStore;
 using Birds.UI.Services.Theming;
 using Birds.UI.Services.Theming.Interfaces;
 using Birds.UI.Threading;
 using Birds.UI.Threading.Abstractions;
 using Birds.UI.ViewModels;
+using Birds.Shared.Sync;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Birds.UI
@@ -44,6 +46,9 @@ namespace Birds.UI
             services.AddSingleton<IBirdManager, BirdManager>();
             services.AddSingleton<IUiDispatcher, WpfUiDispatcher>();
             services.AddSingleton<INotificationManager, NotificationManager>();
+            services.AddSingleton<RemoteSyncStatusStore>();
+            services.AddSingleton<IRemoteSyncStatusSource>(sp => sp.GetRequiredService<RemoteSyncStatusStore>());
+            services.AddSingleton<IRemoteSyncStatusReporter>(sp => sp.GetRequiredService<RemoteSyncStatusStore>());
             services.AddSingleton<ILocalizationService>(_ => LocalizationService.Instance);
             services.AddSingleton<IAppPreferencesPathProvider, LocalAppPreferencesPathProvider>();
             services.AddSingleton<IAppPreferencesService, JsonAppPreferencesService>();

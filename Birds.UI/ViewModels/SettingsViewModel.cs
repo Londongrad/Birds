@@ -13,6 +13,8 @@ using Birds.UI.Services.Preferences.Interfaces;
 using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.Services.Theming;
 using Birds.UI.Services.Theming.Interfaces;
+using Birds.UI.Services.Sync;
+using Birds.Shared.Sync;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
@@ -37,6 +39,7 @@ namespace Birds.UI.ViewModels
         private readonly INotificationService _notificationService;
         private readonly IMediator _mediator;
         private readonly IDatabaseMaintenanceService _databaseMaintenanceService;
+        private readonly IRemoteSyncStatusSource _remoteSyncStatus;
         private bool _isSynchronizingSelections;
 
         private ReadOnlyCollection<LanguageOption> _availableLanguages =
@@ -62,7 +65,8 @@ namespace Birds.UI.ViewModels
                                  IDataFileDialogService dataFileDialogService,
                                  INotificationService notificationService,
                                  IMediator mediator,
-                                 IDatabaseMaintenanceService databaseMaintenanceService)
+                                 IDatabaseMaintenanceService databaseMaintenanceService,
+                                 IRemoteSyncStatusSource remoteSyncStatus)
         {
             _preferences = preferences;
             _themeService = themeService;
@@ -76,6 +80,7 @@ namespace Birds.UI.ViewModels
             _notificationService = notificationService;
             _mediator = mediator;
             _databaseMaintenanceService = databaseMaintenanceService;
+            _remoteSyncStatus = remoteSyncStatus;
 
             BuildAvailableLanguages();
             BuildAvailableThemes();
@@ -85,6 +90,7 @@ namespace Birds.UI.ViewModels
 
             _preferences.PropertyChanged += OnPreferencesChanged;
             _localization.LanguageChanged += OnLanguageChanged;
+            _remoteSyncStatus.PropertyChanged += OnRemoteSyncStatusChanged;
         }
 
         public ReadOnlyCollection<LanguageOption> AvailableLanguages
@@ -205,6 +211,12 @@ namespace Birds.UI.ViewModels
             AutoExportEnabled
                 ? _localization.GetString("Settings.AutoExportHint.Enabled")
                 : _localization.GetString("Settings.AutoExportHint.Disabled");
+
+        public RemoteSyncDisplayState RemoteSyncStatus => _remoteSyncStatus.Status;
+
+        public string RemoteSyncStatusLabel => RemoteSyncStatusTextFormatter.GetLabel(_localization, RemoteSyncStatus);
+
+        public string RemoteSyncStatusHint => RemoteSyncStatusTextFormatter.GetHint(_localization, _remoteSyncStatus);
 
         public bool SupportsLocalDatabaseReset => _databaseMaintenanceService.CanResetLocalDatabase;
 
@@ -523,6 +535,8 @@ namespace Birds.UI.ViewModels
             OnPropertyChanged(nameof(MotionHint));
             OnPropertyChanged(nameof(ExportPathHint));
             OnPropertyChanged(nameof(ImportHint));
+            OnPropertyChanged(nameof(RemoteSyncStatusLabel));
+            OnPropertyChanged(nameof(RemoteSyncStatusHint));
         }
 
         private void BuildAvailableLanguages()
@@ -634,6 +648,20 @@ namespace Birds.UI.ViewModels
 
         private bool CanConfirmResetLocalDatabase()
             => SupportsLocalDatabaseReset && IsConfirmingResetLocalDatabase && CanStartDangerAction();
+
+        private void OnRemoteSyncStatusChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName is nameof(IRemoteSyncStatusSource.Status)
+                or nameof(IRemoteSyncStatusSource.LastSuccessfulSyncAtUtc)
+                or nameof(IRemoteSyncStatusSource.LastAttemptAtUtc)
+                or nameof(IRemoteSyncStatusSource.LastErrorMessage)
+                or nameof(IRemoteSyncStatusSource.LastProcessedCount))
+            {
+                OnPropertyChanged(nameof(RemoteSyncStatus));
+                OnPropertyChanged(nameof(RemoteSyncStatusLabel));
+                OnPropertyChanged(nameof(RemoteSyncStatusHint));
+            }
+        }
 
         private string ResolveExportPath()
             => string.IsNullOrWhiteSpace(_preferences.CustomExportPath)

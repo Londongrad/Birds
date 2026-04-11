@@ -30,6 +30,7 @@ namespace Birds.Infrastructure
             services.AddSingleton<BirdSeeder>();
             services.AddSingleton<IDatabaseInitializer, DatabaseInitializerService>();
             services.AddSingleton<IDatabaseMaintenanceService, DatabaseMaintenanceService>();
+            services.AddSingleton<ILocalStoreStateService, LocalStoreStateService>();
             services.AddSingleton<IBirdRepository, BirdRepository>();
 
             if (remoteSyncOptions.IsConfigured)

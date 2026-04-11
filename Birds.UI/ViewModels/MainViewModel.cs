@@ -5,12 +5,14 @@ using Birds.UI.Services.Navigation.Interfaces;
 using Birds.UI.Services.Notification;
 using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.Services.Preferences.Interfaces;
+using Birds.UI.Services.Sync;
 using Birds.UI.Services.Theming.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Birds.Shared.Sync;
 
 namespace Birds.UI.ViewModels
 {
@@ -21,6 +23,7 @@ namespace Birds.UI.ViewModels
         private readonly IAppPreferencesService _appPreferences;
         private readonly IThemeService _themeService;
         private readonly ILocalizationService _localization;
+        private readonly IRemoteSyncStatusSource _remoteSyncStatus;
         private readonly IBirdManager _birdManager;
         private Type? _currentViewModelType;
 
@@ -29,6 +32,7 @@ namespace Birds.UI.ViewModels
                              IAppPreferencesService appPreferences,
                              IThemeService themeService,
                              ILocalizationService localization,
+                             IRemoteSyncStatusSource remoteSyncStatus,
                              IBirdManager birdManager,
                              BirdListViewModel birdsVM,
                              AddBirdViewModel addBirdVM,
@@ -40,6 +44,7 @@ namespace Birds.UI.ViewModels
             _appPreferences = appPreferences;
             _themeService = themeService;
             _localization = localization;
+            _remoteSyncStatus = remoteSyncStatus;
             _birdManager = birdManager;
 
             _navigation.AddCreator<BirdListViewModel>(() => birdsVM);
@@ -55,6 +60,9 @@ namespace Birds.UI.ViewModels
 
             if (_appPreferences is INotifyPropertyChanged preferencesNotify)
                 preferencesNotify.PropertyChanged += OnPreferencesPropertyChanged;
+
+            if (_remoteSyncStatus is INotifyPropertyChanged remoteSyncNotify)
+                remoteSyncNotify.PropertyChanged += OnRemoteSyncStatusPropertyChanged;
 
             if (_notificationManager.ActiveNotifications is INotifyCollectionChanged notificationsChanged)
                 notificationsChanged.CollectionChanged += OnNotificationsCollectionChanged;
@@ -93,6 +101,22 @@ namespace Birds.UI.ViewModels
         public int PendingDeleteUndoVersion => _birdManager.PendingDeleteUndoVersion;
 
         public TimeSpan PendingDeleteUndoDuration => _birdManager.PendingDeleteUndoDuration;
+
+        public RemoteSyncDisplayState RemoteSyncStatus => _remoteSyncStatus.Status;
+
+        public bool HasRemoteSyncStatus => RemoteSyncStatus != RemoteSyncDisplayState.Disabled;
+
+        public bool IsRemoteSyncSynced => RemoteSyncStatus == RemoteSyncDisplayState.Synced;
+
+        public bool IsRemoteSyncSyncing => RemoteSyncStatus == RemoteSyncDisplayState.Syncing;
+
+        public bool IsRemoteSyncOffline => RemoteSyncStatus == RemoteSyncDisplayState.Offline;
+
+        public bool IsRemoteSyncError => RemoteSyncStatus == RemoteSyncDisplayState.Error;
+
+        public string RemoteSyncStatusLabel => RemoteSyncStatusTextFormatter.GetLabel(_localization, RemoteSyncStatus);
+
+        public string RemoteSyncStatusHint => RemoteSyncStatusTextFormatter.GetHint(_localization, _remoteSyncStatus);
 
         public string PendingDeleteUndoToolTip => AppText.Get("Notification.UndoDelete.ToolTip");
 
@@ -185,6 +209,25 @@ namespace Birds.UI.ViewModels
             OnPropertyChanged(nameof(ShouldShowNotificationBadge));
         }
 
+        private void OnRemoteSyncStatusPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName is nameof(IRemoteSyncStatusSource.Status)
+                or nameof(IRemoteSyncStatusSource.LastSuccessfulSyncAtUtc)
+                or nameof(IRemoteSyncStatusSource.LastAttemptAtUtc)
+                or nameof(IRemoteSyncStatusSource.LastErrorMessage)
+                or nameof(IRemoteSyncStatusSource.LastProcessedCount))
+            {
+                OnPropertyChanged(nameof(RemoteSyncStatus));
+                OnPropertyChanged(nameof(HasRemoteSyncStatus));
+                OnPropertyChanged(nameof(IsRemoteSyncSynced));
+                OnPropertyChanged(nameof(IsRemoteSyncSyncing));
+                OnPropertyChanged(nameof(IsRemoteSyncOffline));
+                OnPropertyChanged(nameof(IsRemoteSyncError));
+                OnPropertyChanged(nameof(RemoteSyncStatusLabel));
+                OnPropertyChanged(nameof(RemoteSyncStatusHint));
+            }
+        }
+
         private void OnBirdManagerPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName is nameof(IBirdManager.HasPendingDeleteUndo)
@@ -201,6 +244,8 @@ namespace Birds.UI.ViewModels
             UpdateHeader(_currentViewModelType);
             OnPropertyChanged(nameof(RecentOperationStatusToolTip));
             OnPropertyChanged(nameof(PendingDeleteUndoToolTip));
+            OnPropertyChanged(nameof(RemoteSyncStatusLabel));
+            OnPropertyChanged(nameof(RemoteSyncStatusHint));
         }
 
         private void UpdateHeader(Type? currentViewModelType)

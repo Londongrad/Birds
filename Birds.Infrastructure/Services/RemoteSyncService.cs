@@ -38,13 +38,18 @@ namespace Birds.Infrastructure.Services
                 await using var remoteContext = await _remoteContextFactory.CreateDbContextAsync(cancellationToken);
                 if (!await remoteContext.Database.CanConnectAsync(cancellationToken))
                 {
+                    const string backendUnavailableMessage = "Remote sync backend is unavailable.";
+
                     if (pendingOperations.Count > 0)
                     {
-                        MarkBatchFailed(pendingOperations, "Remote sync backend is unavailable.", DateTime.UtcNow);
+                        MarkBatchFailed(pendingOperations, backendUnavailableMessage, DateTime.UtcNow);
                         await localContext.SaveChangesAsync(cancellationToken);
                     }
 
-                    return new RemoteSyncRunResult(RemoteSyncRunStatus.BackendUnavailable, pendingOperations.Count);
+                    return new RemoteSyncRunResult(
+                        RemoteSyncRunStatus.BackendUnavailable,
+                        pendingOperations.Count,
+                        backendUnavailableMessage);
                 }
 
                 var processedCount = 0;
@@ -61,7 +66,7 @@ namespace Birds.Infrastructure.Services
                         MarkBatchFailed(pendingOperations, ex.Message, DateTime.UtcNow);
                         await localContext.SaveChangesAsync(cancellationToken);
                         _logger.LogWarning(ex, LogMessages.RemoteSyncFailed, pendingOperations.Count);
-                        return new RemoteSyncRunResult(RemoteSyncRunStatus.Failed, pendingOperations.Count);
+                        return new RemoteSyncRunResult(RemoteSyncRunStatus.Failed, pendingOperations.Count, ex.Message);
                     }
                 }
 

@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:loc="clr-namespace:Birds.UI.Services.Localization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sync="clr-namespace:Birds.Shared.Sync;assembly=Birds.Shared"
     xmlns:viewmodels="clr-namespace:Birds.UI.ViewModels"
     d:DataContext="{d:DesignInstance Type=viewmodels:SettingsViewModel}"
     d:DesignHeight="720"
@@ -395,6 +396,48 @@
             <Setter Property="BorderBrush" Value="{StaticResource DangerButtonBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="12" />
+        </Style>
+
+        <Style x:Key="SettingsSyncStatusPillStyle" TargetType="Border">
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="Background" Value="{StaticResource AccentButtonBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource AccentButtonBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="11" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Syncing}">
+                    <Setter Property="BorderBrush" Value="{StaticResource FieldBorderFocusBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Synced}">
+                    <Setter Property="Background" Value="{DynamicResource ThemeStatusAliveBackgroundBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource ThemeStatusAliveBorderBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Offline}">
+                    <Setter Property="BorderBrush" Value="{StaticResource FieldBorderFocusBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Error}">
+                    <Setter Property="Background" Value="{DynamicResource ThemeStatusDeadBackgroundBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource ThemeStatusDeadBorderBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SettingsSyncStatusDotStyle" TargetType="Ellipse">
+            <Setter Property="Fill" Value="{StaticResource SecondaryTextBrush}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Syncing}">
+                    <Setter Property="Fill" Value="{StaticResource FieldBorderFocusBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Synced}">
+                    <Setter Property="Fill" Value="{DynamicResource ThemeStatusAliveBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Offline}">
+                    <Setter Property="Fill" Value="{StaticResource FieldBorderFocusBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Error}">
+                    <Setter Property="Fill" Value="{DynamicResource ThemeStatusDeadBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
 
         <Style
@@ -819,6 +862,54 @@
                                         IsChecked="{Binding AutoExportEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                         Style="{StaticResource ToggleSwitchStyle}"
                                         VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+
+                            <Border
+                                HorizontalAlignment="Stretch"
+                                Margin="0,16,0,0"
+                                Style="{StaticResource SettingsToggleRowStyle}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock
+                                        Style="{StaticResource FieldLabelStyle}"
+                                        Margin="0,0,0,4"
+                                        Text="{loc:Loc Key=Settings.SyncStatusLabel}" />
+
+                                    <Border
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource SettingsSyncStatusPillStyle}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Ellipse
+                                                Width="6"
+                                                Height="6"
+                                                Margin="0,0,8,0"
+                                                VerticalAlignment="Center"
+                                                Style="{StaticResource SettingsSyncStatusDotStyle}" />
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"
+                                                Foreground="{StaticResource PrimaryTextBrush}"
+                                                Text="{Binding RemoteSyncStatusLabel}" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Grid.ColumnSpan="2"
+                                        Style="{StaticResource FieldHintStyle}"
+                                        Margin="0,8,0,0"
+                                        Text="{Binding RemoteSyncStatusHint}" />
                                 </Grid>
                             </Border>
 

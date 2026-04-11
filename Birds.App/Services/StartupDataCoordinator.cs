@@ -9,6 +9,7 @@ namespace Birds.App.Services
 {
     public sealed class StartupDataCoordinator(
         IDatabaseInitializer databaseInitializer,
+        ILocalStoreStateService localStoreStateService,
         IRemoteSyncCoordinator remoteSyncCoordinator,
         BirdStoreInitializer birdStoreInitializer,
         IBirdStore birdStore,
@@ -16,6 +17,7 @@ namespace Birds.App.Services
         IUiDispatcher uiDispatcher)
     {
         private readonly IDatabaseInitializer _databaseInitializer = databaseInitializer;
+        private readonly ILocalStoreStateService _localStoreStateService = localStoreStateService;
         private readonly IRemoteSyncCoordinator _remoteSyncCoordinator = remoteSyncCoordinator;
         private readonly BirdStoreInitializer _birdStoreInitializer = birdStoreInitializer;
         private readonly IBirdStore _birdStore = birdStore;
@@ -29,6 +31,7 @@ namespace Birds.App.Services
             try
             {
                 await _databaseInitializer.InitializeAsync(cancellationToken);
+                await BootstrapEmptyLocalStoreAsync(cancellationToken);
                 _remoteSyncCoordinator.Start(cancellationToken);
                 await _birdStoreInitializer.StartAsync(cancellationToken);
             }
@@ -48,6 +51,16 @@ namespace Birds.App.Services
 
                 throw;
             }
+        }
+
+        private async Task BootstrapEmptyLocalStoreAsync(CancellationToken cancellationToken)
+        {
+            var localState = await _localStoreStateService.GetSnapshotAsync(cancellationToken);
+
+            if (!localState.IsEmptyAndClean)
+                return;
+
+            await _remoteSyncCoordinator.BootstrapLocalStoreAsync(cancellationToken);
         }
     }
 }
