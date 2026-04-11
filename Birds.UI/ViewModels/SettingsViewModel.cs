@@ -139,6 +139,9 @@ namespace Birds.UI.ViewModels
         private bool showNotificationBadge = true;
 
         [ObservableProperty]
+        private bool showSyncStatusIndicator = AppPreferencesState.DefaultShowSyncStatusIndicator;
+
+        [ObservableProperty]
         private bool reduceMotion;
 
         [ObservableProperty]
@@ -198,6 +201,11 @@ namespace Birds.UI.ViewModels
             ShowNotificationBadge
                 ? _localization.GetString("Settings.NotificationsHint.Enabled")
                 : _localization.GetString("Settings.NotificationsHint.Disabled");
+
+        public string SyncIndicatorHint =>
+            ShowSyncStatusIndicator
+                ? _localization.GetString("Settings.SyncIndicatorHint.Enabled")
+                : _localization.GetString("Settings.SyncIndicatorHint.Disabled");
 
         public string MotionHint =>
             ReduceMotion
@@ -577,6 +585,20 @@ namespace Birds.UI.ViewModels
             OnPropertyChanged(nameof(NotificationsHint));
         }
 
+        partial void OnShowSyncStatusIndicatorChanged(bool value)
+        {
+            if (_isSynchronizingSelections)
+            {
+                OnPropertyChanged(nameof(SyncIndicatorHint));
+                return;
+            }
+
+            if (_preferences.ShowSyncStatusIndicator != value)
+                _preferences.ShowSyncStatusIndicator = value;
+
+            OnPropertyChanged(nameof(SyncIndicatorHint));
+        }
+
         partial void OnReduceMotionChanged(bool value)
         {
             if (_isSynchronizingSelections)
@@ -600,6 +622,7 @@ namespace Birds.UI.ViewModels
                 or nameof(IAppPreferencesService.CustomExportPath)
                 or nameof(IAppPreferencesService.AutoExportEnabled)
                 or nameof(IAppPreferencesService.ShowNotificationBadge)
+                or nameof(IAppPreferencesService.ShowSyncStatusIndicator)
                 or nameof(IAppPreferencesService.ReduceMotion))
             {
                 ReloadFromPreferences(reapplyTheme: true);
@@ -622,6 +645,7 @@ namespace Birds.UI.ViewModels
             OnPropertyChanged(nameof(ImportModeHint));
             OnPropertyChanged(nameof(AutoExportHint));
             OnPropertyChanged(nameof(NotificationsHint));
+            OnPropertyChanged(nameof(SyncIndicatorHint));
             OnPropertyChanged(nameof(MotionHint));
             OnPropertyChanged(nameof(ExportPathHint));
             OnPropertyChanged(nameof(ImportHint));
@@ -693,6 +717,7 @@ namespace Birds.UI.ViewModels
                 SelectedImportMode = normalizedImportMode;
                 AutoExportEnabled = _preferences.AutoExportEnabled;
                 ShowNotificationBadge = _preferences.ShowNotificationBadge;
+                ShowSyncStatusIndicator = _preferences.ShowSyncStatusIndicator;
                 ReduceMotion = _preferences.ReduceMotion;
             }
             finally
@@ -709,6 +734,7 @@ namespace Birds.UI.ViewModels
             OnPropertyChanged(nameof(ImportModeHint));
             OnPropertyChanged(nameof(AutoExportHint));
             OnPropertyChanged(nameof(NotificationsHint));
+            OnPropertyChanged(nameof(SyncIndicatorHint));
             OnPropertyChanged(nameof(MotionHint));
             OnPropertyChanged(nameof(ExportPathHint));
             OnPropertyChanged(nameof(ImportHint));

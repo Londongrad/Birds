@@ -18,6 +18,8 @@ namespace Birds.UI.Services.Preferences.Interfaces
 
         bool ShowNotificationBadge { get; set; }
 
+        bool ShowSyncStatusIndicator { get; set; }
+
         bool ReduceMotion { get; set; }
 
         void ResetToDefaults();

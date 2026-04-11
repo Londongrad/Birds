@@ -116,6 +116,8 @@ namespace Birds.UI.ViewModels
 
         public bool IsRemoteSyncError => RemoteSyncStatus == RemoteSyncDisplayState.Error;
 
+        public bool ShouldShowRemoteSyncStatus => _appPreferences.ShowSyncStatusIndicator && HasRemoteSyncStatus;
+
         public string RemoteSyncStatusLabel => RemoteSyncStatusTextFormatter.GetLabel(_localization, RemoteSyncStatus);
 
         public string RemoteSyncStatusHint => RemoteSyncStatusTextFormatter.GetHint(_localization, _remoteSyncStatus);
@@ -197,8 +199,12 @@ namespace Birds.UI.ViewModels
 
         private void OnPreferencesPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(IAppPreferencesService.ShowNotificationBadge))
+            if (e.PropertyName is nameof(IAppPreferencesService.ShowNotificationBadge)
+                or nameof(IAppPreferencesService.ShowSyncStatusIndicator))
+            {
                 OnPropertyChanged(nameof(ShouldShowNotificationBadge));
+                OnPropertyChanged(nameof(ShouldShowRemoteSyncStatus));
+            }
         }
 
         private void OnNotificationsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -227,6 +233,7 @@ namespace Birds.UI.ViewModels
                 OnPropertyChanged(nameof(IsRemoteSyncOffline));
                 OnPropertyChanged(nameof(IsRemoteSyncPaused));
                 OnPropertyChanged(nameof(IsRemoteSyncError));
+                OnPropertyChanged(nameof(ShouldShowRemoteSyncStatus));
                 OnPropertyChanged(nameof(RemoteSyncStatusLabel));
                 OnPropertyChanged(nameof(RemoteSyncStatusHint));
             }

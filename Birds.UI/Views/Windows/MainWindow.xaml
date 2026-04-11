@@ -280,23 +280,24 @@
         </Style>
 
         <Style x:Key="RemoteSyncStatusPillStyle" TargetType="Border">
-            <Setter Property="Padding" Value="10,5" />
-            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="Margin" Value="0,0,6,0" />
             <Setter Property="Background" Value="{DynamicResource ThemeNotificationActionBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="11" />
+            <Setter Property="Opacity" Value="0.94" />
             <Setter Property="Visibility" Value="Collapsed" />
             <Style.Triggers>
-                <DataTrigger Binding="{Binding HasRemoteSyncStatus}" Value="True">
+                <DataTrigger Binding="{Binding ShouldShowRemoteSyncStatus}" Value="True">
                     <Setter Property="Visibility" Value="Visible" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Syncing}">
-                    <Setter Property="Background" Value="{DynamicResource ThemeTitleBarButtonHoverBrush}" />
+                    <Setter Property="Background" Value="{DynamicResource ThemeNotificationActionBrush}" />
                     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBadgeBrush}" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Synced}">
-                    <Setter Property="Background" Value="{DynamicResource ThemeStatusAliveBackgroundBrush}" />
+                    <Setter Property="Background" Value="{DynamicResource ThemeNotificationActionBrush}" />
                     <Setter Property="BorderBrush" Value="{DynamicResource ThemeStatusAliveBorderBrush}" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Paused}">
@@ -304,11 +305,11 @@
                     <Setter Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Offline}">
-                    <Setter Property="Background" Value="{DynamicResource ThemeTitleBarButtonHoverBrush}" />
+                    <Setter Property="Background" Value="{DynamicResource ThemeNotificationActionBrush}" />
                     <Setter Property="BorderBrush" Value="{DynamicResource ThemeFieldBorderFocusBrush}" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding RemoteSyncStatus}" Value="{x:Static sync:RemoteSyncDisplayState.Error}">
-                    <Setter Property="Background" Value="{DynamicResource ThemeStatusDeadBackgroundBrush}" />
+                    <Setter Property="Background" Value="{DynamicResource ThemeNotificationActionBrush}" />
                     <Setter Property="BorderBrush" Value="{DynamicResource ThemeStatusDeadBorderBrush}" />
                 </DataTrigger>
             </Style.Triggers>
@@ -439,14 +440,14 @@
                             ToolTip="{Binding RemoteSyncStatusHint}">
                             <StackPanel Orientation="Horizontal">
                                 <Ellipse
-                                    Width="6"
-                                    Height="6"
-                                    Margin="0,0,8,0"
+                                    Width="5"
+                                    Height="5"
+                                    Margin="0,0,7,0"
                                     VerticalAlignment="Center"
                                     Style="{StaticResource RemoteSyncStatusDotStyle}" />
                                 <TextBlock
                                     VerticalAlignment="Center"
-                                    FontSize="11.5"
+                                    FontSize="11"
                                     FontWeight="SemiBold"
                                     Foreground="{DynamicResource ThemePrimaryTextBrush}"
                                     Text="{Binding RemoteSyncStatusLabel}" />

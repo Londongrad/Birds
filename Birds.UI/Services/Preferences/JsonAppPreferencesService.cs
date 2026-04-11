@@ -41,6 +41,9 @@ namespace Birds.UI.Services.Preferences
         private bool showNotificationBadge = true;
 
         [ObservableProperty]
+        private bool showSyncStatusIndicator = AppPreferencesState.DefaultShowSyncStatusIndicator;
+
+        [ObservableProperty]
         private bool reduceMotion;
 
         public JsonAppPreferencesService(IAppPreferencesPathProvider pathProvider)
@@ -55,6 +58,7 @@ namespace Birds.UI.Services.Preferences
             customExportPath = state.CustomExportPath?.Trim() ?? string.Empty;
             autoExportEnabled = state.AutoExportEnabled;
             showNotificationBadge = state.ShowNotificationBadge;
+            showSyncStatusIndicator = state.ShowSyncStatusIndicator;
             reduceMotion = state.ReduceMotion;
         }
 
@@ -67,6 +71,7 @@ namespace Birds.UI.Services.Preferences
             CustomExportPath = string.Empty;
             AutoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
             ShowNotificationBadge = true;
+            ShowSyncStatusIndicator = AppPreferencesState.DefaultShowSyncStatusIndicator;
             ReduceMotion = false;
         }
 
@@ -99,6 +104,8 @@ namespace Birds.UI.Services.Preferences
         partial void OnAutoExportEnabledChanged(bool value) => SaveState();
 
         partial void OnShowNotificationBadgeChanged(bool value) => SaveState();
+
+        partial void OnShowSyncStatusIndicatorChanged(bool value) => SaveState();
 
         partial void OnReduceMotionChanged(bool value) => SaveState();
 
@@ -139,6 +146,7 @@ namespace Birds.UI.Services.Preferences
                         CustomExportPath = CustomExportPath?.Trim() ?? string.Empty,
                         AutoExportEnabled = AutoExportEnabled,
                         ShowNotificationBadge = ShowNotificationBadge,
+                        ShowSyncStatusIndicator = ShowSyncStatusIndicator,
                         ReduceMotion = ReduceMotion
                     },
                     JsonOptions);

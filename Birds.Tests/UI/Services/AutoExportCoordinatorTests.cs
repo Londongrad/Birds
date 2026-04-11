@@ -155,6 +155,7 @@ namespace Birds.Tests.UI.Services
             private string _customExportPath = string.Empty;
             private bool _autoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
             private bool _showNotificationBadge = true;
+            private bool _showSyncStatusIndicator = AppPreferencesState.DefaultShowSyncStatusIndicator;
             private bool _reduceMotion;
 
             public event PropertyChangedEventHandler? PropertyChanged;
@@ -201,6 +202,12 @@ namespace Birds.Tests.UI.Services
                 set => SetField(ref _showNotificationBadge, value, nameof(ShowNotificationBadge));
             }
 
+            public bool ShowSyncStatusIndicator
+            {
+                get => _showSyncStatusIndicator;
+                set => SetField(ref _showSyncStatusIndicator, value, nameof(ShowSyncStatusIndicator));
+            }
+
             public bool ReduceMotion
             {
                 get => _reduceMotion;
@@ -216,6 +223,7 @@ namespace Birds.Tests.UI.Services
                 CustomExportPath = string.Empty;
                 AutoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
                 ShowNotificationBadge = true;
+                ShowSyncStatusIndicator = AppPreferencesState.DefaultShowSyncStatusIndicator;
                 ReduceMotion = false;
             }
 

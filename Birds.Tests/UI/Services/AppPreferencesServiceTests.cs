@@ -26,6 +26,7 @@ namespace Birds.Tests.UI.Services
                 sut.CustomExportPath.Should().BeEmpty();
                 sut.AutoExportEnabled.Should().BeTrue();
                 sut.ShowNotificationBadge.Should().BeTrue();
+                sut.ShowSyncStatusIndicator.Should().BeTrue();
                 sut.ReduceMotion.Should().BeFalse();
             }
             finally
@@ -51,6 +52,7 @@ namespace Birds.Tests.UI.Services
                     CustomExportPath = "C:\\exports\\birds-custom.json",
                     AutoExportEnabled = false,
                     ShowNotificationBadge = false,
+                    ShowSyncStatusIndicator = false,
                     ReduceMotion = true
                 };
 
@@ -63,6 +65,7 @@ namespace Birds.Tests.UI.Services
                 reloaded.CustomExportPath.Should().Be("C:\\exports\\birds-custom.json");
                 reloaded.AutoExportEnabled.Should().BeFalse();
                 reloaded.ShowNotificationBadge.Should().BeFalse();
+                reloaded.ShowSyncStatusIndicator.Should().BeFalse();
                 reloaded.ReduceMotion.Should().BeTrue();
             }
             finally
@@ -90,6 +93,7 @@ namespace Birds.Tests.UI.Services
                       "customExportPath": "C:\\exports\\birds-custom.json",
                       "autoExportEnabled": false,
                       "showNotificationBadge": true,
+                      "showSyncStatusIndicator": false,
                       "reduceMotion": false
                     }
                     """);
@@ -101,6 +105,7 @@ namespace Birds.Tests.UI.Services
                 sut.SelectedImportMode.Should().Be(BirdImportModes.Replace);
                 sut.CustomExportPath.Should().Be("C:\\exports\\birds-custom.json");
                 sut.AutoExportEnabled.Should().BeFalse();
+                sut.ShowSyncStatusIndicator.Should().BeFalse();
             }
             finally
             {

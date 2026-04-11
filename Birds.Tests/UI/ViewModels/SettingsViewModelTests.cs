@@ -83,6 +83,7 @@ namespace Birds.Tests.UI.ViewModels
             _preferences.SelectedImportMode = BirdImportModes.Merge;
             _preferences.AutoExportEnabled = true;
             _preferences.ShowNotificationBadge = true;
+            _preferences.ShowSyncStatusIndicator = true;
             _preferences.ReduceMotion = false;
 
             var sut = CreateSut();
@@ -92,6 +93,7 @@ namespace Birds.Tests.UI.ViewModels
             sut.ImportModeHint.Should().Be(AppText.Get("Settings.ImportModeHint.Merge", _culture));
             sut.AutoExportHint.Should().Be(AppText.Get("Settings.AutoExportHint.Enabled", _culture));
             sut.NotificationsHint.Should().Be(AppText.Get("Settings.NotificationsHint.Enabled", _culture));
+            sut.SyncIndicatorHint.Should().Be(AppText.Get("Settings.SyncIndicatorHint.Enabled", _culture));
             sut.MotionHint.Should().Be(AppText.Get("Settings.MotionHint.Disabled", _culture));
         }
 
@@ -104,6 +106,7 @@ namespace Birds.Tests.UI.ViewModels
             _preferences.SelectedImportMode = BirdImportModes.Replace;
             _preferences.AutoExportEnabled = false;
             _preferences.ShowNotificationBadge = false;
+            _preferences.ShowSyncStatusIndicator = false;
             _preferences.ReduceMotion = true;
 
             var sut = CreateSut();
@@ -118,6 +121,7 @@ namespace Birds.Tests.UI.ViewModels
             sut.ImportModeHint.Should().Be(AppText.Get("Settings.ImportModeHint.Replace", _culture));
             sut.AutoExportHint.Should().Be(AppText.Get("Settings.AutoExportHint.Disabled", _culture));
             sut.NotificationsHint.Should().Be(AppText.Get("Settings.NotificationsHint.Disabled", _culture));
+            sut.SyncIndicatorHint.Should().Be(AppText.Get("Settings.SyncIndicatorHint.Disabled", _culture));
             sut.MotionHint.Should().Be(AppText.Get("Settings.MotionHint.Enabled", _culture));
         }
 
@@ -132,6 +136,19 @@ namespace Birds.Tests.UI.ViewModels
 
             _preferences.AutoExportEnabled.Should().BeFalse();
             sut.AutoExportHint.Should().Be(AppText.Get("Settings.AutoExportHint.Disabled", _culture));
+        }
+
+        [Fact]
+        public void ShowSyncStatusIndicatorChanged_Should_PersistPreference_And_UpdateHint()
+        {
+            _preferences.ShowSyncStatusIndicator = true;
+
+            var sut = CreateSut();
+
+            sut.ShowSyncStatusIndicator = false;
+
+            _preferences.ShowSyncStatusIndicator.Should().BeFalse();
+            sut.SyncIndicatorHint.Should().Be(AppText.Get("Settings.SyncIndicatorHint.Disabled", _culture));
         }
 
         [Fact]
@@ -399,6 +416,7 @@ namespace Birds.Tests.UI.ViewModels
             private string _customExportPath = string.Empty;
             private bool _autoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
             private bool _showNotificationBadge = true;
+            private bool _showSyncStatusIndicator = AppPreferencesState.DefaultShowSyncStatusIndicator;
             private bool _reduceMotion;
 
             public event PropertyChangedEventHandler? PropertyChanged;
@@ -463,6 +481,18 @@ namespace Birds.Tests.UI.ViewModels
                 }
             }
 
+            public bool ShowSyncStatusIndicator
+            {
+                get => _showSyncStatusIndicator;
+                set
+                {
+                    if (_showSyncStatusIndicator == value)
+                        return;
+                    _showSyncStatusIndicator = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShowSyncStatusIndicator)));
+                }
+            }
+
             public string CustomExportPath
             {
                 get => _customExportPath;
@@ -508,6 +538,7 @@ namespace Birds.Tests.UI.ViewModels
                 CustomExportPath = string.Empty;
                 AutoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
                 ShowNotificationBadge = true;
+                ShowSyncStatusIndicator = AppPreferencesState.DefaultShowSyncStatusIndicator;
                 ReduceMotion = false;
             }
         }

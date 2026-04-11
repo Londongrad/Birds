@@ -10,6 +10,7 @@ namespace Birds.UI.Services.Preferences
         public const string DefaultDateFormat = Localization.DateDisplayFormats.Default;
         public const string DefaultImportMode = Import.BirdImportModes.Merge;
         public const bool DefaultAutoExportEnabled = true;
+        public const bool DefaultShowSyncStatusIndicator = true;
 
         public string SelectedLanguage { get; init; } = DefaultLanguage;
 
@@ -24,6 +25,8 @@ namespace Birds.UI.Services.Preferences
         public bool AutoExportEnabled { get; init; } = DefaultAutoExportEnabled;
 
         public bool ShowNotificationBadge { get; init; } = true;
+
+        public bool ShowSyncStatusIndicator { get; init; } = DefaultShowSyncStatusIndicator;
 
         public bool ReduceMotion { get; init; }
     }
