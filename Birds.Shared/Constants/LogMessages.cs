@@ -35,6 +35,7 @@
 
         public const string RemoteSyncProcessed = "Remote sync processed {Count} pending changes.";
         public const string RemoteSyncFailed = "Remote sync failed while processing {Count} pending changes.";
+        public const string RemotePullProcessed = "Remote sync pulled {Count} remote changes into the local store.";
         public const string RemoteSyncStopped = "Remote sync loop stopped because the application is shutting down.";
         public const string RemoteSyncLoopFailed = "Remote sync background loop crashed unexpectedly.";
     }

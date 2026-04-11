@@ -12,7 +12,7 @@ namespace Birds.Tests.Infrastructure
     public sealed class DatabaseInitializerServiceTests
     {
         [Fact]
-        public async Task InitializeAsync_Should_Create_SyncOperations_Table_For_Existing_Local_Database()
+        public async Task InitializeAsync_Should_Create_Sync_Metadata_Tables_For_Existing_Local_Database()
         {
             var databasePath = Path.Combine(Path.GetTempPath(), $"birds-sync-init-{Guid.NewGuid():N}.db");
 
@@ -41,11 +41,11 @@ namespace Birds.Tests.Infrastructure
                 command.CommandText = """
                                       SELECT COUNT(*)
                                       FROM sqlite_master
-                                      WHERE type = 'table' AND name = 'SyncOperations';
+                                      WHERE type = 'table' AND name IN ('SyncOperations', 'RemoteSyncCursors');
                                       """;
 
                 var tableCount = (long)(await command.ExecuteScalarAsync() ?? 0L);
-                tableCount.Should().Be(1);
+                tableCount.Should().Be(2);
             }
             finally
             {

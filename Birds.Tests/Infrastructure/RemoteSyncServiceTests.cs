@@ -33,7 +33,7 @@ namespace Birds.Tests.Infrastructure
         {
             var repository = new BirdRepository(_localDb.CreateFactory());
             var bird = Bird.Create(
-                BirdsName.Воробей,
+                Enum.GetValues<BirdsName>()[0],
                 "sync me",
                 DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-3)));
             await repository.AddAsync(bird);
@@ -59,7 +59,7 @@ namespace Birds.Tests.Infrastructure
         {
             var repository = new BirdRepository(_localDb.CreateFactory());
             var bird = Bird.Create(
-                BirdsName.Щегол,
+                Enum.GetValues<BirdsName>()[1],
                 "remove remotely",
                 DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-4)));
 
@@ -95,12 +95,98 @@ namespace Birds.Tests.Infrastructure
         }
 
         [Fact]
+        public async Task SyncPendingAsync_WhenRemoteHasNewBird_Should_PullItIntoLocalStore_And_AdvanceCursor()
+        {
+            var remoteBird = Bird.Restore(
+                Guid.NewGuid(),
+                Enum.GetValues<BirdsName>()[2],
+                "remote only",
+                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-6)),
+                null,
+                true,
+                DateTime.UtcNow.AddDays(-6),
+                DateTime.UtcNow.AddDays(-2));
+
+            await using (var remoteContext = _remoteDb.CreateContext())
+            {
+                await remoteContext.Birds.AddAsync(remoteBird);
+                await remoteContext.SaveChangesAsync();
+            }
+
+            var sut = CreateSut(_remoteDb.CreateFactory());
+
+            var result = await sut.SyncPendingAsync(CancellationToken.None);
+
+            result.Status.Should().Be(RemoteSyncRunStatus.Synced);
+            result.ProcessedCount.Should().Be(1);
+
+            await using var localContext = _localDb.CreateContext();
+            var localBird = await localContext.Birds.SingleAsync();
+            localBird.Id.Should().Be(remoteBird.Id);
+            localBird.Description.Should().Be("remote only");
+
+            var cursor = await localContext.RemoteSyncCursors.SingleAsync();
+            cursor.CursorKey.Should().Be("Birds.Pull");
+            cursor.LastSyncedAtUtc.Should().Be(remoteBird.UpdatedAt);
+        }
+
+        [Fact]
+        public async Task SyncPendingAsync_WhenRemoteBirdUpdatedAfterCursor_Should_UpdateLocalBird()
+        {
+            var birdId = Guid.NewGuid();
+            var initialRemoteBird = Bird.Restore(
+                birdId,
+                Enum.GetValues<BirdsName>()[3],
+                "before pull",
+                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-8)),
+                null,
+                true,
+                DateTime.UtcNow.AddDays(-8),
+                DateTime.UtcNow.AddDays(-5));
+
+            await using (var remoteContext = _remoteDb.CreateContext())
+            {
+                await remoteContext.Birds.AddAsync(initialRemoteBird);
+                await remoteContext.SaveChangesAsync();
+            }
+
+            var sut = CreateSut(_remoteDb.CreateFactory());
+            await sut.SyncPendingAsync(CancellationToken.None);
+
+            var updatedRemoteBird = Bird.Restore(
+                birdId,
+                initialRemoteBird.Name,
+                "after pull",
+                initialRemoteBird.Arrival,
+                initialRemoteBird.Departure,
+                initialRemoteBird.IsAlive,
+                initialRemoteBird.CreatedAt,
+                DateTime.UtcNow.AddDays(-1));
+
+            await using (var remoteUpdateContext = _remoteDb.CreateContext())
+            {
+                remoteUpdateContext.Birds.Update(updatedRemoteBird);
+                await remoteUpdateContext.SaveChangesAsync();
+            }
+
+            var result = await sut.SyncPendingAsync(CancellationToken.None);
+
+            result.Status.Should().Be(RemoteSyncRunStatus.Synced);
+            result.ProcessedCount.Should().Be(1);
+
+            await using var localContext = _localDb.CreateContext();
+            var localBird = await localContext.Birds.SingleAsync(bird => bird.Id == birdId);
+            localBird.Description.Should().Be("after pull");
+            localBird.UpdatedAt.Should().Be(updatedRemoteBird.UpdatedAt);
+        }
+
+        [Fact]
         public async Task SyncPendingAsync_WhenRemoteApplyFails_Should_KeepOutbox_And_MarkRetryState()
         {
             await using var brokenRemoteDb = new RemoteSqliteInMemoryDb(ensureCreated: false);
             var repository = new BirdRepository(_localDb.CreateFactory());
             var bird = Bird.Create(
-                BirdsName.Щегол,
+                Enum.GetValues<BirdsName>()[1],
                 "broken remote",
                 DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-2)));
             await repository.AddAsync(bird);

@@ -8,6 +8,7 @@ namespace Birds.Infrastructure.Persistence
     {
         public DbSet<Bird> Birds => Set<Bird>();
         public DbSet<SyncOperation> SyncOperations => Set<SyncOperation>();
+        public DbSet<RemoteSyncCursor> RemoteSyncCursors => Set<RemoteSyncCursor>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

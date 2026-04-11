@@ -32,6 +32,7 @@ namespace Birds.Infrastructure.Services
 
             await context.Database.EnsureCreatedAsync(cancellationToken);
             await EnsureSyncOutboxSchemaAsync(context, cancellationToken);
+            await EnsureRemoteSyncCursorSchemaAsync(context, cancellationToken);
 
             if (_seedingOptions.Mode != DatabaseSeedingMode.None)
                 await _birdSeeder.SeedAsync(_seedingOptions, cancellationToken);
@@ -75,6 +76,18 @@ namespace Birds.Infrastructure.Services
                 """
                 CREATE INDEX IF NOT EXISTS "IX_SyncOperations_CreatedAtUtc"
                 ON "SyncOperations" ("CreatedAtUtc");
+                """,
+                cancellationToken);
+        }
+
+        private static Task EnsureRemoteSyncCursorSchemaAsync(BirdDbContext context, CancellationToken cancellationToken)
+        {
+            return context.Database.ExecuteSqlRawAsync(
+                """
+                CREATE TABLE IF NOT EXISTS "RemoteSyncCursors" (
+                    "CursorKey" TEXT NOT NULL CONSTRAINT "PK_RemoteSyncCursors" PRIMARY KEY,
+                    "LastSyncedAtUtc" TEXT NULL
+                );
                 """,
                 cancellationToken);
         }

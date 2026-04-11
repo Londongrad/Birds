@@ -14,7 +14,10 @@ namespace Birds.Infrastructure.Services
         IDbContextFactory<RemoteBirdDbContext> remoteContextFactory,
         ILogger<RemoteSyncService> logger) : IRemoteSyncService
     {
-        private const int BatchSize = 128;
+        private const int PushBatchSize = 128;
+        private const int PullBatchSize = 128;
+        private const string BirdsPullCursorKey = "Birds.Pull";
+
         private readonly IDbContextFactory<BirdDbContext> _localContextFactory = localContextFactory;
         private readonly IDbContextFactory<RemoteBirdDbContext> _remoteContextFactory = remoteContextFactory;
         private readonly ILogger<RemoteSyncService> _logger = logger;
@@ -28,36 +31,47 @@ namespace Birds.Infrastructure.Services
                 await using var localContext = await _localContextFactory.CreateDbContextAsync(cancellationToken);
                 var pendingOperations = await localContext.SyncOperations
                     .OrderBy(operation => operation.CreatedAtUtc)
-                    .Take(BatchSize)
+                    .Take(PushBatchSize)
                     .ToListAsync(cancellationToken);
-
-                if (pendingOperations.Count == 0)
-                    return RemoteSyncRunResult.NothingToSync;
 
                 await using var remoteContext = await _remoteContextFactory.CreateDbContextAsync(cancellationToken);
                 if (!await remoteContext.Database.CanConnectAsync(cancellationToken))
                 {
-                    MarkBatchFailed(pendingOperations, "Remote sync backend is unavailable.", DateTime.UtcNow);
-                    await localContext.SaveChangesAsync(cancellationToken);
+                    if (pendingOperations.Count > 0)
+                    {
+                        MarkBatchFailed(pendingOperations, "Remote sync backend is unavailable.", DateTime.UtcNow);
+                        await localContext.SaveChangesAsync(cancellationToken);
+                    }
+
                     return new RemoteSyncRunResult(RemoteSyncRunStatus.BackendUnavailable, pendingOperations.Count);
                 }
 
-                try
-                {
-                    await ApplyBatchAsync(remoteContext, pendingOperations, cancellationToken);
-                    localContext.SyncOperations.RemoveRange(pendingOperations);
-                    await localContext.SaveChangesAsync(cancellationToken);
+                var processedCount = 0;
 
-                    _logger.LogInformation(LogMessages.RemoteSyncProcessed, pendingOperations.Count);
-                    return new RemoteSyncRunResult(RemoteSyncRunStatus.Synced, pendingOperations.Count);
-                }
-                catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+                if (pendingOperations.Count > 0)
                 {
-                    MarkBatchFailed(pendingOperations, ex.Message, DateTime.UtcNow);
-                    await localContext.SaveChangesAsync(cancellationToken);
-                    _logger.LogWarning(ex, LogMessages.RemoteSyncFailed, pendingOperations.Count);
-                    return new RemoteSyncRunResult(RemoteSyncRunStatus.Failed, pendingOperations.Count);
+                    try
+                    {
+                        processedCount += await PushPendingBatchAsync(localContext, remoteContext, pendingOperations, cancellationToken);
+                    }
+                    catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+                    {
+                        MarkBatchFailed(pendingOperations, ex.Message, DateTime.UtcNow);
+                        await localContext.SaveChangesAsync(cancellationToken);
+                        _logger.LogWarning(ex, LogMessages.RemoteSyncFailed, pendingOperations.Count);
+                        return new RemoteSyncRunResult(RemoteSyncRunStatus.Failed, pendingOperations.Count);
+                    }
                 }
+
+                var hasPendingLocalOperations = await localContext.SyncOperations.AnyAsync(cancellationToken);
+                if (!hasPendingLocalOperations)
+                {
+                    processedCount += await PullRemoteBatchAsync(localContext, remoteContext, cancellationToken);
+                }
+
+                return processedCount > 0
+                    ? new RemoteSyncRunResult(RemoteSyncRunStatus.Synced, processedCount)
+                    : RemoteSyncRunResult.NothingToSync;
             }
             finally
             {
@@ -65,9 +79,97 @@ namespace Birds.Infrastructure.Services
             }
         }
 
-        private static async Task ApplyBatchAsync(RemoteBirdDbContext remoteContext,
-                                                  IReadOnlyCollection<SyncOperation> pendingOperations,
-                                                  CancellationToken cancellationToken)
+        private async Task<int> PushPendingBatchAsync(BirdDbContext localContext,
+                                                      RemoteBirdDbContext remoteContext,
+                                                      IReadOnlyCollection<SyncOperation> pendingOperations,
+                                                      CancellationToken cancellationToken)
+        {
+            await ApplyPushBatchAsync(remoteContext, pendingOperations, cancellationToken);
+            localContext.SyncOperations.RemoveRange(pendingOperations);
+            await localContext.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation(LogMessages.RemoteSyncProcessed, pendingOperations.Count);
+            return pendingOperations.Count;
+        }
+
+        private async Task<int> PullRemoteBatchAsync(BirdDbContext localContext,
+                                                     RemoteBirdDbContext remoteContext,
+                                                     CancellationToken cancellationToken)
+        {
+            var cursor = await localContext.RemoteSyncCursors
+                .SingleOrDefaultAsync(syncCursor => syncCursor.CursorKey == BirdsPullCursorKey, cancellationToken);
+            var watermarkUtc = cursor?.LastSyncedAtUtc;
+
+            var remoteChanges = await remoteContext.Birds
+                .AsNoTracking()
+                .Select(bird => new
+                {
+                    Bird = bird,
+                    SyncStamp = bird.UpdatedAt ?? bird.CreatedAt
+                })
+                .Where(change => watermarkUtc == null || change.SyncStamp > watermarkUtc.Value)
+                .OrderBy(change => change.SyncStamp)
+                .ThenBy(change => change.Bird.Id)
+                .Take(PullBatchSize)
+                .ToListAsync(cancellationToken);
+
+            if (remoteChanges.Count == 0)
+                return 0;
+
+            var ids = remoteChanges.Select(change => change.Bird.Id).ToArray();
+            var existingIds = await localContext.Birds
+                .AsNoTracking()
+                .Where(bird => ids.Contains(bird.Id))
+                .Select(static bird => bird.Id)
+                .ToListAsync(cancellationToken);
+
+            var existingSet = existingIds.ToHashSet();
+            var birdsToAdd = new List<Bird>();
+            var birdsToUpdate = new List<Bird>();
+
+            foreach (var change in remoteChanges)
+            {
+                var restored = Bird.Restore(
+                    change.Bird.Id,
+                    change.Bird.Name,
+                    change.Bird.Description,
+                    change.Bird.Arrival,
+                    change.Bird.Departure,
+                    change.Bird.IsAlive,
+                    change.Bird.CreatedAt,
+                    change.Bird.UpdatedAt);
+
+                if (existingSet.Contains(change.Bird.Id))
+                    birdsToUpdate.Add(restored);
+                else
+                    birdsToAdd.Add(restored);
+            }
+
+            if (birdsToAdd.Count > 0)
+                await localContext.Birds.AddRangeAsync(birdsToAdd, cancellationToken);
+
+            if (birdsToUpdate.Count > 0)
+                localContext.Birds.UpdateRange(birdsToUpdate);
+
+            var latestSyncStamp = remoteChanges[^1].SyncStamp;
+            if (cursor is null)
+            {
+                cursor = RemoteSyncCursor.Create(BirdsPullCursorKey, latestSyncStamp);
+                await localContext.RemoteSyncCursors.AddAsync(cursor, cancellationToken);
+            }
+            else
+            {
+                cursor.AdvanceTo(latestSyncStamp);
+            }
+
+            await localContext.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation(LogMessages.RemotePullProcessed, remoteChanges.Count);
+            return remoteChanges.Count;
+        }
+
+        private static async Task ApplyPushBatchAsync(RemoteBirdDbContext remoteContext,
+                                                      IReadOnlyCollection<SyncOperation> pendingOperations,
+                                                      CancellationToken cancellationToken)
         {
             var upserts = pendingOperations
                 .Where(operation => operation.OperationType == SyncOperationType.Upsert)
