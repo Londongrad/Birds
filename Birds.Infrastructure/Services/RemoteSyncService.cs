@@ -25,6 +25,38 @@ public sealed class RemoteSyncService(
     private readonly IDbContextFactory<RemoteBirdDbContext> _remoteContextFactory = remoteContextFactory;
     private readonly SemaphoreSlim _syncLock = new(1, 1);
 
+    public async Task<RemoteSyncBackendCheckResult> CheckBackendAvailabilityAsync(CancellationToken cancellationToken)
+    {
+        await _syncLock.WaitAsync(cancellationToken);
+        try
+        {
+            try
+            {
+                await using var remoteContext = await _remoteContextFactory.CreateDbContextAsync(cancellationToken);
+                if (!await remoteContext.Database.CanConnectAsync(cancellationToken))
+                    return new RemoteSyncBackendCheckResult(
+                        RemoteSyncRunStatus.BackendUnavailable,
+                        "Remote sync backend is unavailable.");
+
+                await EnsureRemoteSyncSchemaAsync(remoteContext, cancellationToken);
+                return RemoteSyncBackendCheckResult.Ready;
+            }
+            catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                var status = IsBackendUnavailable(ex)
+                    ? RemoteSyncRunStatus.BackendUnavailable
+                    : RemoteSyncRunStatus.Failed;
+
+                _logger.LogWarning(ex, LogMessages.RemoteSyncFailed, 0);
+                return new RemoteSyncBackendCheckResult(status, ex.Message);
+            }
+        }
+        finally
+        {
+            _syncLock.Release();
+        }
+    }
+
     public async Task<RemoteSyncRunResult> SyncPendingAsync(CancellationToken cancellationToken)
     {
         await _syncLock.WaitAsync(cancellationToken);

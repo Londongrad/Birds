@@ -6,6 +6,8 @@ public interface IRemoteSyncController
 
     Task SyncNowAsync(CancellationToken cancellationToken);
 
+    Task<bool> RedownloadRemoteSnapshotAsync(CancellationToken cancellationToken);
+
     Task PauseAsync(CancellationToken cancellationToken);
 
     Task ResumeAsync(CancellationToken cancellationToken);

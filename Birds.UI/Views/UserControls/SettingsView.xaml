@@ -536,6 +536,14 @@
         </Style>
 
         <Style
+            x:Key="ConfirmWideDangerButtonStyle"
+            BasedOn="{StaticResource ConfirmDangerButtonStyle}"
+            TargetType="Button">
+            <Setter Property="MinWidth" Value="186" />
+            <Setter Property="Padding" Value="20,0" />
+        </Style>
+
+        <Style
             x:Key="CompactDataComboBoxItemStyle"
             BasedOn="{StaticResource SettingsComboBoxItemStyle}"
             TargetType="ComboBoxItem">
@@ -947,6 +955,7 @@
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -1059,8 +1068,87 @@
                                         </Button>
                                     </Grid>
 
-                                    <Grid
+                                    <Border
                                         Grid.Row="3"
+                                        Grid.ColumnSpan="2"
+                                        Margin="0,16,0,0"
+                                        Style="{StaticResource DangerRowStyle}">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <Grid Grid.Row="0" HorizontalAlignment="Stretch">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <StackPanel Style="{StaticResource SettingsRowContentStackStyle}">
+                                                    <TextBlock
+                                                        Style="{StaticResource FieldLabelStyle}"
+                                                        Margin="0,0,0,4"
+                                                        Text="{loc:Loc Key=Settings.SyncAction.RedownloadTitle}" />
+                                                    <TextBlock
+                                                        FontSize="12"
+                                                        Foreground="{StaticResource SecondaryTextBrush}"
+                                                        Text="{loc:Loc Key=Settings.SyncAction.RedownloadDescription}"
+                                                        TextWrapping="Wrap" />
+                                                </StackPanel>
+
+                                                <Button
+                                                    Grid.Column="1"
+                                                    Command="{Binding BeginRedownloadRemoteSnapshotCommand}"
+                                                    Style="{StaticResource DangerActionButtonStyle}"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Center">
+                                                    <TextBlock Text="{loc:Loc Key=Settings.SyncAction.RedownloadButton}" />
+                                                </Button>
+                                            </Grid>
+
+                                            <Border
+                                                Grid.Row="1"
+                                                Style="{StaticResource DangerConfirmPanelStyle}"
+                                                Visibility="{Binding IsRemoteSnapshotConfirmationVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <TextBlock
+                                                        Grid.Row="0"
+                                                        FontSize="12"
+                                                        Foreground="{StaticResource DangerButtonForegroundBrush}"
+                                                        Text="{loc:Loc Key=Settings.SyncAction.RedownloadConfirmHint}"
+                                                        TextWrapping="Wrap" />
+
+                                                    <StackPanel
+                                                        Grid.Row="1"
+                                                        Margin="0,12,0,0"
+                                                        HorizontalAlignment="Right"
+                                                        Orientation="Horizontal">
+                                                        <Button
+                                                            Command="{Binding CancelRedownloadRemoteSnapshotCommand}"
+                                                            Style="{StaticResource ConfirmSecondaryButtonStyle}">
+                                                            <TextBlock Text="{loc:Loc Key=Settings.Danger.Cancel}" />
+                                                        </Button>
+
+                                                        <Button
+                                                            Margin="10,0,0,0"
+                                                            Command="{Binding ConfirmRedownloadRemoteSnapshotCommand}"
+                                                            Style="{StaticResource ConfirmWideDangerButtonStyle}">
+                                                            <TextBlock Text="{loc:Loc Key=Settings.SyncAction.RedownloadConfirm}" />
+                                                        </Button>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+
+                                    <Grid
+                                        Grid.Row="4"
                                         Grid.ColumnSpan="2"
                                         Margin="0,16,0,0"
                                         HorizontalAlignment="Stretch">
@@ -1088,7 +1176,7 @@
                                     </Grid>
 
                                     <Grid
-                                        Grid.Row="4"
+                                        Grid.Row="5"
                                         Grid.ColumnSpan="2"
                                         Margin="0,10,0,0"
                                         Visibility="{Binding IsRemoteSyncRecentActivityExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">

@@ -238,6 +238,13 @@ public static class AppText
             ["Settings.SyncAction.SyncNow"] = "Синхронизировать",
             ["Settings.SyncAction.Pause"] = "Пауза",
             ["Settings.SyncAction.Resume"] = "Возобновить",
+            ["Settings.SyncAction.RedownloadTitle"] = "Перекачать удалённый снимок",
+            ["Settings.SyncAction.RedownloadDescription"] =
+                "Полностью заменяет локальный SQLite-снимок текущими данными из удалённого backend. Локальные несинхронизированные изменения будут потеряны.",
+            ["Settings.SyncAction.RedownloadButton"] = "Перекачать",
+            ["Settings.SyncAction.RedownloadConfirmHint"] =
+                "Подтвердите повторную загрузку удалённого снимка. Локальный SQLite-снимок будет полностью заменён текущими удалёнными данными.",
+            ["Settings.SyncAction.RedownloadConfirm"] = "Да, перекачать снимок",
             ["Settings.SyncRecent.SyncedProcessed"] = "Применено изменений: {0}.",
             ["Settings.SyncRecent.SyncedIdle"] = "Цикл синхронизации завершился без новых изменений.",
             ["Settings.SyncRecent.Paused"] = "Автоматическая синхронизация поставлена на паузу.",
@@ -298,6 +305,7 @@ public static class AppText
                 "Снимок восстановлен. Обработано: {0}, добавлено: {1}, обновлено: {2}, удалено: {3}.",
             ["Info.BirdRecordsCleared"] = "Архив очищен. Удалено записей: {0}.",
             ["Info.LocalDatabaseReset"] = "Локальная база данных сброшена.",
+            ["Info.RemoteSnapshotRedownloaded"] = "Локальный SQLite-снимок восстановлен из удалённого backend.",
             ["Info.SyncConflictResolved"] =
                 "\u0421\u0438\u043D\u0445\u0440\u043E\u043D\u0438\u0437\u0430\u0446\u0438\u044F \u0440\u0430\u0437\u0440\u0435\u0448\u0438\u043B\u0430 {0} \u043A\u043E\u043D\u0444\u043B\u0438\u043A\u0442(\u043E\u0432) \u0432 \u043F\u043E\u043B\u044C\u0437\u0443 \u0431\u043E\u043B\u0435\u0435 \u043D\u043E\u0432\u043E\u0439 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0439 \u0432\u0435\u0440\u0441\u0438\u0438.",
 
@@ -329,6 +337,7 @@ public static class AppText
             ["Error.ExportFailed"] = "Не удалось экспортировать данные о птицах.",
             ["Error.CannotClearBirdRecords"] = "Не удалось очистить архив птиц.",
             ["Error.CannotResetLocalDatabase"] = "Не удалось сбросить локальную базу данных.",
+            ["Error.CannotRedownloadRemoteSnapshot"] = "Не удалось восстановить локальный снимок из удалённого backend.",
             ["Error.FailedToDisplayErrorNotification"] = "Не удалось показать уведомление об ошибке",
             ["Error.StartupErrorTitle"] = "Ошибка запуска",
             ["Error.StartupError"] = "Во время запуска приложения произошла ошибка:\n{0}",
@@ -592,6 +601,13 @@ public static class AppText
             ["Settings.SyncAction.SyncNow"] = "Sync now",
             ["Settings.SyncAction.Pause"] = "Pause",
             ["Settings.SyncAction.Resume"] = "Resume",
+            ["Settings.SyncAction.RedownloadTitle"] = "Re-download remote snapshot",
+            ["Settings.SyncAction.RedownloadDescription"] =
+                "Replaces the local SQLite snapshot with the current state from the remote backend. Unsynced local changes will be lost.",
+            ["Settings.SyncAction.RedownloadButton"] = "Re-download",
+            ["Settings.SyncAction.RedownloadConfirmHint"] =
+                "Confirm re-downloading the remote snapshot. The local SQLite snapshot will be fully replaced with the current remote data.",
+            ["Settings.SyncAction.RedownloadConfirm"] = "Yes, re-download snapshot",
             ["Settings.SyncRecent.SyncedProcessed"] = "Processed changes: {0}.",
             ["Settings.SyncRecent.SyncedIdle"] = "The synchronization cycle completed without new changes.",
             ["Settings.SyncRecent.Paused"] = "Automatic synchronization is paused.",
@@ -653,6 +669,7 @@ public static class AppText
                 "Snapshot restored. Processed: {0}, added: {1}, updated: {2}, removed: {3}.",
             ["Info.BirdRecordsCleared"] = "Archive cleared. Records removed: {0}.",
             ["Info.LocalDatabaseReset"] = "Local database has been reset.",
+            ["Info.RemoteSnapshotRedownloaded"] = "The local SQLite snapshot was restored from the remote backend.",
             ["Info.SyncConflictResolved"] = "Cloud sync resolved {0} conflict(s) using the newer remote version.",
 
             ["Error.BirdLoadFailed"] =
@@ -681,6 +698,8 @@ public static class AppText
             ["Error.ExportFailed"] = "Unable to export bird data.",
             ["Error.CannotClearBirdRecords"] = "Unable to clear bird records.",
             ["Error.CannotResetLocalDatabase"] = "Unable to reset the local database.",
+            ["Error.CannotRedownloadRemoteSnapshot"] =
+                "Unable to restore the local snapshot from the remote backend.",
             ["Error.FailedToDisplayErrorNotification"] = "Failed to display error notification",
             ["Error.StartupErrorTitle"] = "Startup error",
             ["Error.StartupError"] = "An error occurred during application startup:\n{0}",

@@ -68,6 +68,8 @@ public class SettingsViewModelTests
         _remoteSyncController.SetupGet(x => x.IsConfigured).Returns(true);
         _remoteSyncController.Setup(x => x.SyncNowAsync(It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        _remoteSyncController.Setup(x => x.RedownloadRemoteSnapshotAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
         _remoteSyncController.Setup(x => x.PauseAsync(It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         _remoteSyncController.Setup(x => x.ResumeAsync(It.IsAny<CancellationToken>()))
@@ -238,6 +240,47 @@ public class SettingsViewModelTests
         await sut.ToggleRemoteSyncPauseCommand.ExecuteAsync(null);
 
         _remoteSyncController.Verify(x => x.ResumeAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ConfirmRedownloadRemoteSnapshotCommand_Should_ResetLocalSnapshot_FromRemote()
+    {
+        _store.ReplaceBirds(new[]
+        {
+            new BirdDTO(Guid.NewGuid(), "Sparrow", null, new DateOnly(2026, 4, 1), null, true, null, null)
+        });
+
+        var sut = CreateSut();
+        sut.BeginRedownloadRemoteSnapshotCommand.Execute(null);
+
+        await sut.ConfirmRedownloadRemoteSnapshotCommand.ExecuteAsync(null);
+
+        sut.IsConfirmingRedownloadRemoteSnapshot.Should().BeFalse();
+        _birdManager.Verify(x => x.FlushPendingOperationsAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _remoteSyncController.Verify(x => x.RedownloadRemoteSnapshotAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _birdManager.Verify(x => x.ReloadAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _autoExportCoordinator.Verify(x => x.MarkDirty(), Times.Once);
+        _notificationService.Verify(
+            x => x.ShowSuccessLocalized("Info.RemoteSnapshotRedownloaded", It.IsAny<object[]>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ConfirmRedownloadRemoteSnapshotCommand_Should_ShowError_WhenRemoteRestoreFails()
+    {
+        _remoteSyncController.Setup(x => x.RedownloadRemoteSnapshotAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var sut = CreateSut();
+        sut.BeginRedownloadRemoteSnapshotCommand.Execute(null);
+
+        await sut.ConfirmRedownloadRemoteSnapshotCommand.ExecuteAsync(null);
+
+        _birdManager.Verify(x => x.ReloadAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _autoExportCoordinator.Verify(x => x.MarkDirty(), Times.Never);
+        _notificationService.Verify(
+            x => x.ShowErrorLocalized("Error.CannotRedownloadRemoteSnapshot", It.IsAny<object[]>()),
+            Times.Once);
     }
 
     [Fact]

@@ -1,3 +1,4 @@
+using Birds.Application.Interfaces;
 using Birds.Infrastructure.Configuration;
 using Birds.Infrastructure.Services;
 using Birds.Shared.Constants;
@@ -12,8 +13,10 @@ internal sealed class RemoteSyncCoordinator(
     RemoteSyncRuntimeOptions remoteSyncOptions,
     IRemoteSyncStatusReporter remoteSyncStatusReporter,
     ILocalStoreStateService localStoreStateService,
+    IDatabaseMaintenanceService databaseMaintenanceService,
     INotificationService notificationService) : IRemoteSyncCoordinator
 {
+    private readonly IDatabaseMaintenanceService _databaseMaintenanceService = databaseMaintenanceService;
     private const int MaxBootstrapPasses = 512;
     private readonly ILocalStoreStateService _localStoreStateService = localStoreStateService;
     private readonly INotificationService _notificationService = notificationService;
@@ -50,8 +53,64 @@ internal sealed class RemoteSyncCoordinator(
             return;
         }
 
-        await PublishSyncingStateAsync(cancellationToken);
+        await _runLock.WaitAsync(cancellationToken);
+        try
+        {
+            await BootstrapLocalStoreCoreAsync(cancellationToken);
+        }
+        finally
+        {
+            _runLock.Release();
+        }
+    }
 
+    public async Task<bool> RedownloadRemoteSnapshotAsync(CancellationToken cancellationToken)
+    {
+        if (!_remoteSyncOptions.IsConfigured)
+        {
+            await PublishDisabledStateAsync(cancellationToken);
+            return false;
+        }
+
+        await _runLock.WaitAsync(cancellationToken);
+        try
+        {
+            var wasPaused = _isPaused;
+            await PublishSyncingStateAsync(cancellationToken);
+
+            var backendCheck = await _remoteSyncService.CheckBackendAvailabilityAsync(cancellationToken);
+            if (!backendCheck.IsReady)
+            {
+                var currentState = await _localStoreStateService.GetSnapshotAsync(cancellationToken);
+                await _remoteSyncStatusReporter.SetResultAsync(
+                    ToDisplayState(backendCheck.Status),
+                    0,
+                    currentState.PendingOperationCount,
+                    backendCheck.ErrorMessage,
+                    cancellationToken);
+                return false;
+            }
+
+            await _databaseMaintenanceService.ResetLocalDatabaseAsync(cancellationToken);
+            var bootstrapSucceeded = await BootstrapLocalStoreCoreAsync(cancellationToken);
+
+            if (wasPaused && bootstrapSucceeded)
+            {
+                var localState = await _localStoreStateService.GetSnapshotAsync(cancellationToken);
+                await _remoteSyncStatusReporter.SetPausedAsync(localState.PendingOperationCount, cancellationToken);
+            }
+
+            return bootstrapSucceeded;
+        }
+        finally
+        {
+            _runLock.Release();
+        }
+    }
+
+    private async Task<bool> BootstrapLocalStoreCoreAsync(CancellationToken cancellationToken)
+    {
+        await PublishSyncingStateAsync(cancellationToken);
         var totalProcessed = 0;
         var totalRemoteWins = 0;
 
@@ -76,7 +135,7 @@ internal sealed class RemoteSyncCoordinator(
                     ex.Message,
                     cancellationToken);
                 Log.Error(ex, LogMessages.RemoteSyncLoopFailed);
-                return;
+                return false;
             }
 
             totalProcessed += result.ProcessedCount;
@@ -96,7 +155,7 @@ internal sealed class RemoteSyncCoordinator(
                         null,
                         cancellationToken);
                     ShowConflictResolutionWarning(totalRemoteWins);
-                    return;
+                    return true;
 
                 default:
                     var localState = await _localStoreStateService.GetSnapshotAsync(cancellationToken);
@@ -107,7 +166,7 @@ internal sealed class RemoteSyncCoordinator(
                         result.ErrorMessage,
                         cancellationToken);
                     ShowConflictResolutionWarning(totalRemoteWins);
-                    return;
+                    return false;
             }
         }
 
@@ -121,6 +180,7 @@ internal sealed class RemoteSyncCoordinator(
             cancellationToken);
         ShowConflictResolutionWarning(totalRemoteWins);
         Log.Warning(bootstrapExceededMessage);
+        return false;
     }
 
     public async Task SyncNowAsync(CancellationToken cancellationToken)

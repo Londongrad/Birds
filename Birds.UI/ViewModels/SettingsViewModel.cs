@@ -59,6 +59,12 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool autoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsRemoteSnapshotConfirmationVisible))]
+    [NotifyCanExecuteChangedFor(nameof(BeginRedownloadRemoteSnapshotCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ConfirmRedownloadRemoteSnapshotCommand))]
+    private bool isConfirmingRedownloadRemoteSnapshot;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDangerConfirmationVisible))]
     [NotifyCanExecuteChangedFor(nameof(ConfirmClearBirdRecordsCommand))]
     private bool isConfirmingClearBirdRecords;
@@ -77,6 +83,8 @@ public partial class SettingsViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(ConfirmResetLocalDatabaseCommand))]
     [NotifyCanExecuteChangedFor(nameof(SyncNowCommand))]
     [NotifyCanExecuteChangedFor(nameof(ToggleRemoteSyncPauseCommand))]
+    [NotifyCanExecuteChangedFor(nameof(BeginRedownloadRemoteSnapshotCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ConfirmRedownloadRemoteSnapshotCommand))]
     private bool isDangerZoneBusy;
 
     [ObservableProperty]
@@ -86,6 +94,8 @@ public partial class SettingsViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(BeginResetLocalDatabaseCommand))]
     [NotifyCanExecuteChangedFor(nameof(ConfirmClearBirdRecordsCommand))]
     [NotifyCanExecuteChangedFor(nameof(ConfirmResetLocalDatabaseCommand))]
+    [NotifyCanExecuteChangedFor(nameof(BeginRedownloadRemoteSnapshotCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ConfirmRedownloadRemoteSnapshotCommand))]
     private bool isDataTransferBusy;
 
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(RemoteSyncRecentActivityToggleLabel))]
@@ -94,6 +104,8 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SyncNowCommand))]
     [NotifyCanExecuteChangedFor(nameof(ToggleRemoteSyncPauseCommand))]
+    [NotifyCanExecuteChangedFor(nameof(BeginRedownloadRemoteSnapshotCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ConfirmRedownloadRemoteSnapshotCommand))]
     private bool isSyncControlBusy;
 
     [ObservableProperty] private string selectedDateFormat = AppPreferencesState.DefaultDateFormat;
@@ -264,6 +276,8 @@ public partial class SettingsViewModel : ObservableObject
         ? _localization.GetString("Settings.SyncAction.Resume")
         : _localization.GetString("Settings.SyncAction.Pause");
 
+    public bool IsRemoteSnapshotConfirmationVisible => IsConfirmingRedownloadRemoteSnapshot;
+
     public bool SupportsLocalDatabaseReset => _databaseMaintenanceService.CanResetLocalDatabase;
 
     public bool IsDangerConfirmationVisible => IsConfirmingClearBirdRecords || IsConfirmingResetLocalDatabase;
@@ -365,9 +379,60 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
+    [RelayCommand(CanExecute = nameof(CanBeginRedownloadRemoteSnapshot))]
+    private void BeginRedownloadRemoteSnapshot()
+    {
+        IsConfirmingClearBirdRecords = false;
+        IsConfirmingResetLocalDatabase = false;
+        IsConfirmingRedownloadRemoteSnapshot = true;
+    }
+
+    [RelayCommand]
+    private void CancelRedownloadRemoteSnapshot()
+    {
+        IsConfirmingRedownloadRemoteSnapshot = false;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanConfirmRedownloadRemoteSnapshot))]
+    private async Task ConfirmRedownloadRemoteSnapshotAsync(CancellationToken cancellationToken)
+    {
+        if (!IsRemoteSyncConfigured)
+            return;
+
+        IsSyncControlBusy = true;
+        try
+        {
+            await _birdManager.FlushPendingOperationsAsync(cancellationToken);
+            var restored = await _remoteSyncController.RedownloadRemoteSnapshotAsync(cancellationToken);
+            if (!restored)
+            {
+                _notificationService.ShowErrorLocalized("Error.CannotRedownloadRemoteSnapshot");
+                return;
+            }
+
+            await _birdManager.ReloadAsync(cancellationToken);
+            _autoExportCoordinator.MarkDirty();
+            IsConfirmingRedownloadRemoteSnapshot = false;
+            _notificationService.ShowSuccessLocalized("Info.RemoteSnapshotRedownloaded");
+        }
+        catch (OperationCanceledException)
+        {
+            // User canceled or application is shutting down.
+        }
+        catch
+        {
+            _notificationService.ShowErrorLocalized("Error.CannotRedownloadRemoteSnapshot");
+        }
+        finally
+        {
+            IsSyncControlBusy = false;
+        }
+    }
+
     [RelayCommand(CanExecute = nameof(CanStartDangerAction))]
     private void BeginClearBirdRecords()
     {
+        IsConfirmingRedownloadRemoteSnapshot = false;
         IsConfirmingResetLocalDatabase = false;
         IsConfirmingClearBirdRecords = true;
     }
@@ -378,6 +443,7 @@ public partial class SettingsViewModel : ObservableObject
         if (!SupportsLocalDatabaseReset)
             return;
 
+        IsConfirmingRedownloadRemoteSnapshot = false;
         IsConfirmingClearBirdRecords = false;
         IsConfirmingResetLocalDatabase = true;
     }
@@ -767,6 +833,19 @@ public partial class SettingsViewModel : ObservableObject
                && !IsSyncControlBusy;
     }
 
+    private bool CanBeginRedownloadRemoteSnapshot()
+    {
+        return IsRemoteSyncConfigured
+               && !IsDataTransferBusy
+               && !IsDangerZoneBusy
+               && !IsSyncControlBusy;
+    }
+
+    private bool CanConfirmRedownloadRemoteSnapshot()
+    {
+        return IsConfirmingRedownloadRemoteSnapshot && CanBeginRedownloadRemoteSnapshot();
+    }
+
     private bool CanConfirmClearBirdRecords()
     {
         return IsConfirmingClearBirdRecords && CanStartDangerAction();
@@ -801,6 +880,8 @@ public partial class SettingsViewModel : ObservableObject
             OnPropertyChanged(nameof(RemoteSyncPauseActionLabel));
             SyncNowCommand.NotifyCanExecuteChanged();
             ToggleRemoteSyncPauseCommand.NotifyCanExecuteChanged();
+            BeginRedownloadRemoteSnapshotCommand.NotifyCanExecuteChanged();
+            ConfirmRedownloadRemoteSnapshotCommand.NotifyCanExecuteChanged();
         }
     }
 

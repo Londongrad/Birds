@@ -1,4 +1,5 @@
 using Birds.App.Services;
+using Birds.Application.Interfaces;
 using Birds.Infrastructure.Configuration;
 using Birds.Infrastructure.Services;
 using Birds.Shared.Sync;
@@ -24,6 +25,7 @@ public sealed class RemoteSyncCoordinatorTests
             RemoteSyncRuntimeOptions.Disabled,
             statusReporter.Object,
             localStoreStateService.Object,
+            CreateDatabaseMaintenanceService().Object,
             CreateNotificationService());
 
         var delay = await sut.RunSingleIterationAsync(CancellationToken.None);
@@ -56,6 +58,7 @@ public sealed class RemoteSyncCoordinatorTests
             new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
             statusReporter.Object,
             localStoreStateService.Object,
+            CreateDatabaseMaintenanceService().Object,
             CreateNotificationService());
 
         var delay = await sut.RunSingleIterationAsync(CancellationToken.None);
@@ -85,6 +88,7 @@ public sealed class RemoteSyncCoordinatorTests
             new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
             statusReporter.Object,
             localStoreStateService.Object,
+            CreateDatabaseMaintenanceService().Object,
             CreateNotificationService());
 
         var delay = await sut.RunSingleIterationAsync(CancellationToken.None);
@@ -120,6 +124,7 @@ public sealed class RemoteSyncCoordinatorTests
             new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
             statusReporter.Object,
             localStoreStateService.Object,
+            CreateDatabaseMaintenanceService().Object,
             CreateNotificationService());
 
         await sut.BootstrapLocalStoreAsync(CancellationToken.None);
@@ -153,6 +158,7 @@ public sealed class RemoteSyncCoordinatorTests
             new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
             statusReporter.Object,
             localStoreStateService.Object,
+            CreateDatabaseMaintenanceService().Object,
             CreateNotificationService());
 
         await sut.BootstrapLocalStoreAsync(CancellationToken.None);
@@ -180,6 +186,7 @@ public sealed class RemoteSyncCoordinatorTests
             new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
             statusReporter.Object,
             localStoreStateService.Object,
+            CreateDatabaseMaintenanceService().Object,
             CreateNotificationService());
 
         var delay = await sut.RunSingleIterationAsync(CancellationToken.None);
@@ -213,6 +220,7 @@ public sealed class RemoteSyncCoordinatorTests
             new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
             statusReporter.Object,
             localStoreStateService.Object,
+            CreateDatabaseMaintenanceService().Object,
             CreateNotificationService());
 
         var act = () => sut.BootstrapLocalStoreAsync(CancellationToken.None);
@@ -234,6 +242,7 @@ public sealed class RemoteSyncCoordinatorTests
             new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
             statusReporter.Object,
             localStoreStateService.Object,
+            CreateDatabaseMaintenanceService().Object,
             CreateNotificationService());
 
         await sut.PauseAsync(CancellationToken.None);
@@ -266,11 +275,97 @@ public sealed class RemoteSyncCoordinatorTests
             new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
             statusReporter.Object,
             localStoreStateService.Object,
+            CreateDatabaseMaintenanceService().Object,
             CreateNotificationService());
 
         await sut.SyncNowAsync(CancellationToken.None);
 
         remoteSyncService.Verify(x => x.SyncPendingAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RedownloadRemoteSnapshotAsync_Should_ResetLocalDatabase_And_BootstrapFromRemote()
+    {
+        var remoteSyncService = new Mock<IRemoteSyncService>();
+        remoteSyncService.Setup(x => x.CheckBackendAvailabilityAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(RemoteSyncBackendCheckResult.Ready);
+        remoteSyncService.SetupSequence(x => x.SyncPendingAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new RemoteSyncRunResult(RemoteSyncRunStatus.Synced, 128))
+            .ReturnsAsync(RemoteSyncRunResult.NothingToSync);
+
+        var localStoreStateService = new Mock<ILocalStoreStateService>();
+        localStoreStateService.SetupSequence(x => x.GetSnapshotAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new LocalStoreStateSnapshot(4, 0))
+            .ReturnsAsync(new LocalStoreStateSnapshot(0, 0))
+            .ReturnsAsync(new LocalStoreStateSnapshot(128, 0));
+
+        var statusReporter = new Mock<IRemoteSyncStatusReporter>();
+        var sequence = new MockSequence();
+        statusReporter.InSequence(sequence)
+            .Setup(x => x.SetSyncingAsync(4, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        statusReporter.InSequence(sequence)
+            .Setup(x => x.SetSyncingAsync(0, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        statusReporter.InSequence(sequence)
+            .Setup(x => x.SetResultAsync(RemoteSyncDisplayState.Synced, 128, 0, null, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var databaseMaintenanceService = CreateDatabaseMaintenanceService();
+
+        var sut = new RemoteSyncCoordinator(
+            remoteSyncService.Object,
+            new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+            statusReporter.Object,
+            localStoreStateService.Object,
+            databaseMaintenanceService.Object,
+            CreateNotificationService());
+
+        var restored = await sut.RedownloadRemoteSnapshotAsync(CancellationToken.None);
+
+        restored.Should().BeTrue();
+        remoteSyncService.Verify(x => x.CheckBackendAvailabilityAsync(It.IsAny<CancellationToken>()), Times.Once);
+        databaseMaintenanceService.Verify(x => x.ResetLocalDatabaseAsync(It.IsAny<CancellationToken>()), Times.Once);
+        remoteSyncService.Verify(x => x.SyncPendingAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task RedownloadRemoteSnapshotAsync_Should_NotResetLocalDatabase_WhenBackendCheckFails()
+    {
+        var remoteSyncService = new Mock<IRemoteSyncService>();
+        remoteSyncService.Setup(x => x.CheckBackendAvailabilityAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new RemoteSyncBackendCheckResult(RemoteSyncRunStatus.BackendUnavailable, "backend unavailable"));
+
+        var localStoreStateService = new Mock<ILocalStoreStateService>();
+        localStoreStateService.SetupSequence(x => x.GetSnapshotAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new LocalStoreStateSnapshot(42, 3))
+            .ReturnsAsync(new LocalStoreStateSnapshot(42, 3));
+
+        var statusReporter = new Mock<IRemoteSyncStatusReporter>();
+        var sequence = new MockSequence();
+        statusReporter.InSequence(sequence)
+            .Setup(x => x.SetSyncingAsync(3, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        statusReporter.InSequence(sequence)
+            .Setup(x => x.SetResultAsync(RemoteSyncDisplayState.Offline, 0, 3, "backend unavailable",
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var databaseMaintenanceService = CreateDatabaseMaintenanceService();
+
+        var sut = new RemoteSyncCoordinator(
+            remoteSyncService.Object,
+            new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+            statusReporter.Object,
+            localStoreStateService.Object,
+            databaseMaintenanceService.Object,
+            CreateNotificationService());
+
+        var restored = await sut.RedownloadRemoteSnapshotAsync(CancellationToken.None);
+
+        restored.Should().BeFalse();
+        databaseMaintenanceService.Verify(x => x.ResetLocalDatabaseAsync(It.IsAny<CancellationToken>()), Times.Never);
+        remoteSyncService.Verify(x => x.SyncPendingAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -297,6 +392,7 @@ public sealed class RemoteSyncCoordinatorTests
             new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
             statusReporter.Object,
             localStoreStateService.Object,
+            CreateDatabaseMaintenanceService().Object,
             notificationService.Object);
 
         await sut.RunSingleIterationAsync(CancellationToken.None);
@@ -336,6 +432,7 @@ public sealed class RemoteSyncCoordinatorTests
             new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
             statusReporter.Object,
             localStoreStateService.Object,
+            CreateDatabaseMaintenanceService().Object,
             notificationService.Object);
 
         await sut.BootstrapLocalStoreAsync(CancellationToken.None);
@@ -352,6 +449,15 @@ public sealed class RemoteSyncCoordinatorTests
         var mock = new Mock<ILocalStoreStateService>();
         mock.Setup(x => x.GetSnapshotAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new LocalStoreStateSnapshot(birdCount, pendingOperationCount));
+        return mock;
+    }
+
+    private static Mock<IDatabaseMaintenanceService> CreateDatabaseMaintenanceService()
+    {
+        var mock = new Mock<IDatabaseMaintenanceService>();
+        mock.SetupGet(x => x.CanResetLocalDatabase).Returns(true);
+        mock.Setup(x => x.ResetLocalDatabaseAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
         return mock;
     }
 
