@@ -139,6 +139,7 @@ public static class AppText
             ["Settings.Data.Description"] =
                 "Вручную экспортируйте текущий снимок или импортируйте JSON-файл, созданный приложением.",
             ["Settings.ExportPathLabel"] = "Путь экспорта",
+            ["Settings.ExportFileButton"] = "Открыть файл",
             ["Settings.ExportFolderButton"] = "Открыть папку",
             ["Settings.ExportPathButton"] = "Изменить путь",
             ["Settings.ExportLabel"] = "Экспорт данных",
@@ -336,6 +337,7 @@ public static class AppText
             ["Error.InvalidImportedBirdName"] = "Импорт прерван: неизвестное имя птицы '{0}'.",
             ["Error.ImportFailed"] = "Не удалось импортировать данные о птицах.",
             ["Error.ExportFailed"] = "Не удалось экспортировать данные о птицах.",
+            ["Error.CannotOpenExportFile"] = "Не удалось открыть файл экспорта.",
             ["Error.CannotOpenExportFolder"] = "Не удалось открыть папку экспорта.",
             ["Error.CannotClearBirdRecords"] = "Не удалось очистить архив птиц.",
             ["Error.CannotResetLocalDatabase"] = "Не удалось сбросить локальную базу данных.",
@@ -500,6 +502,7 @@ public static class AppText
             ["Settings.Data.Description"] =
                 "Export the current snapshot manually or import a JSON file produced by the application.",
             ["Settings.ExportPathLabel"] = "Export location",
+            ["Settings.ExportFileButton"] = "Open file",
             ["Settings.ExportFolderButton"] = "Open folder",
             ["Settings.ExportPathButton"] = "Change path",
             ["Settings.ExportLabel"] = "Export data",
@@ -699,6 +702,7 @@ public static class AppText
             ["Error.InvalidImportedBirdName"] = "Import aborted: unknown bird name '{0}'.",
             ["Error.ImportFailed"] = "Unable to import bird data.",
             ["Error.ExportFailed"] = "Unable to export bird data.",
+            ["Error.CannotOpenExportFile"] = "Unable to open the export file.",
             ["Error.CannotOpenExportFolder"] = "Unable to open the export folder.",
             ["Error.CannotClearBirdRecords"] = "Unable to clear bird records.",
             ["Error.CannotResetLocalDatabase"] = "Unable to reset the local database.",

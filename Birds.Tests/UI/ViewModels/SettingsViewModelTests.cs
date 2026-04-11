@@ -355,6 +355,32 @@ public class SettingsViewModelTests
     }
 
     [Fact]
+    public void OpenExportFileCommand_Should_Open_Current_Export_File()
+    {
+        _preferences.CustomExportPath = "C:\\exports\\selected-birds.json";
+
+        var sut = CreateSut();
+
+        sut.OpenExportFileCommand.Execute(null);
+
+        _pathNavigationService.Verify(x => x.OpenFile("C:\\exports\\selected-birds.json"), Times.Once);
+    }
+
+    [Fact]
+    public void OpenExportFileCommand_Should_ShowError_When_OpenFails()
+    {
+        _pathNavigationService.Setup(x => x.OpenFile(It.IsAny<string>())).Returns(false);
+
+        var sut = CreateSut();
+
+        sut.OpenExportFileCommand.Execute(null);
+
+        _notificationService.Verify(
+            x => x.ShowErrorLocalized("Error.CannotOpenExportFile", It.IsAny<object[]>()),
+            Times.Once);
+    }
+
+    [Fact]
     public void OpenExportFolderCommand_Should_ShowError_When_OpenFails()
     {
         _pathNavigationService.Setup(x => x.OpenDirectory(It.IsAny<string>())).Returns(false);

@@ -877,6 +877,14 @@
                                         HorizontalAlignment="Right"
                                         VerticalAlignment="Center">
                                         <Button
+                                            Command="{Binding OpenExportFileCommand}"
+                                            Style="{StaticResource DataActionButtonStyle}"
+                                            VerticalAlignment="Center">
+                                            <TextBlock Text="{loc:Loc Key=Settings.ExportFileButton}" />
+                                        </Button>
+
+                                        <Button
+                                            Margin="12,0,0,0"
                                             Command="{Binding OpenExportFolderCommand}"
                                             Style="{StaticResource DataActionButtonStyle}"
                                             VerticalAlignment="Center">

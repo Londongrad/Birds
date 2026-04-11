@@ -30,4 +30,29 @@ public sealed class PathNavigationService : IPathNavigationService
             return false;
         }
     }
+
+    public bool OpenFile(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return false;
+
+        try
+        {
+            var fullPath = Path.GetFullPath(path);
+            if (!File.Exists(fullPath))
+                return false;
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = fullPath,
+                UseShellExecute = true
+            });
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }

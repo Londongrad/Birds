@@ -325,6 +325,15 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     [RelayCommand(CanExecute = nameof(CanTransferData))]
+    private void OpenExportFile()
+    {
+        if (_pathNavigationService.OpenFile(ResolveExportPath()))
+            return;
+
+        _notificationService.ShowErrorLocalized("Error.CannotOpenExportFile");
+    }
+
+    [RelayCommand(CanExecute = nameof(CanTransferData))]
     private async Task ExportDataAsync(CancellationToken cancellationToken)
     {
         var targetPath = ResolveExportPath();
