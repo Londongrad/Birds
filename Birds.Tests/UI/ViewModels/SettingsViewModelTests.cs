@@ -197,6 +197,20 @@ namespace Birds.Tests.UI.ViewModels
         }
 
         [Fact]
+        public void RemoteSyncRecentActivity_Should_BeCollapsed_ByDefault_And_Toggle()
+        {
+            var sut = CreateSut();
+
+            sut.IsRemoteSyncRecentActivityExpanded.Should().BeFalse();
+            sut.RemoteSyncRecentActivityToggleLabel.Should().Be(AppText.Get("Settings.SyncMeta.RecentActivityExpand", _culture));
+
+            sut.ToggleRemoteSyncRecentActivityCommand.Execute(null);
+
+            sut.IsRemoteSyncRecentActivityExpanded.Should().BeTrue();
+            sut.RemoteSyncRecentActivityToggleLabel.Should().Be(AppText.Get("Settings.SyncMeta.RecentActivityCollapse", _culture));
+        }
+
+        [Fact]
         public async Task SyncNowCommand_Should_Invoke_RemoteSyncController()
         {
             var sut = CreateSut();

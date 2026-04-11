@@ -34,6 +34,7 @@
         <SolidColorBrush x:Key="DangerButtonForegroundBrush" Color="{DynamicResource ThemeDangerButtonForegroundColor}" />
 
         <Style x:Key="SettingsCardStyle" TargetType="Border">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
@@ -41,6 +42,7 @@
         </Style>
 
         <Style x:Key="SectionCardStyle" TargetType="Border">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="Padding" Value="22" />
             <Setter Property="Background" Value="{StaticResource InsetBackgroundBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
@@ -352,6 +354,19 @@
         </Style>
 
         <Style
+            x:Key="CompactMetaActionButtonStyle"
+            BasedOn="{StaticResource DataActionButtonStyle}"
+            TargetType="Button">
+            <Setter Property="Height" Value="30" />
+            <Setter Property="MinWidth" Value="88" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="Background" Value="{StaticResource FieldBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
+        </Style>
+
+        <Style
             x:Key="DangerActionButtonStyle"
             BasedOn="{StaticResource DataActionButtonStyle}"
             TargetType="Button">
@@ -601,15 +616,15 @@
         </Style>
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <ScrollViewer HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto">
         <Grid Margin="0,24,0,24">
             <Border
                 MaxWidth="860"
                 Padding="28"
-                HorizontalAlignment="Center"
+                HorizontalAlignment="Stretch"
                 VerticalAlignment="Top"
                 Style="{StaticResource SettingsCardStyle}">
-                <StackPanel>
+                <StackPanel HorizontalAlignment="Stretch">
                     <TextBlock
                         FontSize="28"
                         FontWeight="SemiBold"
@@ -1071,17 +1086,39 @@
                                         </Button>
                                     </Grid>
 
-                                    <TextBlock
+                                    <Grid
                                         Grid.Row="3"
                                         Grid.ColumnSpan="2"
-                                        Style="{StaticResource FieldLabelStyle}"
                                         Margin="0,16,0,0"
-                                        Text="{Binding RemoteSyncRecentActivityLabel}" />
+                                        HorizontalAlignment="Stretch">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            Margin="0"
+                                            VerticalAlignment="Center"
+                                            FontSize="13"
+                                            FontWeight="SemiBold"
+                                            Foreground="{StaticResource PrimaryTextBrush}"
+                                            Text="{Binding RemoteSyncRecentActivityLabel}" />
+
+                                        <Button
+                                            Grid.Column="1"
+                                            Command="{Binding ToggleRemoteSyncRecentActivityCommand}"
+                                            Style="{StaticResource CompactMetaActionButtonStyle}"
+                                            VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding RemoteSyncRecentActivityToggleLabel}" />
+                                        </Button>
+                                    </Grid>
 
                                     <Grid
                                         Grid.Row="4"
                                         Grid.ColumnSpan="2"
-                                        Margin="0,10,0,0">
+                                        Margin="0,10,0,0"
+                                        Visibility="{Binding IsRemoteSyncRecentActivityExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
                                         <TextBlock
                                             Text="{Binding RemoteSyncRecentActivityEmpty}">
                                             <TextBlock.Style>

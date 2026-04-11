@@ -145,6 +145,10 @@ namespace Birds.UI.ViewModels
         private bool reduceMotion;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(RemoteSyncRecentActivityToggleLabel))]
+        private bool isRemoteSyncRecentActivityExpanded;
+
+        [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(ExportDataCommand))]
         [NotifyCanExecuteChangedFor(nameof(ImportDataCommand))]
         [NotifyCanExecuteChangedFor(nameof(BeginClearBirdRecordsCommand))]
@@ -260,6 +264,10 @@ namespace Birds.UI.ViewModels
 
         public string RemoteSyncRecentActivityEmpty => _localization.GetString("Settings.SyncMeta.RecentActivityEmpty");
 
+        public string RemoteSyncRecentActivityToggleLabel => IsRemoteSyncRecentActivityExpanded
+            ? _localization.GetString("Settings.SyncMeta.RecentActivityCollapse")
+            : _localization.GetString("Settings.SyncMeta.RecentActivityExpand");
+
         public bool HasRemoteSyncRecentActivity => _remoteSyncStatus.RecentActivity.Count > 0;
 
         public IReadOnlyList<RemoteSyncActivityDisplayItem> RemoteSyncRecentActivityItems
@@ -281,6 +289,10 @@ namespace Birds.UI.ViewModels
             _preferences.ResetToDefaults();
             ReloadFromPreferences();
         }
+
+        [RelayCommand]
+        private void ToggleRemoteSyncRecentActivity()
+            => IsRemoteSyncRecentActivityExpanded = !IsRemoteSyncRecentActivityExpanded;
 
         [RelayCommand(CanExecute = nameof(CanTransferData))]
         private void ChooseExportPath()
@@ -657,6 +669,7 @@ namespace Birds.UI.ViewModels
             OnPropertyChanged(nameof(RemoteSyncLastSuccessfulSyncValue));
             OnPropertyChanged(nameof(RemoteSyncRecentActivityLabel));
             OnPropertyChanged(nameof(RemoteSyncRecentActivityEmpty));
+            OnPropertyChanged(nameof(RemoteSyncRecentActivityToggleLabel));
             OnPropertyChanged(nameof(HasRemoteSyncRecentActivity));
             OnPropertyChanged(nameof(RemoteSyncRecentActivityItems));
             OnPropertyChanged(nameof(RemoteSyncPauseActionLabel));
