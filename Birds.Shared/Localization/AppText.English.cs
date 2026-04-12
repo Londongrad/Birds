@@ -1,5 +1,5 @@
-﻿using System.Globalization;
-namespace Birds.Shared.Localization;
+﻿namespace Birds.Shared.Localization;
+
 public static partial class AppText
 {
     private static IReadOnlyDictionary<string, string> BuildEnglish()
@@ -94,7 +94,8 @@ public static partial class AppText
             ["Statistics.Section.Months.Title"] = "Arrivals by month",
             ["Statistics.Section.Months.Description"] = "Monthly activity inside the current scope.",
             ["Statistics.Section.Departures.Title"] = "Departures by month",
-            ["Statistics.Section.Departures.Description"] = "How departures are distributed across months inside the current scope.",
+            ["Statistics.Section.Departures.Description"] =
+                "How departures are distributed across months inside the current scope.",
             ["Statistics.Section.Years.Title"] = "Year overview",
             ["Statistics.Section.Years.Description"] = "How many records belong to each year across the whole archive.",
             ["Statistics.Section.Keeping.Title"] = "Maximum keeping duration",

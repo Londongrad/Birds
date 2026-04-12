@@ -334,7 +334,8 @@ public sealed class RemoteSyncCoordinatorTests
     {
         var remoteSyncService = new Mock<IRemoteSyncService>();
         remoteSyncService.Setup(x => x.CheckBackendAvailabilityAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new RemoteSyncBackendCheckResult(RemoteSyncRunStatus.BackendUnavailable, "backend unavailable"));
+            .ReturnsAsync(new RemoteSyncBackendCheckResult(RemoteSyncRunStatus.BackendUnavailable,
+                "backend unavailable"));
 
         var localStoreStateService = new Mock<ILocalStoreStateService>();
         localStoreStateService.SetupSequence(x => x.GetSnapshotAsync(It.IsAny<CancellationToken>()))

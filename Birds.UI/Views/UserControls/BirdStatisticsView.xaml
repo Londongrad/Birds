@@ -14,7 +14,8 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Birds.UI;component/Views/UserControls/Resources/BirdStatisticsViewResources.xaml" />
+                <ResourceDictionary
+                    Source="/Birds.UI;component/Views/UserControls/Resources/BirdStatisticsViewResources.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -349,7 +350,8 @@
                                                         </ItemsPanelTemplate>
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemContainerStyle>
-                                                        <StaticResource ResourceKey="StatsMonthDistributionItemContainerStyle" />
+                                                        <StaticResource
+                                                            ResourceKey="StatsMonthDistributionItemContainerStyle" />
                                                     </ItemsControl.ItemContainerStyle>
                                                 </ItemsControl>
                                             </StackPanel>
@@ -379,7 +381,8 @@
                                                         </ItemsPanelTemplate>
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemContainerStyle>
-                                                        <StaticResource ResourceKey="StatsMonthDistributionItemContainerStyle" />
+                                                        <StaticResource
+                                                            ResourceKey="StatsMonthDistributionItemContainerStyle" />
                                                     </ItemsControl.ItemContainerStyle>
                                                 </ItemsControl>
                                             </StackPanel>

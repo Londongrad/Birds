@@ -87,7 +87,8 @@
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsAlive}" Value="False">
                                     <Setter Property="BorderBrush" Value="{DynamicResource ThemeStatusDeadBorderBrush}" />
-                                    <Setter Property="Background" Value="{DynamicResource ThemeStatusDeadBackgroundBrush}" />
+                                    <Setter Property="Background"
+                                            Value="{DynamicResource ThemeStatusDeadBackgroundBrush}" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>

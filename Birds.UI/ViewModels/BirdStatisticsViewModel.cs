@@ -2,7 +2,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Globalization;
 using Birds.Application.DTOs;
-using Birds.Shared.Localization;
 using Birds.UI.Enums;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Statistics;
@@ -14,7 +13,9 @@ using CommunityToolkit.Mvvm.Input;
 namespace Birds.UI.ViewModels;
 
 public record StatItem(string Label, int Count);
+
 public record StatBarItem(string Label, int Count, double Ratio);
+
 public record YearFilterOption(int? Year, string Label);
 
 public partial class BirdStatisticsViewModel : ObservableObject
@@ -29,8 +30,8 @@ public partial class BirdStatisticsViewModel : ObservableObject
     [ObservableProperty] private string averageKeeping = "\u2014";
     [ObservableProperty] private int departuresLast30Days;
     [ObservableProperty] private int killCount;
-    [ObservableProperty] private string? longestBreak;
     [ObservableProperty] private string longestActiveKeeping = "\u2014";
+    [ObservableProperty] private string? longestBreak;
     [ObservableProperty] private string medianKeeping = "\u2014";
     [ObservableProperty] private int peakConcurrentCount;
     [ObservableProperty] private int releasedCount;

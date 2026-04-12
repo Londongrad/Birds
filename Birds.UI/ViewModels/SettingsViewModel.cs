@@ -38,8 +38,8 @@ public partial class SettingsViewModel : ObservableObject
     private readonly ILocalizationService _localization;
     private readonly IMediator _mediator;
     private readonly INotificationService _notificationService;
-    private readonly IAppPreferencesService _preferences;
     private readonly IPathNavigationService _pathNavigationService;
+    private readonly IAppPreferencesService _preferences;
     private readonly IRemoteSyncController _remoteSyncController;
     private readonly IRemoteSyncStatusSource _remoteSyncStatus;
     private readonly IThemeService _themeService;
@@ -61,15 +61,15 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool autoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsDangerConfirmationVisible))]
+    [NotifyCanExecuteChangedFor(nameof(ConfirmClearBirdRecordsCommand))]
+    private bool isConfirmingClearBirdRecords;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsRemoteSnapshotConfirmationVisible))]
     [NotifyCanExecuteChangedFor(nameof(BeginRedownloadRemoteSnapshotCommand))]
     [NotifyCanExecuteChangedFor(nameof(ConfirmRedownloadRemoteSnapshotCommand))]
     private bool isConfirmingRedownloadRemoteSnapshot;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsDangerConfirmationVisible))]
-    [NotifyCanExecuteChangedFor(nameof(ConfirmClearBirdRecordsCommand))]
-    private bool isConfirmingClearBirdRecords;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDangerConfirmationVisible))]

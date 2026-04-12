@@ -1,9 +1,6 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:helpers="clr-namespace:Birds.UI.Views.Helpers"
-    xmlns:loc="clr-namespace:Birds.UI.Services.Localization"
-    xmlns:local="clr-namespace:Birds.UI.Views.UserControls">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <DataTemplate x:Key="BirdNameComboTemplate">
         <TextBlock

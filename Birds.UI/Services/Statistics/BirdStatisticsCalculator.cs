@@ -185,7 +185,8 @@ public sealed class BirdStatisticsCalculator(ILocalizationService localization) 
         if (topWeekGroup is null)
             return "\u2014";
 
-        return $"{FormatIsoWeekRange(topWeekGroup.Key.Year, topWeekGroup.Key.Week)} \u2013 {AppText.Format("Statistics.CountBirds", topWeekGroup.Count())}";
+        return
+            $"{FormatIsoWeekRange(topWeekGroup.Key.Year, topWeekGroup.Key.Week)} \u2013 {AppText.Format("Statistics.CountBirds", topWeekGroup.Count())}";
     }
 
     private string FormatTopDay(IList<BirdDTO> filteredBirds)
@@ -283,9 +284,9 @@ public sealed class BirdStatisticsCalculator(ILocalizationService localization) 
             .OrderBy(x => x)
             .ToArray();
 
-        double median = durations.Length % 2 == 1
+        var median = durations.Length % 2 == 1
             ? durations[durations.Length / 2]
-            : (durations[(durations.Length / 2) - 1] + durations[durations.Length / 2]) / 2d;
+            : (durations[durations.Length / 2 - 1] + durations[durations.Length / 2]) / 2d;
 
         return _localization.GetString(
             "Statistics.MedianKeepingValue",
@@ -303,7 +304,8 @@ public sealed class BirdStatisticsCalculator(ILocalizationService localization) 
             return "\u2014";
 
         var days = CalculateKeepingDays(longestActiveBird, today);
-        var displayName = BirdEnumHelper.ParseBirdName(longestActiveBird.Name)?.ToDisplayName() ?? longestActiveBird.Name;
+        var displayName = BirdEnumHelper.ParseBirdName(longestActiveBird.Name)?.ToDisplayName() ??
+                          longestActiveBird.Name;
 
         return AppText.Format(
             _localization.CurrentCulture,
@@ -325,7 +327,8 @@ public sealed class BirdStatisticsCalculator(ILocalizationService localization) 
     {
         var start = DateOnly.FromDateTime(ISOWeek.ToDateTime(isoYear, isoWeek, DayOfWeek.Monday));
         var end = DateOnly.FromDateTime(ISOWeek.ToDateTime(isoYear, isoWeek, DayOfWeek.Sunday));
-        return $"{_localization.FormatDate(start, DateDisplayStyle.Medium)} \u2013 {_localization.FormatDate(end, DateDisplayStyle.Medium)}";
+        return
+            $"{_localization.FormatDate(start, DateDisplayStyle.Medium)} \u2013 {_localization.FormatDate(end, DateDisplayStyle.Medium)}";
     }
 
     private string GetMonthLabel(int month)

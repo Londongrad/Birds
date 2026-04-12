@@ -5,7 +5,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:loc="clr-namespace:Birds.UI.Services.Localization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:sync="clr-namespace:Birds.Shared.Sync;assembly=Birds.Shared"
     xmlns:syncui="clr-namespace:Birds.UI.Services.Sync"
     xmlns:viewmodels="clr-namespace:Birds.UI.ViewModels"
     d:DataContext="{d:DesignInstance Type=viewmodels:SettingsViewModel}"
@@ -15,7 +14,8 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Birds.UI;component/Views/UserControls/Resources/SettingsViewResources.xaml" />
+                <ResourceDictionary
+                    Source="/Birds.UI;component/Views/UserControls/Resources/SettingsViewResources.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -507,7 +507,8 @@
                                                     Style="{StaticResource DangerActionButtonStyle}"
                                                     HorizontalAlignment="Right"
                                                     VerticalAlignment="Center">
-                                                    <TextBlock Text="{loc:Loc Key=Settings.SyncAction.RedownloadButton}" />
+                                                    <TextBlock
+                                                        Text="{loc:Loc Key=Settings.SyncAction.RedownloadButton}" />
                                                 </Button>
                                             </Grid>
 
@@ -543,7 +544,8 @@
                                                             Margin="10,0,0,0"
                                                             Command="{Binding ConfirmRedownloadRemoteSnapshotCommand}"
                                                             Style="{StaticResource ConfirmWideDangerButtonStyle}">
-                                                            <TextBlock Text="{loc:Loc Key=Settings.SyncAction.RedownloadConfirm}" />
+                                                            <TextBlock
+                                                                Text="{loc:Loc Key=Settings.SyncAction.RedownloadConfirm}" />
                                                         </Button>
                                                     </StackPanel>
                                                 </Grid>
@@ -956,5 +958,3 @@
         </Grid>
     </ScrollViewer>
 </UserControl>
-
-

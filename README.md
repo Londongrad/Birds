@@ -1,13 +1,15 @@
 # Birds 🐦
 
-Windows desktop application for keeping bird records, working with an archive, tracking lifecycle events, viewing statistics, and running in an offline-first mode with optional remote synchronization.
+Windows desktop application for keeping bird records, working with an archive, tracking lifecycle events, viewing
+statistics, and running in an offline-first mode with optional remote synchronization.
 
 ## English 🇬🇧
 
 ### Overview
 
 Birds is a WPF application for recording bird arrivals, departures, statuses, notes, and long-term archive data.  
-The app is designed around a local SQLite database as the primary data store, with optional PostgreSQL synchronization in the background.
+The app is designed around a local SQLite database as the primary data store, with optional PostgreSQL synchronization
+in the background.
 
 ### ✨ What the application can do
 
@@ -49,7 +51,8 @@ The app is designed around a local SQLite database as the primary data store, wi
 
 > ⚡ **Memory-efficient archive rendering**
 >
-> The archive keeps lightweight DTO records in memory and materializes full `BirdViewModel` instances only for visible cards.
+> The archive keeps lightweight DTO records in memory and materializes full `BirdViewModel` instances only for visible
+> cards.
 > As the user scrolls, view models are created on demand, which keeps memory usage lower even for very large archives.
 
 #### Statistics
@@ -96,7 +99,8 @@ The app is designed around a local SQLite database as the primary data store, wi
 ### Обзор
 
 Birds — это WPF-приложение для учёта птиц: поступлений, выбытия, статусов, описаний и работы с архивом.  
-Приложение построено по модели offline-first: локальная SQLite используется как основное хранилище, а PostgreSQL может работать как удалённый бэкенд синхронизации.
+Приложение построено по модели offline-first: локальная SQLite используется как основное хранилище, а PostgreSQL может
+работать как удалённый бэкенд синхронизации.
 
 ### ✨ Что приложение умеет
 
@@ -139,7 +143,8 @@ Birds — это WPF-приложение для учёта птиц: посту
 > ⚡ **Экономный рендеринг архива по памяти**
 >
 > Архив хранит в памяти лёгкие DTO-записи, а полноценные `BirdViewModel` создаются только для видимых карточек.
-> По мере прокрутки view model материализуются на лету, поэтому даже на больших архивах расход памяти остаётся заметно ниже.
+> По мере прокрутки view model материализуются на лету, поэтому даже на больших архивах расход памяти остаётся заметно
+> ниже.
 
 #### Статистика
 

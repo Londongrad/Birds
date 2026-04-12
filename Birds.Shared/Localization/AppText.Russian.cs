@@ -1,5 +1,5 @@
-﻿using System.Globalization;
-namespace Birds.Shared.Localization;
+﻿namespace Birds.Shared.Localization;
+
 public static partial class AppText
 {
     private static IReadOnlyDictionary<string, string> BuildRussian()
@@ -94,7 +94,8 @@ public static partial class AppText
             ["Statistics.Section.Months.Title"] = "Поступления по месяцам",
             ["Statistics.Section.Months.Description"] = "Помесячная активность внутри текущей выборки.",
             ["Statistics.Section.Departures.Title"] = "Выбытия по месяцам",
-            ["Statistics.Section.Departures.Description"] = "Как распределяются выбытия внутри текущей выборки по месяцам.",
+            ["Statistics.Section.Departures.Description"] =
+                "Как распределяются выбытия внутри текущей выборки по месяцам.",
             ["Statistics.Section.Years.Title"] = "Обзор по годам",
             ["Statistics.Section.Years.Description"] = "Сколько записей приходится на каждый год во всём архиве.",
             ["Statistics.Section.Keeping.Title"] = "Максимальная длительность содержания",
@@ -348,7 +349,8 @@ public static partial class AppText
             ["Error.CannotOpenExportFolder"] = "Не удалось открыть папку экспорта.",
             ["Error.CannotClearBirdRecords"] = "Не удалось очистить архив птиц.",
             ["Error.CannotResetLocalDatabase"] = "Не удалось сбросить локальную базу данных.",
-            ["Error.CannotRedownloadRemoteSnapshot"] = "Не удалось восстановить локальный снимок из удалённого backend.",
+            ["Error.CannotRedownloadRemoteSnapshot"] =
+                "Не удалось восстановить локальный снимок из удалённого backend.",
             ["Error.FailedToDisplayErrorNotification"] = "Не удалось показать уведомление об ошибке",
             ["Error.StartupErrorTitle"] = "Ошибка запуска",
             ["Error.StartupError"] = "Во время запуска приложения произошла ошибка:\n{0}",

@@ -4,284 +4,83 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:loc="clr-namespace:Birds.UI.Services.Localization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewmodels="clr-namespace:Birds.UI.ViewModels"
     mc:Ignorable="d">
-        <Style x:Key="StatsSectionCardStyle" TargetType="Border">
-            <Setter Property="Background" Value="{DynamicResource ThemeCardBackgroundBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource ThemeCardBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="20" />
-            <Setter Property="Padding" Value="24" />
-        </Style>
+    <Style x:Key="StatsSectionCardStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource ThemeCardBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeCardBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Padding" Value="24" />
+    </Style>
 
-        <Style x:Key="StatsSectionTitleStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="22" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
-        </Style>
+    <Style x:Key="StatsSectionTitleStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="22" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
+    </Style>
 
-        <Style x:Key="StatsSectionDescriptionStyle" TargetType="TextBlock">
-            <Setter Property="Margin" Value="0,8,0,0" />
-            <Setter Property="FontSize" Value="13" />
-            <Setter Property="Foreground" Value="{DynamicResource ThemeSecondaryTextBrush}" />
-            <Setter Property="TextWrapping" Value="Wrap" />
-        </Style>
+    <Style x:Key="StatsSectionDescriptionStyle" TargetType="TextBlock">
+        <Setter Property="Margin" Value="0,8,0,0" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{DynamicResource ThemeSecondaryTextBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
 
-        <Style x:Key="StatsMetricCardStyle" BasedOn="{StaticResource StatsSectionCardStyle}" TargetType="Border">
-            <Setter Property="Padding" Value="18" />
-            <Setter Property="Margin" Value="0" />
-            <Setter Property="MinHeight" Value="118" />
-            <Setter Property="HorizontalAlignment" Value="Stretch" />
-        </Style>
+    <Style x:Key="StatsMetricCardStyle" BasedOn="{StaticResource StatsSectionCardStyle}" TargetType="Border">
+        <Setter Property="Padding" Value="18" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="MinHeight" Value="118" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
 
-        <Style x:Key="StatsItemCardStyle" TargetType="Border">
-            <Setter Property="Margin" Value="0,0,0,12" />
-            <Setter Property="Padding" Value="14" />
-            <Setter Property="Background" Value="{DynamicResource ThemeInsetBackgroundBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource ThemeCardBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="16" />
-        </Style>
+    <Style x:Key="StatsItemCardStyle" TargetType="Border">
+        <Setter Property="Margin" Value="0,0,0,12" />
+        <Setter Property="Padding" Value="14" />
+        <Setter Property="Background" Value="{DynamicResource ThemeInsetBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeCardBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="16" />
+    </Style>
 
-        <Style x:Key="StatsDistributionCardStyle" BasedOn="{StaticResource StatsItemCardStyle}" TargetType="Border">
-            <Setter Property="Padding" Value="18" />
-            <Setter Property="Margin" Value="0" />
-            <Setter Property="CornerRadius" Value="18" />
-        </Style>
+    <Style x:Key="StatsDistributionCardStyle" BasedOn="{StaticResource StatsItemCardStyle}" TargetType="Border">
+        <Setter Property="Padding" Value="18" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="CornerRadius" Value="18" />
+    </Style>
 
-        <Style x:Key="StatsCompactMetricCardStyle" BasedOn="{StaticResource StatsItemCardStyle}" TargetType="Border">
-            <Setter Property="Padding" Value="16" />
-            <Setter Property="MinHeight" Value="96" />
-            <Setter Property="Margin" Value="0" />
-        </Style>
+    <Style x:Key="StatsCompactMetricCardStyle" BasedOn="{StaticResource StatsItemCardStyle}" TargetType="Border">
+        <Setter Property="Padding" Value="16" />
+        <Setter Property="MinHeight" Value="96" />
+        <Setter Property="Margin" Value="0" />
+    </Style>
 
-        <Style x:Key="StatsCountBadgeStyle" TargetType="Border">
-            <Setter Property="Padding" Value="10,4" />
-            <Setter Property="Background" Value="{DynamicResource ThemeFieldBackgroundBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource ThemeCardBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="999" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-        </Style>
+    <Style x:Key="StatsCountBadgeStyle" TargetType="Border">
+        <Setter Property="Padding" Value="10,4" />
+        <Setter Property="Background" Value="{DynamicResource ThemeFieldBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeCardBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="999" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
 
-        <DataTemplate x:Key="StatsDistributionBarTemplate">
-            <Border Margin="0,0,0,12" Padding="0" Background="Transparent">
-                <StackPanel MaxWidth="320" HorizontalAlignment="Center">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock
-                            FontSize="15"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource ThemePrimaryTextBrush}"
-                            Text="{Binding Label}"
-                            TextWrapping="Wrap" />
-                        <Border
-                            Grid.Column="1"
-                            Margin="14,0,0,0"
-                            Style="{StaticResource StatsCountBadgeStyle}">
-                            <TextBlock
-                                FontSize="14"
-                                FontWeight="Bold"
-                                Foreground="{DynamicResource ThemePrimaryTextBrush}"
-                                Text="{Binding Count}" />
-                        </Border>
-                    </Grid>
-                    <Grid Margin="0,10,0,0"
-                          Width="160"
-                          Height="4"
-                          HorizontalAlignment="Center">
-                        <Border
-                            Background="{DynamicResource ThemeFieldBackgroundBrush}"
-                            CornerRadius="999"
-                            Opacity="0.8" />
-                        <Border
-                            Background="{DynamicResource ThemeCardBorderBrush}"
-                            CornerRadius="999"
-                            Opacity="0.85"
-                            RenderTransformOrigin="0,0.5">
-                            <Border.RenderTransform>
-                                <ScaleTransform ScaleX="{Binding Ratio}" />
-                            </Border.RenderTransform>
-                        </Border>
-                    </Grid>
-                </StackPanel>
-            </Border>
-        </DataTemplate>
-
-        <DataTemplate x:Key="StatsMonthDistributionTemplate">
-            <Border
-                Margin="0"
-                Padding="16,14"
-                Background="{DynamicResource ThemeInsetBackgroundBrush}"
-                BorderBrush="{DynamicResource ThemeCardBorderBrush}"
-                BorderThickness="1"
-                CornerRadius="16">
-                <StackPanel>
-                    <TextBlock
-                        FontSize="12"
-                        FontWeight="SemiBold"
-                        Foreground="{DynamicResource ThemeMutedTextBrush}"
-                        Text="{Binding Label}" />
-                    <TextBlock
-                        Margin="0,10,0,0"
-                        FontSize="24"
-                        FontWeight="Bold"
-                        Foreground="{DynamicResource ThemePrimaryTextBrush}"
-                        Text="{Binding Count}" />
-                    <Grid Margin="0,12,0,0" Height="5">
-                        <Border
-                            Background="{DynamicResource ThemeFieldBackgroundBrush}"
-                            CornerRadius="999" />
-                        <Border
-                            Background="{DynamicResource ThemeStatsSuccessBrush}"
-                            CornerRadius="999"
-                            RenderTransformOrigin="0,0.5">
-                            <Border.RenderTransform>
-                                <ScaleTransform ScaleX="{Binding Ratio}" />
-                            </Border.RenderTransform>
-                        </Border>
-                    </Grid>
-                </StackPanel>
-            </Border>
-        </DataTemplate>
-
-        <Style x:Key="StatsMonthDistributionItemContainerStyle" TargetType="ContentPresenter">
-            <Setter Property="Margin" Value="0,0,14,14" />
-            <Style.Triggers>
-                <Trigger Property="ItemsControl.AlternationIndex" Value="3">
-                    <Setter Property="Margin" Value="0,0,0,14" />
-                </Trigger>
-                <Trigger Property="ItemsControl.AlternationIndex" Value="7">
-                    <Setter Property="Margin" Value="0,0,0,14" />
-                </Trigger>
-                <Trigger Property="ItemsControl.AlternationIndex" Value="11">
-                    <Setter Property="Margin" Value="0" />
-                </Trigger>
-                <Trigger Property="ItemsControl.AlternationIndex" Value="8">
-                    <Setter Property="Margin" Value="0,0,14,0" />
-                </Trigger>
-                <Trigger Property="ItemsControl.AlternationIndex" Value="9">
-                    <Setter Property="Margin" Value="0,0,14,0" />
-                </Trigger>
-                <Trigger Property="ItemsControl.AlternationIndex" Value="10">
-                    <Setter Property="Margin" Value="0,0,14,0" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="StatsFilterComboBoxStyle" BasedOn="{StaticResource ComboBox}" TargetType="ComboBox">
-            <Setter Property="Width" Value="186" />
-            <Setter Property="MinWidth" Value="186" />
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="Padding" Value="8,0" />
-        </Style>
-
-        <Style x:Key="StatsTabItemStyle" TargetType="TabItem">
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-            <Setter Property="OverridesDefaultStyle" Value="True" />
-            <Setter Property="SnapsToDevicePixels" Value="False" />
-            <Setter Property="Foreground" Value="{DynamicResource ThemeSecondaryTextBrush}" />
-            <Setter Property="Background" Value="{DynamicResource ThemeFieldBackgroundBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource ThemeCardBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="18,10,22,10" />
-            <Setter Property="Margin" Value="0,0,12,0" />
-            <Setter Property="MinWidth" Value="126" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TabItem">
-                        <Border
-                            x:Name="HeaderBorder"
-                            Margin="1,1,16,1"
-                            Padding="{TemplateBinding Padding}"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            SnapsToDevicePixels="False"
-                            CornerRadius="18">
-                            <ContentPresenter
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                ContentSource="Header"
-                                RecognizesAccessKey="True" />
-                        </Border>
-
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="HeaderBorder" Property="Background"
-                                        Value="{DynamicResource ThemeCardBackgroundBrush}" />
-                                <Setter TargetName="HeaderBorder" Property="BorderBrush"
-                                        Value="{DynamicResource ThemeFieldBorderFocusBrush}" />
-                                <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="HeaderBorder" Property="BorderBrush"
-                                        Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
-                                <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="StatsTabControlStyle" TargetType="TabControl">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TabControl">
-                        <Grid ClipToBounds="False" KeyboardNavigation.TabNavigation="Local">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
-
-                            <TabPanel
-                                x:Name="HeaderPanel"
-                                Grid.Row="0"
-                                ClipToBounds="False"
-                                HorizontalAlignment="Center"
-                                Margin="0,0,0,8"
-                                Background="Transparent"
-                                IsItemsHost="True"
-                                KeyboardNavigation.TabIndex="1"
-                                Panel.ZIndex="1" />
-
-                            <ContentPresenter
-                                x:Name="PART_SelectedContentHost"
-                                Grid.Row="1"
-                                ContentSource="SelectedContent"
-                                KeyboardNavigation.DirectionalNavigation="Contained" />
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <DataTemplate x:Key="CountStatTemplate">
-            <Border
-                MinHeight="72"
-                Padding="16,12"
-                HorizontalAlignment="Stretch"
-                Style="{StaticResource StatsItemCardStyle}">
+    <DataTemplate x:Key="StatsDistributionBarTemplate">
+        <Border Margin="0,0,0,12" Padding="0" Background="Transparent">
+            <StackPanel MaxWidth="320" HorizontalAlignment="Center">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock
-                        Margin="0,0,16,0"
                         FontSize="15"
                         FontWeight="SemiBold"
                         Foreground="{DynamicResource ThemePrimaryTextBrush}"
                         Text="{Binding Label}"
                         TextWrapping="Wrap" />
-                    <Border Grid.Column="1" Style="{StaticResource StatsCountBadgeStyle}">
+                    <Border
+                        Grid.Column="1"
+                        Margin="14,0,0,0"
+                        Style="{StaticResource StatsCountBadgeStyle}">
                         <TextBlock
                             FontSize="14"
                             FontWeight="Bold"
@@ -289,40 +88,239 @@
                             Text="{Binding Count}" />
                     </Border>
                 </Grid>
-            </Border>
-        </DataTemplate>
-
-        <DataTemplate x:Key="DurationStatTemplate">
-            <Border Style="{StaticResource StatsItemCardStyle}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <TextBlock
-                        Margin="0,0,16,0"
-                        FontSize="15"
-                        FontWeight="SemiBold"
-                        Foreground="{DynamicResource ThemePrimaryTextBrush}"
-                        Text="{Binding Label}"
-                        TextWrapping="Wrap" />
-                    <Border Grid.Column="1" Style="{StaticResource StatsCountBadgeStyle}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock
-                                FontSize="14"
-                                FontWeight="Bold"
-                                Foreground="{DynamicResource ThemePrimaryTextBrush}"
-                                Text="{Binding Count}" />
-                            <TextBlock
-                                Margin="6,0,0,0"
-                                FontSize="12"
-                                Foreground="{DynamicResource ThemeSecondaryTextBrush}"
-                                Text="{loc:Loc Key=Bird.DaysSuffix}" />
-                        </StackPanel>
+                <Grid Margin="0,10,0,0"
+                      Width="160"
+                      Height="4"
+                      HorizontalAlignment="Center">
+                    <Border
+                        Background="{DynamicResource ThemeFieldBackgroundBrush}"
+                        CornerRadius="999"
+                        Opacity="0.8" />
+                    <Border
+                        Background="{DynamicResource ThemeCardBorderBrush}"
+                        CornerRadius="999"
+                        Opacity="0.85"
+                        RenderTransformOrigin="0,0.5">
+                        <Border.RenderTransform>
+                            <ScaleTransform ScaleX="{Binding Ratio}" />
+                        </Border.RenderTransform>
                     </Border>
                 </Grid>
-            </Border>
-        </DataTemplate>
-    
-</ResourceDictionary>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
 
+    <DataTemplate x:Key="StatsMonthDistributionTemplate">
+        <Border
+            Margin="0"
+            Padding="16,14"
+            Background="{DynamicResource ThemeInsetBackgroundBrush}"
+            BorderBrush="{DynamicResource ThemeCardBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="16">
+            <StackPanel>
+                <TextBlock
+                    FontSize="12"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource ThemeMutedTextBrush}"
+                    Text="{Binding Label}" />
+                <TextBlock
+                    Margin="0,10,0,0"
+                    FontSize="24"
+                    FontWeight="Bold"
+                    Foreground="{DynamicResource ThemePrimaryTextBrush}"
+                    Text="{Binding Count}" />
+                <Grid Margin="0,12,0,0" Height="5">
+                    <Border
+                        Background="{DynamicResource ThemeFieldBackgroundBrush}"
+                        CornerRadius="999" />
+                    <Border
+                        Background="{DynamicResource ThemeStatsSuccessBrush}"
+                        CornerRadius="999"
+                        RenderTransformOrigin="0,0.5">
+                        <Border.RenderTransform>
+                            <ScaleTransform ScaleX="{Binding Ratio}" />
+                        </Border.RenderTransform>
+                    </Border>
+                </Grid>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+
+    <Style x:Key="StatsMonthDistributionItemContainerStyle" TargetType="ContentPresenter">
+        <Setter Property="Margin" Value="0,0,14,14" />
+        <Style.Triggers>
+            <Trigger Property="ItemsControl.AlternationIndex" Value="3">
+                <Setter Property="Margin" Value="0,0,0,14" />
+            </Trigger>
+            <Trigger Property="ItemsControl.AlternationIndex" Value="7">
+                <Setter Property="Margin" Value="0,0,0,14" />
+            </Trigger>
+            <Trigger Property="ItemsControl.AlternationIndex" Value="11">
+                <Setter Property="Margin" Value="0" />
+            </Trigger>
+            <Trigger Property="ItemsControl.AlternationIndex" Value="8">
+                <Setter Property="Margin" Value="0,0,14,0" />
+            </Trigger>
+            <Trigger Property="ItemsControl.AlternationIndex" Value="9">
+                <Setter Property="Margin" Value="0,0,14,0" />
+            </Trigger>
+            <Trigger Property="ItemsControl.AlternationIndex" Value="10">
+                <Setter Property="Margin" Value="0,0,14,0" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="StatsFilterComboBoxStyle" BasedOn="{StaticResource ComboBox}" TargetType="ComboBox">
+        <Setter Property="Width" Value="186" />
+        <Setter Property="MinWidth" Value="186" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Padding" Value="8,0" />
+    </Style>
+
+    <Style x:Key="StatsTabItemStyle" TargetType="TabItem">
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="SnapsToDevicePixels" Value="False" />
+        <Setter Property="Foreground" Value="{DynamicResource ThemeSecondaryTextBrush}" />
+        <Setter Property="Background" Value="{DynamicResource ThemeFieldBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeCardBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="18,10,22,10" />
+        <Setter Property="Margin" Value="0,0,12,0" />
+        <Setter Property="MinWidth" Value="126" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Border
+                        x:Name="HeaderBorder"
+                        Margin="1,1,16,1"
+                        Padding="{TemplateBinding Padding}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        SnapsToDevicePixels="False"
+                        CornerRadius="18">
+                        <ContentPresenter
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            ContentSource="Header"
+                            RecognizesAccessKey="True" />
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="HeaderBorder" Property="Background"
+                                    Value="{DynamicResource ThemeCardBackgroundBrush}" />
+                            <Setter TargetName="HeaderBorder" Property="BorderBrush"
+                                    Value="{DynamicResource ThemeFieldBorderFocusBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="HeaderBorder" Property="BorderBrush"
+                                    Value="{DynamicResource ThemeFieldBorderHoverBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource ThemePrimaryTextBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="StatsTabControlStyle" TargetType="TabControl">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabControl">
+                    <Grid ClipToBounds="False" KeyboardNavigation.TabNavigation="Local">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <TabPanel
+                            x:Name="HeaderPanel"
+                            Grid.Row="0"
+                            ClipToBounds="False"
+                            HorizontalAlignment="Center"
+                            Margin="0,0,0,8"
+                            Background="Transparent"
+                            IsItemsHost="True"
+                            KeyboardNavigation.TabIndex="1"
+                            Panel.ZIndex="1" />
+
+                        <ContentPresenter
+                            x:Name="PART_SelectedContentHost"
+                            Grid.Row="1"
+                            ContentSource="SelectedContent"
+                            KeyboardNavigation.DirectionalNavigation="Contained" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <DataTemplate x:Key="CountStatTemplate">
+        <Border
+            MinHeight="72"
+            Padding="16,12"
+            HorizontalAlignment="Stretch"
+            Style="{StaticResource StatsItemCardStyle}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    Margin="0,0,16,0"
+                    FontSize="15"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource ThemePrimaryTextBrush}"
+                    Text="{Binding Label}"
+                    TextWrapping="Wrap" />
+                <Border Grid.Column="1" Style="{StaticResource StatsCountBadgeStyle}">
+                    <TextBlock
+                        FontSize="14"
+                        FontWeight="Bold"
+                        Foreground="{DynamicResource ThemePrimaryTextBrush}"
+                        Text="{Binding Count}" />
+                </Border>
+            </Grid>
+        </Border>
+    </DataTemplate>
+
+    <DataTemplate x:Key="DurationStatTemplate">
+        <Border Style="{StaticResource StatsItemCardStyle}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    Margin="0,0,16,0"
+                    FontSize="15"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource ThemePrimaryTextBrush}"
+                    Text="{Binding Label}"
+                    TextWrapping="Wrap" />
+                <Border Grid.Column="1" Style="{StaticResource StatsCountBadgeStyle}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock
+                            FontSize="14"
+                            FontWeight="Bold"
+                            Foreground="{DynamicResource ThemePrimaryTextBrush}"
+                            Text="{Binding Count}" />
+                        <TextBlock
+                            Margin="6,0,0,0"
+                            FontSize="12"
+                            Foreground="{DynamicResource ThemeSecondaryTextBrush}"
+                            Text="{loc:Loc Key=Bird.DaysSuffix}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+    </DataTemplate>
+
+</ResourceDictionary>

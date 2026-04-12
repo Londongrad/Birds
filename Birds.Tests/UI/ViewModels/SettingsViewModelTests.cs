@@ -40,8 +40,8 @@ public class SettingsViewModelTests
     private readonly Mock<ILocalizationService> _localization = new();
     private readonly Mock<IMediator> _mediator = new();
     private readonly Mock<INotificationService> _notificationService = new();
-    private readonly TestPreferencesService _preferences = new();
     private readonly Mock<IPathNavigationService> _pathNavigationService = new();
+    private readonly TestPreferencesService _preferences = new();
     private readonly Mock<IRemoteSyncController> _remoteSyncController = new();
     private readonly TestRemoteSyncStatusSource _remoteSyncStatus = new();
     private readonly BirdStore _store = new();

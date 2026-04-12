@@ -1,6 +1,5 @@
 using System.Globalization;
 using Birds.Domain.Enums;
-using Birds.Domain.Extensions;
 using Birds.Shared.Localization;
 using Birds.UI.Converters;
 using Birds.UI.Services.Localization;

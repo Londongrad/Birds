@@ -16,8 +16,8 @@ internal sealed class RemoteSyncCoordinator(
     IDatabaseMaintenanceService databaseMaintenanceService,
     INotificationService notificationService) : IRemoteSyncCoordinator
 {
-    private readonly IDatabaseMaintenanceService _databaseMaintenanceService = databaseMaintenanceService;
     private const int MaxBootstrapPasses = 512;
+    private readonly IDatabaseMaintenanceService _databaseMaintenanceService = databaseMaintenanceService;
     private readonly ILocalStoreStateService _localStoreStateService = localStoreStateService;
     private readonly INotificationService _notificationService = notificationService;
     private readonly RemoteSyncRuntimeOptions _remoteSyncOptions = remoteSyncOptions;
@@ -108,6 +108,46 @@ internal sealed class RemoteSyncCoordinator(
         }
     }
 
+    public async Task SyncNowAsync(CancellationToken cancellationToken)
+    {
+        if (!_remoteSyncOptions.IsConfigured)
+        {
+            await PublishDisabledStateAsync(cancellationToken);
+            return;
+        }
+
+        await ExecuteSyncIterationAsync(cancellationToken);
+
+        if (_isPaused)
+        {
+            var localState = await TryGetLocalStateAsync(cancellationToken);
+            await _remoteSyncStatusReporter.SetPausedAsync(localState.PendingOperationCount, cancellationToken);
+        }
+    }
+
+    public async Task PauseAsync(CancellationToken cancellationToken)
+    {
+        if (!_remoteSyncOptions.IsConfigured)
+        {
+            await PublishDisabledStateAsync(cancellationToken);
+            return;
+        }
+
+        _isPaused = true;
+        var localState = await TryGetLocalStateAsync(cancellationToken);
+        await _remoteSyncStatusReporter.SetPausedAsync(localState.PendingOperationCount, cancellationToken);
+    }
+
+    public Task ResumeAsync(CancellationToken cancellationToken)
+    {
+        if (!_remoteSyncOptions.IsConfigured)
+            return PublishDisabledStateAsync(cancellationToken);
+
+        _isPaused = false;
+        RequestWake();
+        return Task.CompletedTask;
+    }
+
     private async Task<bool> BootstrapLocalStoreCoreAsync(CancellationToken cancellationToken)
     {
         await PublishSyncingStateAsync(cancellationToken);
@@ -181,46 +221,6 @@ internal sealed class RemoteSyncCoordinator(
         ShowConflictResolutionWarning(totalRemoteWins);
         Log.Warning(bootstrapExceededMessage);
         return false;
-    }
-
-    public async Task SyncNowAsync(CancellationToken cancellationToken)
-    {
-        if (!_remoteSyncOptions.IsConfigured)
-        {
-            await PublishDisabledStateAsync(cancellationToken);
-            return;
-        }
-
-        await ExecuteSyncIterationAsync(cancellationToken);
-
-        if (_isPaused)
-        {
-            var localState = await TryGetLocalStateAsync(cancellationToken);
-            await _remoteSyncStatusReporter.SetPausedAsync(localState.PendingOperationCount, cancellationToken);
-        }
-    }
-
-    public async Task PauseAsync(CancellationToken cancellationToken)
-    {
-        if (!_remoteSyncOptions.IsConfigured)
-        {
-            await PublishDisabledStateAsync(cancellationToken);
-            return;
-        }
-
-        _isPaused = true;
-        var localState = await TryGetLocalStateAsync(cancellationToken);
-        await _remoteSyncStatusReporter.SetPausedAsync(localState.PendingOperationCount, cancellationToken);
-    }
-
-    public Task ResumeAsync(CancellationToken cancellationToken)
-    {
-        if (!_remoteSyncOptions.IsConfigured)
-            return PublishDisabledStateAsync(cancellationToken);
-
-        _isPaused = false;
-        RequestWake();
-        return Task.CompletedTask;
     }
 
     private async Task RunAsync(CancellationToken stoppingToken)
