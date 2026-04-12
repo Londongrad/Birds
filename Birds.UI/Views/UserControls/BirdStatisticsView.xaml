@@ -55,6 +55,12 @@
             <Setter Property="CornerRadius" Value="18" />
         </Style>
 
+        <Style x:Key="StatsCompactMetricCardStyle" BasedOn="{StaticResource StatsItemCardStyle}" TargetType="Border">
+            <Setter Property="Padding" Value="16" />
+            <Setter Property="MinHeight" Value="96" />
+            <Setter Property="Margin" Value="0" />
+        </Style>
+
         <Style x:Key="StatsCountBadgeStyle" TargetType="Border">
             <Setter Property="Padding" Value="10,4" />
             <Setter Property="Background" Value="{DynamicResource ThemeFieldBackgroundBrush}" />
@@ -147,6 +153,30 @@
                 </StackPanel>
             </Border>
         </DataTemplate>
+
+        <Style x:Key="StatsMonthDistributionItemContainerStyle" TargetType="ContentPresenter">
+            <Setter Property="Margin" Value="0,0,14,14" />
+            <Style.Triggers>
+                <Trigger Property="ItemsControl.AlternationIndex" Value="3">
+                    <Setter Property="Margin" Value="0,0,0,14" />
+                </Trigger>
+                <Trigger Property="ItemsControl.AlternationIndex" Value="7">
+                    <Setter Property="Margin" Value="0,0,0,14" />
+                </Trigger>
+                <Trigger Property="ItemsControl.AlternationIndex" Value="11">
+                    <Setter Property="Margin" Value="0" />
+                </Trigger>
+                <Trigger Property="ItemsControl.AlternationIndex" Value="8">
+                    <Setter Property="Margin" Value="0,0,14,0" />
+                </Trigger>
+                <Trigger Property="ItemsControl.AlternationIndex" Value="9">
+                    <Setter Property="Margin" Value="0,0,14,0" />
+                </Trigger>
+                <Trigger Property="ItemsControl.AlternationIndex" Value="10">
+                    <Setter Property="Margin" Value="0,0,14,0" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
 
         <Style x:Key="StatsFilterComboBoxStyle" BasedOn="{StaticResource ComboBox}" TargetType="ComboBox">
             <Setter Property="Width" Value="186" />
@@ -420,6 +450,75 @@
                                             </Border>
                                         </Grid>
 
+                                        <Grid Margin="0,0,0,16">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Border Grid.Column="0" Margin="0,0,16,0"
+                                                    Style="{StaticResource StatsCompactMetricCardStyle}">
+                                                <StackPanel>
+                                                    <TextBlock FontSize="12"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource ThemeSecondaryTextBrush}"
+                                                               Text="{loc:Loc Key=Statistics.Card.ArrivalsLast30Days}" />
+                                                    <TextBlock Margin="0,8,0,0"
+                                                               FontSize="24"
+                                                               FontWeight="Bold"
+                                                               Foreground="{DynamicResource ThemePrimaryTextBrush}"
+                                                               Text="{Binding ArrivalsLast30Days}" />
+                                                </StackPanel>
+                                            </Border>
+
+                                            <Border Grid.Column="1" Margin="0,0,16,0"
+                                                    Style="{StaticResource StatsCompactMetricCardStyle}">
+                                                <StackPanel>
+                                                    <TextBlock FontSize="12"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource ThemeSecondaryTextBrush}"
+                                                               Text="{loc:Loc Key=Statistics.Card.DeparturesLast30Days}" />
+                                                    <TextBlock Margin="0,8,0,0"
+                                                               FontSize="24"
+                                                               FontWeight="Bold"
+                                                               Foreground="{DynamicResource ThemePrimaryTextBrush}"
+                                                               Text="{Binding DeparturesLast30Days}" />
+                                                </StackPanel>
+                                            </Border>
+
+                                            <Border Grid.Column="2" Margin="0,0,16,0"
+                                                    Style="{StaticResource StatsCompactMetricCardStyle}">
+                                                <StackPanel>
+                                                    <TextBlock FontSize="12"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource ThemeSecondaryTextBrush}"
+                                                               Text="{loc:Loc Key=Statistics.Card.PeakConcurrent}" />
+                                                    <TextBlock Margin="0,8,0,0"
+                                                               FontSize="24"
+                                                               FontWeight="Bold"
+                                                               Foreground="{DynamicResource ThemePrimaryTextBrush}"
+                                                               Text="{Binding PeakConcurrentCount}" />
+                                                </StackPanel>
+                                            </Border>
+
+                                            <Border Grid.Column="3"
+                                                    Style="{StaticResource StatsCompactMetricCardStyle}">
+                                                <StackPanel>
+                                                    <TextBlock FontSize="12"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource ThemeSecondaryTextBrush}"
+                                                               Text="{loc:Loc Key=Statistics.Card.MedianKeeping}" />
+                                                    <TextBlock Margin="0,8,0,0"
+                                                               FontSize="24"
+                                                               FontWeight="Bold"
+                                                               Foreground="{DynamicResource ThemePrimaryTextBrush}"
+                                                               Text="{Binding MedianKeeping}" />
+                                                </StackPanel>
+                                            </Border>
+                                        </Grid>
+
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="1.16*" />
@@ -533,11 +632,11 @@
                                             <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="1.1*" />
-                                            <ColumnDefinition Width="0.9*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
 
-                                        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,16"
+                                        <Border Grid.Row="0" Grid.Column="0" Margin="0,0,18,16"
                                                 Style="{StaticResource StatsDistributionCardStyle}">
                                             <StackPanel>
                                                 <TextBlock HorizontalAlignment="Center"
@@ -561,29 +660,37 @@
                                                         </ItemsPanelTemplate>
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemContainerStyle>
-                                                        <Style TargetType="ContentPresenter">
-                                                            <Setter Property="Margin" Value="0,0,14,14" />
-                                                            <Style.Triggers>
-                                                                <Trigger Property="ItemsControl.AlternationIndex" Value="3">
-                                                                    <Setter Property="Margin" Value="0,0,0,14" />
-                                                                </Trigger>
-                                                                <Trigger Property="ItemsControl.AlternationIndex" Value="7">
-                                                                    <Setter Property="Margin" Value="0,0,0,14" />
-                                                                </Trigger>
-                                                                <Trigger Property="ItemsControl.AlternationIndex" Value="11">
-                                                                    <Setter Property="Margin" Value="0" />
-                                                                </Trigger>
-                                                                <Trigger Property="ItemsControl.AlternationIndex" Value="8">
-                                                                    <Setter Property="Margin" Value="0,0,14,0" />
-                                                                </Trigger>
-                                                                <Trigger Property="ItemsControl.AlternationIndex" Value="9">
-                                                                    <Setter Property="Margin" Value="0,0,14,0" />
-                                                                </Trigger>
-                                                                <Trigger Property="ItemsControl.AlternationIndex" Value="10">
-                                                                    <Setter Property="Margin" Value="0,0,14,0" />
-                                                                </Trigger>
-                                                            </Style.Triggers>
-                                                        </Style>
+                                                        <StaticResource ResourceKey="StatsMonthDistributionItemContainerStyle" />
+                                                    </ItemsControl.ItemContainerStyle>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Grid.Row="0" Grid.Column="1" Margin="0,0,0,16"
+                                                Style="{StaticResource StatsDistributionCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock HorizontalAlignment="Center"
+                                                           TextAlignment="Center"
+                                                           Style="{StaticResource StatsSectionTitleStyle}"
+                                                           Text="{loc:Loc Key=Statistics.Section.Departures.Title}" />
+                                                <TextBlock MaxWidth="420"
+                                                           HorizontalAlignment="Center"
+                                                           TextAlignment="Center"
+                                                           Style="{StaticResource StatsSectionDescriptionStyle}"
+                                                           Text="{loc:Loc Key=Statistics.Section.Departures.Description}" />
+                                                <ItemsControl
+                                                    AlternationCount="12"
+                                                    Margin="0,18,0,0"
+                                                    HorizontalAlignment="Center"
+                                                    ItemTemplate="{StaticResource StatsMonthDistributionTemplate}"
+                                                    ItemsSource="{Binding DepartureMonthOfYearStats}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <UniformGrid Columns="4" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemContainerStyle>
+                                                        <StaticResource ResourceKey="StatsMonthDistributionItemContainerStyle" />
                                                     </ItemsControl.ItemContainerStyle>
                                                 </ItemsControl>
                                             </StackPanel>
@@ -644,6 +751,7 @@
                                         <Grid>
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="*" />
                                             </Grid.RowDefinitions>
                                             <StackPanel Margin="0,0,0,12">
@@ -652,7 +760,30 @@
                                                 <TextBlock Style="{StaticResource StatsSectionDescriptionStyle}"
                                                            Text="{loc:Loc Key=Statistics.Section.Keeping.Description}" />
                                             </StackPanel>
-                                            <ScrollViewer Grid.Row="1" MaxHeight="340"
+                                            <Border Grid.Row="1"
+                                                    Margin="0,0,0,14"
+                                                    Padding="18,16"
+                                                    Background="{DynamicResource ThemeFieldBackgroundBrush}"
+                                                    BorderBrush="{DynamicResource ThemeCardBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="14">
+                                                <StackPanel>
+                                                    <TextBlock FontSize="12"
+                                                               HorizontalAlignment="Center"
+                                                               TextAlignment="Center"
+                                                               Foreground="{DynamicResource ThemeMutedTextBrush}"
+                                                               Text="{loc:Loc Key=Statistics.Highlight.LongestActiveKeeping}" />
+                                                    <TextBlock Margin="0,8,0,0"
+                                                               FontSize="16"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource ThemePrimaryTextBrush}"
+                                                               HorizontalAlignment="Center"
+                                                               TextAlignment="Center"
+                                                               Text="{Binding LongestActiveKeeping}"
+                                                               TextWrapping="Wrap" />
+                                                </StackPanel>
+                                            </Border>
+                                            <ScrollViewer Grid.Row="2" MaxHeight="340"
                                                           HorizontalScrollBarVisibility="Disabled"
                                                           VerticalScrollBarVisibility="Auto">
                                                 <ItemsControl ItemTemplate="{StaticResource DurationStatTemplate}"

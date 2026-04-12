@@ -24,11 +24,16 @@ public partial class BirdStatisticsViewModel : ObservableObject
     private readonly IBirdStore _birdStore;
     private readonly ILocalizationService _localization;
     [ObservableProperty] private int aliveCount;
+    [ObservableProperty] private int arrivalsLast30Days;
     [ObservableProperty] private IReadOnlyCollection<int> availableYears = Array.Empty<int>();
 
     [ObservableProperty] private string averageKeeping = "\u2014";
+    [ObservableProperty] private int departuresLast30Days;
     [ObservableProperty] private int killCount;
     [ObservableProperty] private string? longestBreak;
+    [ObservableProperty] private string longestActiveKeeping = "\u2014";
+    [ObservableProperty] private string medianKeeping = "\u2014";
+    [ObservableProperty] private int peakConcurrentCount;
     [ObservableProperty] private int releasedCount;
 
     [ObservableProperty] private int? selectedYear;
@@ -69,6 +74,7 @@ public partial class BirdStatisticsViewModel : ObservableObject
     public ObservableCollection<StatBarItem> TopSpeciesStats { get; } = new();
     public ObservableCollection<StatBarItem> YearDistributionStats { get; } = new();
     public ObservableCollection<StatBarItem> MonthOfYearStats { get; } = new();
+    public ObservableCollection<StatBarItem> DepartureMonthOfYearStats { get; } = new();
 
     public bool IsLoading => _birdStore.LoadState == LoadState.Loading;
     public bool HasBirds => TotalBirds > 0;
@@ -111,6 +117,7 @@ public partial class BirdStatisticsViewModel : ObservableObject
     {
         var filteredBirds = FilterBirdsByYear();
         CalculateCounts(filteredBirds);
+        CalculateOverviewMetrics(filteredBirds);
         UpdateSpeciesStats(filteredBirds);
         UpdateYearStats();
         UpdateMonthStats(filteredBirds);
@@ -194,15 +201,18 @@ public partial class BirdStatisticsViewModel : ObservableObject
             MonthStats.Add(new StatItem(label, g.Count()));
         }
 
-        var byMonthOfYear = filteredBirds
-            .GroupBy(b => b.Arrival.Month)
-            .ToDictionary(g => g.Key, g => g.Count());
+        ReplaceBarItems(
+            MonthOfYearStats,
+            BuildMonthOfYearItems(filteredBirds
+                .GroupBy(b => b.Arrival.Month)
+                .ToDictionary(g => g.Key, g => g.Count())));
 
-        var monthOfYearItems = Enumerable.Range(1, 12)
-            .Select(month => new StatItem(GetMonthLabel(month), byMonthOfYear.GetValueOrDefault(month)))
-            .ToList();
-
-        ReplaceBarItems(MonthOfYearStats, monthOfYearItems);
+        ReplaceBarItems(
+            DepartureMonthOfYearStats,
+            BuildMonthOfYearItems(filteredBirds
+                .Where(b => b.Departure.HasValue)
+                .GroupBy(b => b.Departure!.Value.Month)
+                .ToDictionary(g => g.Key, g => g.Count())));
     }
 
     private void UpdateAvailableYears()
@@ -286,6 +296,19 @@ public partial class BirdStatisticsViewModel : ObservableObject
         CalculateLongestBreak(filteredBirds);
     }
 
+    private void CalculateOverviewMetrics(IList<BirdDTO> filteredBirds)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var since = today.AddDays(-29);
+
+        ArrivalsLast30Days = filteredBirds.Count(b => b.Arrival >= since && b.Arrival <= today);
+        DeparturesLast30Days = filteredBirds.Count(b =>
+            b.Departure is { } departure && departure >= since && departure <= today);
+        PeakConcurrentCount = CalculatePeakConcurrentCount(filteredBirds, today);
+        MedianKeeping = FormatMedianKeeping(filteredBirds, today);
+        LongestActiveKeeping = FormatLongestActiveKeeping(filteredBirds, today);
+    }
+
     private void CalculateLongestBreak(IList<BirdDTO> filteredBirds)
     {
         var orderedDates = filteredBirds
@@ -356,6 +379,81 @@ public partial class BirdStatisticsViewModel : ObservableObject
             LongestKeepingStats.Add(item);
     }
 
+    private int CalculatePeakConcurrentCount(IList<BirdDTO> filteredBirds, DateOnly today)
+    {
+        if (filteredBirds.Count == 0)
+            return 0;
+
+        var changes = new SortedDictionary<DateOnly, int>();
+
+        foreach (var bird in filteredBirds)
+        {
+            AddChange(changes, bird.Arrival, 1);
+
+            var endExclusive = (bird.Departure ?? today).AddDays(1);
+            AddChange(changes, endExclusive, -1);
+        }
+
+        var running = 0;
+        var peak = 0;
+
+        foreach (var change in changes.OrderBy(x => x.Key))
+        {
+            running += change.Value;
+            peak = Math.Max(peak, running);
+        }
+
+        return peak;
+    }
+
+    private string FormatMedianKeeping(IList<BirdDTO> filteredBirds, DateOnly today)
+    {
+        if (filteredBirds.Count == 0)
+            return "\u2014";
+
+        var durations = filteredBirds
+            .Select(b => CalculateKeepingDays(b, today))
+            .OrderBy(x => x)
+            .ToArray();
+
+        double median = durations.Length % 2 == 1
+            ? durations[durations.Length / 2]
+            : (durations[(durations.Length / 2) - 1] + durations[durations.Length / 2]) / 2d;
+
+        return _localization.GetString(
+            "Statistics.MedianKeepingValue",
+            (int)Math.Round(median, MidpointRounding.AwayFromZero));
+    }
+
+    private string FormatLongestActiveKeeping(IList<BirdDTO> filteredBirds, DateOnly today)
+    {
+        var longestActiveBird = filteredBirds
+            .Where(b => b.IsAlive && b.Departure is null)
+            .OrderBy(b => b.Arrival)
+            .FirstOrDefault();
+
+        if (longestActiveBird is null)
+            return "\u2014";
+
+        var days = CalculateKeepingDays(longestActiveBird, today);
+        var displayName = BirdEnumHelper.ParseBirdName(longestActiveBird.Name)?.ToDisplayName() ?? longestActiveBird.Name;
+
+        return AppText.Format(
+            _localization.CurrentCulture,
+            "Statistics.LongestActiveKeepingValue",
+            displayName,
+            days,
+            _localization.FormatDate(longestActiveBird.Arrival));
+    }
+
+    private static int CalculateKeepingDays(BirdDTO bird, DateOnly today)
+    {
+        var end = bird.Departure ?? today;
+        return (int)Math.Max(
+            0,
+            (end.ToDateTime(TimeOnly.MinValue) - bird.Arrival.ToDateTime(TimeOnly.MinValue)).TotalDays);
+    }
+
     private string FormatIsoWeekRange(int isoYear, int isoWeek)
     {
         var start = DateOnly.FromDateTime(ISOWeek.ToDateTime(isoYear, isoWeek, DayOfWeek.Monday));
@@ -376,6 +474,19 @@ public partial class BirdStatisticsViewModel : ObservableObject
             var ratio = maxCount <= 0 ? 0d : (double)item.Count / maxCount;
             target.Add(new StatBarItem(item.Label, item.Count, ratio));
         }
+    }
+
+    private List<StatItem> BuildMonthOfYearItems(IReadOnlyDictionary<int, int> countsByMonth)
+    {
+        return Enumerable.Range(1, 12)
+            .Select(month => new StatItem(GetMonthLabel(month), countsByMonth.GetValueOrDefault(month)))
+            .ToList();
+    }
+
+    private static void AddChange(IDictionary<DateOnly, int> changes, DateOnly day, int delta)
+    {
+        if (!changes.TryAdd(day, delta))
+            changes[day] += delta;
     }
 
     private string GetMonthLabel(int month)

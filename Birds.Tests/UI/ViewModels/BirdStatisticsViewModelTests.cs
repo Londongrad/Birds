@@ -119,6 +119,40 @@ namespace Birds.Tests.UI.ViewModels
             sut.MonthOfYearStats.ElementAt(2).Count.Should().Be(1);
         }
 
+        [Fact]
+        public void Overview_Metrics_Should_Expose_Rolling_Peak_And_Median_Data()
+        {
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            var sut = CreateViewModel(
+                AppLanguages.English,
+                new BirdDTO(Guid.NewGuid(), "Sparrow", null, today.AddDays(-10), null, true, null, null),
+                new BirdDTO(Guid.NewGuid(), "Goldfinch", null, today.AddDays(-20), today.AddDays(-5), true, null, null),
+                new BirdDTO(Guid.NewGuid(), "Amadin", null, today.AddDays(-40), null, true, null, null),
+                new BirdDTO(Guid.NewGuid(), "Great tit", null, today.AddDays(-100), today.AddDays(-50), false, null, null));
+
+            sut.ArrivalsLast30Days.Should().Be(2);
+            sut.DeparturesLast30Days.Should().Be(1);
+            sut.PeakConcurrentCount.Should().Be(3);
+            sut.MedianKeeping.Should().Be("Median of 28 days");
+            sut.LongestActiveKeeping.Should().Contain("40");
+            sut.LongestActiveKeeping.Should().Contain(today.AddDays(-40).ToString("dd.MM.yyyy"));
+        }
+
+        [Fact]
+        public void DepartureMonth_Distribution_Should_Expose_All_Twelve_Months()
+        {
+            var sut = CreateViewModel(
+                AppLanguages.English,
+                new BirdDTO(Guid.NewGuid(), "Sparrow", null, new DateOnly(2026, 1, 10), new DateOnly(2026, 1, 15), true, null, null),
+                new BirdDTO(Guid.NewGuid(), "Goldfinch", null, new DateOnly(2026, 3, 12), new DateOnly(2026, 3, 20), true, null, null),
+                new BirdDTO(Guid.NewGuid(), "Amadin", null, new DateOnly(2026, 3, 18), null, true, null, null));
+
+            sut.DepartureMonthOfYearStats.Should().HaveCount(12);
+            sut.DepartureMonthOfYearStats.ElementAt(0).Count.Should().Be(1);
+            sut.DepartureMonthOfYearStats.ElementAt(1).Count.Should().Be(0);
+            sut.DepartureMonthOfYearStats.ElementAt(2).Count.Should().Be(1);
+        }
+
         private static BirdStatisticsViewModel CreateViewModel(string language, params BirdDTO[] birds)
         {
             var culture = CultureInfo.GetCultureInfo(language);
