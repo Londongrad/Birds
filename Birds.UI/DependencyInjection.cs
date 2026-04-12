@@ -17,6 +17,8 @@ using Birds.UI.Services.Preferences;
 using Birds.UI.Services.Preferences.Interfaces;
 using Birds.UI.Services.Shell;
 using Birds.UI.Services.Shell.Interfaces;
+using Birds.UI.Services.Statistics;
+using Birds.UI.Services.Statistics.Interfaces;
 using Birds.UI.Services.Stores.BirdStore;
 using Birds.UI.Services.Sync;
 using Birds.UI.Services.Theming;
@@ -58,6 +60,7 @@ public static class DependencyInjection
         services.AddSingleton<IDataFileDialogService, DataFileDialogService>();
         services.AddSingleton<IImportService, JsonImportService>();
         services.AddSingleton<IPathNavigationService, PathNavigationService>();
+        services.AddSingleton<IBirdStatisticsCalculator, BirdStatisticsCalculator>();
 
         // Export Services
         services.AddSingleton<IExportService, JsonExportService>();
