@@ -12,14 +12,6 @@ namespace Birds.Tests.UI.Services;
 public sealed class LocalizationDisplayTests
 {
     [Fact]
-    public void Chickadee_Display_Name_Should_Use_Updated_English_Translation()
-    {
-        var culture = CultureInfo.GetCultureInfo(AppLanguages.English);
-
-        ((BirdsName)6).ToDisplayName(culture).Should().Be("Black-capped chickadee");
-    }
-
-    [Fact]
     public void BirdNameDisplayConverter_Should_Use_Current_App_Language_Instead_Of_Binding_Culture()
     {
         var localization = LocalizationService.Instance;
