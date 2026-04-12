@@ -47,6 +47,11 @@ The app is designed around a local SQLite database as the primary data store, wi
 - Search, filtering, and compact status presentation.
 - Short undo for destructive delete operations.
 
+> ⚡ **Memory-efficient archive rendering**
+>
+> The archive keeps lightweight DTO records in memory and materializes full `BirdViewModel` instances only for visible cards.
+> As the user scrolls, view models are created on demand, which keeps memory usage lower even for very large archives.
+
 #### Statistics
 
 - Overview tab with key counts and summary metrics.
@@ -130,6 +135,11 @@ Birds — это WPF-приложение для учёта птиц: посту
 - Inline-редактирование существующих записей.
 - Поиск, фильтрация и компактное отображение статусов.
 - Короткий undo для удаления.
+
+> ⚡ **Экономный рендеринг архива по памяти**
+>
+> Архив хранит в памяти лёгкие DTO-записи, а полноценные `BirdViewModel` создаются только для видимых карточек.
+> По мере прокрутки view model материализуются на лету, поэтому даже на больших архивах расход памяти остаётся заметно ниже.
 
 #### Статистика
 
