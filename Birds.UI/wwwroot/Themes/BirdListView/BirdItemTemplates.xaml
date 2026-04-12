@@ -2,7 +2,8 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:helpers="clr-namespace:Birds.UI.Views.Helpers"
-    xmlns:loc="clr-namespace:Birds.UI.Services.Localization">
+    xmlns:loc="clr-namespace:Birds.UI.Services.Localization"
+    xmlns:local="clr-namespace:Birds.UI.Views.UserControls">
 
     <DataTemplate x:Key="BirdNameComboTemplate">
         <TextBlock
@@ -400,45 +401,11 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <TextBlock
-                    Grid.Column="0"
-                    Margin="0,0,12,0"
-                    Style="{StaticResource BirdCardTitleTextStyle}"
-                    Text="{Binding DisplayName}" />
-
-                <Border
-                    Grid.Column="1"
-                    Padding="10,5"
-                    VerticalAlignment="Center"
-                    CornerRadius="999">
-                    <Border.Style>
-                        <Style TargetType="Border">
-                            <Setter Property="Background" Value="{DynamicResource ThemeStatusAliveBackgroundBrush}" />
-                            <Setter Property="BorderBrush" Value="{DynamicResource ThemeStatusAliveBorderBrush}" />
-                            <Setter Property="BorderThickness" Value="1" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsAlive}" Value="False">
-                                    <Setter Property="BorderBrush" Value="{DynamicResource ThemeStatusDeadBorderBrush}" />
-                                    <Setter Property="Background"
-                                            Value="{DynamicResource ThemeStatusDeadBackgroundBrush}" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
-                    <TextBlock
-                        HorizontalAlignment="Center"
-                        FontSize="11"
-                        FontWeight="SemiBold"
-                        Foreground="{DynamicResource ThemePrimaryTextBrush}"
-                        Text="{Binding StatusText}" />
-                </Border>
-            </Grid>
+            <TextBlock
+                Grid.Row="0"
+                HorizontalAlignment="Left"
+                Style="{StaticResource BirdCardTitleTextStyle}"
+                Text="{Binding DisplayName}" />
 
             <TextBlock
                 Grid.Row="1"
@@ -579,9 +546,18 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <Grid Grid.Row="0">
+                    <TextBlock
+                        Grid.Row="0"
+                        FontSize="11"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource ThemeMutedTextBrush}"
+                        Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:BirdItemControl}},
+                                       Path=DisplayIndex}" />
+
+                    <Grid Grid.Row="1" Margin="0,6,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
@@ -613,7 +589,7 @@
 
                     <ComboBox
                         x:Name="SpeciesField"
-                        Grid.Row="1"
+                        Grid.Row="2"
                         IsEditable="False"
                         ItemTemplate="{StaticResource BirdNameComboTemplate}"
                         ItemsSource="{Binding BirdNames}"
