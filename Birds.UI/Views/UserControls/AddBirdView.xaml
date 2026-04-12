@@ -210,7 +210,7 @@
             x:Key="DescriptionTextBoxStyle"
             BasedOn="{StaticResource FormTextBoxStyle}"
             TargetType="TextBox">
-            <Setter Property="MinHeight" Value="128" />
+            <Setter Property="MinHeight" Value="112" />
             <Setter Property="Padding" Value="14,12" />
             <Setter Property="AcceptsReturn" Value="True" />
             <Setter Property="TextWrapping" Value="Wrap" />
@@ -650,14 +650,13 @@
         x:Name="FormScrollViewer"
         VerticalScrollBarVisibility="Auto">
         <Grid
-            Margin="24,12,24,24"
-            MinHeight="{Binding ElementName=FormScrollViewer, Path=ViewportHeight}">
+            Margin="24,8,24,12">
             <Border
                 Style="{StaticResource AnimatedCardStyle}"
                 MaxWidth="760"
-                Padding="32,28,32,10"
+                Padding="28,22,28,8"
                 HorizontalAlignment="Stretch"
-                VerticalAlignment="Center"
+                VerticalAlignment="Top"
                 Background="{StaticResource CardBackgroundBrush}"
                 BorderBrush="{StaticResource CardBorderBrush}"
                 BorderThickness="1"
@@ -712,7 +711,7 @@
                             </TextBlock.Style>
                         </TextBlock>
 
-                        <TextBlock Grid.Row="3" Margin="0,20,0,8" Style="{StaticResource FieldLabelStyle}"
+                        <TextBlock Grid.Row="3" Margin="0,16,0,8" Style="{StaticResource FieldLabelStyle}"
                                    Text="{loc:Loc Key=AddBird.ArrivalLabel}" />
                         <DatePicker
                             x:Name="ArrivalField"
@@ -741,7 +740,7 @@
                             </TextBlock.Style>
                         </TextBlock>
 
-                        <TextBlock Grid.Row="6" Margin="0,20,0,8" Style="{StaticResource FieldLabelStyle}"
+                        <TextBlock Grid.Row="6" Margin="0,16,0,8" Style="{StaticResource FieldLabelStyle}"
                                    Text="{loc:Loc Key=AddBird.DescriptionLabel}" />
                         <TextBox
                             x:Name="DescriptionField"
@@ -754,7 +753,7 @@
                                            UpdateSourceTrigger=PropertyChanged}" />
                     </Grid>
 
-                    <Grid Grid.Row="2" Margin="0,16,0,0" Style="{StaticResource RevealSectionDelayedStyle}">
+                    <Grid Grid.Row="2" Margin="0,12,0,0" Style="{StaticResource RevealSectionDelayedStyle}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -786,7 +785,7 @@
 
                         <Border
                             Grid.Row="2"
-                            Margin="0,24,0,0"
+                            Margin="0,18,0,0"
                             Style="{StaticResource InsetPanelStyle}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -818,7 +817,7 @@
                             </Grid>
                         </Border>
 
-                        <Grid Grid.Row="3" Margin="0,10,0,0">
+                        <Grid Grid.Row="3" Margin="0,8,0,0">
                             <Button
                                 Command="{Binding SaveCommand}"
                                 Content="{loc:Loc Key=AddBird.Save}"
