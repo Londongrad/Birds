@@ -141,7 +141,6 @@ public static class AppText
                 "Можно оставить историю уведомлений и при этом убрать навязчивый индикатор новых событий.",
             ["Settings.NotificationBadgeLabel"] = "Показывать индикатор новых уведомлений",
             ["Settings.SyncIndicatorLabel"] = "Показывать плашку синхронизации",
-            ["Settings.SyncIndicatorLabel"] = "Показывать плашку синхронизации",
             ["Settings.AutoExportLabel"] = "Автоэкспорт снимка",
             ["Settings.SyncStatusLabel"] = "Состояние синхронизации",
             ["Settings.Data.Title"] = "Данные",
@@ -512,7 +511,6 @@ public static class AppText
             ["Settings.Notifications.Description"] =
                 "You can keep notification history while hiding the distracting unread indicator.",
             ["Settings.NotificationBadgeLabel"] = "Show unread notification badge",
-            ["Settings.SyncIndicatorLabel"] = "Show sync status chip",
             ["Settings.SyncIndicatorLabel"] = "Show sync status chip",
             ["Settings.AutoExportLabel"] = "Automatic snapshot export",
             ["Settings.SyncStatusLabel"] = "Cloud sync status",

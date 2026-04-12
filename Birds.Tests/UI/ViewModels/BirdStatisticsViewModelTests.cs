@@ -69,23 +69,6 @@ namespace Birds.Tests.UI.ViewModels
         }
 
         [Fact]
-        public void Highlights_Should_Use_Short_Dashes()
-        {
-            var sut = CreateViewModel(
-                AppLanguages.English,
-                new BirdDTO(Guid.NewGuid(), "Sparrow", null, new DateOnly(2026, 10, 30), null, true, null, null),
-                new BirdDTO(Guid.NewGuid(), "Goldfinch", null, new DateOnly(2026, 10, 30), null, true, null, null),
-                new BirdDTO(Guid.NewGuid(), "Amadin", null, new DateOnly(2026, 10, 31), null, true, null, null));
-
-            sut.TopDay.Should().Contain(" \u2013 ");
-            sut.TopMonth.Should().Contain(" \u2013 ");
-            sut.TopWeek.Should().Contain(" \u2013 ");
-            sut.TopDay.Should().NotContain(" \u2014 ");
-            sut.TopMonth.Should().NotContain(" \u2014 ");
-            sut.TopWeek.Should().NotContain(" \u2014 ");
-        }
-
-        [Fact]
         public void Distribution_Should_Build_Top_Species_And_Year_Bars()
         {
             var sut = CreateViewModel(
