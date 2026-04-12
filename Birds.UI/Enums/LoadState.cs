@@ -1,4 +1,6 @@
-﻿namespace Birds.UI.Enums;
+﻿using Birds.UI.Services.Stores.BirdStore;
+
+namespace Birds.UI.Enums;
 
 /// <summary>
 ///     Represents the current data loading state of the <see cref="IBirdStore" />.
