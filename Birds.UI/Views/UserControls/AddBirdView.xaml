@@ -650,13 +650,15 @@
         x:Name="FormScrollViewer"
         VerticalScrollBarVisibility="Auto">
         <Grid
-            Margin="24,8,24,12">
+            Margin="24,0,24,0"
+            MinHeight="{Binding ElementName=FormScrollViewer, Path=ViewportHeight}">
             <Border
                 Style="{StaticResource AnimatedCardStyle}"
                 MaxWidth="760"
                 Padding="28,22,28,8"
+                Margin="0,12,0,12"
                 HorizontalAlignment="Stretch"
-                VerticalAlignment="Top"
+                VerticalAlignment="Center"
                 Background="{StaticResource CardBackgroundBrush}"
                 BorderBrush="{StaticResource CardBorderBrush}"
                 BorderThickness="1"
