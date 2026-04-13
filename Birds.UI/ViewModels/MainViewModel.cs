@@ -249,7 +249,6 @@ public partial class MainViewModel : ObservableObject
 
     private void OnLanguageChanged(object? sender, EventArgs e)
     {
-        _themeService.ApplyTheme(_appPreferences.SelectedTheme);
         UpdateHeader(_currentViewModelType);
         OnPropertyChanged(nameof(RecentOperationStatusToolTip));
         OnPropertyChanged(nameof(PendingDeleteUndoToolTip));

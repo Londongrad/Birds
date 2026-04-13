@@ -292,12 +292,30 @@ public class SettingsViewModelTests
         _preferences.SelectedTheme = ThemeKeys.Steel;
 
         var sut = CreateSut();
+        var availableThemes = sut.AvailableThemes;
+        var availableLanguages = sut.AvailableLanguages;
+        var availableDateFormats = sut.AvailableDateFormats;
+        var availableImportModes = sut.AvailableImportModes;
+        var changedProperties = new List<string>();
+        sut.PropertyChanged += (_, args) =>
+        {
+            if (!string.IsNullOrWhiteSpace(args.PropertyName))
+                changedProperties.Add(args.PropertyName!);
+        };
 
         _culture = CultureInfo.GetCultureInfo(AppLanguages.English);
         _localization.Raise(x => x.LanguageChanged += null, EventArgs.Empty);
 
         sut.SelectedTheme.Should().Be(ThemeKeys.Steel);
         _preferences.SelectedTheme.Should().Be(ThemeKeys.Steel);
+        sut.AvailableThemes.Should().BeSameAs(availableThemes);
+        sut.AvailableLanguages.Should().BeSameAs(availableLanguages);
+        sut.AvailableDateFormats.Should().BeSameAs(availableDateFormats);
+        sut.AvailableImportModes.Should().BeSameAs(availableImportModes);
+        changedProperties.Should().Contain(nameof(SettingsViewModel.AvailableThemes));
+        changedProperties.Should().Contain(nameof(SettingsViewModel.AvailableLanguages));
+        changedProperties.Should().Contain(nameof(SettingsViewModel.AvailableDateFormats));
+        changedProperties.Should().Contain(nameof(SettingsViewModel.AvailableImportModes));
         _themeService.Verify(x => x.ApplyTheme(ThemeKeys.Steel), Times.AtLeastOnce);
     }
 

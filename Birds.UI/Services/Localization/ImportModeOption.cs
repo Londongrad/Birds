@@ -1,7 +1,19 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+
 namespace Birds.UI.Services.Localization;
 
-public sealed record ImportModeOption(string Code, string DisplayName)
+public sealed partial class ImportModeOption : ObservableObject
 {
+    public ImportModeOption(string code, string displayName)
+    {
+        Code = code;
+        this.displayName = displayName;
+    }
+
+    public string Code { get; }
+
+    [ObservableProperty] private string displayName;
+
     public override string ToString()
     {
         return DisplayName;

@@ -707,8 +707,12 @@ public partial class SettingsViewModel : ObservableObject
         BuildAvailableThemes();
         BuildAvailableDateFormats();
         BuildAvailableImportModes();
-        ReloadFromPreferences(true);
+        ReloadFromPreferences();
         _themeService.ApplyTheme(preservedTheme);
+        OnPropertyChanged(nameof(AvailableLanguages));
+        OnPropertyChanged(nameof(AvailableThemes));
+        OnPropertyChanged(nameof(AvailableDateFormats));
+        OnPropertyChanged(nameof(AvailableImportModes));
         OnPropertyChanged(nameof(LanguageHint));
         OnPropertyChanged(nameof(ThemeHint));
         OnPropertyChanged(nameof(DateFormatHint));
@@ -734,41 +738,54 @@ public partial class SettingsViewModel : ObservableObject
 
     private void BuildAvailableLanguages()
     {
-        AvailableLanguages = new ReadOnlyCollection<LanguageOption>(
-            new List<LanguageOption>
-            {
-                new(AppLanguages.Russian, _localization.GetString("Language.Russian")),
-                new(AppLanguages.English, _localization.GetString("Language.English"))
-            });
+        RefreshLocalizedOptions(
+            ref _availableLanguages,
+            [
+                (AppLanguages.Russian, _localization.GetString("Language.Russian")),
+                (AppLanguages.English, _localization.GetString("Language.English"))
+            ],
+            static (code, displayName) => new LanguageOption(code, displayName),
+            static (option, displayName) => option.DisplayName = displayName,
+            value => AvailableLanguages = value);
     }
 
     private void BuildAvailableThemes()
     {
-        AvailableThemes = new ReadOnlyCollection<ThemeOption>(
+        RefreshLocalizedOptions(
+            ref _availableThemes,
             _themeService.AvailableThemes
-                .Select(theme => new ThemeOption(theme, _localization.GetString($"Settings.Theme.{theme}")))
-                .ToList());
+                .Select(theme => (theme, _localization.GetString($"Settings.Theme.{theme}")))
+                .ToArray(),
+            static (code, displayName) => new ThemeOption(code, displayName),
+            static (option, displayName) => option.DisplayName = displayName,
+            value => AvailableThemes = value);
     }
 
     private void BuildAvailableDateFormats()
     {
-        AvailableDateFormats = new ReadOnlyCollection<DateFormatOption>(
-            new List<DateFormatOption>
-            {
-                new(DateDisplayFormats.DayMonthYear, _localization.GetString("Settings.DateFormat.DayMonthYear")),
-                new(DateDisplayFormats.MonthDayYear, _localization.GetString("Settings.DateFormat.MonthDayYear")),
-                new(DateDisplayFormats.YearMonthDay, _localization.GetString("Settings.DateFormat.YearMonthDay"))
-            });
+        RefreshLocalizedOptions(
+            ref _availableDateFormats,
+            [
+                (DateDisplayFormats.DayMonthYear, _localization.GetString("Settings.DateFormat.DayMonthYear")),
+                (DateDisplayFormats.MonthDayYear, _localization.GetString("Settings.DateFormat.MonthDayYear")),
+                (DateDisplayFormats.YearMonthDay, _localization.GetString("Settings.DateFormat.YearMonthDay"))
+            ],
+            static (code, displayName) => new DateFormatOption(code, displayName),
+            static (option, displayName) => option.DisplayName = displayName,
+            value => AvailableDateFormats = value);
     }
 
     private void BuildAvailableImportModes()
     {
-        AvailableImportModes = new ReadOnlyCollection<ImportModeOption>(
-            new List<ImportModeOption>
-            {
-                new(BirdImportModes.Merge, _localization.GetString("Settings.ImportMode.Merge")),
-                new(BirdImportModes.Replace, _localization.GetString("Settings.ImportMode.Replace"))
-            });
+        RefreshLocalizedOptions(
+            ref _availableImportModes,
+            [
+                (BirdImportModes.Merge, _localization.GetString("Settings.ImportMode.Merge")),
+                (BirdImportModes.Replace, _localization.GetString("Settings.ImportMode.Replace"))
+            ],
+            static (code, displayName) => new ImportModeOption(code, displayName),
+            static (option, displayName) => option.DisplayName = displayName,
+            value => AvailableImportModes = value);
     }
 
     private void ReloadFromPreferences(bool reapplyTheme = false)
@@ -954,5 +971,26 @@ public partial class SettingsViewModel : ObservableObject
             : DateTime.SpecifyKind(value, DateTimeKind.Utc);
 
         return utc.ToLocalTime();
+    }
+
+    private static void RefreshLocalizedOptions<TOption>(
+        ref ReadOnlyCollection<TOption> current,
+        IReadOnlyList<(string Code, string DisplayName)> entries,
+        Func<string, string, TOption> factory,
+        Action<TOption, string> updateDisplayName,
+        Action<ReadOnlyCollection<TOption>> assign)
+        where TOption : class
+    {
+        if (current.Count == entries.Count)
+        {
+            for (var index = 0; index < entries.Count; index++)
+                updateDisplayName(current[index], entries[index].DisplayName);
+
+            return;
+        }
+
+        current = new ReadOnlyCollection<TOption>(
+            entries.Select(entry => factory(entry.Code, entry.DisplayName)).ToList());
+        assign(current);
     }
 }
