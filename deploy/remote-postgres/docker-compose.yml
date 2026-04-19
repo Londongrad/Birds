@@ -7,10 +7,10 @@ services:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      TZ: ${POSTGRES_TIMEZONE:-UTC}
-      PGTZ: ${POSTGRES_TIMEZONE:-UTC}
+      TZ: ${DB_TIMEZONE:-UTC}
+      PGTZ: ${DB_TIMEZONE:-UTC}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - birds_postgres_data:/var/lib/postgresql/data
     healthcheck:
