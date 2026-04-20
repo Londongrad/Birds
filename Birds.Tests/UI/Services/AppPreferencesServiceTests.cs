@@ -1,4 +1,5 @@
 using Birds.Shared.Localization;
+using Birds.Shared.Sync;
 using Birds.UI.Services.Import;
 using Birds.UI.Services.Localization;
 using Birds.UI.Services.Preferences;
@@ -23,6 +24,7 @@ public sealed class AppPreferencesServiceTests
             sut.SelectedTheme.Should().Be(AppPreferencesState.DefaultTheme);
             sut.SelectedDateFormat.Should().Be(AppPreferencesState.DefaultDateFormat);
             sut.SelectedImportMode.Should().Be(AppPreferencesState.DefaultImportMode);
+            sut.SelectedSyncInterval.Should().Be(AppPreferencesState.DefaultSyncInterval);
             sut.CustomExportPath.Should().BeEmpty();
             sut.AutoExportEnabled.Should().BeTrue();
             sut.ShowNotificationBadge.Should().BeTrue();
@@ -48,6 +50,7 @@ public sealed class AppPreferencesServiceTests
                 SelectedTheme = ThemeKeys.Steel,
                 SelectedDateFormat = DateDisplayFormats.YearMonthDay,
                 SelectedImportMode = BirdImportModes.Replace,
+                SelectedSyncInterval = RemoteSyncIntervalPresets.ThirtySeconds,
                 CustomExportPath = "C:\\exports\\birds-custom.json",
                 AutoExportEnabled = false,
                 ShowNotificationBadge = false,
@@ -60,6 +63,7 @@ public sealed class AppPreferencesServiceTests
             reloaded.SelectedTheme.Should().Be(ThemeKeys.Steel);
             reloaded.SelectedDateFormat.Should().Be(DateDisplayFormats.YearMonthDay);
             reloaded.SelectedImportMode.Should().Be(BirdImportModes.Replace);
+            reloaded.SelectedSyncInterval.Should().Be(RemoteSyncIntervalPresets.ThirtySeconds);
             reloaded.CustomExportPath.Should().Be("C:\\exports\\birds-custom.json");
             reloaded.AutoExportEnabled.Should().BeFalse();
             reloaded.ShowNotificationBadge.Should().BeFalse();
@@ -87,6 +91,7 @@ public sealed class AppPreferencesServiceTests
                   "selectedTheme": "Сталь",
                   "selectedDateFormat": "ymd",
                   "selectedImportMode": "replace",
+                  "selectedSyncInterval": "60",
                   "customExportPath": "C:\\exports\\birds-custom.json",
                   "autoExportEnabled": false,
                   "showNotificationBadge": true,
@@ -99,6 +104,7 @@ public sealed class AppPreferencesServiceTests
             sut.SelectedTheme.Should().Be(ThemeKeys.Steel);
             sut.SelectedDateFormat.Should().Be(DateDisplayFormats.YearMonthDay);
             sut.SelectedImportMode.Should().Be(BirdImportModes.Replace);
+            sut.SelectedSyncInterval.Should().Be(RemoteSyncIntervalPresets.OneMinute);
             sut.CustomExportPath.Should().Be("C:\\exports\\birds-custom.json");
             sut.AutoExportEnabled.Should().BeFalse();
             sut.ShowSyncStatusIndicator.Should().BeFalse();

@@ -78,6 +78,7 @@ public class SettingsViewModelTests
             .Returns(Task.CompletedTask);
         _remoteSyncController.Setup(x => x.ResumeAsync(It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        _preferences.SelectedSyncInterval = RemoteSyncIntervalPresets.Default;
     }
 
     [Fact]
@@ -151,6 +152,19 @@ public class SettingsViewModelTests
 
         _preferences.ShowSyncStatusIndicator.Should().BeFalse();
         sut.SyncIndicatorHint.Should().Be(AppText.Get("Settings.SyncIndicatorHint.Disabled", _culture));
+    }
+
+    [Fact]
+    public void SyncIntervalChanged_Should_PersistPreference_And_UpdateHint()
+    {
+        _preferences.SelectedSyncInterval = RemoteSyncIntervalPresets.TenSeconds;
+
+        var sut = CreateSut();
+
+        sut.SelectedSyncInterval = RemoteSyncIntervalPresets.ThirtySeconds;
+
+        _preferences.SelectedSyncInterval.Should().Be(RemoteSyncIntervalPresets.ThirtySeconds);
+        sut.SyncIntervalHint.Should().Contain(AppText.Get("Settings.SyncIntervalOption.ThirtySeconds", _culture));
     }
 
     [Fact]
@@ -348,12 +362,14 @@ public class SettingsViewModelTests
     {
         _preferences.SelectedLanguage = AppLanguages.Russian;
         _preferences.SelectedTheme = ThemeKeys.Steel;
+        _preferences.SelectedSyncInterval = RemoteSyncIntervalPresets.ThirtySeconds;
 
         var sut = CreateSut();
         var availableThemes = sut.AvailableThemes;
         var availableLanguages = sut.AvailableLanguages;
         var availableDateFormats = sut.AvailableDateFormats;
         var availableImportModes = sut.AvailableImportModes;
+        var availableSyncIntervals = sut.AvailableSyncIntervals;
         var changedProperties = new List<string>();
         sut.PropertyChanged += (_, args) =>
         {
@@ -370,10 +386,12 @@ public class SettingsViewModelTests
         sut.AvailableLanguages.Should().BeSameAs(availableLanguages);
         sut.AvailableDateFormats.Should().BeSameAs(availableDateFormats);
         sut.AvailableImportModes.Should().BeSameAs(availableImportModes);
+        sut.AvailableSyncIntervals.Should().BeSameAs(availableSyncIntervals);
         changedProperties.Should().Contain(nameof(SettingsViewModel.AvailableThemes));
         changedProperties.Should().Contain(nameof(SettingsViewModel.AvailableLanguages));
         changedProperties.Should().Contain(nameof(SettingsViewModel.AvailableDateFormats));
         changedProperties.Should().Contain(nameof(SettingsViewModel.AvailableImportModes));
+        changedProperties.Should().Contain(nameof(SettingsViewModel.AvailableSyncIntervals));
         _themeService.Verify(x => x.ApplyTheme(ThemeKeys.Steel), Times.AtLeastOnce);
     }
 
@@ -608,6 +626,7 @@ public class SettingsViewModelTests
         private string _customExportPath = string.Empty;
         private string _selectedDateFormat = DateDisplayFormats.DayMonthYear;
         private string _selectedImportMode = BirdImportModes.Merge;
+        private string _selectedSyncInterval = AppPreferencesState.DefaultSyncInterval;
         private string _selectedLanguage = AppLanguages.Russian;
         private string _selectedTheme = ThemeKeys.Graphite;
         private bool _showNotificationBadge = true;
@@ -711,12 +730,25 @@ public class SettingsViewModelTests
             }
         }
 
+        public string SelectedSyncInterval
+        {
+            get => _selectedSyncInterval;
+            set
+            {
+                if (_selectedSyncInterval == value)
+                    return;
+                _selectedSyncInterval = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedSyncInterval)));
+            }
+        }
+
         public void ResetToDefaults()
         {
             SelectedLanguage = AppPreferencesState.DefaultLanguage;
             SelectedTheme = AppPreferencesState.DefaultTheme;
             SelectedDateFormat = AppPreferencesState.DefaultDateFormat;
             SelectedImportMode = AppPreferencesState.DefaultImportMode;
+            SelectedSyncInterval = AppPreferencesState.DefaultSyncInterval;
             CustomExportPath = string.Empty;
             AutoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
             ShowNotificationBadge = true;

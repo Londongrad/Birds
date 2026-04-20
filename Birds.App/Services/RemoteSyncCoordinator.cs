@@ -3,6 +3,7 @@ using Birds.Infrastructure.Configuration;
 using Birds.Infrastructure.Services;
 using Birds.Shared.Constants;
 using Birds.Shared.Sync;
+using Birds.UI.Services.Preferences.Interfaces;
 using Birds.UI.Services.Notification.Interfaces;
 using Serilog;
 
@@ -14,12 +15,14 @@ internal sealed class RemoteSyncCoordinator(
     IRemoteSyncStatusReporter remoteSyncStatusReporter,
     ILocalStoreStateService localStoreStateService,
     IDatabaseMaintenanceService databaseMaintenanceService,
+    IAppPreferencesService preferences,
     INotificationService notificationService) : IRemoteSyncCoordinator
 {
     private const int MaxBootstrapPasses = 512;
     private readonly IDatabaseMaintenanceService _databaseMaintenanceService = databaseMaintenanceService;
     private readonly ILocalStoreStateService _localStoreStateService = localStoreStateService;
     private readonly INotificationService _notificationService = notificationService;
+    private readonly IAppPreferencesService _preferences = preferences;
     private readonly RemoteSyncRuntimeOptions _remoteSyncOptions = remoteSyncOptions;
 
     private readonly IRemoteSyncService _remoteSyncService = remoteSyncService;
@@ -307,7 +310,7 @@ internal sealed class RemoteSyncCoordinator(
         return result.Status switch
         {
             RemoteSyncRunStatus.Synced => TimeSpan.FromSeconds(3),
-            RemoteSyncRunStatus.NothingToSync => TimeSpan.FromSeconds(12),
+            RemoteSyncRunStatus.NothingToSync => RemoteSyncIntervalPresets.ToTimeSpan(_preferences.SelectedSyncInterval),
             RemoteSyncRunStatus.BackendUnavailable => TimeSpan.FromSeconds(20),
             RemoteSyncRunStatus.Failed => TimeSpan.FromSeconds(30),
             _ => TimeSpan.FromSeconds(15)

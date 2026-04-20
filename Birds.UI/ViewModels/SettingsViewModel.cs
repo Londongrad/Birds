@@ -57,6 +57,9 @@ public partial class SettingsViewModel : ObservableObject
     private ReadOnlyCollection<ThemeOption> _availableThemes =
         new(new List<ThemeOption>());
 
+    private ReadOnlyCollection<SyncIntervalOption> _availableSyncIntervals =
+        new(new List<SyncIntervalOption>());
+
     private bool _isSynchronizingSelections;
 
     [ObservableProperty] private bool autoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
@@ -123,6 +126,8 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty] private string selectedImportMode = AppPreferencesState.DefaultImportMode;
 
+    [ObservableProperty] private string selectedSyncInterval = AppPreferencesState.DefaultSyncInterval;
+
     [ObservableProperty] private string selectedLanguage = AppPreferencesState.DefaultLanguage;
 
     [ObservableProperty] private string selectedTheme = AppPreferencesState.DefaultTheme;
@@ -167,6 +172,7 @@ public partial class SettingsViewModel : ObservableObject
         BuildAvailableThemes();
         BuildAvailableDateFormats();
         BuildAvailableImportModes();
+        BuildAvailableSyncIntervals();
         ReloadFromPreferences();
 
         _preferences.PropertyChanged += OnPreferencesChanged;
@@ -197,6 +203,12 @@ public partial class SettingsViewModel : ObservableObject
     {
         get => _availableImportModes;
         private set => SetProperty(ref _availableImportModes, value);
+    }
+
+    public ReadOnlyCollection<SyncIntervalOption> AvailableSyncIntervals
+    {
+        get => _availableSyncIntervals;
+        private set => SetProperty(ref _availableSyncIntervals, value);
     }
 
     public string LanguageHint =>
@@ -244,6 +256,11 @@ public partial class SettingsViewModel : ObservableObject
         AutoExportEnabled
             ? _localization.GetString("Settings.AutoExportHint.Enabled")
             : _localization.GetString("Settings.AutoExportHint.Disabled");
+
+    public string SyncIntervalHint => _localization.GetString(
+        "Settings.SyncIntervalHint",
+        AvailableSyncIntervals.FirstOrDefault(x => x.Code == SelectedSyncInterval)?.DisplayName
+        ?? _localization.GetString("Settings.SyncIntervalOption.TenSeconds"));
 
     public RemoteSyncDisplayState RemoteSyncStatus => _remoteSyncStatus.Status;
 
@@ -721,6 +738,22 @@ public partial class SettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(ImportHint));
     }
 
+    partial void OnSelectedSyncIntervalChanged(string value)
+    {
+        var normalized = RemoteSyncIntervalPresets.Normalize(value);
+
+        if (_isSynchronizingSelections)
+        {
+            OnPropertyChanged(nameof(SyncIntervalHint));
+            return;
+        }
+
+        if (_preferences.SelectedSyncInterval != normalized)
+            _preferences.SelectedSyncInterval = normalized;
+
+        OnPropertyChanged(nameof(SyncIntervalHint));
+    }
+
     partial void OnAutoExportEnabledChanged(bool value)
     {
         if (_isSynchronizingSelections)
@@ -769,6 +802,7 @@ public partial class SettingsViewModel : ObservableObject
             or nameof(IAppPreferencesService.SelectedTheme)
             or nameof(IAppPreferencesService.SelectedDateFormat)
             or nameof(IAppPreferencesService.SelectedImportMode)
+            or nameof(IAppPreferencesService.SelectedSyncInterval)
             or nameof(IAppPreferencesService.CustomExportPath)
             or nameof(IAppPreferencesService.AutoExportEnabled)
             or nameof(IAppPreferencesService.ShowNotificationBadge)
@@ -784,16 +818,19 @@ public partial class SettingsViewModel : ObservableObject
         BuildAvailableThemes();
         BuildAvailableDateFormats();
         BuildAvailableImportModes();
+        BuildAvailableSyncIntervals();
         ReloadFromPreferences();
         _themeService.ApplyTheme(preservedTheme);
         OnPropertyChanged(nameof(AvailableLanguages));
         OnPropertyChanged(nameof(AvailableThemes));
         OnPropertyChanged(nameof(AvailableDateFormats));
         OnPropertyChanged(nameof(AvailableImportModes));
+        OnPropertyChanged(nameof(AvailableSyncIntervals));
         OnPropertyChanged(nameof(LanguageHint));
         OnPropertyChanged(nameof(ThemeHint));
         OnPropertyChanged(nameof(DateFormatHint));
         OnPropertyChanged(nameof(ImportModeHint));
+        OnPropertyChanged(nameof(SyncIntervalHint));
         OnPropertyChanged(nameof(AutoExportHint));
         OnPropertyChanged(nameof(NotificationsHint));
         OnPropertyChanged(nameof(SyncIndicatorHint));
@@ -868,12 +905,28 @@ public partial class SettingsViewModel : ObservableObject
             value => AvailableImportModes = value);
     }
 
+    private void BuildAvailableSyncIntervals()
+    {
+        RefreshLocalizedOptions(
+            ref _availableSyncIntervals,
+            [
+                (RemoteSyncIntervalPresets.FiveSeconds, _localization.GetString("Settings.SyncIntervalOption.FiveSeconds")),
+                (RemoteSyncIntervalPresets.TenSeconds, _localization.GetString("Settings.SyncIntervalOption.TenSeconds")),
+                (RemoteSyncIntervalPresets.ThirtySeconds, _localization.GetString("Settings.SyncIntervalOption.ThirtySeconds")),
+                (RemoteSyncIntervalPresets.OneMinute, _localization.GetString("Settings.SyncIntervalOption.OneMinute"))
+            ],
+            static (code, displayName) => new SyncIntervalOption(code, displayName),
+            static (option, displayName) => option.DisplayName = displayName,
+            value => AvailableSyncIntervals = value);
+    }
+
     private void ReloadFromPreferences(bool reapplyTheme = false)
     {
         var normalizedLanguage = AppLanguages.Normalize(_preferences.SelectedLanguage);
         var normalizedTheme = ThemeKeys.Normalize(_preferences.SelectedTheme);
         var normalizedDateFormat = DateDisplayFormats.Normalize(_preferences.SelectedDateFormat);
         var normalizedImportMode = BirdImportModes.Normalize(_preferences.SelectedImportMode);
+        var normalizedSyncInterval = RemoteSyncIntervalPresets.Normalize(_preferences.SelectedSyncInterval);
 
         _isSynchronizingSelections = true;
         try
@@ -882,6 +935,7 @@ public partial class SettingsViewModel : ObservableObject
             SelectedTheme = normalizedTheme;
             SelectedDateFormat = normalizedDateFormat;
             SelectedImportMode = normalizedImportMode;
+            SelectedSyncInterval = normalizedSyncInterval;
             AutoExportEnabled = _preferences.AutoExportEnabled;
             ShowNotificationBadge = _preferences.ShowNotificationBadge;
             ShowSyncStatusIndicator = _preferences.ShowSyncStatusIndicator;
@@ -898,6 +952,7 @@ public partial class SettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(ThemeHint));
         OnPropertyChanged(nameof(DateFormatHint));
         OnPropertyChanged(nameof(ImportModeHint));
+        OnPropertyChanged(nameof(SyncIntervalHint));
         OnPropertyChanged(nameof(AutoExportHint));
         OnPropertyChanged(nameof(NotificationsHint));
         OnPropertyChanged(nameof(SyncIndicatorHint));

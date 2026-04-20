@@ -155,6 +155,11 @@ public static partial class AppText
             ["Settings.ImportModeLabel"] = "Режим импорта",
             ["Settings.ImportMode.Merge"] = "Объединить с текущими данными",
             ["Settings.ImportMode.Replace"] = "Полностью заменить текущие данные",
+            ["Settings.SyncIntervalLabel"] = "Обычный интервал синхронизации",
+            ["Settings.SyncIntervalOption.FiveSeconds"] = "Каждые 5 секунд",
+            ["Settings.SyncIntervalOption.TenSeconds"] = "Каждые 10 секунд",
+            ["Settings.SyncIntervalOption.ThirtySeconds"] = "Каждые 30 секунд",
+            ["Settings.SyncIntervalOption.OneMinute"] = "Каждую минуту",
             ["Settings.ImportLabel"] = "Импорт данных",
             ["Settings.ImportButton"] = "Импортировать",
             ["Settings.Data.ExportHint"] = "Путь экспорта: {0}",
@@ -200,6 +205,10 @@ public static partial class AppText
                 "Безопасный режим: импорт дополняет архив и обновляет совпадающие записи, не трогая остальные.",
             ["Settings.ImportModeHint.Replace"] =
                 "Режим восстановления снимка: текущий архив будет синхронизирован с файлом и лишние локальные записи исчезнут.",
+            ["Settings.SyncIntervalHint"] =
+                "Управляет тем, как часто приложение выполняет обычные фоновые проверки синхронизации, когда remote backend доступен и работает штатно. Текущий пресет: {0}.",
+            ["Settings.SyncIntervalFixedHint"] =
+                "Защитные интервалы остаются фиксированными: после успешных изменений — 3 сек, на паузе — 15 сек, backend недоступен — 20 сек, повтор после ошибки — 30 сек.",
             ["Settings.NotificationsHint.Enabled"] =
                 "Индикатор новых уведомлений будет показываться рядом с кнопкой центра уведомлений.",
             ["Settings.NotificationsHint.Disabled"] =

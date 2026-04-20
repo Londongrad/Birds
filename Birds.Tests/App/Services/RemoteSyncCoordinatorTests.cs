@@ -3,6 +3,7 @@ using Birds.Application.Interfaces;
 using Birds.Infrastructure.Configuration;
 using Birds.Infrastructure.Services;
 using Birds.Shared.Sync;
+using Birds.UI.Services.Preferences.Interfaces;
 using Birds.UI.Services.Notification.Interfaces;
 using FluentAssertions;
 using Moq;
@@ -26,6 +27,7 @@ public sealed class RemoteSyncCoordinatorTests
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
+            CreatePreferencesService().Object,
             CreateNotificationService());
 
         var delay = await sut.RunSingleIterationAsync(CancellationToken.None);
@@ -59,6 +61,7 @@ public sealed class RemoteSyncCoordinatorTests
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
+            CreatePreferencesService().Object,
             CreateNotificationService());
 
         var delay = await sut.RunSingleIterationAsync(CancellationToken.None);
@@ -89,11 +92,12 @@ public sealed class RemoteSyncCoordinatorTests
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
+            CreatePreferencesService(RemoteSyncIntervalPresets.ThirtySeconds).Object,
             CreateNotificationService());
 
         var delay = await sut.RunSingleIterationAsync(CancellationToken.None);
 
-        delay.Should().Be(TimeSpan.FromSeconds(12));
+        delay.Should().Be(TimeSpan.FromSeconds(30));
     }
 
     [Fact]
@@ -125,6 +129,7 @@ public sealed class RemoteSyncCoordinatorTests
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
+            CreatePreferencesService().Object,
             CreateNotificationService());
 
         await sut.BootstrapLocalStoreAsync(CancellationToken.None);
@@ -159,6 +164,7 @@ public sealed class RemoteSyncCoordinatorTests
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
+            CreatePreferencesService().Object,
             CreateNotificationService());
 
         await sut.BootstrapLocalStoreAsync(CancellationToken.None);
@@ -187,6 +193,7 @@ public sealed class RemoteSyncCoordinatorTests
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
+            CreatePreferencesService().Object,
             CreateNotificationService());
 
         var delay = await sut.RunSingleIterationAsync(CancellationToken.None);
@@ -221,6 +228,7 @@ public sealed class RemoteSyncCoordinatorTests
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
+            CreatePreferencesService().Object,
             CreateNotificationService());
 
         var act = () => sut.BootstrapLocalStoreAsync(CancellationToken.None);
@@ -243,6 +251,7 @@ public sealed class RemoteSyncCoordinatorTests
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
+            CreatePreferencesService().Object,
             CreateNotificationService());
 
         await sut.PauseAsync(CancellationToken.None);
@@ -276,6 +285,7 @@ public sealed class RemoteSyncCoordinatorTests
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
+            CreatePreferencesService().Object,
             CreateNotificationService());
 
         await sut.SyncNowAsync(CancellationToken.None);
@@ -319,6 +329,7 @@ public sealed class RemoteSyncCoordinatorTests
             statusReporter.Object,
             localStoreStateService.Object,
             databaseMaintenanceService.Object,
+            CreatePreferencesService().Object,
             CreateNotificationService());
 
         var restored = await sut.RedownloadRemoteSnapshotAsync(CancellationToken.None);
@@ -360,6 +371,7 @@ public sealed class RemoteSyncCoordinatorTests
             statusReporter.Object,
             localStoreStateService.Object,
             databaseMaintenanceService.Object,
+            CreatePreferencesService().Object,
             CreateNotificationService());
 
         var restored = await sut.RedownloadRemoteSnapshotAsync(CancellationToken.None);
@@ -396,6 +408,7 @@ public sealed class RemoteSyncCoordinatorTests
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
+            CreatePreferencesService().Object,
             CreateNotificationService());
 
         var uploaded = await sut.UploadLocalSnapshotToRemoteAsync(CancellationToken.None);
@@ -432,6 +445,7 @@ public sealed class RemoteSyncCoordinatorTests
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
+            CreatePreferencesService().Object,
             CreateNotificationService());
 
         var uploaded = await sut.UploadLocalSnapshotToRemoteAsync(CancellationToken.None);
@@ -465,6 +479,7 @@ public sealed class RemoteSyncCoordinatorTests
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
+            CreatePreferencesService().Object,
             notificationService.Object);
 
         await sut.RunSingleIterationAsync(CancellationToken.None);
@@ -505,6 +520,7 @@ public sealed class RemoteSyncCoordinatorTests
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
+            CreatePreferencesService().Object,
             notificationService.Object);
 
         await sut.BootstrapLocalStoreAsync(CancellationToken.None);
@@ -533,8 +549,17 @@ public sealed class RemoteSyncCoordinatorTests
         return mock;
     }
 
+    private static Mock<IAppPreferencesService> CreatePreferencesService(string selectedSyncInterval =
+        RemoteSyncIntervalPresets.Default)
+    {
+        var mock = new Mock<IAppPreferencesService>();
+        mock.SetupGet(x => x.SelectedSyncInterval).Returns(selectedSyncInterval);
+        return mock;
+    }
+
     private static INotificationService CreateNotificationService()
     {
         return Mock.Of<INotificationService>();
     }
 }
+

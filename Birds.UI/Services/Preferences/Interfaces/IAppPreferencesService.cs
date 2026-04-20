@@ -12,6 +12,8 @@ public interface IAppPreferencesService : INotifyPropertyChanged
 
     string SelectedImportMode { get; set; }
 
+    string SelectedSyncInterval { get; set; }
+
     string CustomExportPath { get; set; }
 
     bool AutoExportEnabled { get; set; }

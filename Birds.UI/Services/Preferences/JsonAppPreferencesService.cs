@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using Birds.Shared.Localization;
+using Birds.Shared.Sync;
 using Birds.UI.Services.Import;
 using Birds.UI.Services.Localization;
 using Birds.UI.Services.Preferences.Interfaces;
@@ -27,6 +28,8 @@ public sealed partial class JsonAppPreferencesService : ObservableObject, IAppPr
 
     [ObservableProperty] private string selectedImportMode = AppPreferencesState.DefaultImportMode;
 
+    [ObservableProperty] private string selectedSyncInterval = AppPreferencesState.DefaultSyncInterval;
+
     [ObservableProperty] private string selectedLanguage = AppPreferencesState.DefaultLanguage;
 
     [ObservableProperty] private string selectedTheme = AppPreferencesState.DefaultTheme;
@@ -44,6 +47,7 @@ public sealed partial class JsonAppPreferencesService : ObservableObject, IAppPr
         selectedTheme = ThemeKeys.Normalize(state.SelectedTheme);
         selectedDateFormat = DateDisplayFormats.Normalize(state.SelectedDateFormat);
         selectedImportMode = BirdImportModes.Normalize(state.SelectedImportMode);
+        selectedSyncInterval = RemoteSyncIntervalPresets.Normalize(state.SelectedSyncInterval);
         customExportPath = state.CustomExportPath?.Trim() ?? string.Empty;
         autoExportEnabled = state.AutoExportEnabled;
         showNotificationBadge = state.ShowNotificationBadge;
@@ -56,6 +60,7 @@ public sealed partial class JsonAppPreferencesService : ObservableObject, IAppPr
         SelectedTheme = AppPreferencesState.DefaultTheme;
         SelectedDateFormat = AppPreferencesState.DefaultDateFormat;
         SelectedImportMode = AppPreferencesState.DefaultImportMode;
+        SelectedSyncInterval = AppPreferencesState.DefaultSyncInterval;
         CustomExportPath = string.Empty;
         AutoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
         ShowNotificationBadge = true;
@@ -82,6 +87,12 @@ public sealed partial class JsonAppPreferencesService : ObservableObject, IAppPr
     partial void OnSelectedImportModeChanged(string value)
     {
         selectedImportMode = BirdImportModes.Normalize(value);
+        SaveState();
+    }
+
+    partial void OnSelectedSyncIntervalChanged(string value)
+    {
+        selectedSyncInterval = RemoteSyncIntervalPresets.Normalize(value);
         SaveState();
     }
 
@@ -140,6 +151,7 @@ public sealed partial class JsonAppPreferencesService : ObservableObject, IAppPr
                     SelectedTheme = ThemeKeys.Normalize(SelectedTheme),
                     SelectedDateFormat = DateDisplayFormats.Normalize(SelectedDateFormat),
                     SelectedImportMode = BirdImportModes.Normalize(SelectedImportMode),
+                    SelectedSyncInterval = RemoteSyncIntervalPresets.Normalize(SelectedSyncInterval),
                     CustomExportPath = CustomExportPath?.Trim() ?? string.Empty,
                     AutoExportEnabled = AutoExportEnabled,
                     ShowNotificationBadge = ShowNotificationBadge,

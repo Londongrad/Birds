@@ -155,6 +155,11 @@ public static partial class AppText
             ["Settings.ImportModeLabel"] = "Import mode",
             ["Settings.ImportMode.Merge"] = "Merge with current data",
             ["Settings.ImportMode.Replace"] = "Replace current data completely",
+            ["Settings.SyncIntervalLabel"] = "Regular sync interval",
+            ["Settings.SyncIntervalOption.FiveSeconds"] = "Every 5 seconds",
+            ["Settings.SyncIntervalOption.TenSeconds"] = "Every 10 seconds",
+            ["Settings.SyncIntervalOption.ThirtySeconds"] = "Every 30 seconds",
+            ["Settings.SyncIntervalOption.OneMinute"] = "Every minute",
             ["Settings.ImportLabel"] = "Import data",
             ["Settings.ImportButton"] = "Import",
             ["Settings.Data.ExportHint"] = "Export location: {0}",
@@ -201,6 +206,10 @@ public static partial class AppText
                 "Safe mode: the import enriches the archive and updates matching records without touching the rest.",
             ["Settings.ImportModeHint.Replace"] =
                 "Snapshot restore mode: the current archive will be synchronized with the file and extra local records will be removed.",
+            ["Settings.SyncIntervalHint"] =
+                "Controls how often the app performs regular background sync checks when the remote backend is healthy. Current preset: {0}.",
+            ["Settings.SyncIntervalFixedHint"] =
+                "Safety intervals remain fixed: after successful changes — 3 sec, paused — 15 sec, backend unavailable — 20 sec, retry after error — 30 sec.",
             ["Settings.NotificationsHint.Enabled"] =
                 "The unread badge will be shown next to the notification center button.",
             ["Settings.NotificationsHint.Disabled"] =

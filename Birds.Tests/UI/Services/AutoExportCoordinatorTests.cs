@@ -151,6 +151,7 @@ public sealed class AutoExportCoordinatorTests
         private bool _reduceMotion;
         private string _selectedDateFormat = DateDisplayFormats.Default;
         private string _selectedImportMode = BirdImportModes.Merge;
+        private string _selectedSyncInterval = AppPreferencesState.DefaultSyncInterval;
         private string _selectedLanguage = AppPreferencesState.DefaultLanguage;
         private string _selectedTheme = ThemeKeys.Graphite;
         private bool _showNotificationBadge = true;
@@ -188,6 +189,12 @@ public sealed class AutoExportCoordinatorTests
             set => SetField(ref _selectedImportMode, value, nameof(SelectedImportMode));
         }
 
+        public string SelectedSyncInterval
+        {
+            get => _selectedSyncInterval;
+            set => SetField(ref _selectedSyncInterval, value, nameof(SelectedSyncInterval));
+        }
+
         public string CustomExportPath
         {
             get => _customExportPath;
@@ -218,6 +225,7 @@ public sealed class AutoExportCoordinatorTests
             SelectedTheme = AppPreferencesState.DefaultTheme;
             SelectedDateFormat = AppPreferencesState.DefaultDateFormat;
             SelectedImportMode = AppPreferencesState.DefaultImportMode;
+            SelectedSyncInterval = AppPreferencesState.DefaultSyncInterval;
             CustomExportPath = string.Empty;
             AutoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
             ShowNotificationBadge = true;

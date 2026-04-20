@@ -1,4 +1,5 @@
 using Birds.Shared.Localization;
+using Birds.Shared.Sync;
 using Birds.UI.Services.Import;
 using Birds.UI.Services.Localization;
 using Birds.UI.Services.Theming;
@@ -11,6 +12,7 @@ public sealed record AppPreferencesState
     public const string DefaultTheme = ThemeKeys.Graphite;
     public const string DefaultDateFormat = DateDisplayFormats.Default;
     public const string DefaultImportMode = BirdImportModes.Merge;
+    public const string DefaultSyncInterval = RemoteSyncIntervalPresets.Default;
     public const bool DefaultAutoExportEnabled = true;
     public const bool DefaultShowSyncStatusIndicator = true;
 
@@ -21,6 +23,8 @@ public sealed record AppPreferencesState
     public string SelectedDateFormat { get; init; } = DefaultDateFormat;
 
     public string SelectedImportMode { get; init; } = DefaultImportMode;
+
+    public string SelectedSyncInterval { get; init; } = DefaultSyncInterval;
 
     public string CustomExportPath { get; init; } = string.Empty;
 
