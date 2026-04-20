@@ -173,6 +173,25 @@ public class SettingsViewModelTests
     }
 
     [Fact]
+    public void RemoteSyncStatus_Should_ShowWarning_WhenRemoteIsEmpty_AndLocalArchiveHasData()
+    {
+        _store.ReplaceBirds([
+            new BirdDTO(Guid.NewGuid(), "Sparrow", null, new DateOnly(2026, 4, 1), null, true, null, null)
+        ]);
+        _remoteSyncStatus.SetState(
+            RemoteSyncDisplayState.Synced,
+            new DateTime(2026, 4, 8, 10, 15, 0, DateTimeKind.Utc),
+            remoteSnapshotState: RemoteSyncSnapshotState.Empty,
+            remoteBirdCount: 0);
+
+        var sut = CreateSut();
+
+        sut.RemoteSnapshotStateValue.Should().Be(AppText.Get("Settings.SyncMeta.RemoteStateEmpty", _culture));
+        sut.IsRemoteSnapshotEmptyWarningVisible.Should().BeTrue();
+        sut.RemoteSyncStatusHint.Should().Contain(AppText.Get("Settings.SyncStatusHint.RemoteEmpty", _culture));
+    }
+
+    [Fact]
     public void RemoteSyncRecentActivity_Should_Project_Localized_Items()
     {
         _remoteSyncStatus.SetState(
@@ -711,6 +730,10 @@ public class SettingsViewModelTests
 
         public RemoteSyncDisplayState Status { get; private set; } = RemoteSyncDisplayState.Disabled;
 
+        public RemoteSyncSnapshotState RemoteSnapshotState { get; private set; } = RemoteSyncSnapshotState.Unknown;
+
+        public int? RemoteBirdCount { get; private set; }
+
         public DateTime? LastSuccessfulSyncAtUtc { get; private set; }
 
         public DateTime? LastAttemptAtUtc { get; private set; }
@@ -729,9 +752,13 @@ public class SettingsViewModelTests
             string? lastErrorMessage = null,
             int lastProcessedCount = 0,
             int pendingOperationCount = 0,
+            RemoteSyncSnapshotState remoteSnapshotState = RemoteSyncSnapshotState.Unknown,
+            int? remoteBirdCount = null,
             IReadOnlyList<RemoteSyncActivityEntry>? recentActivity = null)
         {
             Status = status;
+            RemoteSnapshotState = remoteSnapshotState;
+            RemoteBirdCount = remoteBirdCount;
             LastSuccessfulSyncAtUtc = lastSuccessfulSyncAtUtc;
             LastAttemptAtUtc = DateTime.UtcNow;
             LastErrorMessage = lastErrorMessage;
@@ -744,6 +771,8 @@ public class SettingsViewModelTests
         private void RaiseAll()
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Status)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RemoteSnapshotState)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RemoteBirdCount)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LastSuccessfulSyncAtUtc)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LastAttemptAtUtc)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LastErrorMessage)));

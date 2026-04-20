@@ -228,6 +228,8 @@ public static partial class AppText
                 "Идёт синхронизация. Последний успешный обмен был: {0}.",
             ["Settings.SyncStatusHint.Synced"] = "Локальный архив синхронизирован с удалённым backend.",
             ["Settings.SyncStatusHint.SyncedWithTimestamp"] = "Последняя успешная синхронизация: {0}.",
+            ["Settings.SyncStatusHint.RemoteEmpty"] =
+                "Удалённый backend доступен, но сейчас не содержит ни одной записи о птицах.",
             ["Settings.SyncStatusHint.Paused"] = "Автоматическая синхронизация поставлена на паузу.",
             ["Settings.SyncStatusHint.PausedWithLastSuccess"] =
                 "Автоматическая синхронизация на паузе. Последний успешный обмен был: {0}.",
@@ -241,10 +243,18 @@ public static partial class AppText
             ["Settings.SyncMeta.PendingNone"] = "Нет",
             ["Settings.SyncMeta.LastSuccessLabel"] = "Последний успех",
             ["Settings.SyncMeta.Never"] = "Ещё не было",
+            ["Settings.SyncMeta.RemoteStateLabel"] = "Remote-данные",
+            ["Settings.SyncMeta.RemoteStateUnknown"] = "Неизвестно",
+            ["Settings.SyncMeta.RemoteStateEmpty"] = "Пусто",
+            ["Settings.SyncMeta.RemoteStateHasData"] = "Есть данные",
+            ["Settings.SyncMeta.RemoteStateHasDataCount"] = "{0} записей",
             ["Settings.SyncMeta.RecentActivityLabel"] = "Последняя активность",
             ["Settings.SyncMeta.RecentActivityEmpty"] = "Событий синхронизации в этой сессии ещё не было.",
             ["Settings.SyncMeta.RecentActivityExpand"] = "Показать",
             ["Settings.SyncMeta.RecentActivityCollapse"] = "Скрыть",
+            ["Settings.SyncWarning.RemoteEmptyTitle"] = "Удалённая база сейчас пуста",
+            ["Settings.SyncWarning.RemoteEmptyDescription"] =
+                "Локальный архив уже содержит записи, а подключённый remote backend пока пуст. Если текущая локальная база является источником истины, залейте текущий локальный снимок в remote.",
             ["Settings.SyncAction.SyncNow"] = "Синхронизировать",
             ["Settings.SyncAction.Pause"] = "Пауза",
             ["Settings.SyncAction.Resume"] = "Возобновить",

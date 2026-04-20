@@ -26,6 +26,9 @@ public static class RemoteSyncStatusTextFormatter
         var pendingText = source.PendingOperationCount > 0
             ? localization.GetString("Settings.SyncStatusHint.PendingCount", source.PendingOperationCount)
             : null;
+        var remoteEmptyText = source.RemoteSnapshotState == RemoteSyncSnapshotState.Empty
+            ? localization.GetString("Settings.SyncStatusHint.RemoteEmpty")
+            : null;
 
         return source.Status switch
         {
@@ -33,17 +36,20 @@ public static class RemoteSyncStatusTextFormatter
                 lastSuccess is null
                     ? localization.GetString("Settings.SyncStatusHint.Syncing")
                     : localization.GetString("Settings.SyncStatusHint.SyncingWithLastSuccess", lastSuccess),
-                pendingText),
+                pendingText,
+                remoteEmptyText),
             RemoteSyncDisplayState.Synced => Combine(
                 lastSuccess is null
                     ? localization.GetString("Settings.SyncStatusHint.Synced")
                     : localization.GetString("Settings.SyncStatusHint.SyncedWithTimestamp", lastSuccess),
-                pendingText),
+                pendingText,
+                remoteEmptyText),
             RemoteSyncDisplayState.Paused => Combine(
                 lastSuccess is null
                     ? localization.GetString("Settings.SyncStatusHint.Paused")
                     : localization.GetString("Settings.SyncStatusHint.PausedWithLastSuccess", lastSuccess),
-                pendingText),
+                pendingText,
+                remoteEmptyText),
             RemoteSyncDisplayState.Offline => AppendErrorDetail(
                 Combine(localization.GetString("Settings.SyncStatusHint.Offline"), pendingText),
                 source.LastErrorMessage,

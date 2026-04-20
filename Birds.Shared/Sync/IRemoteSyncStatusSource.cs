@@ -6,6 +6,10 @@ public interface IRemoteSyncStatusSource : INotifyPropertyChanged
 {
     RemoteSyncDisplayState Status { get; }
 
+    RemoteSyncSnapshotState RemoteSnapshotState { get; }
+
+    int? RemoteBirdCount { get; }
+
     DateTime? LastSuccessfulSyncAtUtc { get; }
 
     DateTime? LastAttemptAtUtc { get; }

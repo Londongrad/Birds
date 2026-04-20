@@ -231,6 +231,8 @@ public static partial class AppText
                 "Synchronization is in progress. The last successful exchange was at {0}.",
             ["Settings.SyncStatusHint.Synced"] = "The local archive is synchronized with the remote backend.",
             ["Settings.SyncStatusHint.SyncedWithTimestamp"] = "Last successful sync: {0}.",
+            ["Settings.SyncStatusHint.RemoteEmpty"] =
+                "The remote backend is reachable but currently contains no bird records.",
             ["Settings.SyncStatusHint.Paused"] = "Automatic synchronization is paused.",
             ["Settings.SyncStatusHint.PausedWithLastSuccess"] =
                 "Automatic synchronization is paused. The last successful exchange was at {0}.",
@@ -244,11 +246,19 @@ public static partial class AppText
             ["Settings.SyncMeta.PendingNone"] = "None",
             ["Settings.SyncMeta.LastSuccessLabel"] = "Last success",
             ["Settings.SyncMeta.Never"] = "Never",
+            ["Settings.SyncMeta.RemoteStateLabel"] = "Remote data",
+            ["Settings.SyncMeta.RemoteStateUnknown"] = "Unknown",
+            ["Settings.SyncMeta.RemoteStateEmpty"] = "Empty",
+            ["Settings.SyncMeta.RemoteStateHasData"] = "Contains data",
+            ["Settings.SyncMeta.RemoteStateHasDataCount"] = "{0} records",
             ["Settings.SyncMeta.RecentActivityLabel"] = "Recent activity",
             ["Settings.SyncMeta.RecentActivityEmpty"] =
                 "No synchronization events have been recorded in this session yet.",
             ["Settings.SyncMeta.RecentActivityExpand"] = "Show",
             ["Settings.SyncMeta.RecentActivityCollapse"] = "Hide",
+            ["Settings.SyncWarning.RemoteEmptyTitle"] = "The remote backend is currently empty",
+            ["Settings.SyncWarning.RemoteEmptyDescription"] =
+                "The local archive already contains records, but the connected remote database has none yet. If this machine contains the source-of-truth archive, upload the current local snapshot to remote.",
             ["Settings.SyncAction.SyncNow"] = "Sync now",
             ["Settings.SyncAction.Pause"] = "Pause",
             ["Settings.SyncAction.Resume"] = "Resume",

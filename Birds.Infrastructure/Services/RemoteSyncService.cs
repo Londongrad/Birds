@@ -39,7 +39,8 @@ public sealed class RemoteSyncService(
                         "Remote sync backend is unavailable.");
 
                 await EnsureRemoteSyncSchemaAsync(remoteContext, cancellationToken);
-                return RemoteSyncBackendCheckResult.Ready;
+                var remoteBirdCount = await remoteContext.Birds.CountAsync(cancellationToken);
+                return new RemoteSyncBackendCheckResult(RemoteSyncRunStatus.Synced, null, remoteBirdCount);
             }
             catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
             {

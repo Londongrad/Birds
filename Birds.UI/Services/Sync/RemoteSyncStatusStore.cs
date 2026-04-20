@@ -17,6 +17,8 @@ public sealed class RemoteSyncStatusStore : ObservableObject, IRemoteSyncStatusS
     private int _lastProcessedCount;
     private DateTime? _lastSuccessfulSyncAtUtc;
     private int _pendingOperationCount;
+    private int? _remoteBirdCount;
+    private RemoteSyncSnapshotState _remoteSnapshotState = RemoteSyncSnapshotState.Unknown;
 
     private RemoteSyncDisplayState _status = RemoteSyncDisplayState.Disabled;
 
@@ -36,8 +38,21 @@ public sealed class RemoteSyncStatusStore : ObservableObject, IRemoteSyncStatusS
             LastErrorMessage = null;
             LastProcessedCount = 0;
             PendingOperationCount = pendingOperationCount;
+            RemoteSnapshotState = RemoteSyncSnapshotState.Unknown;
+            RemoteBirdCount = null;
             _recentActivity.Clear();
             OnPropertyChanged(nameof(RecentActivity));
+        }, cancellationToken);
+    }
+
+    public Task SetRemoteSnapshotStateAsync(RemoteSyncSnapshotState snapshotState,
+        int? remoteBirdCount = null,
+        CancellationToken cancellationToken = default)
+    {
+        return _uiDispatcher.InvokeAsync(() =>
+        {
+            RemoteSnapshotState = snapshotState;
+            RemoteBirdCount = remoteBirdCount;
         }, cancellationToken);
     }
 
@@ -103,6 +118,8 @@ public sealed class RemoteSyncStatusStore : ObservableObject, IRemoteSyncStatusS
             LastErrorMessage = string.IsNullOrWhiteSpace(errorMessage)
                 ? null
                 : errorMessage;
+            RemoteSnapshotState = RemoteSyncSnapshotState.Unknown;
+            RemoteBirdCount = null;
             TryAppendActivity(RemoteSyncDisplayState.Error, LastAttemptAtUtc.Value, 0, pendingOperationCount,
                 LastErrorMessage);
         }, cancellationToken);
@@ -142,6 +159,18 @@ public sealed class RemoteSyncStatusStore : ObservableObject, IRemoteSyncStatusS
     {
         get => _pendingOperationCount;
         private set => SetProperty(ref _pendingOperationCount, value);
+    }
+
+    public RemoteSyncSnapshotState RemoteSnapshotState
+    {
+        get => _remoteSnapshotState;
+        private set => SetProperty(ref _remoteSnapshotState, value);
+    }
+
+    public int? RemoteBirdCount
+    {
+        get => _remoteBirdCount;
+        private set => SetProperty(ref _remoteBirdCount, value);
     }
 
     public IReadOnlyList<RemoteSyncActivityEntry> RecentActivity => _recentActivityView;

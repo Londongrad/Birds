@@ -4,6 +4,7 @@ using Birds.Infrastructure.Persistence;
 using Birds.Infrastructure.Persistence.Models;
 using Birds.Infrastructure.Repositories;
 using Birds.Infrastructure.Services;
+using Birds.Shared.Sync;
 using FluentAssertions;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -431,6 +432,19 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
         operation.RetryCount.Should().Be(1);
         operation.LastAttemptAtUtc.Should().NotBeNull();
         operation.LastError.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task CheckBackendAvailabilityAsync_Should_ReportEmptyRemoteSnapshot_WhenNoBirdsExist()
+    {
+        await using var emptyRemoteDb = new RemoteSqliteInMemoryDb(false);
+        var sut = CreateSut(emptyRemoteDb.CreateFactory());
+
+        var result = await sut.CheckBackendAvailabilityAsync(CancellationToken.None);
+
+        result.IsReady.Should().BeTrue();
+        result.RemoteBirdCount.Should().Be(0);
+        result.RemoteSnapshotState.Should().Be(RemoteSyncSnapshotState.Empty);
     }
 
     [Fact]

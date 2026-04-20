@@ -324,7 +324,7 @@ public sealed class RemoteSyncCoordinatorTests
         var restored = await sut.RedownloadRemoteSnapshotAsync(CancellationToken.None);
 
         restored.Should().BeTrue();
-        remoteSyncService.Verify(x => x.CheckBackendAvailabilityAsync(It.IsAny<CancellationToken>()), Times.Once);
+        remoteSyncService.Verify(x => x.CheckBackendAvailabilityAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
         databaseMaintenanceService.Verify(x => x.ResetLocalDatabaseAsync(It.IsAny<CancellationToken>()), Times.Once);
         remoteSyncService.Verify(x => x.SyncPendingAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
     }

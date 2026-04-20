@@ -88,6 +88,10 @@ internal sealed class RemoteSyncCoordinator(
                     currentState.PendingOperationCount,
                     backendCheck.ErrorMessage,
                     cancellationToken);
+                await SetRemoteSnapshotStateSafeAsync(
+                    RemoteSyncSnapshotState.Unknown,
+                    null,
+                    cancellationToken);
                 return false;
             }
 
@@ -130,6 +134,7 @@ internal sealed class RemoteSyncCoordinator(
                 localState.PendingOperationCount,
                 result.ErrorMessage,
                 cancellationToken);
+            await PublishRemoteSnapshotStateAsync(result.Status, cancellationToken);
 
             if (wasPaused && result.Status == RemoteSyncRunStatus.Synced)
                 await _remoteSyncStatusReporter.SetPausedAsync(localState.PendingOperationCount, cancellationToken);
@@ -228,6 +233,7 @@ internal sealed class RemoteSyncCoordinator(
                         syncedState.PendingOperationCount,
                         null,
                         cancellationToken);
+                    await PublishRemoteSnapshotStateAsync(RemoteSyncRunStatus.NothingToSync, cancellationToken);
                     ShowConflictResolutionWarning(totalRemoteWins);
                     return true;
 
@@ -239,6 +245,7 @@ internal sealed class RemoteSyncCoordinator(
                         localState.PendingOperationCount,
                         result.ErrorMessage,
                         cancellationToken);
+                    await PublishRemoteSnapshotStateAsync(result.Status, cancellationToken);
                     ShowConflictResolutionWarning(totalRemoteWins);
                     return false;
             }
@@ -251,6 +258,10 @@ internal sealed class RemoteSyncCoordinator(
             totalProcessed,
             finalState.PendingOperationCount,
             bootstrapExceededMessage,
+            cancellationToken);
+        await SetRemoteSnapshotStateSafeAsync(
+            RemoteSyncSnapshotState.Unknown,
+            null,
             cancellationToken);
         ShowConflictResolutionWarning(totalRemoteWins);
         Log.Warning(bootstrapExceededMessage);
@@ -330,6 +341,7 @@ internal sealed class RemoteSyncCoordinator(
                 localState.PendingOperationCount,
                 result.ErrorMessage,
                 cancellationToken);
+            await PublishRemoteSnapshotStateAsync(result.Status, cancellationToken);
             ShowConflictResolutionWarning(result.RemoteWinsCount);
 
             return result;
@@ -342,6 +354,10 @@ internal sealed class RemoteSyncCoordinator(
         {
             var pendingCount = await TryGetPendingOperationCountAsync(cancellationToken);
             await _remoteSyncStatusReporter.SetLoopFailedAsync(ex.Message, pendingCount, CancellationToken.None);
+            await SetRemoteSnapshotStateSafeAsync(
+                RemoteSyncSnapshotState.Unknown,
+                null,
+                CancellationToken.None);
             Log.Error(ex, LogMessages.RemoteSyncLoopFailed);
             return new RemoteSyncRunResult(RemoteSyncRunStatus.Failed, 0, ex.Message);
         }
@@ -379,6 +395,45 @@ internal sealed class RemoteSyncCoordinator(
     {
         var state = await TryGetLocalStateAsync(cancellationToken);
         return state.PendingOperationCount;
+    }
+
+    private async Task PublishRemoteSnapshotStateAsync(RemoteSyncRunStatus syncStatus,
+        CancellationToken cancellationToken)
+    {
+        if (syncStatus is not (RemoteSyncRunStatus.Synced or RemoteSyncRunStatus.NothingToSync))
+        {
+            await SetRemoteSnapshotStateSafeAsync(
+                RemoteSyncSnapshotState.Unknown,
+                null,
+                cancellationToken);
+            return;
+        }
+
+        var backendCheckTask = _remoteSyncService.CheckBackendAvailabilityAsync(cancellationToken);
+        var backendCheck = backendCheckTask is null
+            ? new RemoteSyncBackendCheckResult(RemoteSyncRunStatus.Failed)
+            : await backendCheckTask ?? new RemoteSyncBackendCheckResult(RemoteSyncRunStatus.Failed);
+        if (!backendCheck.IsReady)
+        {
+            await SetRemoteSnapshotStateSafeAsync(
+                RemoteSyncSnapshotState.Unknown,
+                null,
+                cancellationToken);
+            return;
+        }
+
+        await SetRemoteSnapshotStateSafeAsync(
+            backendCheck.RemoteSnapshotState,
+            backendCheck.RemoteBirdCount,
+            cancellationToken);
+    }
+
+    private Task SetRemoteSnapshotStateSafeAsync(RemoteSyncSnapshotState snapshotState,
+        int? remoteBirdCount,
+        CancellationToken cancellationToken)
+    {
+        return _remoteSyncStatusReporter.SetRemoteSnapshotStateAsync(snapshotState, remoteBirdCount, cancellationToken)
+               ?? Task.CompletedTask;
     }
 
     private async Task WaitForNextTriggerAsync(TimeSpan delay, CancellationToken cancellationToken)

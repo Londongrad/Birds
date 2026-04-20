@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using Birds.Application.Commands.ImportBirds;
@@ -171,6 +172,7 @@ public partial class SettingsViewModel : ObservableObject
         _preferences.PropertyChanged += OnPreferencesChanged;
         _localization.LanguageChanged += OnLanguageChanged;
         _remoteSyncStatus.PropertyChanged += OnRemoteSyncStatusChanged;
+        _birdManager.Store.Birds.CollectionChanged += OnBirdStoreCollectionChanged;
     }
 
     public ReadOnlyCollection<LanguageOption> AvailableLanguages
@@ -270,6 +272,21 @@ public partial class SettingsViewModel : ObservableObject
     public string RemoteSyncLastSuccessfulSyncValue => _remoteSyncStatus.LastSuccessfulSyncAtUtc.HasValue
         ? _localization.FormatDateTime(ToLocalTime(_remoteSyncStatus.LastSuccessfulSyncAtUtc.Value))
         : _localization.GetString("Settings.SyncMeta.Never");
+
+    public string RemoteSnapshotStateLabel => _localization.GetString("Settings.SyncMeta.RemoteStateLabel");
+
+    public string RemoteSnapshotStateValue => _remoteSyncStatus.RemoteSnapshotState switch
+    {
+        RemoteSyncSnapshotState.Empty => _localization.GetString("Settings.SyncMeta.RemoteStateEmpty"),
+        RemoteSyncSnapshotState.HasData when _remoteSyncStatus.RemoteBirdCount.HasValue
+            => _localization.GetString("Settings.SyncMeta.RemoteStateHasDataCount", _remoteSyncStatus.RemoteBirdCount.Value),
+        RemoteSyncSnapshotState.HasData => _localization.GetString("Settings.SyncMeta.RemoteStateHasData"),
+        _ => _localization.GetString("Settings.SyncMeta.RemoteStateUnknown")
+    };
+
+    public bool IsRemoteSnapshotEmptyWarningVisible => IsRemoteSyncConfigured
+                                                       && _remoteSyncStatus.RemoteSnapshotState == RemoteSyncSnapshotState.Empty
+                                                       && _birdManager.Store.Birds.Count > 0;
 
     public string RemoteSyncRecentActivityLabel => _localization.GetString("Settings.SyncMeta.RecentActivityLabel");
 
@@ -788,6 +805,9 @@ public partial class SettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(RemoteSyncPendingCountValue));
         OnPropertyChanged(nameof(RemoteSyncLastSuccessfulSyncLabel));
         OnPropertyChanged(nameof(RemoteSyncLastSuccessfulSyncValue));
+        OnPropertyChanged(nameof(RemoteSnapshotStateLabel));
+        OnPropertyChanged(nameof(RemoteSnapshotStateValue));
+        OnPropertyChanged(nameof(IsRemoteSnapshotEmptyWarningVisible));
         OnPropertyChanged(nameof(RemoteSyncRecentActivityLabel));
         OnPropertyChanged(nameof(RemoteSyncRecentActivityEmpty));
         OnPropertyChanged(nameof(RemoteSyncRecentActivityToggleLabel));
@@ -975,6 +995,8 @@ public partial class SettingsViewModel : ObservableObject
     private void OnRemoteSyncStatusChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName is nameof(IRemoteSyncStatusSource.Status)
+            or nameof(IRemoteSyncStatusSource.RemoteSnapshotState)
+            or nameof(IRemoteSyncStatusSource.RemoteBirdCount)
             or nameof(IRemoteSyncStatusSource.LastSuccessfulSyncAtUtc)
             or nameof(IRemoteSyncStatusSource.LastAttemptAtUtc)
             or nameof(IRemoteSyncStatusSource.LastErrorMessage)
@@ -992,6 +1014,8 @@ public partial class SettingsViewModel : ObservableObject
             OnPropertyChanged(nameof(RemoteSyncPendingOperationCount));
             OnPropertyChanged(nameof(RemoteSyncPendingCountValue));
             OnPropertyChanged(nameof(RemoteSyncLastSuccessfulSyncValue));
+            OnPropertyChanged(nameof(RemoteSnapshotStateValue));
+            OnPropertyChanged(nameof(IsRemoteSnapshotEmptyWarningVisible));
             OnPropertyChanged(nameof(HasRemoteSyncRecentActivity));
             OnPropertyChanged(nameof(RemoteSyncRecentActivityItems));
             OnPropertyChanged(nameof(RemoteSyncPauseActionLabel));
@@ -1002,6 +1026,11 @@ public partial class SettingsViewModel : ObservableObject
             BeginUploadLocalSnapshotToRemoteCommand.NotifyCanExecuteChanged();
             ConfirmUploadLocalSnapshotToRemoteCommand.NotifyCanExecuteChanged();
         }
+    }
+
+    private void OnBirdStoreCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        OnPropertyChanged(nameof(IsRemoteSnapshotEmptyWarningVisible));
     }
 
     private RemoteSyncActivityDisplayItem CreateRemoteSyncActivityDisplayItem(RemoteSyncActivityEntry entry)

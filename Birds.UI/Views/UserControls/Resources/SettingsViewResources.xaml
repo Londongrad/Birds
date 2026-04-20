@@ -414,6 +414,17 @@
         <Setter Property="CornerRadius" Value="12" />
     </Style>
 
+    <Style
+        x:Key="SyncWarningPanelStyle"
+        TargetType="Border">
+        <Setter Property="Margin" Value="0,14,0,0" />
+        <Setter Property="Padding" Value="14,12" />
+        <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource DangerButtonBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="12" />
+    </Style>
+
     <Style x:Key="SettingsSyncStatusPillStyle" TargetType="Border">
         <Setter Property="Padding" Value="10,5" />
         <Setter Property="Background" Value="{StaticResource AccentButtonBrush}" />
