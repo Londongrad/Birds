@@ -254,7 +254,9 @@ public class BirdManagerTests
 
         // Act
         var result = await sut.DeleteAsync(id, CancellationToken.None);
-        await Task.Delay(100);
+        await WaitUntilAsync(
+            () => store.Birds.Any(b => b.Id == id),
+            timeout: TimeSpan.FromSeconds(2));
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -292,7 +294,9 @@ public class BirdManagerTests
         mediator.Verify(m => m.Send(It.IsAny<DeleteBirdCommand>(), It.IsAny<CancellationToken>()), Times.Never);
         autoExport.Verify(x => x.MarkDirty(), Times.Never);
 
-        await Task.Delay(120);
+        await WaitUntilAsync(
+            () => mediator.Invocations.Count > 0 && !sut.HasPendingDeleteUndo,
+            timeout: TimeSpan.FromSeconds(2));
 
         mediator.Verify(m => m.Send(It.IsAny<DeleteBirdCommand>(), It.IsAny<CancellationToken>()), Times.Once);
         sut.HasPendingDeleteUndo.Should().BeFalse();
@@ -324,9 +328,30 @@ public class BirdManagerTests
         store.Birds.Should().ContainSingle(b => b.Id == id);
         sut.HasPendingDeleteUndo.Should().BeFalse();
 
-        await Task.Delay(150);
+        await WaitUntilAsync(
+            () => !sut.HasPendingDeleteUndo,
+            timeout: TimeSpan.FromSeconds(1));
 
         mediator.Verify(m => m.Send(It.IsAny<DeleteBirdCommand>(), It.IsAny<CancellationToken>()), Times.Never);
         notifications.Verify(n => n.ShowInfoLocalized("Info.DeleteRestored", It.IsAny<object[]>()), Times.Once);
+    }
+
+    private static async Task WaitUntilAsync(
+        Func<bool> condition,
+        TimeSpan timeout,
+        TimeSpan? pollInterval = null)
+    {
+        var step = pollInterval ?? TimeSpan.FromMilliseconds(20);
+        var deadline = DateTime.UtcNow + timeout;
+
+        while (DateTime.UtcNow < deadline)
+        {
+            if (condition())
+                return;
+
+            await Task.Delay(step);
+        }
+
+        condition().Should().BeTrue("the expected asynchronous condition should eventually become true");
     }
 }
