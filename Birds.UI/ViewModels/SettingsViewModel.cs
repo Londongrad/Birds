@@ -72,6 +72,12 @@ public partial class SettingsViewModel : ObservableObject
     private bool isConfirmingRedownloadRemoteSnapshot;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsRemoteUploadConfirmationVisible))]
+    [NotifyCanExecuteChangedFor(nameof(BeginUploadLocalSnapshotToRemoteCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ConfirmUploadLocalSnapshotToRemoteCommand))]
+    private bool isConfirmingUploadLocalSnapshotToRemote;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDangerConfirmationVisible))]
     [NotifyCanExecuteChangedFor(nameof(ConfirmResetLocalDatabaseCommand))]
     private bool isConfirmingResetLocalDatabase;
@@ -108,6 +114,8 @@ public partial class SettingsViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(ToggleRemoteSyncPauseCommand))]
     [NotifyCanExecuteChangedFor(nameof(BeginRedownloadRemoteSnapshotCommand))]
     [NotifyCanExecuteChangedFor(nameof(ConfirmRedownloadRemoteSnapshotCommand))]
+    [NotifyCanExecuteChangedFor(nameof(BeginUploadLocalSnapshotToRemoteCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ConfirmUploadLocalSnapshotToRemoteCommand))]
     private bool isSyncControlBusy;
 
     [ObservableProperty] private string selectedDateFormat = AppPreferencesState.DefaultDateFormat;
@@ -246,6 +254,8 @@ public partial class SettingsViewModel : ObservableObject
     public bool IsRemoteSyncPaused => RemoteSyncStatus == RemoteSyncDisplayState.Paused;
 
     public bool IsRemoteSyncSyncing => RemoteSyncStatus == RemoteSyncDisplayState.Syncing;
+
+    public bool IsRemoteUploadConfirmationVisible => IsConfirmingUploadLocalSnapshotToRemote;
 
     public int RemoteSyncPendingOperationCount => _remoteSyncStatus.PendingOperationCount;
 
@@ -405,11 +415,61 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
+    [RelayCommand(CanExecute = nameof(CanBeginUploadLocalSnapshotToRemote))]
+    private void BeginUploadLocalSnapshotToRemote()
+    {
+        IsConfirmingClearBirdRecords = false;
+        IsConfirmingResetLocalDatabase = false;
+        IsConfirmingRedownloadRemoteSnapshot = false;
+        IsConfirmingUploadLocalSnapshotToRemote = true;
+    }
+
+    [RelayCommand]
+    private void CancelUploadLocalSnapshotToRemote()
+    {
+        IsConfirmingUploadLocalSnapshotToRemote = false;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanConfirmUploadLocalSnapshotToRemote))]
+    private async Task ConfirmUploadLocalSnapshotToRemoteAsync(CancellationToken cancellationToken)
+    {
+        if (!IsRemoteSyncConfigured)
+            return;
+
+        IsSyncControlBusy = true;
+        try
+        {
+            await _birdManager.FlushPendingOperationsAsync(cancellationToken);
+            var uploaded = await _remoteSyncController.UploadLocalSnapshotToRemoteAsync(cancellationToken);
+            if (!uploaded)
+            {
+                _notificationService.ShowErrorLocalized("Error.CannotUploadLocalSnapshotToRemote");
+                return;
+            }
+
+            IsConfirmingUploadLocalSnapshotToRemote = false;
+            _notificationService.ShowSuccessLocalized("Info.RemoteSnapshotUploaded");
+        }
+        catch (OperationCanceledException)
+        {
+            // User canceled or application is shutting down.
+        }
+        catch
+        {
+            _notificationService.ShowErrorLocalized("Error.CannotUploadLocalSnapshotToRemote");
+        }
+        finally
+        {
+            IsSyncControlBusy = false;
+        }
+    }
+
     [RelayCommand(CanExecute = nameof(CanBeginRedownloadRemoteSnapshot))]
     private void BeginRedownloadRemoteSnapshot()
     {
         IsConfirmingClearBirdRecords = false;
         IsConfirmingResetLocalDatabase = false;
+        IsConfirmingUploadLocalSnapshotToRemote = false;
         IsConfirmingRedownloadRemoteSnapshot = true;
     }
 
@@ -889,6 +949,19 @@ public partial class SettingsViewModel : ObservableObject
         return IsConfirmingRedownloadRemoteSnapshot && CanBeginRedownloadRemoteSnapshot();
     }
 
+    private bool CanBeginUploadLocalSnapshotToRemote()
+    {
+        return IsRemoteSyncConfigured
+               && !IsDataTransferBusy
+               && !IsDangerZoneBusy
+               && !IsSyncControlBusy;
+    }
+
+    private bool CanConfirmUploadLocalSnapshotToRemote()
+    {
+        return IsConfirmingUploadLocalSnapshotToRemote && CanBeginUploadLocalSnapshotToRemote();
+    }
+
     private bool CanConfirmClearBirdRecords()
     {
         return IsConfirmingClearBirdRecords && CanStartDangerAction();
@@ -915,6 +988,7 @@ public partial class SettingsViewModel : ObservableObject
             OnPropertyChanged(nameof(IsRemoteSyncConfigured));
             OnPropertyChanged(nameof(IsRemoteSyncPaused));
             OnPropertyChanged(nameof(IsRemoteSyncSyncing));
+            OnPropertyChanged(nameof(IsRemoteUploadConfirmationVisible));
             OnPropertyChanged(nameof(RemoteSyncPendingOperationCount));
             OnPropertyChanged(nameof(RemoteSyncPendingCountValue));
             OnPropertyChanged(nameof(RemoteSyncLastSuccessfulSyncValue));
@@ -925,6 +999,8 @@ public partial class SettingsViewModel : ObservableObject
             ToggleRemoteSyncPauseCommand.NotifyCanExecuteChanged();
             BeginRedownloadRemoteSnapshotCommand.NotifyCanExecuteChanged();
             ConfirmRedownloadRemoteSnapshotCommand.NotifyCanExecuteChanged();
+            BeginUploadLocalSnapshotToRemoteCommand.NotifyCanExecuteChanged();
+            ConfirmUploadLocalSnapshotToRemoteCommand.NotifyCanExecuteChanged();
         }
     }
 

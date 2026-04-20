@@ -370,6 +370,77 @@ public sealed class RemoteSyncCoordinatorTests
     }
 
     [Fact]
+    public async Task UploadLocalSnapshotToRemoteAsync_Should_ReportSynced_WhenUploadSucceeds()
+    {
+        var remoteSyncService = new Mock<IRemoteSyncService>();
+        remoteSyncService.Setup(x => x.UploadLocalSnapshotAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new RemoteSyncRunResult(RemoteSyncRunStatus.Synced, 372));
+
+        var localStoreStateService = new Mock<ILocalStoreStateService>();
+        localStoreStateService.SetupSequence(x => x.GetSnapshotAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new LocalStoreStateSnapshot(372, 4))
+            .ReturnsAsync(new LocalStoreStateSnapshot(372, 0));
+
+        var statusReporter = new Mock<IRemoteSyncStatusReporter>();
+        var sequence = new MockSequence();
+        statusReporter.InSequence(sequence)
+            .Setup(x => x.SetSyncingAsync(4, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        statusReporter.InSequence(sequence)
+            .Setup(x => x.SetResultAsync(RemoteSyncDisplayState.Synced, 372, 0, null, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var sut = new RemoteSyncCoordinator(
+            remoteSyncService.Object,
+            new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+            statusReporter.Object,
+            localStoreStateService.Object,
+            CreateDatabaseMaintenanceService().Object,
+            CreateNotificationService());
+
+        var uploaded = await sut.UploadLocalSnapshotToRemoteAsync(CancellationToken.None);
+
+        uploaded.Should().BeTrue();
+        remoteSyncService.Verify(x => x.UploadLocalSnapshotAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UploadLocalSnapshotToRemoteAsync_Should_ReportOffline_WhenBackendIsUnavailable()
+    {
+        var remoteSyncService = new Mock<IRemoteSyncService>();
+        remoteSyncService.Setup(x => x.UploadLocalSnapshotAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new RemoteSyncRunResult(RemoteSyncRunStatus.BackendUnavailable, 0, "backend unavailable"));
+
+        var localStoreStateService = new Mock<ILocalStoreStateService>();
+        localStoreStateService.SetupSequence(x => x.GetSnapshotAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new LocalStoreStateSnapshot(372, 4))
+            .ReturnsAsync(new LocalStoreStateSnapshot(372, 4));
+
+        var statusReporter = new Mock<IRemoteSyncStatusReporter>();
+        var sequence = new MockSequence();
+        statusReporter.InSequence(sequence)
+            .Setup(x => x.SetSyncingAsync(4, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        statusReporter.InSequence(sequence)
+            .Setup(x => x.SetResultAsync(RemoteSyncDisplayState.Offline, 0, 4, "backend unavailable",
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var sut = new RemoteSyncCoordinator(
+            remoteSyncService.Object,
+            new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+            statusReporter.Object,
+            localStoreStateService.Object,
+            CreateDatabaseMaintenanceService().Object,
+            CreateNotificationService());
+
+        var uploaded = await sut.UploadLocalSnapshotToRemoteAsync(CancellationToken.None);
+
+        uploaded.Should().BeFalse();
+        remoteSyncService.Verify(x => x.UploadLocalSnapshotAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task RunSingleIterationAsync_WhenRemoteWinsDetected_Should_ShowConflictWarning()
     {
         var remoteSyncService = new Mock<IRemoteSyncService>();

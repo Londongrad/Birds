@@ -11,4 +11,9 @@ public sealed class DisabledRemoteSyncService : IRemoteSyncService
     {
         return Task.FromResult(RemoteSyncRunResult.Disabled);
     }
+
+    public Task<RemoteSyncRunResult> UploadLocalSnapshotAsync(CancellationToken cancellationToken)
+    {
+        return Task.FromResult(RemoteSyncRunResult.Disabled);
+    }
 }

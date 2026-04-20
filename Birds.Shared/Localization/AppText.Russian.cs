@@ -248,6 +248,13 @@ public static partial class AppText
             ["Settings.SyncAction.SyncNow"] = "Синхронизировать",
             ["Settings.SyncAction.Pause"] = "Пауза",
             ["Settings.SyncAction.Resume"] = "Возобновить",
+            ["Settings.SyncAction.UploadTitle"] = "Залить локальный снимок в remote",
+            ["Settings.SyncAction.UploadDescription"] =
+                "Полностью заменяет удалённый backend текущим состоянием локального SQLite-архива. Удалённые данные, которых нет локально, будут перезаписаны.",
+            ["Settings.SyncAction.UploadButton"] = "Залить снимок",
+            ["Settings.SyncAction.UploadConfirmHint"] =
+                "Подтвердите загрузку текущего локального снимка. Удалённый backend будет полностью заменён текущими данными локального SQLite.",
+            ["Settings.SyncAction.UploadConfirm"] = "Да, залить локальный снимок",
             ["Settings.SyncAction.RedownloadTitle"] = "Перекачать удалённый снимок",
             ["Settings.SyncAction.RedownloadDescription"] =
                 "Полностью заменяет локальный SQLite-снимок текущими данными из удалённого backend. Локальные несинхронизированные изменения будут потеряны.",
@@ -315,6 +322,8 @@ public static partial class AppText
                 "Снимок восстановлен. Обработано: {0}, добавлено: {1}, обновлено: {2}, удалено: {3}.",
             ["Info.BirdRecordsCleared"] = "Архив очищен. Удалено записей: {0}.",
             ["Info.LocalDatabaseReset"] = "Локальная база данных сброшена.",
+            ["Info.RemoteSnapshotUploaded"] =
+                "Удалённый backend заменён текущими данными локального SQLite.",
             ["Info.RemoteSnapshotRedownloaded"] = "Локальный SQLite-снимок восстановлен из удалённого backend.",
             ["Info.SyncConflictResolved"] =
                 "\u0421\u0438\u043D\u0445\u0440\u043E\u043D\u0438\u0437\u0430\u0446\u0438\u044F \u0440\u0430\u0437\u0440\u0435\u0448\u0438\u043B\u0430 {0} \u043A\u043E\u043D\u0444\u043B\u0438\u043A\u0442(\u043E\u0432) \u0432 \u043F\u043E\u043B\u044C\u0437\u0443 \u0431\u043E\u043B\u0435\u0435 \u043D\u043E\u0432\u043E\u0439 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0439 \u0432\u0435\u0440\u0441\u0438\u0438.",
@@ -349,6 +358,8 @@ public static partial class AppText
             ["Error.CannotOpenExportFolder"] = "Не удалось открыть папку экспорта.",
             ["Error.CannotClearBirdRecords"] = "Не удалось очистить архив птиц.",
             ["Error.CannotResetLocalDatabase"] = "Не удалось сбросить локальную базу данных.",
+            ["Error.CannotUploadLocalSnapshotToRemote"] =
+                "Не удалось заменить удалённый backend данными локального SQLite.",
             ["Error.CannotRedownloadRemoteSnapshot"] =
                 "Не удалось восстановить локальный снимок из удалённого backend.",
             ["Error.FailedToDisplayErrorNotification"] = "Не удалось показать уведомление об ошибке",

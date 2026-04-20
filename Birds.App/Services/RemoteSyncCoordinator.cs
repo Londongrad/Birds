@@ -108,6 +108,40 @@ internal sealed class RemoteSyncCoordinator(
         }
     }
 
+    public async Task<bool> UploadLocalSnapshotToRemoteAsync(CancellationToken cancellationToken)
+    {
+        if (!_remoteSyncOptions.IsConfigured)
+        {
+            await PublishDisabledStateAsync(cancellationToken);
+            return false;
+        }
+
+        await _runLock.WaitAsync(cancellationToken);
+        try
+        {
+            var wasPaused = _isPaused;
+            await PublishSyncingStateAsync(cancellationToken);
+
+            var result = await _remoteSyncService.UploadLocalSnapshotAsync(cancellationToken);
+            var localState = await _localStoreStateService.GetSnapshotAsync(cancellationToken);
+            await _remoteSyncStatusReporter.SetResultAsync(
+                ToDisplayState(result.Status),
+                result.ProcessedCount,
+                localState.PendingOperationCount,
+                result.ErrorMessage,
+                cancellationToken);
+
+            if (wasPaused && result.Status == RemoteSyncRunStatus.Synced)
+                await _remoteSyncStatusReporter.SetPausedAsync(localState.PendingOperationCount, cancellationToken);
+
+            return result.Status == RemoteSyncRunStatus.Synced;
+        }
+        finally
+        {
+            _runLock.Release();
+        }
+    }
+
     public async Task SyncNowAsync(CancellationToken cancellationToken)
     {
         if (!_remoteSyncOptions.IsConfigured)

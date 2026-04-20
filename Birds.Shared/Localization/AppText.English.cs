@@ -252,6 +252,13 @@ public static partial class AppText
             ["Settings.SyncAction.SyncNow"] = "Sync now",
             ["Settings.SyncAction.Pause"] = "Pause",
             ["Settings.SyncAction.Resume"] = "Resume",
+            ["Settings.SyncAction.UploadTitle"] = "Upload local snapshot to remote",
+            ["Settings.SyncAction.UploadDescription"] =
+                "Replaces the remote backend snapshot with the current state of the local SQLite archive. Existing remote-only data will be overwritten.",
+            ["Settings.SyncAction.UploadButton"] = "Upload snapshot",
+            ["Settings.SyncAction.UploadConfirmHint"] =
+                "Confirm uploading the current local snapshot. The remote backend will be fully replaced with the current local SQLite data.",
+            ["Settings.SyncAction.UploadConfirm"] = "Yes, upload local snapshot",
             ["Settings.SyncAction.RedownloadTitle"] = "Re-download remote snapshot",
             ["Settings.SyncAction.RedownloadDescription"] =
                 "Replaces the local SQLite snapshot with the current state from the remote backend. Unsynced local changes will be lost.",
@@ -320,6 +327,7 @@ public static partial class AppText
                 "Snapshot restored. Processed: {0}, added: {1}, updated: {2}, removed: {3}.",
             ["Info.BirdRecordsCleared"] = "Archive cleared. Records removed: {0}.",
             ["Info.LocalDatabaseReset"] = "Local database has been reset.",
+            ["Info.RemoteSnapshotUploaded"] = "The remote backend snapshot was replaced with the current local SQLite data.",
             ["Info.RemoteSnapshotRedownloaded"] = "The local SQLite snapshot was restored from the remote backend.",
             ["Info.SyncConflictResolved"] = "Cloud sync resolved {0} conflict(s) using the newer remote version.",
 
@@ -351,6 +359,8 @@ public static partial class AppText
             ["Error.CannotOpenExportFolder"] = "Unable to open the export folder.",
             ["Error.CannotClearBirdRecords"] = "Unable to clear bird records.",
             ["Error.CannotResetLocalDatabase"] = "Unable to reset the local database.",
+            ["Error.CannotUploadLocalSnapshotToRemote"] =
+                "Unable to replace the remote backend snapshot with the local SQLite data.",
             ["Error.CannotRedownloadRemoteSnapshot"] =
                 "Unable to restore the local snapshot from the remote backend.",
             ["Error.FailedToDisplayErrorNotification"] = "Failed to display error notification",

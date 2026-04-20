@@ -534,6 +534,14 @@
     </Style>
 
     <Style
+        x:Key="ConfirmExtraWideDangerButtonStyle"
+        BasedOn="{StaticResource ConfirmWideDangerButtonStyle}"
+        TargetType="Button">
+        <Setter Property="MinWidth" Value="232" />
+        <Setter Property="Padding" Value="24,0" />
+    </Style>
+
+    <Style
         x:Key="CompactDataComboBoxItemStyle"
         BasedOn="{StaticResource SettingsComboBoxItemStyle}"
         TargetType="ComboBoxItem">

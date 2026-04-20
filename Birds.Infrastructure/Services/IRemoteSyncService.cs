@@ -5,4 +5,6 @@ public interface IRemoteSyncService
     Task<RemoteSyncBackendCheckResult> CheckBackendAvailabilityAsync(CancellationToken cancellationToken);
 
     Task<RemoteSyncRunResult> SyncPendingAsync(CancellationToken cancellationToken);
+
+    Task<RemoteSyncRunResult> UploadLocalSnapshotAsync(CancellationToken cancellationToken);
 }

@@ -7,7 +7,9 @@ using Birds.Infrastructure.Services;
 using FluentAssertions;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 
 namespace Birds.Tests.Infrastructure;
 
@@ -403,7 +405,6 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
     [Fact]
     public async Task SyncPendingAsync_WhenRemoteApplyFails_Should_KeepOutbox_And_MarkRetryState()
     {
-        await using var brokenRemoteDb = new RemoteSqliteInMemoryDb(false);
         var repository = new BirdRepository(_localDb.CreateFactory());
         var bird = Bird.Create(
             Enum.GetValues<BirdsName>()[1],
@@ -411,7 +412,14 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
             DateOnly.FromDateTime(DateTime.Now.AddDays(-2)));
         await repository.AddAsync(bird);
 
-        var sut = CreateSut(brokenRemoteDb.CreateFactory());
+        var remoteFactory = new Mock<IDbContextFactory<RemoteBirdDbContext>>();
+        remoteFactory.Setup(x => x.CreateDbContextAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("broken remote"));
+
+        var sut = new RemoteSyncService(
+            _localDb.CreateFactory(),
+            remoteFactory.Object,
+            NullLogger<RemoteSyncService>.Instance);
 
         var result = await sut.SyncPendingAsync(CancellationToken.None);
 
@@ -423,6 +431,84 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
         operation.RetryCount.Should().Be(1);
         operation.LastAttemptAtUtc.Should().NotBeNull();
         operation.LastError.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task UploadLocalSnapshotAsync_Should_ReplaceRemoteBirds_And_ClearLocalSyncState()
+    {
+        var repository = new BirdRepository(_localDb.CreateFactory());
+        var firstBird = Bird.Create(
+            Enum.GetValues<BirdsName>()[0],
+            "first local",
+            DateOnly.FromDateTime(DateTime.Now.AddDays(-4)));
+        var secondBird = Bird.Create(
+            Enum.GetValues<BirdsName>()[1],
+            "second local",
+            DateOnly.FromDateTime(DateTime.Now.AddDays(-2)));
+
+        await repository.AddAsync(firstBird);
+        await repository.AddAsync(secondBird);
+
+        await using (var remoteContext = _remoteDb.CreateContext())
+        {
+            await remoteContext.Birds.AddAsync(Bird.Restore(
+                Guid.NewGuid(),
+                Enum.GetValues<BirdsName>()[2],
+                "stale remote",
+                DateOnly.FromDateTime(DateTime.Now.AddDays(-10)),
+                null,
+                true,
+                DateTime.Now.AddDays(-10),
+                DateTime.Now.AddDays(-8)));
+            await remoteContext.BirdTombstones.AddAsync(RemoteBirdTombstone.Create(Guid.NewGuid(), DateTime.UtcNow));
+            await remoteContext.SaveChangesAsync();
+        }
+
+        var sut = CreateSut(_remoteDb.CreateFactory());
+
+        var result = await sut.UploadLocalSnapshotAsync(CancellationToken.None);
+
+        result.Status.Should().Be(RemoteSyncRunStatus.Synced);
+        result.ProcessedCount.Should().Be(2);
+
+        await using (var remoteVerifyContext = _remoteDb.CreateContext())
+        {
+            var remoteBirds = await remoteVerifyContext.Birds
+                .OrderBy(bird => bird.Description)
+                .ToListAsync();
+            remoteBirds.Should().HaveCount(2);
+            remoteBirds.Select(bird => bird.Description).Should().Contain(["first local", "second local"]);
+            (await remoteVerifyContext.BirdTombstones.CountAsync()).Should().Be(0);
+        }
+
+        await using (var localVerifyContext = _localDb.CreateContext())
+        {
+            (await localVerifyContext.SyncOperations.CountAsync()).Should().Be(0);
+            var cursor = await localVerifyContext.RemoteSyncCursors.SingleAsync();
+            cursor.CursorKey.Should().Be("Birds.Pull");
+        }
+    }
+
+    [Fact]
+    public async Task UploadLocalSnapshotAsync_Should_CreateRemoteSchema_WhenDatabaseIsEmpty()
+    {
+        await using var emptyRemoteDb = new RemoteSqliteInMemoryDb(false);
+        var repository = new BirdRepository(_localDb.CreateFactory());
+        var bird = Bird.Create(
+            Enum.GetValues<BirdsName>()[0],
+            "bootstrap remote",
+            DateOnly.FromDateTime(DateTime.Now.AddDays(-2)));
+        await repository.AddAsync(bird);
+
+        var sut = CreateSut(emptyRemoteDb.CreateFactory());
+
+        var result = await sut.UploadLocalSnapshotAsync(CancellationToken.None);
+
+        result.Status.Should().Be(RemoteSyncRunStatus.Synced);
+
+        await using var remoteVerifyContext = emptyRemoteDb.CreateContext();
+        var remoteBird = await remoteVerifyContext.Birds.SingleAsync();
+        remoteBird.Description.Should().Be("bootstrap remote");
     }
 
     private RemoteSyncService CreateSut(IDbContextFactory<RemoteBirdDbContext> remoteFactory)

@@ -127,6 +127,84 @@ public sealed class RemoteSyncService(
         }
     }
 
+    public async Task<RemoteSyncRunResult> UploadLocalSnapshotAsync(CancellationToken cancellationToken)
+    {
+        await _syncLock.WaitAsync(cancellationToken);
+        try
+        {
+            await using var localContext = await _localContextFactory.CreateDbContextAsync(cancellationToken);
+            try
+            {
+                await using var remoteContext = await _remoteContextFactory.CreateDbContextAsync(cancellationToken);
+                if (!await remoteContext.Database.CanConnectAsync(cancellationToken))
+                {
+                    const string backendUnavailableMessage = "Remote sync backend is unavailable.";
+                    return new RemoteSyncRunResult(
+                        RemoteSyncRunStatus.BackendUnavailable,
+                        0,
+                        backendUnavailableMessage);
+                }
+
+                await EnsureRemoteSyncSchemaAsync(remoteContext, cancellationToken);
+
+                var localBirds = await localContext.Birds
+                    .AsNoTracking()
+                    .OrderBy(bird => bird.CreatedAt)
+                    .ThenBy(bird => bird.Id)
+                    .ToListAsync(cancellationToken);
+
+                await using (var remoteTransaction = await remoteContext.Database.BeginTransactionAsync(cancellationToken))
+                {
+                    await remoteContext.Birds.ExecuteDeleteAsync(cancellationToken);
+                    await remoteContext.BirdTombstones.ExecuteDeleteAsync(cancellationToken);
+
+                    if (localBirds.Count > 0)
+                    {
+                        var remoteSnapshot = localBirds
+                            .Select(RestoreBird)
+                            .ToList();
+
+                        await remoteContext.Birds.AddRangeAsync(remoteSnapshot, cancellationToken);
+                        await remoteContext.SaveChangesAsync(cancellationToken);
+                    }
+
+                    await remoteTransaction.CommitAsync(cancellationToken);
+                }
+
+                await localContext.SyncOperations.ExecuteDeleteAsync(cancellationToken);
+                await localContext.RemoteSyncCursors.ExecuteDeleteAsync(cancellationToken);
+
+                if (localBirds.Count > 0)
+                {
+                    var lastSyncStamp = localBirds
+                        .Select(GetSyncStamp)
+                        .Max();
+
+                    await localContext.RemoteSyncCursors.AddAsync(
+                        RemoteSyncCursor.Create(BirdsPullCursorKey, lastSyncStamp),
+                        cancellationToken);
+                    await localContext.SaveChangesAsync(cancellationToken);
+                }
+
+                _logger.LogInformation(LogMessages.RemoteSyncProcessed, localBirds.Count);
+                return new RemoteSyncRunResult(RemoteSyncRunStatus.Synced, localBirds.Count);
+            }
+            catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                var status = IsBackendUnavailable(ex)
+                    ? RemoteSyncRunStatus.BackendUnavailable
+                    : RemoteSyncRunStatus.Failed;
+
+                _logger.LogWarning(ex, LogMessages.RemoteSyncFailed, 0);
+                return new RemoteSyncRunResult(status, 0, ex.Message);
+            }
+        }
+        finally
+        {
+            _syncLock.Release();
+        }
+    }
+
     private async Task<PushBatchResult> PushPendingBatchAsync(BirdDbContext localContext,
         RemoteBirdDbContext remoteContext,
         IReadOnlyCollection<SyncOperation> pendingOperations,
@@ -505,6 +583,31 @@ public sealed class RemoteSyncService(
         CancellationToken cancellationToken)
     {
         var providerName = remoteContext.Database.ProviderName ?? string.Empty;
+        var createBirdsSql = providerName.Contains("Npgsql", StringComparison.OrdinalIgnoreCase)
+            ? """
+              CREATE TABLE IF NOT EXISTS "Birds" (
+                  "Id" uuid NOT NULL CONSTRAINT "PK_Birds" PRIMARY KEY,
+                  "Name" text NOT NULL,
+                  "Description" character varying(200) NULL,
+                  "Arrival" date NOT NULL,
+                  "Departure" date NULL,
+                  "IsAlive" boolean NOT NULL DEFAULT TRUE,
+                  "CreatedAt" timestamp without time zone NOT NULL,
+                  "UpdatedAt" timestamp without time zone NULL
+              );
+              """
+            : """
+              CREATE TABLE IF NOT EXISTS "Birds" (
+                  "Id" TEXT NOT NULL CONSTRAINT "PK_Birds" PRIMARY KEY,
+                  "Name" TEXT NOT NULL,
+                  "Description" TEXT NULL,
+                  "Arrival" TEXT NOT NULL,
+                  "Departure" TEXT NULL,
+                  "IsAlive" INTEGER NOT NULL DEFAULT 1,
+                  "CreatedAt" TEXT NOT NULL,
+                  "UpdatedAt" TEXT NULL
+              );
+              """;
         var createTableSql = providerName.Contains("Npgsql", StringComparison.OrdinalIgnoreCase)
             ? """
               CREATE TABLE IF NOT EXISTS "BirdTombstones" (
@@ -518,6 +621,10 @@ public sealed class RemoteSyncService(
                   "DeletedAtUtc" TEXT NOT NULL
               );
               """;
+
+        await remoteContext.Database.ExecuteSqlRawAsync(
+            createBirdsSql,
+            cancellationToken);
 
         await remoteContext.Database.ExecuteSqlRawAsync(
             createTableSql,

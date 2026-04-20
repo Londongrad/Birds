@@ -360,6 +360,8 @@
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -493,6 +495,87 @@
                                                     <TextBlock
                                                         Style="{StaticResource FieldLabelStyle}"
                                                         Margin="0,0,0,4"
+                                                        Text="{loc:Loc Key=Settings.SyncAction.UploadTitle}" />
+                                                    <TextBlock
+                                                        FontSize="12"
+                                                        Foreground="{StaticResource SecondaryTextBrush}"
+                                                        Text="{loc:Loc Key=Settings.SyncAction.UploadDescription}"
+                                                        TextWrapping="Wrap" />
+                                                </StackPanel>
+
+                                                <Button
+                                                    Grid.Column="1"
+                                                    Command="{Binding BeginUploadLocalSnapshotToRemoteCommand}"
+                                                    Style="{StaticResource DangerActionButtonStyle}"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Center">
+                                                    <TextBlock
+                                                        Text="{loc:Loc Key=Settings.SyncAction.UploadButton}" />
+                                                </Button>
+                                            </Grid>
+
+                                            <Border
+                                                Grid.Row="1"
+                                                Style="{StaticResource DangerConfirmPanelStyle}"
+                                                Visibility="{Binding IsRemoteUploadConfirmationVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <TextBlock
+                                                        Grid.Row="0"
+                                                        FontSize="12"
+                                                        Foreground="{StaticResource DangerButtonForegroundBrush}"
+                                                        Text="{loc:Loc Key=Settings.SyncAction.UploadConfirmHint}"
+                                                        TextWrapping="Wrap" />
+
+                                                    <StackPanel
+                                                        Grid.Row="1"
+                                                        Margin="0,12,0,0"
+                                                        HorizontalAlignment="Right"
+                                                        Orientation="Horizontal">
+                                                        <Button
+                                                            Command="{Binding CancelUploadLocalSnapshotToRemoteCommand}"
+                                                            Style="{StaticResource ConfirmSecondaryButtonStyle}">
+                                                            <TextBlock Text="{loc:Loc Key=Settings.Danger.Cancel}" />
+                                                        </Button>
+
+                                                        <Button
+                                                            Margin="10,0,0,0"
+                                                            Command="{Binding ConfirmUploadLocalSnapshotToRemoteCommand}"
+                                                            Style="{StaticResource ConfirmExtraWideDangerButtonStyle}">
+                                                            <TextBlock
+                                                                Text="{loc:Loc Key=Settings.SyncAction.UploadConfirm}" />
+                                                        </Button>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+
+                                    <Border
+                                        Grid.Row="4"
+                                        Grid.ColumnSpan="2"
+                                        Margin="0,16,0,0"
+                                        Style="{StaticResource DangerRowStyle}">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <Grid Grid.Row="0" HorizontalAlignment="Stretch">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <StackPanel Style="{StaticResource SettingsRowContentStackStyle}">
+                                                    <TextBlock
+                                                        Style="{StaticResource FieldLabelStyle}"
+                                                        Margin="0,0,0,4"
                                                         Text="{loc:Loc Key=Settings.SyncAction.RedownloadTitle}" />
                                                     <TextBlock
                                                         FontSize="12"
@@ -554,7 +637,7 @@
                                     </Border>
 
                                     <Grid
-                                        Grid.Row="4"
+                                        Grid.Row="5"
                                         Grid.ColumnSpan="2"
                                         Margin="0,16,0,0"
                                         HorizontalAlignment="Stretch">
@@ -582,7 +665,7 @@
                                     </Grid>
 
                                     <Grid
-                                        Grid.Row="5"
+                                        Grid.Row="6"
                                         Grid.ColumnSpan="2"
                                         Margin="0,10,0,0"
                                         Visibility="{Binding IsRemoteSyncRecentActivityExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">

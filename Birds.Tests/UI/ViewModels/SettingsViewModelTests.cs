@@ -70,6 +70,8 @@ public class SettingsViewModelTests
         _remoteSyncController.SetupGet(x => x.IsConfigured).Returns(true);
         _remoteSyncController.Setup(x => x.SyncNowAsync(It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        _remoteSyncController.Setup(x => x.UploadLocalSnapshotToRemoteAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
         _remoteSyncController.Setup(x => x.RedownloadRemoteSnapshotAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
         _remoteSyncController.Setup(x => x.PauseAsync(It.IsAny<CancellationToken>()))
@@ -282,6 +284,43 @@ public class SettingsViewModelTests
         _autoExportCoordinator.Verify(x => x.MarkDirty(), Times.Never);
         _notificationService.Verify(
             x => x.ShowErrorLocalized("Error.CannotRedownloadRemoteSnapshot", It.IsAny<object[]>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ConfirmUploadLocalSnapshotToRemoteCommand_Should_PublishCurrentLocalState_ToRemote()
+    {
+        _store.ReplaceBirds(new[]
+        {
+            new BirdDTO(Guid.NewGuid(), "Sparrow", null, new DateOnly(2026, 4, 1), null, true, null, null)
+        });
+
+        var sut = CreateSut();
+        sut.BeginUploadLocalSnapshotToRemoteCommand.Execute(null);
+
+        await sut.ConfirmUploadLocalSnapshotToRemoteCommand.ExecuteAsync(null);
+
+        sut.IsConfirmingUploadLocalSnapshotToRemote.Should().BeFalse();
+        _birdManager.Verify(x => x.FlushPendingOperationsAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _remoteSyncController.Verify(x => x.UploadLocalSnapshotToRemoteAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _notificationService.Verify(
+            x => x.ShowSuccessLocalized("Info.RemoteSnapshotUploaded", It.IsAny<object[]>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ConfirmUploadLocalSnapshotToRemoteCommand_Should_ShowError_WhenRemoteUploadFails()
+    {
+        _remoteSyncController.Setup(x => x.UploadLocalSnapshotToRemoteAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var sut = CreateSut();
+        sut.BeginUploadLocalSnapshotToRemoteCommand.Execute(null);
+
+        await sut.ConfirmUploadLocalSnapshotToRemoteCommand.ExecuteAsync(null);
+
+        _notificationService.Verify(
+            x => x.ShowErrorLocalized("Error.CannotUploadLocalSnapshotToRemote", It.IsAny<object[]>()),
             Times.Once);
     }
 
