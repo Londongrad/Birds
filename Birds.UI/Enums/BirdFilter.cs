@@ -11,7 +11,7 @@ public enum BirdFilter
     Dead = 4
 }
 
-public record FilterOption(BirdFilter Filter, string Display, BirdsName? Species = null)
+public record FilterOption(BirdFilter Filter, string Display, BirdSpecies? Species = null)
 {
     public override string ToString()
     {

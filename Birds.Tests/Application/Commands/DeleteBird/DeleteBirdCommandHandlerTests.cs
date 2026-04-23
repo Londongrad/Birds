@@ -1,4 +1,4 @@
-﻿using Birds.Application.Commands.DeleteBird;
+using Birds.Application.Commands.DeleteBird;
 using Birds.Application.Exceptions;
 using Birds.Application.Interfaces;
 using Birds.Domain.Entities;
@@ -18,7 +18,7 @@ public class DeleteBirdCommandHandlerTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        var stored = Bird.Restore(id, BirdsName.Воробей, "desc",
+        var stored = Bird.Restore(id, BirdSpecies.Sparrow, "desc",
             DateOnly.FromDateTime(DateTime.Now.AddDays(-10)), null, true);
 
         _repo.Setup(r => r.GetByIdAsync(id, It.IsAny<CancellationToken>()))

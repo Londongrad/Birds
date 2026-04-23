@@ -26,7 +26,7 @@ public sealed class JsonExportServiceTests
                 null,
                 null)
             {
-                Species = BirdsName.Воробей
+                Species = BirdSpecies.Sparrow
             };
 
             await sut.ExportAsync(new[] { bird }, path, CancellationToken.None);
@@ -34,7 +34,7 @@ public sealed class JsonExportServiceTests
             using var document = JsonDocument.Parse(await File.ReadAllTextAsync(path));
             var exportedBird = document.RootElement.GetProperty("items")[0];
 
-            exportedBird.GetProperty("Species").GetInt32().Should().Be((int)BirdsName.Воробей);
+            exportedBird.GetProperty("Species").GetString().Should().Be("Sparrow");
             exportedBird.GetProperty("Name").GetString().Should().Be("Sparrow");
         }
         finally

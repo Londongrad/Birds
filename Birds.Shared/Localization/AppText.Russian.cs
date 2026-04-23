@@ -396,13 +396,13 @@ public static partial class AppText
             ["Validation.DepartureLaterThenArrival"] =
                 "Дата выбытия не может быть раньше даты прибытия ({0:dd-MM-yyyy}).",
 
-            ["BirdName.Воробей"] = "Воробей",
-            ["BirdName.Щегол"] = "Щегол",
-            ["BirdName.Амадин"] = "Амадин",
-            ["BirdName.Дубонос"] = "Дубонос",
-            ["BirdName.Большак"] = "Большак",
-            ["BirdName.Гайка"] = "Гайка",
-            ["BirdName.Поползень"] = "Поползень",
+            ["BirdName.Sparrow"] = "Воробей",
+            ["BirdName.Goldfinch"] = "Щегол",
+            ["BirdName.Amadin"] = "Амадин",
+            ["BirdName.Hawfinch"] = "Дубонос",
+            ["BirdName.GreatTit"] = "Большак",
+            ["BirdName.BlackCappedChickadee"] = "Гайка",
+            ["BirdName.Nuthatch"] = "Поползень",
             ["BirdName.Unknown"] = "Неизвестно"
         };
     }

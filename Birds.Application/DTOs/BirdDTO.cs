@@ -14,9 +14,9 @@ public record BirdDTO(
     DateTime? UpdatedAt
 )
 {
-    public BirdsName Species { get; init; } = BirdEnumHelper.ParseBirdName(Name) ?? default;
+    public BirdSpecies Species { get; init; } = BirdEnumHelper.ParseBirdName(Name) ?? default;
 
-    public BirdsName? ResolveSpecies()
+    public BirdSpecies? ResolveSpecies()
     {
         return Enum.IsDefined(Species)
             ? Species

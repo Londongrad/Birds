@@ -15,7 +15,7 @@ public class ImportBirdsCommandHandlerTests
     public async Task Handle_Should_Upsert_Birds_And_Return_Snapshot()
     {
         var repository = new Mock<IBirdRepository>();
-        var species = Enum.GetValues<BirdsName>()[0];
+        var species = Enum.GetValues<BirdSpecies>()[0];
         var importedBird = new BirdDTO(
             Guid.NewGuid(),
             "Sparrow",
@@ -75,7 +75,7 @@ public class ImportBirdsCommandHandlerTests
             null,
             null)
         {
-            Species = BirdsName.Щегол
+            Species = BirdSpecies.Goldfinch
         };
 
         IReadOnlyCollection<Bird>? savedBirds = null;
@@ -91,7 +91,7 @@ public class ImportBirdsCommandHandlerTests
 
         result.IsSuccess.Should().BeTrue();
         savedBirds.Should().ContainSingle();
-        savedBirds!.Single().Name.Should().Be(BirdsName.Щегол);
+        savedBirds!.Single().Name.Should().Be(BirdSpecies.Goldfinch);
     }
 
     [Fact]

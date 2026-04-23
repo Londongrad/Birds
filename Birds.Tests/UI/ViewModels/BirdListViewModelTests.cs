@@ -23,22 +23,22 @@ public class BirdListViewModelTests
     {
         var sut = CreateViewModel();
 
-        sut.Filters.Should().HaveCount(4 + Enum.GetValues<BirdsName>().Length);
+        sut.Filters.Should().HaveCount(4 + Enum.GetValues<BirdSpecies>().Length);
         sut.Filters.Should().ContainSingle(x => x.Filter == BirdFilter.All);
         sut.Filters.Should().ContainSingle(x => x.Filter == BirdFilter.Alive);
         sut.Filters.Should().ContainSingle(x => x.Filter == BirdFilter.Dead);
         sut.Filters.Should().ContainSingle(x => x.Filter == BirdFilter.DepartedButAlive);
-        sut.Filters.Count(x => x.Filter == BirdFilter.BySpecies).Should().Be(Enum.GetValues<BirdsName>().Length);
+        sut.Filters.Count(x => x.Filter == BirdFilter.BySpecies).Should().Be(Enum.GetValues<BirdSpecies>().Length);
     }
 
     [Fact]
     public void FilterBirds_Should_Filter_By_Selected_Species_Without_String_Switches()
     {
-        var sparrow = CreateBird((BirdsName)1);
-        var chickadee = CreateBird((BirdsName)6);
+        var sparrow = CreateBird((BirdSpecies)1);
+        var chickadee = CreateBird((BirdSpecies)6);
         var sut = CreateViewModel(sparrow, chickadee);
 
-        sut.SelectedFilter = sut.Filters.Single(x => x.Filter == BirdFilter.BySpecies && x.Species == (BirdsName)6);
+        sut.SelectedFilter = sut.Filters.Single(x => x.Filter == BirdFilter.BySpecies && x.Species == (BirdSpecies)6);
 
         sut.FilterBirds(sparrow).Should().BeFalse();
         sut.FilterBirds(chickadee).Should().BeTrue();
@@ -50,7 +50,7 @@ public class BirdListViewModelTests
         var invalidBird = TestHelpers.Bird(name: "Unknown bird");
         var sut = CreateViewModel(invalidBird);
 
-        sut.SelectedFilter = sut.Filters.Single(x => x.Filter == BirdFilter.BySpecies && x.Species == (BirdsName)1);
+        sut.SelectedFilter = sut.Filters.Single(x => x.Filter == BirdFilter.BySpecies && x.Species == (BirdSpecies)1);
 
         sut.FilterBirds(invalidBird).Should().BeFalse();
     }
@@ -58,10 +58,10 @@ public class BirdListViewModelTests
     [Fact]
     public void FilterBirds_Should_Combine_Search_And_Species_Filter()
     {
-        var sparrow = CreateBird((BirdsName)1, "forest visitor");
-        var secondSparrow = CreateBird((BirdsName)1, "city bird");
+        var sparrow = CreateBird((BirdSpecies)1, "forest visitor");
+        var secondSparrow = CreateBird((BirdSpecies)1, "city bird");
         var sut = CreateViewModel(sparrow, secondSparrow);
-        sut.SelectedFilter = sut.Filters.Single(x => x.Filter == BirdFilter.BySpecies && x.Species == (BirdsName)1);
+        sut.SelectedFilter = sut.Filters.Single(x => x.Filter == BirdFilter.BySpecies && x.Species == (BirdSpecies)1);
         sut.SearchText = "forest";
 
         sut.FilterBirds(sparrow).Should().BeTrue();
@@ -71,13 +71,13 @@ public class BirdListViewModelTests
     [Fact]
     public void BirdCount_Should_Track_Filtered_View()
     {
-        var sparrow = CreateBird((BirdsName)1, "forest visitor");
-        var chickadee = CreateBird((BirdsName)6, "city bird");
+        var sparrow = CreateBird((BirdSpecies)1, "forest visitor");
+        var chickadee = CreateBird((BirdSpecies)6, "city bird");
         var sut = CreateViewModel(sparrow, chickadee);
 
         sut.BirdCount.Should().Be(2);
 
-        sut.SelectedFilter = sut.Filters.Single(x => x.Filter == BirdFilter.BySpecies && x.Species == (BirdsName)6);
+        sut.SelectedFilter = sut.Filters.Single(x => x.Filter == BirdFilter.BySpecies && x.Species == (BirdSpecies)6);
         sut.BirdCount.Should().Be(1);
 
         sut.SearchText = "city";
@@ -90,7 +90,7 @@ public class BirdListViewModelTests
     [Fact]
     public void Search_Should_Match_Configured_Date_Format()
     {
-        var bird = CreateBird((BirdsName)1);
+        var bird = CreateBird((BirdSpecies)1);
         var sut = CreateViewModel(DateDisplayFormats.YearMonthDay, bird);
         sut.SearchText = "2026-04";
 
@@ -131,7 +131,7 @@ public class BirdListViewModelTests
         return new BirdListViewModel(manager.Object, localization.Object, birdNameDisplay);
     }
 
-    private static BirdDTO CreateBird(BirdsName species, string? desc = null)
+    private static BirdDTO CreateBird(BirdSpecies species, string? desc = null)
     {
         return TestHelpers.Bird(name: BirdNameDisplayNames.GetDisplayName(species), desc: desc);
     }

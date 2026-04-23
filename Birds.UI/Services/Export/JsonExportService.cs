@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using System.Text.Unicode;
 using Birds.Application.DTOs;
 using Birds.UI.Services.Export.Interfaces;
+using Birds.UI.Services.Serialization;
 
 namespace Birds.UI.Services.Export;
 
@@ -23,7 +24,8 @@ public sealed class JsonExportService : IExportService
     {
         WriteIndented = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic)
+        Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic),
+        Converters = { new BirdSpeciesJsonConverter() }
         // Alternative: Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping (allows all, less strict)
     };
 

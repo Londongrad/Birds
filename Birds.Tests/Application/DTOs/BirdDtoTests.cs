@@ -19,10 +19,10 @@ public sealed class BirdDtoTests
             null,
             null)
         {
-            Species = BirdsName.Щегол
+            Species = BirdSpecies.Goldfinch
         };
 
-        dto.ResolveSpecies().Should().Be(BirdsName.Щегол);
+        dto.ResolveSpecies().Should().Be(BirdSpecies.Goldfinch);
         dto.Name.Should().Be("Unknown display text");
     }
 }

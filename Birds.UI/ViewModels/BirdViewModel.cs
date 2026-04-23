@@ -209,7 +209,7 @@ public partial class BirdViewModel : BirdValidationBaseViewModel
         if (HasErrors)
             return;
 
-        if (SelectedBirdName is not BirdsName selectedBirdName)
+        if (SelectedBirdName is not BirdSpecies selectedBirdName)
         {
             ValidateProperty(SelectedBirdName, nameof(SelectedBirdName));
             return;
@@ -338,7 +338,7 @@ public partial class BirdViewModel : BirdValidationBaseViewModel
     /// <summary>
     ///     Keeps the display name aligned with the selected enum value while editing.
     /// </summary>
-    protected override void OnSelectedBirdNameChangedCore(BirdsName? value)
+    protected override void OnSelectedBirdNameChangedCore(BirdSpecies? value)
     {
         if (value is { } selectedBirdName)
             Name = _birdNameDisplay.GetDisplayName(selectedBirdName);

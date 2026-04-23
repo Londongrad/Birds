@@ -1,4 +1,4 @@
-﻿using Birds.Domain.Enums;
+using Birds.Domain.Enums;
 
 namespace Birds.Application.DTOs;
 
@@ -7,7 +7,7 @@ namespace Birds.Application.DTOs;
 ///     Contains only fields required for creation.
 /// </summary>
 public record BirdCreateDTO(
-    BirdsName Name,
+    BirdSpecies Name,
     string? Description,
     DateOnly Arrival,
     DateOnly? Departure = null,

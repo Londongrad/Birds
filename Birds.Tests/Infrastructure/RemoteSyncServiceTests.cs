@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Birds.Domain.Entities;
 using Birds.Domain.Enums;
 using Birds.Infrastructure.Persistence;
@@ -38,7 +39,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
     {
         var repository = new BirdRepository(_localDb.CreateFactory());
         var bird = Bird.Create(
-            Enum.GetValues<BirdsName>()[0],
+            Enum.GetValues<BirdSpecies>()[0],
             "sync me",
             DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
         await repository.AddAsync(bird);
@@ -60,11 +61,51 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task SyncPendingAsync_Should_Read_Legacy_Russian_Species_From_Pending_Upsert()
+    {
+        var birdId = Guid.NewGuid();
+        var timestamp = DateTime.UtcNow;
+        var payload = new BirdSyncPayload(
+            birdId,
+            "Воробей",
+            "Воробей",
+            "legacy payload",
+            DateOnly.FromDateTime(DateTime.Today.AddDays(-3)),
+            null,
+            true,
+            DateTime.Now.AddDays(-3),
+            null,
+            timestamp);
+
+        await using (var localContext = _localDb.CreateContext())
+        {
+            await localContext.SyncOperations.AddAsync(
+                SyncOperation.CreatePending(
+                    "Bird",
+                    birdId,
+                    SyncOperationType.Upsert,
+                    JsonSerializer.Serialize(payload),
+                    timestamp));
+            await localContext.SaveChangesAsync();
+        }
+
+        var sut = CreateSut(_remoteDb.CreateFactory());
+
+        var result = await sut.SyncPendingAsync(CancellationToken.None);
+
+        result.Status.Should().Be(RemoteSyncRunStatus.Synced);
+
+        await using var remoteContext = _remoteDb.CreateContext();
+        var remoteBird = await remoteContext.Birds.SingleAsync();
+        remoteBird.Name.Should().Be(BirdSpecies.Sparrow);
+    }
+
+    [Fact]
     public async Task SyncPendingAsync_WhenPendingDeleteExists_Should_DeleteRemoteBird_And_ClearOutbox()
     {
         var repository = new BirdRepository(_localDb.CreateFactory());
         var bird = Bird.Create(
-            Enum.GetValues<BirdsName>()[1],
+            Enum.GetValues<BirdSpecies>()[1],
             "remove remotely",
             DateOnly.FromDateTime(DateTime.Now.AddDays(-4)));
 
@@ -108,7 +149,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
     {
         var repository = new BirdRepository(_localDb.CreateFactory());
         var localBird = Bird.Create(
-            Enum.GetValues<BirdsName>()[0],
+            Enum.GetValues<BirdSpecies>()[0],
             "local version",
             DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
         await repository.AddAsync(localBird);
@@ -158,7 +199,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
     {
         var repository = new BirdRepository(_localDb.CreateFactory());
         var birdId = Guid.NewGuid();
-        var species = Enum.GetValues<BirdsName>()[0];
+        var species = Enum.GetValues<BirdSpecies>()[0];
         var arrival = DateOnly.FromDateTime(DateTime.Today.AddDays(-3));
         var localCreatedAt = new DateTime(2030, 1, 1, 1, 0, 0, DateTimeKind.Unspecified);
         var localUpdatedAt = new DateTime(2030, 1, 2, 1, 0, 0, DateTimeKind.Unspecified);
@@ -216,7 +257,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
     {
         var repository = new BirdRepository(_localDb.CreateFactory());
         var localBird = Bird.Create(
-            Enum.GetValues<BirdsName>()[1],
+            Enum.GetValues<BirdSpecies>()[1],
             "delete me locally",
             DateOnly.FromDateTime(DateTime.Now.AddDays(-4)));
         await repository.AddAsync(localBird);
@@ -265,7 +306,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
     {
         var remoteBird = Bird.Restore(
             Guid.NewGuid(),
-            Enum.GetValues<BirdsName>()[2],
+            Enum.GetValues<BirdSpecies>()[2],
             "remote only",
             DateOnly.FromDateTime(DateTime.Now.AddDays(-6)),
             null,
@@ -382,7 +423,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
         var birdId = Guid.NewGuid();
         var initialRemoteBird = Bird.Restore(
             birdId,
-            Enum.GetValues<BirdsName>()[3],
+            Enum.GetValues<BirdSpecies>()[3],
             "before pull",
             DateOnly.FromDateTime(DateTime.Now.AddDays(-8)),
             null,
@@ -432,7 +473,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
         var birdId = Guid.NewGuid();
         var remoteBird = Bird.Restore(
             birdId,
-            Enum.GetValues<BirdsName>()[2],
+            Enum.GetValues<BirdSpecies>()[2],
             "remote stale",
             DateOnly.FromDateTime(DateTime.Now.AddDays(-8)),
             null,
@@ -478,7 +519,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
     {
         var repository = new BirdRepository(_localDb.CreateFactory());
         var localBird = Bird.Create(
-            Enum.GetValues<BirdsName>()[4],
+            Enum.GetValues<BirdSpecies>()[4],
             "delete locally",
             DateOnly.FromDateTime(DateTime.Now.AddDays(-7)));
         await repository.AddAsync(localBird);
@@ -563,7 +604,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
     {
         var localBird = Bird.Restore(
             Guid.NewGuid(),
-            Enum.GetValues<BirdsName>()[4],
+            Enum.GetValues<BirdSpecies>()[4],
             "local survives",
             DateOnly.FromDateTime(DateTime.Now.AddDays(-7)),
             null,
@@ -600,7 +641,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
     {
         var repository = new BirdRepository(_localDb.CreateFactory());
         var bird = Bird.Create(
-            Enum.GetValues<BirdsName>()[1],
+            Enum.GetValues<BirdSpecies>()[1],
             "broken remote",
             DateOnly.FromDateTime(DateTime.Now.AddDays(-2)));
         await repository.AddAsync(bird);
@@ -644,11 +685,11 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
     {
         var repository = new BirdRepository(_localDb.CreateFactory());
         var firstBird = Bird.Create(
-            Enum.GetValues<BirdsName>()[0],
+            Enum.GetValues<BirdSpecies>()[0],
             "first local",
             DateOnly.FromDateTime(DateTime.Now.AddDays(-4)));
         var secondBird = Bird.Create(
-            Enum.GetValues<BirdsName>()[1],
+            Enum.GetValues<BirdSpecies>()[1],
             "second local",
             DateOnly.FromDateTime(DateTime.Now.AddDays(-2)));
 
@@ -659,7 +700,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
         {
             await remoteContext.Birds.AddAsync(Bird.Restore(
                 Guid.NewGuid(),
-                Enum.GetValues<BirdsName>()[2],
+                Enum.GetValues<BirdSpecies>()[2],
                 "stale remote",
                 DateOnly.FromDateTime(DateTime.Now.AddDays(-10)),
                 null,
@@ -707,7 +748,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
         await using var emptyRemoteDb = new RemoteSqliteInMemoryDb(false);
         var repository = new BirdRepository(_localDb.CreateFactory());
         var bird = Bird.Create(
-            Enum.GetValues<BirdsName>()[0],
+            Enum.GetValues<BirdSpecies>()[0],
             "bootstrap remote",
             DateOnly.FromDateTime(DateTime.Now.AddDays(-2)));
         await repository.AddAsync(bird);
@@ -732,7 +773,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
     {
         return Bird.Restore(
             id,
-            Enum.GetValues<BirdsName>()[0],
+            Enum.GetValues<BirdSpecies>()[0],
             description,
             DateOnly.FromDateTime(DateTime.Today.AddDays(-1)),
             null,

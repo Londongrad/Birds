@@ -24,7 +24,7 @@ public sealed class LocalizationDisplayTests
 
             var sut = new BirdNameDisplayConverter();
             var result = sut.Convert(
-                (BirdsName)3,
+                (BirdSpecies)3,
                 typeof(string),
                 string.Empty,
                 CultureInfo.GetCultureInfo(AppLanguages.English));
@@ -51,7 +51,7 @@ public sealed class LocalizationDisplayTests
 
             var sut = new BirdNameDisplayConverter();
             var result = sut.Convert(
-                (BirdsName)3,
+                (BirdSpecies)3,
                 typeof(string),
                 string.Empty,
                 CultureInfo.GetCultureInfo(AppLanguages.Russian));
@@ -78,7 +78,7 @@ public sealed class LocalizationDisplayTests
 
             var sut = new BirdNameDisplayService(localization);
 
-            sut.GetDisplayName((BirdsName)3).Should().Be("Amadin");
+            sut.GetDisplayName((BirdSpecies)3).Should().Be("Amadin");
         }
         finally
         {

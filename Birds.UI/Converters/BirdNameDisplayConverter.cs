@@ -12,7 +12,7 @@ public sealed class BirdNameDisplayConverter : IValueConverter
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value is BirdsName birdName
+        return value is BirdSpecies birdName
             // The edit ComboBox should follow the app language, not WPF's binding culture.
             ? _birdNameDisplay.GetDisplayName(birdName)
             : Binding.DoNothing;

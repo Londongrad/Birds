@@ -12,7 +12,7 @@ public class BirdTests
     public void Create_ShouldReturnValidBird_WhenDataIsCorrect()
     {
         // Arrange
-        var name = (BirdsName)1;
+        var name = (BirdSpecies)1;
         var arrival = new DateOnly(2024, 5, 10);
         var description = "Small gray bird";
         var beforeLocal = DateTime.Now;
@@ -43,7 +43,7 @@ public class BirdTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        var name = (BirdsName)3;
+        var name = (BirdSpecies)3;
         var arrival = new DateOnly(2023, 1, 15);
         var departure = new DateOnly(2024, 1, 15);
         var isAlive = false;
@@ -65,18 +65,18 @@ public class BirdTests
     public void Update_ShouldModifyPropertiesAndUpdateTimestamp()
     {
         // Arrange
-        var bird = Bird.Create((BirdsName)6, "Tiny bird", new DateOnly(2024, 5, 1));
+        var bird = Bird.Create((BirdSpecies)6, "Tiny bird", new DateOnly(2024, 5, 1));
         var oldUpdatedAt = bird.UpdatedAt;
         var beforeLocal = DateTime.Now;
         var beforeUtc = DateTime.UtcNow;
 
         // Act
-        bird.Update((BirdsName)4, "Updated bird", new DateOnly(2024, 5, 5), null, true);
+        bird.Update((BirdSpecies)4, "Updated bird", new DateOnly(2024, 5, 5), null, true);
         var afterLocal = DateTime.Now;
         var afterUtc = DateTime.UtcNow;
 
         // Assert
-        bird.Name.Should().Be((BirdsName)4);
+        bird.Name.Should().Be((BirdSpecies)4);
         bird.Description.Should().Be("Updated bird");
         bird.Arrival.Should().Be(new DateOnly(2024, 5, 5));
         bird.Departure.Should().BeNull();
@@ -93,7 +93,7 @@ public class BirdTests
     public void Create_ShouldThrow_When_Description_Exceeds_Max_Length()
     {
         Action act = () => Bird.Create(
-            (BirdsName)1,
+            (BirdSpecies)1,
             new string('A', BirdValidationRules.DescriptionMaxLength + 1),
             new DateOnly(2024, 5, 10));
 
@@ -103,10 +103,10 @@ public class BirdTests
     [Fact]
     public void Update_ShouldThrow_When_Departure_Earlier_Than_Arrival()
     {
-        var bird = Bird.Create((BirdsName)6, "Tiny bird", new DateOnly(2024, 5, 1));
+        var bird = Bird.Create((BirdSpecies)6, "Tiny bird", new DateOnly(2024, 5, 1));
 
         var act = () => bird.Update(
-            (BirdsName)4,
+            (BirdSpecies)4,
             "Updated bird",
             new DateOnly(2024, 5, 5),
             new DateOnly(2024, 5, 4),

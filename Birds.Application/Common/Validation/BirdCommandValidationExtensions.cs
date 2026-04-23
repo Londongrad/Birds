@@ -6,8 +6,8 @@ namespace Birds.Application.Common.Validation;
 
 internal static class BirdCommandValidationExtensions
 {
-    public static IRuleBuilderOptions<T, BirdsName> ApplySpeciesRules<T>(
-        this IRuleBuilderInitial<T, BirdsName> ruleBuilder)
+    public static IRuleBuilderOptions<T, BirdSpecies> ApplySpeciesRules<T>(
+        this IRuleBuilderInitial<T, BirdSpecies> ruleBuilder)
     {
         return ruleBuilder
             .IsInEnum()

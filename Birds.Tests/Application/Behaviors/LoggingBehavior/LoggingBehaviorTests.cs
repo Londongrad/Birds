@@ -1,4 +1,4 @@
-﻿using Birds.Application.Behaviors;
+using Birds.Application.Behaviors;
 using Birds.Application.Commands.CreateBird;
 using Birds.Domain.Enums;
 using FluentAssertions;
@@ -18,7 +18,7 @@ public class LoggingBehaviorTests
         var behavior = new LoggingBehavior<CreateBirdCommand, string>(logger.Object);
 
         var cmd = new CreateBirdCommand(
-            BirdsName.Воробей,
+            BirdSpecies.Sparrow,
             "ok",
             DateOnly.FromDateTime(DateTime.Now)
         );
@@ -65,7 +65,7 @@ public class LoggingBehaviorTests
         var behavior = new LoggingBehavior<CreateBirdCommand, string>(logger.Object);
 
         var cmd = new CreateBirdCommand(
-            BirdsName.Воробей,
+            BirdSpecies.Sparrow,
             "ok",
             DateOnly.FromDateTime(DateTime.Now)
         );

@@ -19,9 +19,9 @@ public class GetAllBirdsQueryHandlerTests
     {
         var birds = new List<Bird>
         {
-            Bird.Restore(Guid.NewGuid(), (BirdsName)1, "sparrow",
+            Bird.Restore(Guid.NewGuid(), (BirdSpecies)1, "sparrow",
                 DateOnly.FromDateTime(DateTime.Now.AddDays(-10)), null, true),
-            Bird.Restore(Guid.NewGuid(), (BirdsName)5, "tit",
+            Bird.Restore(Guid.NewGuid(), (BirdSpecies)5, "tit",
                 DateOnly.FromDateTime(DateTime.Now.AddDays(-20)), null, true)
         }.AsReadOnly();
 

@@ -4,6 +4,7 @@ using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
 using Birds.Shared.Constants;
 using Birds.UI.Services.Import.Interfaces;
+using Birds.UI.Services.Serialization;
 
 namespace Birds.UI.Services.Import;
 
@@ -11,7 +12,8 @@ public sealed class JsonImportService : IImportService
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        PropertyNameCaseInsensitive = true
+        PropertyNameCaseInsensitive = true,
+        Converters = { new BirdSpeciesJsonConverter() }
     };
 
     public async Task<Result<IReadOnlyList<BirdDTO>>> ImportAsync(string path, CancellationToken cancellationToken)

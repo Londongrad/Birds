@@ -1,4 +1,4 @@
-﻿using Birds.Domain.Common;
+using Birds.Domain.Common;
 using Birds.Domain.Common.Exceptions;
 using Birds.Domain.Enums;
 using FluentAssertions;
@@ -32,7 +32,7 @@ public class GuardHelperTests
     public void AgainstNullOrEmpty_ShouldNotThrow_ForValidString()
     {
         // Arrange
-        var validString = "Parrot";
+        var validString = "Sparrow";
 
         // Act
         var act = () => GuardHelper.AgainstNullOrEmpty(validString, "testArg");
@@ -220,7 +220,7 @@ public class GuardHelperTests
     public void AgainstInvalidEnum_ShouldThrowException_ForInvalidEnumValue()
     {
         // Arrange
-        var invalidEnumValue = (BirdsName)999;
+        var invalidEnumValue = (BirdSpecies)999;
 
         // Act
         var act = () => GuardHelper.AgainstInvalidEnum(invalidEnumValue, "testEnum");
@@ -233,7 +233,7 @@ public class GuardHelperTests
     public void AgainstInvalidEnum_ShouldNotThrow_ForValidEnumValue()
     {
         // Arrange
-        var validEnumValue = BirdsName.Воробей;
+        var validEnumValue = BirdSpecies.Sparrow;
 
         // Act
         var act = () => GuardHelper.AgainstInvalidEnum(validEnumValue, "testEnum");
@@ -253,7 +253,7 @@ public class GuardHelperTests
         var invalidString = "InvalidBird";
 
         // Act
-        var act = () => GuardHelper.AgainstInvalidStringToEnum<BirdsName>(invalidString, "testEnum");
+        var act = () => GuardHelper.AgainstInvalidStringToEnum<BirdSpecies>(invalidString, "testEnum");
 
         // Assert
         act.Should().Throw<DomainValidationException>().WithMessage("*testEnum*");
@@ -263,10 +263,10 @@ public class GuardHelperTests
     public void AgainstInvalidStringToEnum_ShouldNotThrow_ForValidString()
     {
         // Arrange
-        var validString = "Воробей";
+        var validString = "Sparrow";
 
         // Act
-        var act = () => GuardHelper.AgainstInvalidStringToEnum<BirdsName>(validString, "testEnum");
+        var act = () => GuardHelper.AgainstInvalidStringToEnum<BirdSpecies>(validString, "testEnum");
 
         // Assert
         act.Should().NotThrow();

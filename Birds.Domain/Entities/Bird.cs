@@ -7,7 +7,7 @@ public class Bird : EntityBase
 {
     #region [ Properties ]
 
-    public BirdsName Name { get; private set; }
+    public BirdSpecies Name { get; private set; }
     public string? Description { get; private set; }
     public DateOnly Arrival { get; private set; }
     public DateOnly? Departure { get; private set; }
@@ -23,7 +23,7 @@ public class Bird : EntityBase
 
     private Bird(
         Guid id,
-        BirdsName name,
+        BirdSpecies name,
         string? description,
         DateOnly arrival,
         DateOnly? departure = null,
@@ -35,7 +35,7 @@ public class Bird : EntityBase
 
     private Bird(
         Guid id,
-        BirdsName name,
+        BirdSpecies name,
         string? description,
         DateOnly arrival,
         DateOnly? departure,
@@ -50,7 +50,7 @@ public class Bird : EntityBase
 
     private void Initialize(
         Guid id,
-        BirdsName name,
+        BirdSpecies name,
         string? description,
         DateOnly arrival,
         DateOnly? departure,
@@ -80,7 +80,7 @@ public class Bird : EntityBase
     /// </summary>
     /// <returns>A newly created <see cref="Bird" /> instance.</returns>
     public static Bird Create(
-        BirdsName name,
+        BirdSpecies name,
         string? description,
         DateOnly arrival,
         DateOnly? departure = null,
@@ -107,7 +107,7 @@ public class Bird : EntityBase
     /// <returns>A reconstructed <see cref="Bird" /> instance.</returns>
     public static Bird Restore(
         Guid id,
-        BirdsName name,
+        BirdSpecies name,
         string? description,
         DateOnly arrival,
         DateOnly? departure,
@@ -135,7 +135,7 @@ public class Bird : EntityBase
     /// <remarks>
     ///     Intended for full entity updates when all fields are known and validated externally.
     /// </remarks>
-    public void Update(BirdsName name, string? description, DateOnly arrival, DateOnly? departure, bool isAlive)
+    public void Update(BirdSpecies name, string? description, DateOnly arrival, DateOnly? departure, bool isAlive)
     {
         GuardHelper.AgainstInvalidEnum(name, nameof(name));
         GuardHelper.AgainstExceedsMaxLength(description, BirdValidationRules.DescriptionMaxLength, nameof(description));

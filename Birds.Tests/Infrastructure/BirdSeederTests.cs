@@ -54,7 +54,7 @@ public sealed class BirdSeederTests : IAsyncLifetime
         await using (var context = _db.CreateContext())
         {
             context.Birds.Add(Bird.Create(
-                BirdsName.Воробей,
+                BirdSpecies.Sparrow,
                 "existing",
                 DateOnly.FromDateTime(DateTime.Today.AddDays(-5))));
 

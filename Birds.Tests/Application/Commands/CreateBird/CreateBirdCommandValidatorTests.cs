@@ -13,7 +13,7 @@ public class CreateBirdCommandValidatorTests
     public void Should_Have_Error_When_Arrival_In_Future()
     {
         var command = new CreateBirdCommand(
-            (BirdsName)1,
+            (BirdSpecies)1,
             "Test bird",
             DateOnly.FromDateTime(DateTime.Now.AddDays(1))
         );
@@ -28,7 +28,7 @@ public class CreateBirdCommandValidatorTests
     public void Should_Have_Error_When_Arrival_Too_Early()
     {
         var command = new CreateBirdCommand(
-            (BirdsName)1,
+            (BirdSpecies)1,
             "Old bird",
             new DateOnly(2019, 12, 31)
         );
@@ -43,7 +43,7 @@ public class CreateBirdCommandValidatorTests
     public void Should_Have_Error_When_Description_Too_Long()
     {
         var command = new CreateBirdCommand(
-            (BirdsName)1,
+            (BirdSpecies)1,
             new string('A', BirdValidationRules.DescriptionMaxLength + 1),
             DateOnly.FromDateTime(DateTime.Now)
         );
@@ -58,7 +58,7 @@ public class CreateBirdCommandValidatorTests
     public void Should_Have_Error_When_Departure_Earlier_Than_Arrival()
     {
         var command = new CreateBirdCommand(
-            (BirdsName)1,
+            (BirdSpecies)1,
             "Test bird",
             new DateOnly(2024, 5, 10),
             new DateOnly(2024, 5, 9),
@@ -75,7 +75,7 @@ public class CreateBirdCommandValidatorTests
     public void Should_Have_Error_When_Dead_Bird_Has_No_Departure()
     {
         var command = new CreateBirdCommand(
-            (BirdsName)1,
+            (BirdSpecies)1,
             "Test bird",
             DateOnly.FromDateTime(DateTime.Now),
             null,
@@ -92,7 +92,7 @@ public class CreateBirdCommandValidatorTests
     public void Should_Not_Have_Error_For_Valid_Command()
     {
         var command = new CreateBirdCommand(
-            (BirdsName)1,
+            (BirdSpecies)1,
             "Healthy sparrow",
             DateOnly.FromDateTime(DateTime.Now)
         );

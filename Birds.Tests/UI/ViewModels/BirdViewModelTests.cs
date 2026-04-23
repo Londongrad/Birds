@@ -57,8 +57,8 @@ public class BirdViewModelTests
     [Fact]
     public async Task SaveAsync_Uses_SelectedBirdName_When_Updating()
     {
-        var sparrow = (BirdsName)1;
-        var chickadee = (BirdsName)6;
+        var sparrow = (BirdSpecies)1;
+        var chickadee = (BirdSpecies)6;
 
         var original = CreateBirdDto(sparrow);
         var updated = original with
@@ -89,9 +89,9 @@ public class BirdViewModelTests
     [Fact]
     public async Task CancelEdit_After_Successful_Save_Restores_Latest_Saved_State()
     {
-        var sparrow = (BirdsName)1;
-        var hawfinch = (BirdsName)4;
-        var chickadee = (BirdsName)6;
+        var sparrow = (BirdSpecies)1;
+        var hawfinch = (BirdSpecies)4;
+        var chickadee = (BirdSpecies)6;
 
         var original = CreateBirdDto(sparrow);
         var updated = original with
@@ -126,7 +126,7 @@ public class BirdViewModelTests
     [Fact]
     public void SaveCommand_Should_Be_Locked_When_Dead_Bird_Has_No_Departure()
     {
-        var sparrow = (BirdsName)1;
+        var sparrow = (BirdSpecies)1;
         var dto = CreateBirdDto(sparrow);
         var sut = CreateViewModel(dto);
 
@@ -146,7 +146,7 @@ public class BirdViewModelTests
     [Fact]
     public void CultureOrDateFormatChanged_Should_Update_Localized_Display_Fields()
     {
-        var chickadee = (BirdsName)6;
+        var chickadee = (BirdSpecies)6;
         var dto = CreateBirdDto(chickadee);
         var sut = CreateViewModel(dto);
 
@@ -170,7 +170,7 @@ public class BirdViewModelTests
     {
         var localCreatedAt = new DateTime(2026, 1, 2, 1, 0, 0, DateTimeKind.Unspecified);
         var localUpdatedAt = new DateTime(2026, 1, 2, 2, 0, 0, DateTimeKind.Unspecified);
-        var dto = CreateBirdDto((BirdsName)1) with
+        var dto = CreateBirdDto((BirdSpecies)1) with
         {
             CreatedAt = localCreatedAt,
             UpdatedAt = localUpdatedAt
@@ -185,7 +185,7 @@ public class BirdViewModelTests
     [Fact]
     public void LanguageChanged_Should_Update_DurationDisplay()
     {
-        var sparrow = (BirdsName)1;
+        var sparrow = (BirdSpecies)1;
         var dto = CreateBirdDto(sparrow) with
         {
             Arrival = DateOnly.FromDateTime(DateTime.Today.AddDays(-3)),
@@ -218,7 +218,7 @@ public class BirdViewModelTests
             CultureInfo.DefaultThreadCurrentCulture = _currentCulture;
             CultureInfo.DefaultThreadCurrentUICulture = _currentCulture;
 
-            var sparrow = (BirdsName)1;
+            var sparrow = (BirdSpecies)1;
             var dto = CreateBirdDto(sparrow);
             var sut = CreateViewModel(dto);
 
@@ -248,7 +248,7 @@ public class BirdViewModelTests
         }
     }
 
-    private static BirdDTO CreateBirdDto(BirdsName name)
+    private static BirdDTO CreateBirdDto(BirdSpecies name)
     {
         return new BirdDTO(
             Guid.NewGuid(),

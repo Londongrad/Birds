@@ -63,7 +63,7 @@ public partial class BirdListViewModel : ObservableObject
     }
 
     public ObservableCollection<BirdDTO> Birds { get; }
-    public static Array BirdNames => Enum.GetValues(typeof(BirdsName));
+    public static Array BirdNames => Enum.GetValues(typeof(BirdSpecies));
     public ICollectionView BirdsView { get; }
 
     public bool IsLoading => _birdManager.Store.LoadState == LoadState.Loading;
@@ -141,7 +141,7 @@ public partial class BirdListViewModel : ObservableObject
             new(BirdFilter.DepartedButAlive, AppText.Get("BirdList.Filter.Released"))
         };
 
-        filters.AddRange(Enum.GetValues<BirdsName>()
+        filters.AddRange(Enum.GetValues<BirdSpecies>()
             .Select(species => new FilterOption(BirdFilter.BySpecies, _birdNameDisplay.GetDisplayName(species),
                 species)));
 

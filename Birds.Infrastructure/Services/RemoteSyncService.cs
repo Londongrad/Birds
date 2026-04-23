@@ -552,7 +552,7 @@ public sealed class RemoteSyncService(
     private static Bird RestoreBird(BirdSyncPayload payload)
     {
         var species = payload.Species ?? payload.Name;
-        if (!Enum.TryParse<BirdsName>(species, true, out var parsedName))
+        if (!BirdSpeciesCodes.TryParse(species, out var parsedName))
             throw new InvalidOperationException($"Unknown bird species '{species}' in sync payload.");
 
         return Bird.Restore(

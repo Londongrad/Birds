@@ -18,7 +18,7 @@ public class CreateBirdCommandHandlerTests
     public async Task Handle_Should_Return_SuccessResult_When_Command_Is_Valid()
     {
         var command = new CreateBirdCommand(
-            (BirdsName)1,
+            (BirdSpecies)1,
             "Nice bird",
             DateOnly.FromDateTime(DateTime.Now)
         );

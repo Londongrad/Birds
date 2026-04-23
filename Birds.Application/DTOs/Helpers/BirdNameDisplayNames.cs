@@ -6,7 +6,7 @@ namespace Birds.Application.DTOs.Helpers;
 
 public static class BirdNameDisplayNames
 {
-    public static string GetDisplayName(BirdsName bird, CultureInfo? culture = null)
+    public static string GetDisplayName(BirdSpecies bird, CultureInfo? culture = null)
     {
         return Enum.IsDefined(bird)
             ? AppText.Get($"BirdName.{bird}", culture)

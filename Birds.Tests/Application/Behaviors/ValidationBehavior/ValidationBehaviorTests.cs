@@ -20,7 +20,7 @@ public class ValidationBehaviorTests
         var behavior = new ValidationBehavior<CreateBirdCommand, Result<BirdDTO>>(validators);
 
         var cmd = new CreateBirdCommand(
-            (BirdsName)1,
+            (BirdSpecies)1,
             "ok",
             DateOnly.FromDateTime(DateTime.Now));
 
@@ -46,7 +46,7 @@ public class ValidationBehaviorTests
         var behavior = new ValidationBehavior<CreateBirdCommand, Result<BirdDTO>>(validators);
 
         var invalid = new CreateBirdCommand(
-            (BirdsName)1,
+            (BirdSpecies)1,
             new string('x', BirdValidationRules.DescriptionMaxLength + 1),
             DateOnly.FromDateTime(DateTime.Now.AddDays(1))
         );
@@ -73,7 +73,7 @@ public class ValidationBehaviorTests
             new ValidationBehavior<CreateBirdCommand, Result<BirdDTO>>(
                 Enumerable.Empty<IValidator<CreateBirdCommand>>());
 
-        var cmd = new CreateBirdCommand((BirdsName)1, null, DateOnly.FromDateTime(DateTime.Now));
+        var cmd = new CreateBirdCommand((BirdSpecies)1, null, DateOnly.FromDateTime(DateTime.Now));
 
         var nextCalled = false;
         RequestHandlerDelegate<Result<BirdDTO>> next = cancellationToken =>

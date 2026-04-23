@@ -8,7 +8,7 @@ public sealed class BirdNameDisplayService(ILocalizationService localization) : 
 {
     private readonly ILocalizationService _localization = localization;
 
-    public string GetDisplayName(BirdsName bird)
+    public string GetDisplayName(BirdSpecies bird)
     {
         return BirdNameDisplayNames.GetDisplayName(bird, _localization.CurrentCulture);
     }

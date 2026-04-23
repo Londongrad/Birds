@@ -29,7 +29,7 @@ public class BirdRepositoryTests : IAsyncLifetime
     public async Task Add_Then_GetById_Should_Return_Same_Entity()
     {
         var repo = new BirdRepository(_db.CreateFactory());
-        var species = Enum.GetValues<BirdsName>()[0];
+        var species = Enum.GetValues<BirdSpecies>()[0];
 
         var bird = Bird.Create(
             species,
@@ -41,6 +41,28 @@ public class BirdRepositoryTests : IAsyncLifetime
 
         found.Id.Should().Be(bird.Id);
         found.Name.Should().Be(bird.Name);
+    }
+
+    [Fact]
+    public async Task GetById_Should_Read_Legacy_Russian_Enum_Name_From_Database()
+    {
+        var repo = new BirdRepository(_db.CreateFactory());
+        var bird = Bird.Create(
+            BirdSpecies.Sparrow,
+            "legacy row",
+            DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
+
+        await repo.AddAsync(bird);
+
+        await using (var context = _db.CreateContext())
+        {
+            await context.Database.ExecuteSqlInterpolatedAsync(
+                $"""UPDATE "Birds" SET "Name" = {"Воробей"} WHERE "Id" = {bird.Id}""");
+        }
+
+        var found = await repo.GetByIdAsync(bird.Id);
+
+        found.Name.Should().Be(BirdSpecies.Sparrow);
     }
 
     [Fact]
@@ -59,8 +81,8 @@ public class BirdRepositoryTests : IAsyncLifetime
     {
         var ctx = _db.CreateContext();
         var repo = new BirdRepository(_db.CreateFactory());
-        var firstSpecies = Enum.GetValues<BirdsName>()[0];
-        var secondSpecies = Enum.GetValues<BirdsName>()[1];
+        var firstSpecies = Enum.GetValues<BirdSpecies>()[0];
+        var secondSpecies = Enum.GetValues<BirdSpecies>()[1];
 
         var b1 = Bird.Create(firstSpecies, "tit", DateOnly.FromDateTime(DateTime.Now.AddDays(-5)));
         var b2 = Bird.Create(secondSpecies, "sparrow", DateOnly.FromDateTime(DateTime.Now.AddDays(-4)));
@@ -78,8 +100,8 @@ public class BirdRepositoryTests : IAsyncLifetime
     public async Task Update_Should_Persist_Changes()
     {
         var repo = new BirdRepository(_db.CreateFactory());
-        var originalSpecies = Enum.GetValues<BirdsName>()[0];
-        var updatedSpecies = Enum.GetValues<BirdsName>()[2];
+        var originalSpecies = Enum.GetValues<BirdSpecies>()[0];
+        var updatedSpecies = Enum.GetValues<BirdSpecies>()[2];
 
         var bird = Bird.Create(originalSpecies, "old", DateOnly.FromDateTime(DateTime.Now.AddDays(-10)));
         await repo.AddAsync(bird);
@@ -98,7 +120,7 @@ public class BirdRepositoryTests : IAsyncLifetime
     public async Task Remove_Should_Delete_Row()
     {
         var repo = new BirdRepository(_db.CreateFactory());
-        var species = Enum.GetValues<BirdsName>()[0];
+        var species = Enum.GetValues<BirdSpecies>()[0];
 
         var bird = Bird.Create(species, "to delete", DateOnly.FromDateTime(DateTime.Now.AddDays(-2)));
         await repo.AddAsync(bird);
@@ -112,8 +134,8 @@ public class BirdRepositoryTests : IAsyncLifetime
     public async Task Upsert_Should_Add_And_Update_Birds_In_One_Pass()
     {
         var repo = new BirdRepository(_db.CreateFactory());
-        var primarySpecies = Enum.GetValues<BirdsName>()[0];
-        var secondarySpecies = Enum.GetValues<BirdsName>()[1];
+        var primarySpecies = Enum.GetValues<BirdSpecies>()[0];
+        var secondarySpecies = Enum.GetValues<BirdSpecies>()[1];
 
         var existing = Bird.Create(primarySpecies, "old", DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
         await repo.AddAsync(existing);
@@ -144,7 +166,7 @@ public class BirdRepositoryTests : IAsyncLifetime
     public async Task ReplaceWithSnapshot_Should_Remove_Missing_Birds_And_Upsert_Current_Ones()
     {
         var repo = new BirdRepository(_db.CreateFactory());
-        var species = Enum.GetValues<BirdsName>();
+        var species = Enum.GetValues<BirdSpecies>();
 
         var retained = Bird.Create(species[0], "retain", DateOnly.FromDateTime(DateTime.Now.AddDays(-4)));
         var removed = Bird.Create(species[1], "remove", DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
@@ -178,7 +200,7 @@ public class BirdRepositoryTests : IAsyncLifetime
     public async Task Add_Should_Queue_Pending_Upsert_Sync_Operation()
     {
         var repo = new BirdRepository(_db.CreateFactory());
-        var species = Enum.GetValues<BirdsName>()[0];
+        var species = Enum.GetValues<BirdSpecies>()[0];
         var bird = Bird.Create(species, "queued", DateOnly.FromDateTime(DateTime.Now.AddDays(-2)));
         var beforeUtc = DateTime.UtcNow;
 
@@ -198,6 +220,7 @@ public class BirdRepositoryTests : IAsyncLifetime
         using var payload = JsonDocument.Parse(operation.PayloadJson);
         payload.RootElement.GetProperty("Id").GetGuid().Should().Be(bird.Id);
         payload.RootElement.GetProperty("Name").GetString().Should().Be(bird.Name.ToString());
+        payload.RootElement.GetProperty("Species").GetString().Should().Be(bird.Name.ToString());
         payload.RootElement.GetProperty("SyncStampUtc").GetDateTime().Should().Be(bird.SyncStampUtc);
     }
 
@@ -205,7 +228,7 @@ public class BirdRepositoryTests : IAsyncLifetime
     public async Task Update_Should_Coalesce_To_A_Single_Pending_Upsert_Operation()
     {
         var repo = new BirdRepository(_db.CreateFactory());
-        var species = Enum.GetValues<BirdsName>();
+        var species = Enum.GetValues<BirdSpecies>();
         var bird = Bird.Create(species[0], "before", DateOnly.FromDateTime(DateTime.Now.AddDays(-5)));
         await repo.AddAsync(bird);
 
@@ -227,7 +250,7 @@ public class BirdRepositoryTests : IAsyncLifetime
     public async Task Remove_Should_Replace_Pending_Upsert_With_Delete_Operation()
     {
         var repo = new BirdRepository(_db.CreateFactory());
-        var species = Enum.GetValues<BirdsName>()[0];
+        var species = Enum.GetValues<BirdSpecies>()[0];
         var bird = Bird.Create(species, "delete me", DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
         await repo.AddAsync(bird);
 

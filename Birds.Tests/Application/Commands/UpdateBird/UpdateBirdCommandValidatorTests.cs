@@ -14,7 +14,7 @@ public class UpdateBirdCommandValidatorTests
     {
         var command = new UpdateBirdCommand(
             Guid.NewGuid(),
-            (BirdsName)1,
+            (BirdSpecies)1,
             new string('A', BirdValidationRules.DescriptionMaxLength + 1),
             DateOnly.FromDateTime(DateTime.Now),
             null,
@@ -32,7 +32,7 @@ public class UpdateBirdCommandValidatorTests
     {
         var command = new UpdateBirdCommand(
             Guid.NewGuid(),
-            (BirdsName)1,
+            (BirdSpecies)1,
             "Test bird",
             new DateOnly(2024, 5, 10),
             new DateOnly(2024, 5, 9),
@@ -50,7 +50,7 @@ public class UpdateBirdCommandValidatorTests
     {
         var command = new UpdateBirdCommand(
             Guid.NewGuid(),
-            (BirdsName)1,
+            (BirdSpecies)1,
             "Test bird",
             DateOnly.FromDateTime(DateTime.Now),
             null,
@@ -68,7 +68,7 @@ public class UpdateBirdCommandValidatorTests
     {
         var command = new UpdateBirdCommand(
             Guid.NewGuid(),
-            (BirdsName)1,
+            (BirdSpecies)1,
             "Healthy sparrow",
             new DateOnly(2024, 5, 1),
             new DateOnly(2024, 5, 3),

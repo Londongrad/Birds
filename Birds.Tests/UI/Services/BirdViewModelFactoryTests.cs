@@ -51,8 +51,8 @@ public class BirdViewModelFactoryTests
                     ? DateDisplayFormats.FormatDateTime(value.Value, culture, dateFormat)
                     : fallback ?? "\u2014");
         _birdNameDisplay
-            .Setup(x => x.GetDisplayName(It.IsAny<BirdsName>()))
-            .Returns((BirdsName value) => value.ToString());
+            .Setup(x => x.GetDisplayName(It.IsAny<BirdSpecies>()))
+            .Returns((BirdSpecies value) => value.ToString());
     }
 
     [Fact]

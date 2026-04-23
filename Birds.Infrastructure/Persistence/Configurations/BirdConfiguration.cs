@@ -1,5 +1,6 @@
 using Birds.Domain.Common;
 using Birds.Domain.Entities;
+using Birds.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -12,7 +13,9 @@ public class BirdConfiguration : IEntityTypeConfiguration<Bird>
         builder.HasKey(b => b.Id);
 
         builder.Property(b => b.Name)
-            .HasConversion<string>() // enum -> string
+            .HasConversion(
+                species => BirdSpeciesCodes.ToCode(species),
+                value => ParseRequiredSpecies(value))
             .IsRequired();
 
         builder.Property(b => b.Description)
@@ -44,5 +47,11 @@ public class BirdConfiguration : IEntityTypeConfiguration<Bird>
             .HasColumnType("timestamp without time zone");
 
         builder.HasIndex(b => b.SyncStampUtc);
+    }
+
+    private static BirdSpecies ParseRequiredSpecies(string value)
+    {
+        return BirdSpeciesCodes.Parse(value)
+               ?? throw new InvalidOperationException($"Unknown bird species '{value}'.");
     }
 }

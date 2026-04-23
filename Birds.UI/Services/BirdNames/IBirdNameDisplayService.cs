@@ -4,5 +4,5 @@ namespace Birds.UI.Services.BirdNames;
 
 public interface IBirdNameDisplayService
 {
-    string GetDisplayName(BirdsName bird);
+    string GetDisplayName(BirdSpecies bird);
 }

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using Birds.Domain.Common;
 using Birds.Domain.Enums;
@@ -20,9 +20,9 @@ public abstract partial class BirdValidationBaseViewModel : ObservableValidator
     #region [ Properties ]
 
     /// <summary>
-    ///     A list of available bird species obtained from the <see cref="BirdsName" /> enumeration.
+    ///     A list of available bird species obtained from the <see cref="BirdSpecies" /> enumeration.
     /// </summary>
-    public static Array BirdNames => Enum.GetValues(typeof(BirdsName));
+    public static Array BirdNames => Enum.GetValues(typeof(BirdSpecies));
 
     /// <summary>
     ///     The selected bird species.
@@ -32,7 +32,7 @@ public abstract partial class BirdValidationBaseViewModel : ObservableValidator
         ErrorMessageResourceType = typeof(ValidationMessages),
         ErrorMessageResourceName = nameof(ValidationMessages.UnselectedBird))]
     [ObservableProperty]
-    private BirdsName? selectedBirdName;
+    private BirdSpecies? selectedBirdName;
 
     /// <summary>
     ///     The bird description.
@@ -88,7 +88,7 @@ public abstract partial class BirdValidationBaseViewModel : ObservableValidator
     ///     Automatically triggers property validation when the selected bird species changes.
     /// </summary>
     /// <param name="value">The new value of the <see cref="SelectedBirdName" /> property.</param>
-    partial void OnSelectedBirdNameChanged(BirdsName? value)
+    partial void OnSelectedBirdNameChanged(BirdSpecies? value)
     {
         ValidateProperty(value, nameof(SelectedBirdName));
         OnSelectedBirdNameChangedCore(value);
@@ -123,7 +123,7 @@ public abstract partial class BirdValidationBaseViewModel : ObservableValidator
     /// <summary>
     ///     Invoked when the selected bird species changes (can be overridden in derived classes).
     /// </summary>
-    protected virtual void OnSelectedBirdNameChangedCore(BirdsName? value)
+    protected virtual void OnSelectedBirdNameChangedCore(BirdSpecies? value)
     {
     }
 

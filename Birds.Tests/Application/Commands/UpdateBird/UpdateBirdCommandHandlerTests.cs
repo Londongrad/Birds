@@ -19,7 +19,7 @@ public class UpdateBirdCommandHandlerTests
     public async Task Handle_Should_Update_And_Return_Dto_Success()
     {
         var id = Guid.NewGuid();
-        var existing = Bird.Restore(id, (BirdsName)1, "old",
+        var existing = Bird.Restore(id, (BirdSpecies)1, "old",
             DateOnly.FromDateTime(DateTime.Now.AddDays(-30)), null, true);
 
         _repo.Setup(r => r.GetByIdAsync(id, It.IsAny<CancellationToken>()))
@@ -27,7 +27,7 @@ public class UpdateBirdCommandHandlerTests
 
         var cmd = new UpdateBirdCommand(
             id,
-            (BirdsName)6,
+            (BirdSpecies)6,
             "new",
             DateOnly.FromDateTime(DateTime.Now.AddDays(-20)),
             null,
@@ -85,7 +85,7 @@ public class UpdateBirdCommandHandlerTests
 
         var cmd = new UpdateBirdCommand(
             id,
-            (BirdsName)4,
+            (BirdSpecies)4,
             "new",
             DateOnly.FromDateTime(DateTime.Now.AddDays(-20)),
             null,

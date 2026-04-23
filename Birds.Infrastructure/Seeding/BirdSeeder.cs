@@ -51,7 +51,7 @@ public sealed class BirdSeeder(
 
         var random = new Random(options.RandomSeed);
         var now = DateOnly.FromDateTime(DateTime.Today);
-        var species = Enum.GetValues<BirdsName>();
+        var species = Enum.GetValues<BirdSpecies>();
         var counters = species.ToDictionary(x => x, _ => 0);
         var birds = new List<Bird>(batchSize);
 
@@ -77,8 +77,8 @@ public sealed class BirdSeeder(
     }
 
     private static Bird CreateBird(Random random,
-        IReadOnlyList<BirdsName> species,
-        IDictionary<BirdsName, int> counters,
+        IReadOnlyList<BirdSpecies> species,
+        IDictionary<BirdSpecies, int> counters,
         DateOnly now)
     {
         var birdName = species[random.Next(species.Count)];
@@ -103,7 +103,7 @@ public sealed class BirdSeeder(
             isAlive);
     }
 
-    private static string? BuildDescription(Random random, BirdsName birdName, int number)
+    private static string? BuildDescription(Random random, BirdSpecies birdName, int number)
     {
         if (random.Next(100) < 22)
             return null;
