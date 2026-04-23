@@ -15,9 +15,13 @@ public class BirdTests
         var name = (BirdsName)1;
         var arrival = new DateOnly(2024, 5, 10);
         var description = "Small gray bird";
+        var beforeLocal = DateTime.Now;
+        var beforeUtc = DateTime.UtcNow;
 
         // Act
         var bird = Bird.Create(name, description, arrival);
+        var afterLocal = DateTime.Now;
+        var afterUtc = DateTime.UtcNow;
 
         // Assert
         bird.Should().NotBeNull();
@@ -27,7 +31,11 @@ public class BirdTests
         bird.Arrival.Should().Be(arrival);
         bird.Departure.Should().BeNull();
         bird.IsAlive.Should().BeTrue();
+        bird.CreatedAt.Should().BeOnOrAfter(beforeLocal).And.BeOnOrBefore(afterLocal);
+        bird.CreatedAt.Kind.Should().Be(DateTimeKind.Local);
         bird.UpdatedAt.Should().BeNull();
+        bird.SyncStampUtc.Should().BeOnOrAfter(beforeUtc).And.BeOnOrBefore(afterUtc);
+        bird.SyncStampUtc.Kind.Should().Be(DateTimeKind.Utc);
     }
 
     [Fact]
@@ -59,9 +67,13 @@ public class BirdTests
         // Arrange
         var bird = Bird.Create((BirdsName)6, "Tiny bird", new DateOnly(2024, 5, 1));
         var oldUpdatedAt = bird.UpdatedAt;
+        var beforeLocal = DateTime.Now;
+        var beforeUtc = DateTime.UtcNow;
 
         // Act
         bird.Update((BirdsName)4, "Updated bird", new DateOnly(2024, 5, 5), null, true);
+        var afterLocal = DateTime.Now;
+        var afterUtc = DateTime.UtcNow;
 
         // Assert
         bird.Name.Should().Be((BirdsName)4);
@@ -70,7 +82,11 @@ public class BirdTests
         bird.Departure.Should().BeNull();
         bird.IsAlive.Should().BeTrue();
         bird.UpdatedAt.Should().NotBeNull();
+        bird.UpdatedAt!.Value.Should().BeOnOrAfter(beforeLocal).And.BeOnOrBefore(afterLocal);
+        bird.UpdatedAt.Value.Kind.Should().Be(DateTimeKind.Local);
         bird.UpdatedAt.Should().NotBe(oldUpdatedAt);
+        bird.SyncStampUtc.Should().BeOnOrAfter(beforeUtc).And.BeOnOrBefore(afterUtc);
+        bird.SyncStampUtc.Kind.Should().Be(DateTimeKind.Utc);
     }
 
     [Fact]

@@ -180,18 +180,25 @@ public class BirdRepositoryTests : IAsyncLifetime
         var repo = new BirdRepository(_db.CreateFactory());
         var species = Enum.GetValues<BirdsName>()[0];
         var bird = Bird.Create(species, "queued", DateOnly.FromDateTime(DateTime.Now.AddDays(-2)));
+        var beforeUtc = DateTime.UtcNow;
 
         await repo.AddAsync(bird);
+        var afterUtc = DateTime.UtcNow;
 
         await using var context = _db.CreateContext();
         var operation = await context.SyncOperations.SingleAsync();
 
         operation.AggregateId.Should().Be(bird.Id);
         operation.OperationType.Should().Be(SyncOperationType.Upsert);
+        operation.CreatedAtUtc.Should().BeOnOrAfter(beforeUtc).And.BeOnOrBefore(afterUtc);
+        operation.UpdatedAtUtc.Should().BeOnOrAfter(beforeUtc).And.BeOnOrBefore(afterUtc);
+        operation.CreatedAtUtc.Kind.Should().Be(DateTimeKind.Utc);
+        operation.UpdatedAtUtc.Kind.Should().Be(DateTimeKind.Utc);
 
         using var payload = JsonDocument.Parse(operation.PayloadJson);
         payload.RootElement.GetProperty("Id").GetGuid().Should().Be(bird.Id);
         payload.RootElement.GetProperty("Name").GetString().Should().Be(bird.Name.ToString());
+        payload.RootElement.GetProperty("SyncStampUtc").GetDateTime().Should().Be(bird.SyncStampUtc);
     }
 
     [Fact]

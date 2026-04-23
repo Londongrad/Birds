@@ -46,6 +46,15 @@ public sealed class DatabaseInitializerServiceTests
 
             var tableCount = (long)(await command.ExecuteScalarAsync() ?? 0L);
             tableCount.Should().Be(2);
+
+            command.CommandText = """
+                                  SELECT COUNT(*)
+                                  FROM pragma_table_info('Birds')
+                                  WHERE name = 'SyncStampUtc';
+                                  """;
+
+            var syncStampColumnCount = (long)(await command.ExecuteScalarAsync() ?? 0L);
+            syncStampColumnCount.Should().Be(1);
         }
         finally
         {

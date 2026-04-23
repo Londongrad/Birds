@@ -95,7 +95,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
         (await remoteVerifyContext.Birds.CountAsync()).Should().Be(0);
         var tombstone = await remoteVerifyContext.BirdTombstones.SingleAsync();
         tombstone.BirdId.Should().Be(bird.Id);
-        tombstone.DeletedAtUtc.Kind.Should().Be(DateTimeKind.Unspecified);
+        tombstone.DeletedAtUtc.Kind.Should().Be(DateTimeKind.Utc);
 
         await using var localContext = _localDb.CreateContext();
         (await localContext.SyncOperations.CountAsync()).Should().Be(0);
@@ -149,6 +149,64 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
             reconciledLocalBird.UpdatedAt.Should().Be(newerRemoteBird.UpdatedAt);
             (await localVerifyContext.SyncOperations.CountAsync()).Should().Be(0);
         }
+    }
+
+    [Fact]
+    public async Task
+        SyncPendingAsync_WhenRemoteSyncStampIsNewerButVisibleTimestampsAreOlder_Should_KeepRemoteVersion()
+    {
+        var repository = new BirdRepository(_localDb.CreateFactory());
+        var birdId = Guid.NewGuid();
+        var species = Enum.GetValues<BirdsName>()[0];
+        var arrival = DateOnly.FromDateTime(DateTime.Today.AddDays(-3));
+        var localCreatedAt = new DateTime(2030, 1, 1, 1, 0, 0, DateTimeKind.Unspecified);
+        var localUpdatedAt = new DateTime(2030, 1, 2, 1, 0, 0, DateTimeKind.Unspecified);
+        var localSyncStampUtc = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var remoteCreatedAt = new DateTime(2020, 1, 1, 1, 0, 0, DateTimeKind.Unspecified);
+        var remoteUpdatedAt = new DateTime(2020, 1, 2, 1, 0, 0, DateTimeKind.Unspecified);
+        var remoteSyncStampUtc = new DateTime(2026, 1, 2, 0, 0, 0, DateTimeKind.Utc);
+
+        var localBird = Bird.Restore(
+            birdId,
+            species,
+            "local visible timestamp is newer",
+            arrival,
+            null,
+            true,
+            localCreatedAt,
+            localUpdatedAt,
+            localSyncStampUtc);
+        await repository.AddAsync(localBird);
+
+        var remoteBird = Bird.Restore(
+            birdId,
+            species,
+            "remote sync stamp is newer",
+            arrival,
+            null,
+            true,
+            remoteCreatedAt,
+            remoteUpdatedAt,
+            remoteSyncStampUtc);
+
+        await using (var remoteContext = _remoteDb.CreateContext())
+        {
+            await remoteContext.Birds.AddAsync(remoteBird);
+            await remoteContext.SaveChangesAsync();
+        }
+
+        var sut = CreateSut(_remoteDb.CreateFactory());
+
+        var result = await sut.SyncPendingAsync(CancellationToken.None);
+
+        result.Status.Should().Be(RemoteSyncRunStatus.Synced);
+        result.RemoteWinsCount.Should().Be(1);
+
+        await using var localVerifyContext = _localDb.CreateContext();
+        var reconciledLocalBird = await localVerifyContext.Birds.SingleAsync(bird => bird.Id == birdId);
+        reconciledLocalBird.Description.Should().Be("remote sync stamp is newer");
+        reconciledLocalBird.UpdatedAt.Should().Be(remoteUpdatedAt);
+        reconciledLocalBird.SyncStampUtc.Should().Be(remoteSyncStampUtc);
     }
 
     [Fact]
@@ -234,7 +292,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
 
         var cursor = await localContext.RemoteSyncCursors.SingleAsync();
         cursor.CursorKey.Should().Be("Birds.Pull");
-        cursor.LastSyncedAtUtc.Should().Be(remoteBird.UpdatedAt);
+        cursor.LastSyncedAtUtc.Should().Be(remoteBird.SyncStampUtc);
     }
 
     [Fact]
@@ -347,7 +405,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
         var sut = CreateSut(_remoteDb.CreateFactory());
         await sut.SyncPendingAsync(CancellationToken.None);
 
-        var deleteStamp = DateTime.Now;
+        var deleteStamp = DateTime.UtcNow;
         await using (var remoteContext = _remoteDb.CreateContext())
         {
             remoteContext.Birds.RemoveRange(remoteContext.Birds.Where(bird => bird.Id == localBird.Id));
@@ -364,6 +422,17 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
         (await localContext.Birds.CountAsync(bird => bird.Id == localBird.Id)).Should().Be(0);
         var cursor = await localContext.RemoteSyncCursors.SingleAsync(c => c.CursorKey == "Birds.Deletes.Pull");
         cursor.LastSyncedAtUtc.Should().Be(deleteStamp);
+    }
+
+    [Fact]
+    public void RemoteBirdTombstone_Create_Should_NotShiftUtcDeletedAt()
+    {
+        var deletedAtUtc = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+
+        var tombstone = RemoteBirdTombstone.Create(Guid.NewGuid(), deletedAtUtc);
+
+        tombstone.DeletedAtUtc.Should().Be(DateTime.SpecifyKind(deletedAtUtc, DateTimeKind.Unspecified));
+        tombstone.DeletedAtUtc.Kind.Should().Be(DateTimeKind.Unspecified);
     }
 
     [Fact]
@@ -388,7 +457,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
         await using (var remoteContext = _remoteDb.CreateContext())
         {
             await remoteContext.BirdTombstones.AddAsync(
-                RemoteBirdTombstone.Create(localBird.Id, DateTime.Now.AddMinutes(-2)));
+                RemoteBirdTombstone.Create(localBird.Id, DateTime.UtcNow.AddMinutes(-2)));
             await remoteContext.SaveChangesAsync();
         }
 
@@ -500,6 +569,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
             (await localVerifyContext.SyncOperations.CountAsync()).Should().Be(0);
             var cursor = await localVerifyContext.RemoteSyncCursors.SingleAsync();
             cursor.CursorKey.Should().Be("Birds.Pull");
+            cursor.LastSyncedAtUtc.Should().Be(new[] { firstBird.SyncStampUtc, secondBird.SyncStampUtc }.Max());
         }
     }
 

@@ -158,6 +158,23 @@ public class BirdViewModelTests
     }
 
     [Fact]
+    public void Ctor_Should_NotShiftAlreadyLocalCreatedAtAndUpdatedAt()
+    {
+        var localCreatedAt = new DateTime(2026, 1, 2, 1, 0, 0, DateTimeKind.Unspecified);
+        var localUpdatedAt = new DateTime(2026, 1, 2, 2, 0, 0, DateTimeKind.Unspecified);
+        var dto = CreateBirdDto((BirdsName)1) with
+        {
+            CreatedAt = localCreatedAt,
+            UpdatedAt = localUpdatedAt
+        };
+
+        var sut = new BirdViewModel(dto, _birdManager.Object, _localization.Object, _notification.Object);
+
+        sut.LocalCreatedAt.Should().Be(localCreatedAt);
+        sut.LocalUpdatedAt.Should().Be(localUpdatedAt);
+    }
+
+    [Fact]
     public void LanguageChanged_Should_Update_DurationDisplay()
     {
         var sparrow = (BirdsName)1;
