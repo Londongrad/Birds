@@ -2,6 +2,7 @@ using System.Globalization;
 using Birds.Domain.Enums;
 using Birds.Shared.Localization;
 using Birds.UI.Converters;
+using Birds.UI.Services.BirdNames;
 using Birds.UI.Services.Localization;
 using FluentAssertions;
 
@@ -56,6 +57,28 @@ public sealed class LocalizationDisplayTests
                 CultureInfo.GetCultureInfo(AppLanguages.Russian));
 
             result.Should().Be("Amadin");
+        }
+        finally
+        {
+            localization.ApplyLanguage(previousLanguage);
+            localization.ApplyDateFormat(previousDateFormat);
+        }
+    }
+
+    [Fact]
+    public void BirdNameDisplayService_Should_Return_Localized_Name_For_Current_App_Language()
+    {
+        var localization = LocalizationService.Instance;
+        var previousLanguage = localization.CurrentLanguage;
+        var previousDateFormat = localization.CurrentDateFormat;
+
+        try
+        {
+            localization.ApplyLanguage(AppLanguages.English);
+
+            var sut = new BirdNameDisplayService(localization);
+
+            sut.GetDisplayName((BirdsName)3).Should().Be("Amadin");
         }
         finally
         {

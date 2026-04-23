@@ -1,6 +1,5 @@
 using Birds.Domain.Common;
 using Birds.Domain.Enums;
-using Birds.Shared.Constants;
 
 namespace Birds.Domain.Entities;
 

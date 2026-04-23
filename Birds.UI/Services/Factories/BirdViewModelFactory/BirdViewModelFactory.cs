@@ -1,4 +1,5 @@
 using Birds.Application.DTOs;
+using Birds.UI.Services.BirdNames;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Notification.Interfaces;
@@ -13,6 +14,7 @@ namespace Birds.UI.Services.Factories.BirdViewModelFactory;
 public class BirdViewModelFactory(
     IBirdManager birdManager,
     ILocalizationService localization,
+    IBirdNameDisplayService birdNameDisplay,
     INotificationService notificationService) : IBirdViewModelFactory
 {
     private readonly IBirdManager _birdManager = birdManager
@@ -20,6 +22,10 @@ public class BirdViewModelFactory(
 
     private readonly ILocalizationService _localization = localization
                                                           ?? throw new ArgumentNullException(nameof(localization));
+
+    private readonly IBirdNameDisplayService _birdNameDisplay = birdNameDisplay
+                                                                ?? throw new ArgumentNullException(
+                                                                    nameof(birdNameDisplay));
 
     private readonly INotificationService _notificationService = notificationService
                                                                  ?? throw new ArgumentNullException(
@@ -29,6 +35,6 @@ public class BirdViewModelFactory(
     public BirdViewModel Create(BirdDTO dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
-        return new BirdViewModel(dto, _birdManager, _localization, _notificationService);
+        return new BirdViewModel(dto, _birdManager, _localization, _birdNameDisplay, _notificationService);
     }
 }

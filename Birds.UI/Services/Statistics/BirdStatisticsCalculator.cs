@@ -1,8 +1,8 @@
 using System.Globalization;
 using Birds.Application.DTOs;
 using Birds.Application.DTOs.Helpers;
-using Birds.Domain.Extensions;
 using Birds.Shared.Localization;
+using Birds.UI.Services.BirdNames;
 using Birds.UI.Services.Localization;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Statistics.Interfaces;
@@ -10,8 +10,10 @@ using Birds.UI.ViewModels;
 
 namespace Birds.UI.Services.Statistics;
 
-public sealed class BirdStatisticsCalculator(ILocalizationService localization) : IBirdStatisticsCalculator
+public sealed class BirdStatisticsCalculator(ILocalizationService localization, IBirdNameDisplayService birdNameDisplay)
+    : IBirdStatisticsCalculator
 {
+    private readonly IBirdNameDisplayService _birdNameDisplay = birdNameDisplay;
     private readonly ILocalizationService _localization = localization;
 
     public BirdStatisticsSnapshot Calculate(IEnumerable<BirdDTO> birds, int? selectedYear)
@@ -68,7 +70,7 @@ public sealed class BirdStatisticsCalculator(ILocalizationService localization) 
     private List<StatItem> BuildSpeciesStats(IList<BirdDTO> filteredBirds)
     {
         return filteredBirds
-            .GroupBy(b => BirdEnumHelper.ParseBirdName(b.Name)?.ToDisplayName() ?? b.Name)
+            .GroupBy(GetDisplayName)
             .Select(group => new StatItem(group.Key, group.Count()))
             .OrderByDescending(item => item.Count)
             .ThenBy(item => item.Label)
@@ -102,7 +104,7 @@ public sealed class BirdStatisticsCalculator(ILocalizationService localization) 
     private List<StatItem> BuildLongestKeepingStats(IList<BirdDTO> filteredBirds, DateOnly today)
     {
         return filteredBirds
-            .GroupBy(b => BirdEnumHelper.ParseBirdName(b.Name)?.ToDisplayName() ?? b.Name)
+            .GroupBy(GetDisplayName)
             .Select(group => new StatItem(
                 group.Key,
                 group.Select(b => CalculateKeepingDays(b, today)).DefaultIfEmpty(0).Max()))
@@ -304,8 +306,7 @@ public sealed class BirdStatisticsCalculator(ILocalizationService localization) 
             return "\u2014";
 
         var days = CalculateKeepingDays(longestActiveBird, today);
-        var displayName = BirdEnumHelper.ParseBirdName(longestActiveBird.Name)?.ToDisplayName() ??
-                          longestActiveBird.Name;
+        var displayName = GetDisplayName(longestActiveBird);
 
         return AppText.Format(
             _localization.CurrentCulture,
@@ -321,6 +322,13 @@ public sealed class BirdStatisticsCalculator(ILocalizationService localization) 
         return (int)Math.Max(
             0,
             (end.ToDateTime(TimeOnly.MinValue) - bird.Arrival.ToDateTime(TimeOnly.MinValue)).TotalDays);
+    }
+
+    private string GetDisplayName(BirdDTO bird)
+    {
+        return BirdEnumHelper.ParseBirdName(bird.Name) is { } species
+            ? _birdNameDisplay.GetDisplayName(species)
+            : bird.Name;
     }
 
     private string FormatIsoWeekRange(int isoYear, int isoWeek)

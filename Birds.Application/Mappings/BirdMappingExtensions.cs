@@ -1,7 +1,7 @@
 using Birds.Application.Commands.CreateBird;
 using Birds.Application.DTOs;
+using Birds.Application.DTOs.Helpers;
 using Birds.Domain.Entities;
-using Birds.Domain.Extensions;
 
 namespace Birds.Application.Mappings;
 
@@ -25,7 +25,7 @@ internal static class BirdMappingExtensions
 
         return new BirdDTO(
             bird.Id,
-            bird.Name.ToDisplayName(),
+            BirdNameDisplayNames.GetDisplayName(bird.Name),
             bird.Description,
             bird.Arrival,
             bird.Departure,

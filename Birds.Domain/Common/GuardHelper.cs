@@ -1,5 +1,4 @@
 using Birds.Domain.Common.Exceptions;
-using Birds.Shared.Constants;
 
 namespace Birds.Domain.Common;
 

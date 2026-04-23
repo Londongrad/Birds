@@ -1,7 +1,7 @@
+using Birds.Domain.Common;
 using Birds.Domain.Common.Exceptions;
 using Birds.Domain.Entities;
 using Birds.Domain.Enums;
-using Birds.Shared.Constants;
 using FluentAssertions;
 
 namespace Birds.Tests.Domain;

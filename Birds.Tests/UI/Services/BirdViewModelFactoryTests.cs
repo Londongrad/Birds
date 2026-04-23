@@ -1,6 +1,8 @@
 using System.Globalization;
 using Birds.Application.DTOs;
+using Birds.Domain.Enums;
 using Birds.Shared.Localization;
+using Birds.UI.Services.BirdNames;
 using Birds.UI.Services.Factories.BirdViewModelFactory;
 using Birds.UI.Services.Localization;
 using Birds.UI.Services.Localization.Interfaces;
@@ -17,6 +19,7 @@ public class BirdViewModelFactoryTests
     private readonly Mock<ILocalizationService> _localization = new();
     private readonly Mock<IBirdManager> _manager = new();
     private readonly Mock<INotificationService> _notify = new();
+    private readonly Mock<IBirdNameDisplayService> _birdNameDisplay = new();
 
     public BirdViewModelFactoryTests()
     {
@@ -47,24 +50,32 @@ public class BirdViewModelFactoryTests
                 value.HasValue
                     ? DateDisplayFormats.FormatDateTime(value.Value, culture, dateFormat)
                     : fallback ?? "\u2014");
+        _birdNameDisplay
+            .Setup(x => x.GetDisplayName(It.IsAny<BirdsName>()))
+            .Returns((BirdsName value) => value.ToString());
     }
 
     [Fact]
     public void Ctor_Throws_When_Dependencies_Null()
     {
-        Action a1 = () => new BirdViewModelFactory(null!, _localization.Object, _notify.Object);
-        Action a2 = () => new BirdViewModelFactory(_manager.Object, null!, _notify.Object);
-        Action a3 = () => new BirdViewModelFactory(_manager.Object, _localization.Object, null!);
+        Action a1 = () => new BirdViewModelFactory(null!, _localization.Object, _birdNameDisplay.Object,
+            _notify.Object);
+        Action a2 = () => new BirdViewModelFactory(_manager.Object, null!, _birdNameDisplay.Object, _notify.Object);
+        Action a3 = () => new BirdViewModelFactory(_manager.Object, _localization.Object, null!, _notify.Object);
+        Action a4 = () => new BirdViewModelFactory(_manager.Object, _localization.Object, _birdNameDisplay.Object,
+            null!);
 
         a1.Should().Throw<ArgumentNullException>().WithParameterName("birdManager");
         a2.Should().Throw<ArgumentNullException>().WithParameterName("localization");
-        a3.Should().Throw<ArgumentNullException>().WithParameterName("notificationService");
+        a3.Should().Throw<ArgumentNullException>().WithParameterName("birdNameDisplay");
+        a4.Should().Throw<ArgumentNullException>().WithParameterName("notificationService");
     }
 
     [Fact]
     public void Create_Returns_ViewModel_And_Does_Not_Call_Services()
     {
-        var factory = new BirdViewModelFactory(_manager.Object, _localization.Object, _notify.Object);
+        var factory = new BirdViewModelFactory(_manager.Object, _localization.Object, _birdNameDisplay.Object,
+            _notify.Object);
 
         var dto = new BirdDTO(
             Guid.NewGuid(),
@@ -88,7 +99,8 @@ public class BirdViewModelFactoryTests
     [Fact]
     public void Create_Throws_When_Dto_Null()
     {
-        var factory = new BirdViewModelFactory(_manager.Object, _localization.Object, _notify.Object);
+        var factory = new BirdViewModelFactory(_manager.Object, _localization.Object, _birdNameDisplay.Object,
+            _notify.Object);
         Action act = () => factory.Create(null!);
         act.Should().Throw<ArgumentNullException>().WithParameterName("dto");
     }

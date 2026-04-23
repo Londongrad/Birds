@@ -1,10 +1,10 @@
 using Birds.Application.Commands.UpdateBird;
 using Birds.Application.DTOs;
+using Birds.Application.DTOs.Helpers;
 using Birds.Application.Exceptions;
 using Birds.Application.Interfaces;
 using Birds.Domain.Entities;
 using Birds.Domain.Enums;
-using Birds.Domain.Extensions;
 using Birds.Shared.Constants;
 using FluentAssertions;
 using Moq;
@@ -40,7 +40,7 @@ public class UpdateBirdCommandHandlerTests
 
         var expectedDto = new BirdDTO(
             existing.Id,
-            existing.Name.ToDisplayName(),
+            BirdNameDisplayNames.GetDisplayName(existing.Name),
             existing.Description,
             existing.Arrival,
             existing.Departure,

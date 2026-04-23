@@ -43,11 +43,6 @@ public partial class BirdStatisticsViewModel : ObservableObject
     [ObservableProperty] private int totalBirds;
     [ObservableProperty] private IReadOnlyCollection<YearFilterOption> yearFilters = Array.Empty<YearFilterOption>();
 
-    public BirdStatisticsViewModel(IBirdStore birdStore, ILocalizationService localization)
-        : this(birdStore, localization, new BirdStatisticsCalculator(localization))
-    {
-    }
-
     public BirdStatisticsViewModel(
         IBirdStore birdStore,
         ILocalizationService localization,

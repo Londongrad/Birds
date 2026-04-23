@@ -1,8 +1,10 @@
 using System.Globalization;
 using Birds.Application.DTOs;
 using Birds.Shared.Localization;
+using Birds.UI.Services.BirdNames;
 using Birds.UI.Services.Localization;
 using Birds.UI.Services.Localization.Interfaces;
+using Birds.UI.Services.Statistics;
 using Birds.UI.Services.Stores.BirdStore;
 using Birds.UI.ViewModels;
 using FluentAssertions;
@@ -166,6 +168,8 @@ public class BirdStatisticsViewModelTests
         foreach (var bird in birds)
             store.Birds.Add(bird);
 
-        return new BirdStatisticsViewModel(store, localization.Object);
+        var birdNameDisplay = new BirdNameDisplayService(localization.Object);
+        var calculator = new BirdStatisticsCalculator(localization.Object, birdNameDisplay);
+        return new BirdStatisticsViewModel(store, localization.Object, calculator);
     }
 }

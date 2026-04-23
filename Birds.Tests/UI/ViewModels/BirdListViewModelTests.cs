@@ -1,10 +1,11 @@
 using System.Globalization;
 using Birds.Application.DTOs;
+using Birds.Application.DTOs.Helpers;
 using Birds.Domain.Enums;
-using Birds.Domain.Extensions;
 using Birds.Shared.Localization;
 using Birds.Tests.UI.Services;
 using Birds.UI.Enums;
+using Birds.UI.Services.BirdNames;
 using Birds.UI.Services.Localization;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Managers.Bird;
@@ -125,11 +126,13 @@ public class BirdListViewModelTests
                     ? DateDisplayFormats.FormatDate(value.Value, culture, dateFormat, style)
                     : fallback ?? "\u2014");
 
-        return new BirdListViewModel(manager.Object, localization.Object);
+        var birdNameDisplay = new BirdNameDisplayService(localization.Object);
+
+        return new BirdListViewModel(manager.Object, localization.Object, birdNameDisplay);
     }
 
     private static BirdDTO CreateBird(BirdsName species, string? desc = null)
     {
-        return TestHelpers.Bird(name: species.ToDisplayName(), desc: desc);
+        return TestHelpers.Bird(name: BirdNameDisplayNames.GetDisplayName(species), desc: desc);
     }
 }

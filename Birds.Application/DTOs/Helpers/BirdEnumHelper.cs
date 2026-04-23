@@ -1,6 +1,5 @@
 using System.Globalization;
 using Birds.Domain.Enums;
-using Birds.Domain.Extensions;
 using Birds.Shared.Localization;
 
 namespace Birds.Application.DTOs.Helpers;
@@ -33,9 +32,13 @@ public static class BirdEnumHelper
             return result;
 
         foreach (var bird in Enum.GetValues<BirdsName>())
-            if (string.Equals(name, bird.ToDisplayName(CultureInfo.GetCultureInfo(AppLanguages.Russian)),
+            if (string.Equals(name, BirdNameDisplayNames.GetDisplayName(
+                    bird,
+                    CultureInfo.GetCultureInfo(AppLanguages.Russian)),
                     StringComparison.CurrentCultureIgnoreCase)
-                || string.Equals(name, bird.ToDisplayName(CultureInfo.GetCultureInfo(AppLanguages.English)),
+                || string.Equals(name, BirdNameDisplayNames.GetDisplayName(
+                        bird,
+                        CultureInfo.GetCultureInfo(AppLanguages.English)),
                     StringComparison.CurrentCultureIgnoreCase))
                 return bird;
 

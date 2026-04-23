@@ -2,8 +2,8 @@ using System.ComponentModel.DataAnnotations;
 using Birds.Application.DTOs;
 using Birds.Application.DTOs.Helpers;
 using Birds.Domain.Enums;
-using Birds.Domain.Extensions;
 using Birds.Shared.Constants;
+using Birds.UI.Services.BirdNames;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Notification.Interfaces;
@@ -23,10 +23,12 @@ public partial class BirdViewModel : BirdValidationBaseViewModel
         BirdDTO dto,
         IBirdManager birdManager,
         ILocalizationService localization,
+        IBirdNameDisplayService birdNameDisplay,
         INotificationService notificationService)
     {
         _birdManager = birdManager;
         _localization = localization;
+        _birdNameDisplay = birdNameDisplay;
         _notificationService = notificationService;
 
         _localization.LanguageChanged += OnLanguageChanged;
@@ -39,6 +41,7 @@ public partial class BirdViewModel : BirdValidationBaseViewModel
     #region [ Fields ]
 
     private readonly IBirdManager _birdManager;
+    private readonly IBirdNameDisplayService _birdNameDisplay;
     private readonly ILocalizationService _localization;
     private readonly INotificationService _notificationService;
 
@@ -299,10 +302,11 @@ public partial class BirdViewModel : BirdValidationBaseViewModel
     private string ResolveDisplayName()
     {
         if (SelectedBirdName is { } selectedBirdName)
-            return selectedBirdName.ToDisplayName(_localization.CurrentCulture);
+            return _birdNameDisplay.GetDisplayName(selectedBirdName);
 
-        return BirdEnumHelper.ParseBirdName(Name)?.ToDisplayName(_localization.CurrentCulture)
-               ?? Name;
+        return BirdEnumHelper.ParseBirdName(Name) is { } parsedName
+            ? _birdNameDisplay.GetDisplayName(parsedName)
+            : Name;
     }
 
     private void OnLanguageChanged(object? sender, EventArgs e)

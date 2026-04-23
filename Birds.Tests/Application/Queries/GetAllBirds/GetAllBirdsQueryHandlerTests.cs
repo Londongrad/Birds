@@ -1,9 +1,9 @@
 using Birds.Application.DTOs;
+using Birds.Application.DTOs.Helpers;
 using Birds.Application.Interfaces;
 using Birds.Application.Queries.GetAllBirds;
 using Birds.Domain.Entities;
 using Birds.Domain.Enums;
-using Birds.Domain.Extensions;
 using Birds.Shared.Constants;
 using FluentAssertions;
 using Moq;
@@ -30,9 +30,11 @@ public class GetAllBirdsQueryHandlerTests
 
         var expected = new List<BirdDTO>
         {
-            new(birds[0].Id, birds[0].Name.ToDisplayName(), birds[0].Description, birds[0].Arrival, birds[0].Departure,
+            new(birds[0].Id, BirdNameDisplayNames.GetDisplayName(birds[0].Name), birds[0].Description, birds[0].Arrival,
+                birds[0].Departure,
                 birds[0].IsAlive, birds[0].CreatedAt, birds[0].UpdatedAt),
-            new(birds[1].Id, birds[1].Name.ToDisplayName(), birds[1].Description, birds[1].Arrival, birds[1].Departure,
+            new(birds[1].Id, BirdNameDisplayNames.GetDisplayName(birds[1].Name), birds[1].Description, birds[1].Arrival,
+                birds[1].Departure,
                 birds[1].IsAlive, birds[1].CreatedAt, birds[1].UpdatedAt)
         }.AsReadOnly();
 

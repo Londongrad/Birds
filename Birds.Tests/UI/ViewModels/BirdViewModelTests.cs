@@ -1,9 +1,10 @@
 using System.Globalization;
 using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
+using Birds.Application.DTOs.Helpers;
 using Birds.Domain.Enums;
-using Birds.Domain.Extensions;
 using Birds.Shared.Localization;
+using Birds.UI.Services.BirdNames;
 using Birds.UI.Services.Localization;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Managers.Bird;
@@ -17,6 +18,7 @@ namespace Birds.Tests.UI.ViewModels;
 public class BirdViewModelTests
 {
     private readonly Mock<IBirdManager> _birdManager = new();
+    private readonly IBirdNameDisplayService _birdNameDisplay;
     private readonly Mock<ILocalizationService> _localization = new();
     private readonly Mock<INotificationService> _notification = new();
     private CultureInfo _currentCulture = CultureInfo.GetCultureInfo(AppLanguages.Russian);
@@ -48,6 +50,8 @@ public class BirdViewModelTests
                 value.HasValue
                     ? DateDisplayFormats.FormatDateTime(value.Value, _currentCulture, _currentDateFormat)
                     : fallback ?? "\u2014");
+
+        _birdNameDisplay = new BirdNameDisplayService(_localization.Object);
     }
 
     [Fact]
@@ -68,7 +72,7 @@ public class BirdViewModelTests
             .Callback<BirdUpdateDTO, CancellationToken>((dto, _) => sentDto = dto)
             .ReturnsAsync(Result<BirdDTO>.Success(updated));
 
-        var sut = new BirdViewModel(original, _birdManager.Object, _localization.Object, _notification.Object);
+        var sut = CreateViewModel(original);
         sut.EditCommand.Execute(null);
         sut.SelectedBirdName = chickadee;
 
@@ -99,7 +103,7 @@ public class BirdViewModelTests
         _birdManager.Setup(x => x.UpdateAsync(It.IsAny<BirdUpdateDTO>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<BirdDTO>.Success(updated));
 
-        var sut = new BirdViewModel(original, _birdManager.Object, _localization.Object, _notification.Object);
+        var sut = CreateViewModel(original);
         sut.EditCommand.Execute(null);
         sut.SelectedBirdName = chickadee;
         sut.Description = "updated";
@@ -122,7 +126,7 @@ public class BirdViewModelTests
     {
         var sparrow = (BirdsName)1;
         var dto = CreateBirdDto(sparrow);
-        var sut = new BirdViewModel(dto, _birdManager.Object, _localization.Object, _notification.Object);
+        var sut = CreateViewModel(dto);
 
         sut.EditCommand.Execute(null);
         sut.IsAlive = false;
@@ -142,9 +146,9 @@ public class BirdViewModelTests
     {
         var chickadee = (BirdsName)6;
         var dto = CreateBirdDto(chickadee);
-        var sut = new BirdViewModel(dto, _birdManager.Object, _localization.Object, _notification.Object);
+        var sut = CreateViewModel(dto);
 
-        sut.DisplayName.Should().Be(chickadee.ToDisplayName(_currentCulture));
+        sut.DisplayName.Should().Be(BirdNameDisplayNames.GetDisplayName(chickadee, _currentCulture));
         sut.DepartureDisplay.Should().Be(AppText.Get("Info.ToThisDay", _currentCulture));
         sut.ArrivalDisplay.Should().Be(DateDisplayFormats.FormatDate(dto.Arrival, _currentCulture, _currentDateFormat));
 
@@ -152,7 +156,7 @@ public class BirdViewModelTests
         _currentDateFormat = DateDisplayFormats.YearMonthDay;
         _localization.Raise(x => x.LanguageChanged += null, EventArgs.Empty);
 
-        sut.DisplayName.Should().Be(chickadee.ToDisplayName(_currentCulture));
+        sut.DisplayName.Should().Be(BirdNameDisplayNames.GetDisplayName(chickadee, _currentCulture));
         sut.DepartureDisplay.Should().Be(AppText.Get("Info.ToThisDay", _currentCulture));
         sut.ArrivalDisplay.Should().Be(DateDisplayFormats.FormatDate(dto.Arrival, _currentCulture, _currentDateFormat));
     }
@@ -168,7 +172,7 @@ public class BirdViewModelTests
             UpdatedAt = localUpdatedAt
         };
 
-        var sut = new BirdViewModel(dto, _birdManager.Object, _localization.Object, _notification.Object);
+        var sut = CreateViewModel(dto);
 
         sut.LocalCreatedAt.Should().Be(localCreatedAt);
         sut.LocalUpdatedAt.Should().Be(localUpdatedAt);
@@ -184,7 +188,7 @@ public class BirdViewModelTests
             Departure = DateOnly.FromDateTime(DateTime.Today)
         };
 
-        var sut = new BirdViewModel(dto, _birdManager.Object, _localization.Object, _notification.Object);
+        var sut = CreateViewModel(dto);
 
         sut.DurationDisplay.Should().Be($"3 {AppText.Get("Bird.DaysSuffix", _currentCulture)}");
 
@@ -212,7 +216,7 @@ public class BirdViewModelTests
 
             var sparrow = (BirdsName)1;
             var dto = CreateBirdDto(sparrow);
-            var sut = new BirdViewModel(dto, _birdManager.Object, _localization.Object, _notification.Object);
+            var sut = CreateViewModel(dto);
 
             sut.EditCommand.Execute(null);
             sut.IsAlive = false;
@@ -251,6 +255,16 @@ public class BirdViewModelTests
             true,
             DateTime.Today.AddDays(-5),
             null);
+    }
+
+    private BirdViewModel CreateViewModel(BirdDTO dto)
+    {
+        return new BirdViewModel(
+            dto,
+            _birdManager.Object,
+            _localization.Object,
+            _birdNameDisplay,
+            _notification.Object);
     }
 
     private static string GetValidationError(BirdViewModel viewModel, string propertyName)

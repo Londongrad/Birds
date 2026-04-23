@@ -1,9 +1,9 @@
 using Birds.Application.Commands.CreateBird;
 using Birds.Application.DTOs;
+using Birds.Application.DTOs.Helpers;
 using Birds.Application.Interfaces;
 using Birds.Domain.Entities;
 using Birds.Domain.Enums;
-using Birds.Domain.Extensions;
 using Birds.Shared.Constants;
 using FluentAssertions;
 using Moq;
@@ -27,7 +27,7 @@ public class CreateBirdCommandHandlerTests
             command.IsAlive);
         var expectedDto = new BirdDTO(
             expectedBird.Id,
-            expectedBird.Name.ToDisplayName(),
+            BirdNameDisplayNames.GetDisplayName(expectedBird.Name),
             expectedBird.Description,
             expectedBird.Arrival,
             expectedBird.Departure,

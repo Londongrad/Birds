@@ -5,9 +5,9 @@ using System.Windows.Data;
 using Birds.Application.DTOs;
 using Birds.Application.DTOs.Helpers;
 using Birds.Domain.Enums;
-using Birds.Domain.Extensions;
 using Birds.Shared.Localization;
 using Birds.UI.Enums;
+using Birds.UI.Services.BirdNames;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Views.Helpers;
@@ -19,6 +19,7 @@ namespace Birds.UI.ViewModels;
 public partial class BirdListViewModel : ObservableObject
 {
     private readonly IBirdManager _birdManager;
+    private readonly IBirdNameDisplayService _birdNameDisplay;
     private readonly ILocalizationService _localization;
 
     [ObservableProperty] private IReadOnlyList<FilterOption> filters = Array.Empty<FilterOption>();
@@ -27,10 +28,13 @@ public partial class BirdListViewModel : ObservableObject
 
     [ObservableProperty] private FilterOption selectedFilter = null!;
 
-    public BirdListViewModel(IBirdManager birdManager, ILocalizationService localization)
+    public BirdListViewModel(IBirdManager birdManager,
+        ILocalizationService localization,
+        IBirdNameDisplayService birdNameDisplay)
     {
         _birdManager = birdManager;
         _localization = localization;
+        _birdNameDisplay = birdNameDisplay;
 
         Birds = birdManager.Store.Birds;
         Filters = CreateFilters();
@@ -128,7 +132,7 @@ public partial class BirdListViewModel : ObservableObject
         OnPropertyChanged(nameof(BirdCount));
     }
 
-    private static IReadOnlyList<FilterOption> CreateFilters()
+    private IReadOnlyList<FilterOption> CreateFilters()
     {
         var filters = new List<FilterOption>
         {
@@ -138,7 +142,9 @@ public partial class BirdListViewModel : ObservableObject
             new(BirdFilter.DepartedButAlive, AppText.Get("BirdList.Filter.Released"))
         };
 
-        filters.AddRange(Enum.GetValues<BirdsName>().Select(FilterOption.SpeciesFilter));
+        filters.AddRange(Enum.GetValues<BirdsName>()
+            .Select(species => new FilterOption(BirdFilter.BySpecies, _birdNameDisplay.GetDisplayName(species),
+                species)));
 
         return filters;
     }
@@ -150,7 +156,7 @@ public partial class BirdListViewModel : ObservableObject
 
         var text = SearchText.Trim();
         var species = BirdEnumHelper.ParseBirdName(bird.Name);
-        var localizedName = species?.ToDisplayName() ?? bird.Name;
+        var localizedName = species.HasValue ? _birdNameDisplay.GetDisplayName(species.Value) : bird.Name;
 
         return localizedName.Contains(text, StringComparison.CurrentCultureIgnoreCase)
                || bird.Name?.Contains(text, StringComparison.CurrentCultureIgnoreCase) == true

@@ -1,5 +1,4 @@
 using Birds.Domain.Enums;
-using Birds.Domain.Extensions;
 
 namespace Birds.UI.Enums;
 
@@ -14,11 +13,6 @@ public enum BirdFilter
 
 public record FilterOption(BirdFilter Filter, string Display, BirdsName? Species = null)
 {
-    public static FilterOption SpeciesFilter(BirdsName species)
-    {
-        return new FilterOption(BirdFilter.BySpecies, species.ToDisplayName(), species);
-    }
-
     public override string ToString()
     {
         return Display;

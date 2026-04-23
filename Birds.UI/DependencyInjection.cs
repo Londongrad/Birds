@@ -1,4 +1,5 @@
 using Birds.Shared.Sync;
+using Birds.UI.Services.BirdNames;
 using Birds.UI.Services.Dialogs;
 using Birds.UI.Services.Dialogs.Interfaces;
 using Birds.UI.Services.Export;
@@ -54,6 +55,7 @@ public static class DependencyInjection
         services.AddSingleton<IRemoteSyncStatusSource>(sp => sp.GetRequiredService<RemoteSyncStatusStore>());
         services.AddSingleton<IRemoteSyncStatusReporter>(sp => sp.GetRequiredService<RemoteSyncStatusStore>());
         services.AddSingleton<ILocalizationService>(_ => LocalizationService.Instance);
+        services.AddSingleton<IBirdNameDisplayService, BirdNameDisplayService>();
         services.AddSingleton<IAppPreferencesPathProvider, LocalAppPreferencesPathProvider>();
         services.AddSingleton<IAppPreferencesService, JsonAppPreferencesService>();
         services.AddSingleton<IThemeService, ThemeService>();

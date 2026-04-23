@@ -1,4 +1,4 @@
-namespace Birds.Shared.Constants;
+namespace Birds.Domain.Common;
 
 public static class BirdValidationRules
 {

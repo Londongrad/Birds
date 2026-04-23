@@ -1,4 +1,4 @@
-using Birds.Shared.Constants;
+using Birds.Domain.Common;
 using FluentValidation;
 
 namespace Birds.Application.Common.Validation;

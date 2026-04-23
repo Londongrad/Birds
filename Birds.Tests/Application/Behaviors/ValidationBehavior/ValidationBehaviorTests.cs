@@ -2,6 +2,7 @@ using Birds.Application.Behaviors;
 using Birds.Application.Commands.CreateBird;
 using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
+using Birds.Domain.Common;
 using Birds.Domain.Enums;
 using Birds.Shared.Constants;
 using FluentAssertions;

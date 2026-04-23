@@ -1,5 +1,5 @@
+using Birds.Domain.Common;
 using Birds.Domain.Entities;
-using Birds.Shared.Constants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

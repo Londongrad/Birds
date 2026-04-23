@@ -1,6 +1,6 @@
 using Birds.Application.Commands.CreateBird;
+using Birds.Domain.Common;
 using Birds.Domain.Enums;
-using Birds.Shared.Constants;
 using FluentValidation.TestHelper;
 
 namespace Birds.Tests.Application.Commands.CreateBird;
