@@ -56,6 +56,6 @@ public sealed class DatabaseMaintenanceService(
     {
         await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
         await context.Database.EnsureDeletedAsync(cancellationToken);
-        await context.Database.EnsureCreatedAsync(cancellationToken);
+        await context.Database.MigrateAsync(cancellationToken);
     }
 }
