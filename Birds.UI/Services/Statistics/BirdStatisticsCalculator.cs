@@ -1,6 +1,5 @@
 using System.Globalization;
 using Birds.Application.DTOs;
-using Birds.Application.DTOs.Helpers;
 using Birds.Shared.Localization;
 using Birds.UI.Services.BirdNames;
 using Birds.UI.Services.Localization;
@@ -326,7 +325,7 @@ public sealed class BirdStatisticsCalculator(ILocalizationService localization, 
 
     private string GetDisplayName(BirdDTO bird)
     {
-        return BirdEnumHelper.ParseBirdName(bird.Name) is { } species
+        return bird.ResolveSpecies() is { } species
             ? _birdNameDisplay.GetDisplayName(species)
             : bird.Name;
     }

@@ -163,19 +163,27 @@ public class BirdManagerTests
         store.Birds.Add(new BirdDTO(id, "Воробей", "old",
             TestHelpers.Today().AddDays(-1), null, true, null, null));
 
-        var updated = new BirdDTO(id, "Синица", "new", TestHelpers.Today(), null, true, null, null);
+        var updated = new BirdDTO(id, "Синица", "new", TestHelpers.Today(), null, true, null, null)
+        {
+            Species = BirdsName.Гайка
+        };
         mediator.Setup(m => m.Send(It.IsAny<UpdateBirdCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<BirdDTO>.Success(updated));
 
         var sut = MakeManager(store, Init(store, mediator.Object), mediator.Object);
-        var dto = new BirdUpdateDTO(id, "Синица", "new", TestHelpers.Today(), null, true);
+        var dto = new BirdUpdateDTO(id, BirdsName.Гайка, "new", TestHelpers.Today(), null, true);
 
         // Act
         var result = await sut.UpdateAsync(dto, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        store.Birds.Should().ContainSingle(b => b.Id == id && b.Name == "Синица" && b.Description == "new");
+        store.Birds.Should().ContainSingle(b =>
+            b.Id == id && b.Species == BirdsName.Гайка && b.Name == "Синица" && b.Description == "new");
+        mediator.Verify(m => m.Send(
+                It.Is<UpdateBirdCommand>(command => command.Name == BirdsName.Гайка),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Fact]
@@ -195,7 +203,7 @@ public class BirdManagerTests
             .ReturnsAsync(Result<BirdDTO>.Failure("boom"));
 
         var sut = MakeManager(store, Init(store, mediator.Object), mediator.Object);
-        var dto = new BirdUpdateDTO(id, "Синица", "new", TestHelpers.Today(), null, true);
+        var dto = new BirdUpdateDTO(id, BirdsName.Гайка, "new", TestHelpers.Today(), null, true);
 
         // Act
         var result = await sut.UpdateAsync(dto, CancellationToken.None);

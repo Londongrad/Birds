@@ -1,8 +1,10 @@
-﻿namespace Birds.Application.DTOs;
+using Birds.Domain.Enums;
+
+namespace Birds.Application.DTOs;
 
 public record BirdUpdateDTO(
     Guid Id,
-    string Name,
+    BirdsName Species,
     string? Description,
     DateOnly Arrival,
     DateOnly? Departure,

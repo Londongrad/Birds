@@ -227,6 +227,7 @@ public class BirdRepository(IDbContextFactory<BirdDbContext> contextFactory) : I
         var payload = new BirdSyncPayload(
             bird.Id,
             bird.Name.ToString(),
+            bird.Name.ToString(),
             bird.Description,
             bird.Arrival,
             bird.Departure,

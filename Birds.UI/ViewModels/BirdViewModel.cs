@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using Birds.Application.DTOs;
-using Birds.Application.DTOs.Helpers;
 using Birds.Domain.Enums;
 using Birds.Shared.Constants;
 using Birds.UI.Services.BirdNames;
@@ -221,7 +220,7 @@ public partial class BirdViewModel : BirdValidationBaseViewModel
         var result = await _birdManager.UpdateAsync(
             new BirdUpdateDTO(
                 Id,
-                selectedBirdName.ToString(),
+                selectedBirdName,
                 Description,
                 Arrival,
                 Departure,
@@ -288,7 +287,7 @@ public partial class BirdViewModel : BirdValidationBaseViewModel
         Dto = dto ?? throw new ArgumentNullException(nameof(dto));
 
         Name = dto.Name;
-        SelectedBirdName = BirdEnumHelper.ParseBirdName(dto.Name);
+        SelectedBirdName = dto.ResolveSpecies();
         Description = dto.Description;
         Arrival = dto.Arrival;
         Departure = dto.Departure;
@@ -304,9 +303,7 @@ public partial class BirdViewModel : BirdValidationBaseViewModel
         if (SelectedBirdName is { } selectedBirdName)
             return _birdNameDisplay.GetDisplayName(selectedBirdName);
 
-        return BirdEnumHelper.ParseBirdName(Name) is { } parsedName
-            ? _birdNameDisplay.GetDisplayName(parsedName)
-            : Name;
+        return Name;
     }
 
     private void OnLanguageChanged(object? sender, EventArgs e)
@@ -344,7 +341,7 @@ public partial class BirdViewModel : BirdValidationBaseViewModel
     protected override void OnSelectedBirdNameChangedCore(BirdsName? value)
     {
         if (value is { } selectedBirdName)
-            Name = selectedBirdName.ToString();
+            Name = _birdNameDisplay.GetDisplayName(selectedBirdName);
 
         UpdateCalculatedFields();
     }

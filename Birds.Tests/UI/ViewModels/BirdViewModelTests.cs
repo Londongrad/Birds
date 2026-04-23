@@ -63,7 +63,8 @@ public class BirdViewModelTests
         var original = CreateBirdDto(sparrow);
         var updated = original with
         {
-            Name = chickadee.ToString(),
+            Species = chickadee,
+            Name = BirdNameDisplayNames.GetDisplayName(chickadee, _currentCulture),
             UpdatedAt = DateTime.Now
         };
 
@@ -79,9 +80,9 @@ public class BirdViewModelTests
         await sut.SaveCommand.ExecuteAsync(null);
 
         sentDto.Should().NotBeNull();
-        sentDto!.Name.Should().Be(chickadee.ToString());
-        sut.Name.Should().Be(chickadee.ToString());
-        sut.Dto.Name.Should().Be(chickadee.ToString());
+        sentDto!.Species.Should().Be(chickadee);
+        sut.Name.Should().Be(BirdNameDisplayNames.GetDisplayName(chickadee, _currentCulture));
+        sut.Dto.Species.Should().Be(chickadee);
         sut.IsEditing.Should().BeFalse();
     }
 
@@ -95,7 +96,8 @@ public class BirdViewModelTests
         var original = CreateBirdDto(sparrow);
         var updated = original with
         {
-            Name = chickadee.ToString(),
+            Species = chickadee,
+            Name = BirdNameDisplayNames.GetDisplayName(chickadee, _currentCulture),
             Description = "updated",
             UpdatedAt = DateTime.Now
         };
@@ -115,10 +117,10 @@ public class BirdViewModelTests
 
         sut.CancelEditCommand.Execute(null);
 
-        sut.Name.Should().Be(chickadee.ToString());
+        sut.Name.Should().Be(BirdNameDisplayNames.GetDisplayName(chickadee, _currentCulture));
         sut.SelectedBirdName.Should().Be(chickadee);
         sut.Description.Should().Be("updated");
-        sut.Dto.Name.Should().Be(chickadee.ToString());
+        sut.Dto.Species.Should().Be(chickadee);
     }
 
     [Fact]
@@ -149,6 +151,7 @@ public class BirdViewModelTests
         var sut = CreateViewModel(dto);
 
         sut.DisplayName.Should().Be(BirdNameDisplayNames.GetDisplayName(chickadee, _currentCulture));
+        sut.SelectedBirdName.Should().Be(chickadee);
         sut.DepartureDisplay.Should().Be(AppText.Get("Info.ToThisDay", _currentCulture));
         sut.ArrivalDisplay.Should().Be(DateDisplayFormats.FormatDate(dto.Arrival, _currentCulture, _currentDateFormat));
 
@@ -157,6 +160,7 @@ public class BirdViewModelTests
         _localization.Raise(x => x.LanguageChanged += null, EventArgs.Empty);
 
         sut.DisplayName.Should().Be(BirdNameDisplayNames.GetDisplayName(chickadee, _currentCulture));
+        sut.SelectedBirdName.Should().Be(chickadee);
         sut.DepartureDisplay.Should().Be(AppText.Get("Info.ToThisDay", _currentCulture));
         sut.ArrivalDisplay.Should().Be(DateDisplayFormats.FormatDate(dto.Arrival, _currentCulture, _currentDateFormat));
     }
@@ -254,7 +258,10 @@ public class BirdViewModelTests
             null,
             true,
             DateTime.Today.AddDays(-5),
-            null);
+            null)
+        {
+            Species = name
+        };
     }
 
     private BirdViewModel CreateViewModel(BirdDTO dto)

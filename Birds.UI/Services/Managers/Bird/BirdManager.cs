@@ -5,7 +5,6 @@ using Birds.Application.Commands.DeleteBird;
 using Birds.Application.Commands.UpdateBird;
 using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
-using Birds.Application.DTOs.Helpers;
 using Birds.UI.Enums;
 using Birds.UI.Extensions;
 using Birds.UI.Services.Export.Interfaces;
@@ -96,7 +95,7 @@ public partial class BirdManager(
     {
         var command = new UpdateBirdCommand(
             updatedBird.Id,
-            BirdEnumHelper.ParseBirdName(updatedBird.Name) ?? default,
+            updatedBird.Species,
             updatedBird.Description,
             updatedBird.Arrival,
             updatedBird.Departure,

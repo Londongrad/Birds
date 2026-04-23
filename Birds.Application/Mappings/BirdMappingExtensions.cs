@@ -31,7 +31,10 @@ internal static class BirdMappingExtensions
             bird.Departure,
             bird.IsAlive,
             bird.CreatedAt,
-            bird.UpdatedAt);
+            bird.UpdatedAt)
+        {
+            Species = bird.Name
+        };
     }
 
     public static IReadOnlyList<BirdDTO> ToDtos(this IEnumerable<Bird> birds)

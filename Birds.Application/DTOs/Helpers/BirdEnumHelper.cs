@@ -9,9 +9,8 @@ namespace Birds.Application.DTOs.Helpers;
 ///     and <see cref="BirdsName" /> enumeration members.
 /// </summary>
 /// <remarks>
-///     This helper is primarily used when mapping between <c>BirdDTO</c> objects
-///     (which store the bird name as a <see cref="string" />) and domain models
-///     (which use the strongly typed <see cref="BirdsName" /> enum).
+///     New application paths should use stable <see cref="BirdsName" /> values directly.
+///     String parsing remains for legacy imports and compatibility with older DTO payloads.
 /// </remarks>
 public static class BirdEnumHelper
 {

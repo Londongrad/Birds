@@ -7,6 +7,8 @@ public class UpdateBirdCommandValidator : AbstractValidator<UpdateBirdCommand>
 {
     public UpdateBirdCommandValidator()
     {
+        RuleFor(x => x.Name).ApplySpeciesRules();
+
         RuleFor(x => x.Arrival).ApplyArrivalRules();
 
         RuleFor(x => x.Description).ApplyDescriptionRules();

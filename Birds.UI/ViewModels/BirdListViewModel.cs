@@ -3,7 +3,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Windows.Data;
 using Birds.Application.DTOs;
-using Birds.Application.DTOs.Helpers;
 using Birds.Domain.Enums;
 using Birds.Shared.Localization;
 using Birds.UI.Enums;
@@ -102,7 +101,7 @@ public partial class BirdListViewModel : ObservableObject
             BirdFilter.Alive => bird.IsAlive && bird.Departure is null,
             BirdFilter.Dead => !bird.IsAlive,
             BirdFilter.DepartedButAlive => bird.IsAlive && bird.Departure is not null,
-            BirdFilter.BySpecies => BirdEnumHelper.ParseBirdName(bird.Name) == SelectedFilter.Species,
+            BirdFilter.BySpecies => bird.ResolveSpecies() == SelectedFilter.Species,
             _ => true
         };
     }
@@ -155,7 +154,7 @@ public partial class BirdListViewModel : ObservableObject
             return true;
 
         var text = SearchText.Trim();
-        var species = BirdEnumHelper.ParseBirdName(bird.Name);
+        var species = bird.ResolveSpecies();
         var localizedName = species.HasValue ? _birdNameDisplay.GetDisplayName(species.Value) : bird.Name;
 
         return localizedName.Contains(text, StringComparison.CurrentCultureIgnoreCase)

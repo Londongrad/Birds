@@ -3,6 +3,7 @@ namespace Birds.Infrastructure.Persistence.Models;
 public sealed record BirdSyncPayload(
     Guid Id,
     string Name,
+    string? Species,
     string? Description,
     DateOnly Arrival,
     DateOnly? Departure,
