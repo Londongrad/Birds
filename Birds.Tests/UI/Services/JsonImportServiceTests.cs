@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Birds.Domain.Enums;
 using Birds.UI.Services.Import;
 using FluentAssertions;
 
@@ -41,6 +42,52 @@ public class JsonImportServiceTests
             result.IsSuccess.Should().BeTrue();
             result.Value.Should().ContainSingle();
             result.Value!.Single().Name.Should().Be("Sparrow");
+            result.Value!.Single().Species.Should().Be(BirdsName.Воробей);
+        }
+        finally
+        {
+            if (File.Exists(path))
+                File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public async Task ImportAsync_Should_Read_Stable_Species_When_Present()
+    {
+        var sut = new JsonImportService();
+        var path = Path.Combine(Path.GetTempPath(), $"birds-import-{Guid.NewGuid():N}.json");
+
+        try
+        {
+            var payload = new
+            {
+                version = 1,
+                exportedAt = DateTime.UtcNow,
+                items = new[]
+                {
+                    new
+                    {
+                        id = Guid.NewGuid(),
+                        name = "Unknown display text",
+                        species = (int)BirdsName.Щегол,
+                        description = "note",
+                        arrival = new DateOnly(2026, 4, 1),
+                        departure = (DateOnly?)null,
+                        isAlive = true,
+                        createdAt = (DateTime?)null,
+                        updatedAt = (DateTime?)null
+                    }
+                }
+            };
+
+            await File.WriteAllTextAsync(path, JsonSerializer.Serialize(payload));
+
+            var result = await sut.ImportAsync(path, CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().ContainSingle();
+            result.Value!.Single().Species.Should().Be(BirdsName.Щегол);
+            result.Value!.Single().Name.Should().Be("Unknown display text");
         }
         finally
         {

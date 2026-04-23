@@ -62,6 +62,39 @@ public class ImportBirdsCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_Should_Prefer_Stable_Species_Over_Display_Name()
+    {
+        var repository = new Mock<IBirdRepository>();
+        var importedBird = new BirdDTO(
+            Guid.NewGuid(),
+            "Unknown display text",
+            null,
+            new DateOnly(2026, 4, 1),
+            null,
+            true,
+            null,
+            null)
+        {
+            Species = BirdsName.Щегол
+        };
+
+        IReadOnlyCollection<Bird>? savedBirds = null;
+        repository.Setup(x => x.UpsertAsync(It.IsAny<IReadOnlyCollection<Bird>>(), It.IsAny<CancellationToken>()))
+            .Callback<IReadOnlyCollection<Bird>, CancellationToken>((birds, _) => savedBirds = birds)
+            .ReturnsAsync(new UpsertBirdsResult(1, 0));
+        repository.Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<Bird>());
+
+        var sut = new ImportBirdsCommandHandler(repository.Object);
+
+        var result = await sut.Handle(new ImportBirdsCommand(new[] { importedBird }), CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        savedBirds.Should().ContainSingle();
+        savedBirds!.Single().Name.Should().Be(BirdsName.Щегол);
+    }
+
+    [Fact]
     public async Task Handle_Should_Fail_For_Unknown_Bird_Name()
     {
         var repository = new Mock<IBirdRepository>();
