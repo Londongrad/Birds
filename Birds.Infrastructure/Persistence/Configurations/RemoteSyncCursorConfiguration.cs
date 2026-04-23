@@ -15,6 +15,7 @@ public sealed class RemoteSyncCursorConfiguration : IEntityTypeConfiguration<Rem
             .IsRequired();
 
         builder.Property(cursor => cursor.LastSyncedAtUtc)
+            .HasConversion(UtcDateTimeConverters.Optional)
             .HasColumnType("timestamp without time zone");
     }
 }

@@ -8,4 +8,5 @@ public sealed record BirdSyncPayload(
     DateOnly? Departure,
     bool IsAlive,
     DateTime CreatedAt,
-    DateTime? UpdatedAt);
+    DateTime? UpdatedAt,
+    DateTime? SyncStampUtc);

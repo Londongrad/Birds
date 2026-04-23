@@ -8,6 +8,7 @@ public abstract class EntityBase
     protected void UpdateTimestamp()
     {
         UpdatedAt = DateTime.Now;
+        SyncStampUtc = DateTime.UtcNow;
     }
 
     #endregion [ Methods ]
@@ -17,6 +18,7 @@ public abstract class EntityBase
     public Guid Id { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
+    public DateTime SyncStampUtc { get; private set; }
 
     #endregion [ Properties ]
 
@@ -29,15 +31,27 @@ public abstract class EntityBase
     protected EntityBase(Guid id)
     {
         CreatedAt = DateTime.Now;
+        SyncStampUtc = DateTime.UtcNow;
         Id = id;
     }
 
-    protected EntityBase(Guid id, DateTime createdAt, DateTime? updatedAt)
+    protected EntityBase(Guid id, DateTime createdAt, DateTime? updatedAt, DateTime? syncStampUtc = null)
     {
         Id = id;
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;
+        SyncStampUtc = NormalizeUtcStamp(syncStampUtc ?? updatedAt ?? createdAt);
     }
 
     #endregion [ Ctors ]
+
+    private static DateTime NormalizeUtcStamp(DateTime value)
+    {
+        return value.Kind switch
+        {
+            DateTimeKind.Utc => value,
+            DateTimeKind.Local => value.ToUniversalTime(),
+            _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
+        };
+    }
 }

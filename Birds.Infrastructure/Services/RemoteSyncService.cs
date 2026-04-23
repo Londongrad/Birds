@@ -1,3 +1,4 @@
+using System.Data;
 using System.Text.Json;
 using Birds.Domain.Entities;
 using Birds.Domain.Enums;
@@ -150,7 +151,7 @@ public sealed class RemoteSyncService(
 
                 var localBirds = await localContext.Birds
                     .AsNoTracking()
-                    .OrderBy(bird => bird.CreatedAt)
+                    .OrderBy(bird => bird.SyncStampUtc)
                     .ThenBy(bird => bird.Id)
                     .ToListAsync(cancellationToken);
 
@@ -234,7 +235,7 @@ public sealed class RemoteSyncService(
             .Select(bird => new
             {
                 Bird = bird,
-                SyncStamp = bird.UpdatedAt ?? bird.CreatedAt
+                SyncStamp = bird.SyncStampUtc
             })
             .Where(change => watermarkUtc == null || change.SyncStamp > watermarkUtc.Value)
             .OrderBy(change => change.SyncStamp)
@@ -252,7 +253,7 @@ public sealed class RemoteSyncService(
             .Select(bird => new
             {
                 Bird = bird,
-                SyncStamp = bird.UpdatedAt ?? bird.CreatedAt
+                SyncStamp = bird.SyncStampUtc
             })
             .ToDictionaryAsync(bird => bird.Bird.Id, cancellationToken);
 
@@ -273,7 +274,8 @@ public sealed class RemoteSyncService(
                 change.Bird.Departure,
                 change.Bird.IsAlive,
                 change.Bird.CreatedAt,
-                change.Bird.UpdatedAt);
+                change.Bird.UpdatedAt,
+                change.Bird.SyncStampUtc);
 
             if (existingBirds.ContainsKey(change.Bird.Id))
                 birdsToUpdate.Add(restored);
@@ -333,7 +335,7 @@ public sealed class RemoteSyncService(
             .Select(bird => new
             {
                 bird.Id,
-                SyncStamp = bird.UpdatedAt ?? bird.CreatedAt
+                SyncStamp = bird.SyncStampUtc
             })
             .ToDictionaryAsync(bird => bird.Id, bird => bird.SyncStamp, cancellationToken);
 
@@ -539,7 +541,8 @@ public sealed class RemoteSyncService(
             payload.Departure,
             payload.IsAlive,
             payload.CreatedAt,
-            payload.UpdatedAt);
+            payload.UpdatedAt,
+            payload.SyncStampUtc);
     }
 
     private static Bird RestoreBird(Bird bird)
@@ -552,17 +555,18 @@ public sealed class RemoteSyncService(
             bird.Departure,
             bird.IsAlive,
             bird.CreatedAt,
-            bird.UpdatedAt);
+            bird.UpdatedAt,
+            bird.SyncStampUtc);
     }
 
     private static DateTime GetSyncStamp(Bird bird)
     {
-        return NormalizeComparisonStamp(bird.UpdatedAt ?? bird.CreatedAt);
+        return NormalizeComparisonStamp(bird.SyncStampUtc);
     }
 
     private static DateTime GetSyncStamp(BirdSyncPayload payload)
     {
-        return NormalizeComparisonStamp(payload.UpdatedAt ?? payload.CreatedAt);
+        return NormalizeComparisonStamp(payload.SyncStampUtc ?? payload.UpdatedAt ?? payload.CreatedAt);
     }
 
     private static int CompareStamps(DateTime left, DateTime right)
@@ -576,7 +580,7 @@ public sealed class RemoteSyncService(
         {
             DateTimeKind.Utc => value,
             DateTimeKind.Local => value.ToUniversalTime(),
-            _ => DateTime.SpecifyKind(value, DateTimeKind.Local).ToUniversalTime()
+            _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
         };
     }
 
@@ -594,7 +598,8 @@ public sealed class RemoteSyncService(
                   "Departure" date NULL,
                   "IsAlive" boolean NOT NULL DEFAULT TRUE,
                   "CreatedAt" timestamp without time zone NOT NULL,
-                  "UpdatedAt" timestamp without time zone NULL
+                  "UpdatedAt" timestamp without time zone NULL,
+                  "SyncStampUtc" timestamp without time zone NOT NULL
               );
               """
             : """
@@ -606,7 +611,8 @@ public sealed class RemoteSyncService(
                   "Departure" TEXT NULL,
                   "IsAlive" INTEGER NOT NULL DEFAULT 1,
                   "CreatedAt" TEXT NOT NULL,
-                  "UpdatedAt" TEXT NULL
+                  "UpdatedAt" TEXT NULL,
+                  "SyncStampUtc" TEXT NOT NULL
               );
               """;
         var createTableSql = providerName.Contains("Npgsql", StringComparison.OrdinalIgnoreCase)
@@ -631,12 +637,102 @@ public sealed class RemoteSyncService(
             createTableSql,
             cancellationToken);
 
+        await EnsureRemoteBirdSyncStampColumnAsync(remoteContext, providerName, cancellationToken);
+
+        await remoteContext.Database.ExecuteSqlRawAsync(
+            """
+            CREATE INDEX IF NOT EXISTS "IX_Birds_SyncStampUtc"
+            ON "Birds" ("SyncStampUtc");
+            """,
+            cancellationToken);
+
         await remoteContext.Database.ExecuteSqlRawAsync(
             """
             CREATE INDEX IF NOT EXISTS "IX_BirdTombstones_DeletedAtUtc"
             ON "BirdTombstones" ("DeletedAtUtc");
             """,
             cancellationToken);
+    }
+
+    private static async Task EnsureRemoteBirdSyncStampColumnAsync(RemoteBirdDbContext remoteContext,
+        string providerName,
+        CancellationToken cancellationToken)
+    {
+        if (providerName.Contains("Npgsql", StringComparison.OrdinalIgnoreCase))
+        {
+            await remoteContext.Database.ExecuteSqlRawAsync(
+                """
+                ALTER TABLE "Birds"
+                ADD COLUMN IF NOT EXISTS "SyncStampUtc" timestamp without time zone;
+                """,
+                cancellationToken);
+
+            await remoteContext.Database.ExecuteSqlRawAsync(
+                """
+                UPDATE "Birds"
+                SET "SyncStampUtc" = COALESCE(
+                    "SyncStampUtc",
+                    "UpdatedAt",
+                    "CreatedAt",
+                    CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
+                WHERE "SyncStampUtc" IS NULL;
+                """,
+                cancellationToken);
+
+            await remoteContext.Database.ExecuteSqlRawAsync(
+                """
+                ALTER TABLE "Birds"
+                ALTER COLUMN "SyncStampUtc" SET NOT NULL;
+                """,
+                cancellationToken);
+
+            return;
+        }
+
+        if (!await RemoteBirdColumnExistsAsync(remoteContext, "SyncStampUtc", cancellationToken))
+            await remoteContext.Database.ExecuteSqlRawAsync(
+                """
+                ALTER TABLE "Birds"
+                ADD COLUMN "SyncStampUtc" TEXT NULL;
+                """,
+                cancellationToken);
+
+        await remoteContext.Database.ExecuteSqlRawAsync(
+            """
+            UPDATE "Birds"
+            SET "SyncStampUtc" = COALESCE("SyncStampUtc", "UpdatedAt", "CreatedAt", strftime('%Y-%m-%d %H:%M:%f', 'now'))
+            WHERE "SyncStampUtc" IS NULL;
+            """,
+            cancellationToken);
+    }
+
+    private static async Task<bool> RemoteBirdColumnExistsAsync(RemoteBirdDbContext remoteContext,
+        string columnName,
+        CancellationToken cancellationToken)
+    {
+        var connection = remoteContext.Database.GetDbConnection();
+        var shouldClose = connection.State != ConnectionState.Open;
+
+        if (shouldClose)
+            await remoteContext.Database.OpenConnectionAsync(cancellationToken);
+
+        try
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = "SELECT COUNT(*) FROM pragma_table_info('Birds') WHERE name = $columnName;";
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = "$columnName";
+            parameter.Value = columnName;
+            command.Parameters.Add(parameter);
+
+            var result = await command.ExecuteScalarAsync(cancellationToken);
+            return Convert.ToInt64(result) > 0;
+        }
+        finally
+        {
+            if (shouldClose)
+                await remoteContext.Database.CloseConnectionAsync();
+        }
     }
 
     private async Task<RemoteSyncRunResult> HandleRemoteFailureAsync(BirdDbContext localContext,

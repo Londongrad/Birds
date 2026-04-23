@@ -30,8 +30,8 @@ public sealed class SyncOperation
             AggregateId = aggregateId,
             OperationType = operationType,
             PayloadJson = payloadJson,
-            CreatedAtUtc = timestampUtc,
-            UpdatedAtUtc = timestampUtc,
+            CreatedAtUtc = UtcDateTimeStorage.Normalize(timestampUtc),
+            UpdatedAtUtc = UtcDateTimeStorage.Normalize(timestampUtc),
             RetryCount = 0,
             LastAttemptAtUtc = null,
             LastError = null
@@ -42,7 +42,7 @@ public sealed class SyncOperation
     {
         OperationType = operationType;
         PayloadJson = payloadJson;
-        UpdatedAtUtc = timestampUtc;
+        UpdatedAtUtc = UtcDateTimeStorage.Normalize(timestampUtc);
         RetryCount = 0;
         LastAttemptAtUtc = null;
         LastError = null;
@@ -51,8 +51,8 @@ public sealed class SyncOperation
     public void MarkFailed(string errorMessage, DateTime attemptUtc)
     {
         RetryCount++;
-        LastAttemptAtUtc = attemptUtc;
-        UpdatedAtUtc = attemptUtc;
+        LastAttemptAtUtc = UtcDateTimeStorage.Normalize(attemptUtc);
+        UpdatedAtUtc = UtcDateTimeStorage.Normalize(attemptUtc);
         LastError = string.IsNullOrWhiteSpace(errorMessage)
             ? null
             : errorMessage.Length <= 2048

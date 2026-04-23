@@ -88,7 +88,8 @@ public partial class BirdViewModel : BirdValidationBaseViewModel
     /// <summary>
     ///     The departure date of the bird (if it has left the record).
     /// </summary>
-    [CustomValidation(typeof(BirdViewModel), nameof(ValidateDeparture))] [ObservableProperty]
+    [CustomValidation(typeof(BirdViewModel), nameof(ValidateDeparture))]
+    [ObservableProperty]
     private DateOnly? departure;
 
     /// <summary>
@@ -289,8 +290,8 @@ public partial class BirdViewModel : BirdValidationBaseViewModel
         Arrival = dto.Arrival;
         Departure = dto.Departure;
         IsAlive = dto.IsAlive;
-        LocalCreatedAt = dto.CreatedAt?.ToLocalTime();
-        LocalUpdatedAt = dto.UpdatedAt?.ToLocalTime();
+        LocalCreatedAt = dto.CreatedAt;
+        LocalUpdatedAt = dto.UpdatedAt;
 
         UpdateCalculatedFields();
     }

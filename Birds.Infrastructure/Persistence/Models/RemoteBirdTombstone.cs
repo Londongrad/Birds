@@ -27,11 +27,6 @@ public sealed class RemoteBirdTombstone
 
     private static DateTime NormalizeForStorage(DateTime value)
     {
-        return value.Kind switch
-        {
-            DateTimeKind.Utc => DateTime.SpecifyKind(value.ToLocalTime(), DateTimeKind.Unspecified),
-            DateTimeKind.Local => DateTime.SpecifyKind(value, DateTimeKind.Unspecified),
-            _ => value
-        };
+        return UtcDateTimeStorage.NormalizeForStorage(value);
     }
 }

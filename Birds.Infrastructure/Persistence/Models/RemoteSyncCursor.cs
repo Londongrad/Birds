@@ -16,13 +16,16 @@ public sealed class RemoteSyncCursor
         return new RemoteSyncCursor
         {
             CursorKey = cursorKey,
-            LastSyncedAtUtc = lastSyncedAtUtc
+            LastSyncedAtUtc = lastSyncedAtUtc.HasValue
+                ? UtcDateTimeStorage.Normalize(lastSyncedAtUtc.Value)
+                : null
         };
     }
 
     public void AdvanceTo(DateTime syncedAtUtc)
     {
-        if (LastSyncedAtUtc is null || syncedAtUtc > LastSyncedAtUtc.Value)
-            LastSyncedAtUtc = syncedAtUtc;
+        var normalized = UtcDateTimeStorage.Normalize(syncedAtUtc);
+        if (LastSyncedAtUtc is null || normalized > LastSyncedAtUtc.Value)
+            LastSyncedAtUtc = normalized;
     }
 }

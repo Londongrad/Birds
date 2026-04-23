@@ -1,3 +1,4 @@
+using System.Data;
 using Birds.Infrastructure.Configuration;
 using Birds.Infrastructure.Persistence;
 using Birds.Infrastructure.Seeding;
@@ -29,6 +30,7 @@ public sealed class DatabaseInitializerService(
             await context.Database.EnsureDeletedAsync(cancellationToken);
 
         await context.Database.EnsureCreatedAsync(cancellationToken);
+        await EnsureBirdSyncStampSchemaAsync(context, cancellationToken);
         await EnsureSyncOutboxSchemaAsync(context, cancellationToken);
         await EnsureRemoteSyncCursorSchemaAsync(context, cancellationToken);
 
@@ -74,6 +76,61 @@ public sealed class DatabaseInitializerService(
             ON "SyncOperations" ("CreatedAtUtc");
             """,
             cancellationToken);
+    }
+
+    private static async Task EnsureBirdSyncStampSchemaAsync(BirdDbContext context, CancellationToken cancellationToken)
+    {
+        if (!await BirdColumnExistsAsync(context, "SyncStampUtc", cancellationToken))
+            await context.Database.ExecuteSqlRawAsync(
+                """
+                ALTER TABLE "Birds"
+                ADD COLUMN "SyncStampUtc" TEXT NULL;
+                """,
+                cancellationToken);
+
+        await context.Database.ExecuteSqlRawAsync(
+            """
+            UPDATE "Birds"
+            SET "SyncStampUtc" = COALESCE("SyncStampUtc", "UpdatedAt", "CreatedAt", strftime('%Y-%m-%d %H:%M:%f', 'now'))
+            WHERE "SyncStampUtc" IS NULL;
+            """,
+            cancellationToken);
+
+        await context.Database.ExecuteSqlRawAsync(
+            """
+            CREATE INDEX IF NOT EXISTS "IX_Birds_SyncStampUtc"
+            ON "Birds" ("SyncStampUtc");
+            """,
+            cancellationToken);
+    }
+
+    private static async Task<bool> BirdColumnExistsAsync(BirdDbContext context,
+        string columnName,
+        CancellationToken cancellationToken)
+    {
+        var connection = context.Database.GetDbConnection();
+        var shouldClose = connection.State != ConnectionState.Open;
+
+        if (shouldClose)
+            await context.Database.OpenConnectionAsync(cancellationToken);
+
+        try
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = "SELECT COUNT(*) FROM pragma_table_info('Birds') WHERE name = $columnName;";
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = "$columnName";
+            parameter.Value = columnName;
+            command.Parameters.Add(parameter);
+
+            var result = await command.ExecuteScalarAsync(cancellationToken);
+            return Convert.ToInt64(result) > 0;
+        }
+        finally
+        {
+            if (shouldClose)
+                await context.Database.CloseConnectionAsync();
+        }
     }
 
     private static Task EnsureRemoteSyncCursorSchemaAsync(BirdDbContext context, CancellationToken cancellationToken)

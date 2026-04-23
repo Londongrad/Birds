@@ -42,8 +42,9 @@ public class Bird : EntityBase
         DateOnly? departure,
         bool isAlive,
         DateTime createdAt,
-        DateTime? updatedAt)
-        : base(id, createdAt, updatedAt)
+        DateTime? updatedAt,
+        DateTime? syncStampUtc = null)
+        : base(id, createdAt, updatedAt, syncStampUtc)
     {
         Initialize(id, name, description, arrival, departure, isAlive);
     }
@@ -113,7 +114,8 @@ public class Bird : EntityBase
         DateOnly? departure,
         bool isAlive,
         DateTime? createdAt = null,
-        DateTime? updatedAt = null)
+        DateTime? updatedAt = null,
+        DateTime? syncStampUtc = null)
     {
         GuardHelper.AgainstInvalidEnum(name, nameof(name));
         GuardHelper.AgainstExceedsMaxLength(description, BirdValidationRules.DescriptionMaxLength, nameof(description));
@@ -124,7 +126,7 @@ public class Bird : EntityBase
         GuardHelper.AgainstEmptyGuid(id, nameof(id));
 
         return createdAt.HasValue
-            ? new Bird(id, name, description, arrival, departure, isAlive, createdAt.Value, updatedAt)
+            ? new Bird(id, name, description, arrival, departure, isAlive, createdAt.Value, updatedAt, syncStampUtc)
             : new Bird(id, name, description, arrival, departure, isAlive);
     }
 

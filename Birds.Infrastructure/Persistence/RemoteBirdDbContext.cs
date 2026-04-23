@@ -24,6 +24,7 @@ public sealed class RemoteBirdDbContext(DbContextOptions<RemoteBirdDbContext> op
 
             builder.Property(tombstone => tombstone.DeletedAtUtc)
                 .IsRequired()
+                .HasConversion(UtcDateTimeConverters.Required)
                 .HasColumnType("timestamp without time zone");
 
             builder.HasIndex(tombstone => tombstone.DeletedAtUtc);

@@ -26,13 +26,16 @@ public sealed class SyncOperationConfiguration : IEntityTypeConfiguration<SyncOp
 
         builder.Property(operation => operation.CreatedAtUtc)
             .IsRequired()
+            .HasConversion(UtcDateTimeConverters.Required)
             .HasColumnType("timestamp without time zone");
 
         builder.Property(operation => operation.UpdatedAtUtc)
             .IsRequired()
+            .HasConversion(UtcDateTimeConverters.Required)
             .HasColumnType("timestamp without time zone");
 
         builder.Property(operation => operation.LastAttemptAtUtc)
+            .HasConversion(UtcDateTimeConverters.Optional)
             .HasColumnType("timestamp without time zone");
 
         builder.Property(operation => operation.LastError)

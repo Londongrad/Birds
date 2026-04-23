@@ -170,7 +170,7 @@ public class BirdRepository(IDbContextFactory<BirdDbContext> contextFactory) : I
 
         var ids = birds.Select(static bird => bird.Id).Distinct().ToArray();
         var existingOperations = await LoadPendingOperationsAsync(context, ids, cancellationToken);
-        var timestamp = DateTime.Now;
+        var timestamp = DateTime.UtcNow;
 
         foreach (var bird in birds)
         {
@@ -232,7 +232,8 @@ public class BirdRepository(IDbContextFactory<BirdDbContext> contextFactory) : I
             bird.Departure,
             bird.IsAlive,
             bird.CreatedAt,
-            bird.UpdatedAt);
+            bird.UpdatedAt,
+            bird.SyncStampUtc);
 
         return JsonSerializer.Serialize(payload);
     }

@@ -37,5 +37,12 @@ public class BirdConfiguration : IEntityTypeConfiguration<Bird>
 
         builder.Property(b => b.UpdatedAt)
             .HasColumnType("timestamp without time zone");
+
+        builder.Property(b => b.SyncStampUtc)
+            .IsRequired()
+            .HasConversion(UtcDateTimeConverters.Required)
+            .HasColumnType("timestamp without time zone");
+
+        builder.HasIndex(b => b.SyncStampUtc);
     }
 }
