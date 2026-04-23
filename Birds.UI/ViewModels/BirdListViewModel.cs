@@ -7,6 +7,7 @@ using Birds.Domain.Enums;
 using Birds.Shared.Localization;
 using Birds.UI.Enums;
 using Birds.UI.Services.BirdNames;
+using Birds.UI.Services.Caching;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Views.Helpers;
@@ -15,11 +16,13 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace Birds.UI.ViewModels;
 
-public partial class BirdListViewModel : ObservableObject
+public partial class BirdListViewModel : ObservableObject, IDisposable
 {
     private readonly IBirdManager _birdManager;
     private readonly IBirdNameDisplayService _birdNameDisplay;
+    private readonly IBirdViewModelCache _birdViewModelCache;
     private readonly ILocalizationService _localization;
+    private bool _disposed;
 
     [ObservableProperty] private IReadOnlyList<FilterOption> filters = Array.Empty<FilterOption>();
 
@@ -29,11 +32,13 @@ public partial class BirdListViewModel : ObservableObject
 
     public BirdListViewModel(IBirdManager birdManager,
         ILocalizationService localization,
-        IBirdNameDisplayService birdNameDisplay)
+        IBirdNameDisplayService birdNameDisplay,
+        IBirdViewModelCache birdViewModelCache)
     {
         _birdManager = birdManager;
         _localization = localization;
         _birdNameDisplay = birdNameDisplay;
+        _birdViewModelCache = birdViewModelCache;
 
         Birds = birdManager.Store.Birds;
         Filters = CreateFilters();
@@ -46,15 +51,7 @@ public partial class BirdListViewModel : ObservableObject
 
         SelectedFilter = Filters[0];
 
-        birdManager.Store.PropertyChanged += (_, e) =>
-        {
-            if (e.PropertyName == nameof(birdManager.Store.LoadState))
-            {
-                OnPropertyChanged(nameof(IsLoading));
-                OnPropertyChanged(nameof(IsFailed));
-                ReloadBirdsCommand.NotifyCanExecuteChanged();
-            }
-        };
+        birdManager.Store.PropertyChanged += OnStorePropertyChanged;
 
         if (Birds is INotifyCollectionChanged birdsChanged)
             birdsChanged.CollectionChanged += OnBirdsCollectionChanged;
@@ -65,6 +62,7 @@ public partial class BirdListViewModel : ObservableObject
     public ObservableCollection<BirdDTO> Birds { get; }
     public static Array BirdNames => Enum.GetValues(typeof(BirdSpecies));
     public ICollectionView BirdsView { get; }
+    public IBirdViewModelCache BirdViewModelCache => _birdViewModelCache;
 
     public bool IsLoading => _birdManager.Store.LoadState == LoadState.Loading;
 
@@ -131,6 +129,21 @@ public partial class BirdListViewModel : ObservableObject
         OnPropertyChanged(nameof(BirdCount));
     }
 
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
+
+        _birdManager.Store.PropertyChanged -= OnStorePropertyChanged;
+
+        if (Birds is INotifyCollectionChanged birdsChanged)
+            birdsChanged.CollectionChanged -= OnBirdsCollectionChanged;
+
+        _localization.LanguageChanged -= OnLanguageChanged;
+        _birdViewModelCache.Dispose();
+        _disposed = true;
+    }
+
     private IReadOnlyList<FilterOption> CreateFilters()
     {
         var filters = new List<FilterOption>
@@ -165,8 +178,62 @@ public partial class BirdListViewModel : ObservableObject
                || bird.Description?.Contains(text, StringComparison.CurrentCultureIgnoreCase) == true;
     }
 
+    private void OnStorePropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(_birdManager.Store.LoadState))
+            return;
+
+        OnPropertyChanged(nameof(IsLoading));
+        OnPropertyChanged(nameof(IsFailed));
+        ReloadBirdsCommand.NotifyCanExecuteChanged();
+    }
+
     private void OnBirdsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        switch (e.Action)
+        {
+            case NotifyCollectionChangedAction.Remove:
+                RemoveCachedBirds(e.OldItems);
+                break;
+            case NotifyCollectionChangedAction.Replace:
+                RemoveReplacedCachedBirds(e.OldItems, e.NewItems);
+                RefreshCachedBirds(e.NewItems);
+                break;
+            case NotifyCollectionChangedAction.Reset:
+                _birdViewModelCache.Clear();
+                break;
+        }
+
         OnPropertyChanged(nameof(BirdCount));
+    }
+
+    private void RemoveReplacedCachedBirds(System.Collections.IList? oldItems, System.Collections.IList? newItems)
+    {
+        if (oldItems is null)
+            return;
+
+        var newIds = newItems?.OfType<BirdDTO>().Select(bird => bird.Id).ToHashSet() ?? [];
+
+        foreach (var oldBird in oldItems.OfType<BirdDTO>())
+            if (!newIds.Contains(oldBird.Id))
+                _birdViewModelCache.Remove(oldBird.Id);
+    }
+
+    private void RemoveCachedBirds(System.Collections.IList? birds)
+    {
+        if (birds is null)
+            return;
+
+        foreach (var bird in birds.OfType<BirdDTO>())
+            _birdViewModelCache.Remove(bird.Id);
+    }
+
+    private void RefreshCachedBirds(System.Collections.IList? birds)
+    {
+        if (birds is null)
+            return;
+
+        foreach (var bird in birds.OfType<BirdDTO>())
+            _birdViewModelCache.Refresh(bird);
     }
 }

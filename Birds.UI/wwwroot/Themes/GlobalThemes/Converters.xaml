@@ -13,6 +13,6 @@
     <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
     <conv:BirdVmConverter
         x:Key="BirdVmConverter"
-        Factory="{x:Null}" />
+        Cache="{x:Null}" />
     <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 </ResourceDictionary>

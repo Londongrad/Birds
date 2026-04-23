@@ -6,6 +6,7 @@ using Birds.Shared.Localization;
 using Birds.Tests.UI.Services;
 using Birds.UI.Enums;
 using Birds.UI.Services.BirdNames;
+using Birds.UI.Services.Caching;
 using Birds.UI.Services.Localization;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Managers.Bird;
@@ -97,12 +98,77 @@ public class BirdListViewModelTests
         sut.FilterBirds(bird).Should().BeTrue();
     }
 
+    [Fact]
+    public void Ctor_Should_Not_Create_Item_ViewModels_For_Dtos()
+    {
+        var birds = Enumerable.Range(0, 50)
+            .Select(_ => CreateBird((BirdSpecies)1))
+            .ToArray();
+
+        _ = CreateViewModelWithCache(out var cache, DateDisplayFormats.DayMonthYear, birds);
+
+        cache.Verify(x => x.GetOrCreate(It.IsAny<BirdDTO>()), Times.Never);
+    }
+
+    [Fact]
+    public void BirdsCollectionChanged_When_BirdRemoved_Should_Remove_Cached_ViewModel()
+    {
+        var bird = CreateBird((BirdSpecies)1);
+        var sut = CreateViewModelWithCache(out var cache, DateDisplayFormats.DayMonthYear, bird);
+
+        sut.Birds.Remove(bird);
+
+        cache.Verify(x => x.Remove(bird.Id), Times.Once);
+    }
+
+    [Fact]
+    public void BirdsCollectionChanged_When_BirdReplaced_Should_Refresh_Cached_ViewModel()
+    {
+        var bird = CreateBird((BirdSpecies)1);
+        var updated = bird with { Description = "updated" };
+        var sut = CreateViewModelWithCache(out var cache, DateDisplayFormats.DayMonthYear, bird);
+
+        sut.Birds[0] = updated;
+
+        cache.Verify(x => x.Refresh(updated), Times.Once);
+        cache.Verify(x => x.Remove(bird.Id), Times.Never);
+    }
+
+    [Fact]
+    public void BirdsCollectionChanged_When_BirdsReset_Should_Clear_Cache()
+    {
+        var bird = CreateBird((BirdSpecies)1);
+        var sut = CreateViewModelWithCache(out var cache, DateDisplayFormats.DayMonthYear, bird);
+
+        sut.Birds.Clear();
+
+        cache.Verify(x => x.Clear(), Times.Once);
+    }
+
+    [Fact]
+    public void Dispose_Should_Dispose_BirdViewModel_Cache()
+    {
+        var sut = CreateViewModelWithCache(out var cache, DateDisplayFormats.DayMonthYear);
+
+        sut.Dispose();
+
+        cache.Verify(x => x.Dispose(), Times.Once);
+    }
+
     private static BirdListViewModel CreateViewModel(params BirdDTO[] birds)
     {
         return CreateViewModel(DateDisplayFormats.DayMonthYear, birds);
     }
 
     private static BirdListViewModel CreateViewModel(string dateFormat, params BirdDTO[] birds)
+    {
+        return CreateViewModelWithCache(out _, dateFormat, birds);
+    }
+
+    private static BirdListViewModel CreateViewModelWithCache(
+        out Mock<IBirdViewModelCache> cache,
+        string dateFormat,
+        params BirdDTO[] birds)
     {
         var store = new BirdStore();
         store.CompleteLoading();
@@ -127,8 +193,9 @@ public class BirdListViewModelTests
                     : fallback ?? "\u2014");
 
         var birdNameDisplay = new BirdNameDisplayService(localization.Object);
+        cache = new Mock<IBirdViewModelCache>();
 
-        return new BirdListViewModel(manager.Object, localization.Object, birdNameDisplay);
+        return new BirdListViewModel(manager.Object, localization.Object, birdNameDisplay, cache.Object);
     }
 
     private static BirdDTO CreateBird(BirdSpecies species, string? desc = null)

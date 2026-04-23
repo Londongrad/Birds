@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Data;
 using Birds.Application.DTOs;
-using Birds.UI.Services.Factories.BirdViewModelFactory;
+using Birds.UI.Services.Caching;
 using Birds.UI.ViewModels;
 
 namespace Birds.UI.Converters;
@@ -17,8 +17,8 @@ namespace Birds.UI.Converters;
 ///     This converter is necessary because the collection in <see cref="BirdListViewModel" /> stores DTO objects,
 ///     but interaction with the UI requires a full <see cref="BirdViewModel" />.
 ///     <para>
-///         Through the <see cref="IBirdViewModelFactory" />, dependencies are injected in App.xaml.cs,
-///         ensuring proper creation of <see cref="BirdViewModel" /> instances.
+///         Through the <see cref="IBirdViewModelCache" />, the converter remains a binding bridge while lifecycle
+///         ownership stays with the bird list view model.
 ///     </para>
 /// </remarks>
 public class BirdVmConverter : IValueConverter
@@ -35,13 +35,13 @@ public class BirdVmConverter : IValueConverter
     }
 
     /// <summary>
-    ///     Factory for creating <see cref="BirdViewModel" /> instances based on <see cref="BirdDTO" />.
+    ///     Cache for retrieving <see cref="BirdViewModel" /> instances based on <see cref="BirdDTO" />.
     ///     Must be set (via XAML resources or manually in code).
     ///     <para>
     ///         Configured in App.xaml.cs.
     ///     </para>
     /// </summary>
-    public IBirdViewModelFactory? Factory { get; set; }
+    public IBirdViewModelCache? Cache { get; set; }
 
     /// <summary>
     ///     Converts a <see cref="BirdDTO" /> to a <see cref="BirdViewModel" />.
@@ -54,8 +54,8 @@ public class BirdVmConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (value is BirdDTO dto)
-            if (Factory != null)
-                return Factory.Create(dto);
+            if (Cache != null)
+                return Cache.GetOrCreate(dto);
 
         return Binding.DoNothing; // better than null!
     }

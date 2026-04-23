@@ -1,5 +1,4 @@
 ﻿using Birds.UI.Converters;
-using Birds.UI.Services.Factories.BirdViewModelFactory;
 using Birds.UI.Services.Navigation.Interfaces;
 using Birds.UI.ViewModels;
 using Birds.UI.Views.Windows;
@@ -16,7 +15,7 @@ public partial class App
     ///     and opens the main window via <see cref="INavigationService" />.
     /// </summary>
     /// <param name="host">
-    ///     A started <see cref="IHost" /> used to resolve UI services (converter factory,
+    ///     A started <see cref="IHost" /> used to resolve UI services (converter cache,
     ///     navigation service, main view model).
     /// </param>
     /// <remarks>
@@ -34,17 +33,16 @@ public partial class App
     }
 
     /// <summary>
-    ///     Wires the XAML resource <see cref="BirdVmConverter" /> with an
-    ///     <see cref="IBirdViewModelFactory" /> from DI so the converter can
-    ///     materialize <c>BirdViewModel</c> instances from <c>BirdDTO</c>.
+    ///     Wires the XAML resource <see cref="BirdVmConverter" /> with the
+    ///     bird list's bounded item view-model cache.
     /// </summary>
     /// <param name="host">
-    ///     Host used to resolve <see cref="IBirdViewModelFactory" />.
+    ///     Host used to resolve <see cref="BirdListViewModel" />.
     /// </param>
     private void ConfigureConverter(IHost host)
     {
         var converter = (BirdVmConverter)Resources["BirdVmConverter"];
-        converter.Factory = host.Services.GetRequiredService<IBirdViewModelFactory>();
+        converter.Cache = host.Services.GetRequiredService<BirdListViewModel>().BirdViewModelCache;
     }
 
     /// <summary>

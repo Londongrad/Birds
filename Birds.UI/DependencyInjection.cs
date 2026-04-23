@@ -1,5 +1,6 @@
 using Birds.Shared.Sync;
 using Birds.UI.Services.BirdNames;
+using Birds.UI.Services.Caching;
 using Birds.UI.Services.Dialogs;
 using Birds.UI.Services.Dialogs.Interfaces;
 using Birds.UI.Services.Export;
@@ -46,6 +47,8 @@ public static class DependencyInjection
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<INotificationService, NotificationService>();
         services.AddSingleton<IBirdViewModelFactory, BirdViewModelFactory>();
+        services.AddSingleton<IBirdViewModelCache>(sp =>
+            new BirdViewModelCache(sp.GetRequiredService<IBirdViewModelFactory>()));
         services.AddSingleton<IBirdStore, BirdStore>();
         services.AddSingleton<BirdStoreInitializer>();
         services.AddSingleton<IBirdManager, BirdManager>();

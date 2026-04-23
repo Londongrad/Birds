@@ -203,6 +203,22 @@ public class BirdViewModelTests
     }
 
     [Fact]
+    public void Dispose_Should_Unsubscribe_From_Localization_LanguageChanged()
+    {
+        var chickadee = (BirdSpecies)6;
+        var dto = CreateBirdDto(chickadee);
+        var sut = CreateViewModel(dto);
+
+        sut.Dispose();
+        _currentCulture = CultureInfo.GetCultureInfo(AppLanguages.English);
+        _localization.Raise(x => x.LanguageChanged += null, EventArgs.Empty);
+
+        sut.IsDisposed.Should().BeTrue();
+        sut.DisplayName.Should().Be(BirdNameDisplayNames.GetDisplayName(chickadee, CultureInfo.GetCultureInfo(AppLanguages.Russian)));
+        _localization.VerifyRemove(x => x.LanguageChanged -= It.IsAny<EventHandler>(), Times.Once);
+    }
+
+    [Fact]
     public void LanguageChanged_Should_Rebuild_DepartureValidation_In_Current_Language()
     {
         var previousCulture = CultureInfo.CurrentCulture;
