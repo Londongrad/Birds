@@ -9,6 +9,7 @@ public sealed class RemoteBirdDbContext(DbContextOptions<RemoteBirdDbContext> op
 {
     public DbSet<Bird> Birds => Set<Bird>();
     public DbSet<RemoteBirdTombstone> BirdTombstones => Set<RemoteBirdTombstone>();
+    public DbSet<RemoteAppliedSyncOperation> AppliedSyncOperations => Set<RemoteAppliedSyncOperation>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -28,6 +29,29 @@ public sealed class RemoteBirdDbContext(DbContextOptions<RemoteBirdDbContext> op
                 .HasColumnType("timestamp without time zone");
 
             builder.HasIndex(tombstone => tombstone.DeletedAtUtc);
+        });
+
+        modelBuilder.Entity<RemoteAppliedSyncOperation>(builder =>
+        {
+            builder.HasKey(operation => operation.OperationId);
+
+            builder.Property(operation => operation.OperationId)
+                .IsRequired();
+
+            builder.Property(operation => operation.OperationType)
+                .HasConversion<string>()
+                .IsRequired();
+
+            builder.Property(operation => operation.EntityId)
+                .IsRequired();
+
+            builder.Property(operation => operation.AppliedAtUtc)
+                .IsRequired()
+                .HasConversion(UtcDateTimeConverters.Required)
+                .HasColumnType("timestamp without time zone");
+
+            builder.HasIndex(operation => operation.EntityId);
+            builder.HasIndex(operation => operation.AppliedAtUtc);
         });
     }
 }

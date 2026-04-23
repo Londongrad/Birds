@@ -108,6 +108,13 @@ public sealed class RemoteSyncService(
                     ? new RemoteSyncRunResult(RemoteSyncRunStatus.Synced, processedCount, null, remoteWinsCount)
                     : RemoteSyncRunResult.NothingToSync;
             }
+            catch (LocalOutboxCleanupException ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                return new RemoteSyncRunResult(
+                    RemoteSyncRunStatus.Failed,
+                    pendingOperations.Count,
+                    ex.Message);
+            }
             catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
             {
                 var status = IsBackendUnavailable(ex)
@@ -212,9 +219,24 @@ public sealed class RemoteSyncService(
     {
         var remoteWinsCount =
             await ApplyPushBatchAsync(localContext, remoteContext, pendingOperations, cancellationToken);
-        localContext.SyncOperations.RemoveRange(pendingOperations);
-        await localContext.SaveChangesAsync(cancellationToken);
-        localContext.ChangeTracker.Clear();
+
+        try
+        {
+            localContext.SyncOperations.RemoveRange(pendingOperations);
+            await localContext.SaveChangesAsync(cancellationToken);
+            localContext.ChangeTracker.Clear();
+        }
+        catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            localContext.ChangeTracker.Clear();
+            _logger.LogWarning(
+                ex,
+                "Remote sync push committed, but local outbox cleanup failed for {OperationCount} operations.",
+                pendingOperations.Count);
+            throw new LocalOutboxCleanupException(
+                "Remote sync push committed, but local outbox cleanup failed. Pending operations will be retried safely.",
+                ex);
+        }
 
         _logger.LogInformation(LogMessages.RemoteSyncProcessed, pendingOperations.Count);
         return new PushBatchResult(pendingOperations.Count, remoteWinsCount);
@@ -399,22 +421,36 @@ public sealed class RemoteSyncService(
         var remoteWinsCount = 0;
         var upserts = pendingOperations
             .Where(operation => operation.OperationType == SyncOperationType.Upsert)
-            .Select(operation => JsonSerializer.Deserialize<BirdSyncPayload>(operation.PayloadJson)
-                                 ?? throw new InvalidOperationException("Failed to deserialize bird sync payload."))
+            .Select(operation => new PendingUpsertOperation(
+                operation,
+                JsonSerializer.Deserialize<BirdSyncPayload>(operation.PayloadJson)
+                ?? throw new InvalidOperationException("Failed to deserialize bird sync payload.")))
             .ToList();
 
         var deletes = pendingOperations
             .Where(operation => operation.OperationType == SyncOperationType.Delete)
-            .Select(operation => JsonSerializer.Deserialize<BirdDeleteSyncPayload>(operation.PayloadJson)
-                                 ?? throw new InvalidOperationException(
-                                     "Failed to deserialize bird delete sync payload."))
+            .Select(operation => new PendingDeleteOperation(
+                operation,
+                JsonSerializer.Deserialize<BirdDeleteSyncPayload>(operation.PayloadJson)
+                ?? throw new InvalidOperationException("Failed to deserialize bird delete sync payload.")))
             .ToList();
 
         await using var transaction = await remoteContext.Database.BeginTransactionAsync(cancellationToken);
 
+        var appliedOperationIds = await LoadAppliedOperationIdsAsync(remoteContext, pendingOperations, cancellationToken);
+        upserts = upserts
+            .Where(operation => !appliedOperationIds.Contains(operation.Operation.Id))
+            .ToList();
+        deletes = deletes
+            .Where(operation => !appliedOperationIds.Contains(operation.Operation.Id))
+            .ToList();
+
+        var appliedAtUtc = DateTime.UtcNow;
+        var newlyAppliedOperations = new List<RemoteAppliedSyncOperation>();
+
         if (upserts.Count > 0)
         {
-            var ids = upserts.Select(static payload => payload.Id).ToArray();
+            var ids = upserts.Select(static operation => operation.Payload.Id).ToArray();
             var existingRemoteBirds = await remoteContext.Birds
                 .AsNoTracking()
                 .Where(bird => ids.Contains(bird.Id))
@@ -429,8 +465,9 @@ public sealed class RemoteSyncService(
             var birdsToUpdate = new List<Bird>();
             var tombstonesToRemove = new HashSet<Guid>();
 
-            foreach (var payload in upserts)
+            foreach (var operation in upserts)
             {
+                var payload = operation.Payload;
                 var localSyncStamp = GetSyncStamp(payload);
 
                 if (existingRemoteTombstones.TryGetValue(payload.Id, out var remoteTombstone) &&
@@ -441,6 +478,7 @@ public sealed class RemoteSyncService(
                     if (existingLocalBirds.TryGetValue(payload.Id, out var localBird))
                         localContext.Birds.Remove(localBird);
 
+                    newlyAppliedOperations.Add(CreateAppliedOperation(operation.Operation, appliedAtUtc));
                     continue;
                 }
 
@@ -455,6 +493,7 @@ public sealed class RemoteSyncService(
                     else
                         await localContext.Birds.AddAsync(restoredRemoteBird, cancellationToken);
 
+                    newlyAppliedOperations.Add(CreateAppliedOperation(operation.Operation, appliedAtUtc));
                     continue;
                 }
 
@@ -466,6 +505,7 @@ public sealed class RemoteSyncService(
                     birdsToAdd.Add(restoredLocalBird);
 
                 tombstonesToRemove.Add(payload.Id);
+                newlyAppliedOperations.Add(CreateAppliedOperation(operation.Operation, appliedAtUtc));
             }
 
             if (birdsToAdd.Count > 0)
@@ -485,7 +525,7 @@ public sealed class RemoteSyncService(
 
         if (deletes.Count > 0)
         {
-            var deleteIds = deletes.Select(static payload => payload.Id).ToArray();
+            var deleteIds = deletes.Select(static operation => operation.Payload.Id).ToArray();
             var existingRemoteBirds = await remoteContext.Birds
                 .AsNoTracking()
                 .Where(bird => deleteIds.Contains(bird.Id))
@@ -499,8 +539,9 @@ public sealed class RemoteSyncService(
             var tombstoneMap = existingTombstones.ToDictionary(tombstone => tombstone.BirdId);
             var remoteDeleteIds = new HashSet<Guid>();
 
-            foreach (var payload in deletes)
+            foreach (var operation in deletes)
             {
+                var payload = operation.Payload;
                 var deleteStamp = NormalizeComparisonStamp(payload.DeletedAtUtc);
 
                 if (tombstoneMap.TryGetValue(payload.Id, out var existingTombstone) &&
@@ -509,6 +550,7 @@ public sealed class RemoteSyncService(
                     if (existingLocalBirds.TryGetValue(payload.Id, out var localBird))
                         localContext.Birds.Remove(localBird);
 
+                    newlyAppliedOperations.Add(CreateAppliedOperation(operation.Operation, appliedAtUtc));
                     continue;
                 }
 
@@ -523,6 +565,7 @@ public sealed class RemoteSyncService(
                     else
                         await localContext.Birds.AddAsync(restoredRemoteBird, cancellationToken);
 
+                    newlyAppliedOperations.Add(CreateAppliedOperation(operation.Operation, appliedAtUtc));
                     continue;
                 }
 
@@ -534,6 +577,8 @@ public sealed class RemoteSyncService(
                     await remoteContext.BirdTombstones.AddAsync(
                         RemoteBirdTombstone.Create(payload.Id, payload.DeletedAtUtc),
                         cancellationToken);
+
+                newlyAppliedOperations.Add(CreateAppliedOperation(operation.Operation, appliedAtUtc));
             }
 
             if (remoteDeleteIds.Count > 0)
@@ -545,8 +590,43 @@ public sealed class RemoteSyncService(
                 await remoteContext.SaveChangesAsync(cancellationToken);
         }
 
+        if (newlyAppliedOperations.Count > 0)
+        {
+            await remoteContext.AppliedSyncOperations.AddRangeAsync(newlyAppliedOperations, cancellationToken);
+            await remoteContext.SaveChangesAsync(cancellationToken);
+        }
+
         await transaction.CommitAsync(cancellationToken);
         return remoteWinsCount;
+    }
+
+    private static async Task<HashSet<Guid>> LoadAppliedOperationIdsAsync(RemoteBirdDbContext remoteContext,
+        IReadOnlyCollection<SyncOperation> pendingOperations,
+        CancellationToken cancellationToken)
+    {
+        var operationIds = pendingOperations
+            .Select(static operation => operation.Id)
+            .ToArray();
+
+        if (operationIds.Length == 0)
+            return [];
+
+        var appliedOperationIds = await remoteContext.AppliedSyncOperations
+            .AsNoTracking()
+            .Where(operation => operationIds.Contains(operation.OperationId))
+            .Select(operation => operation.OperationId)
+            .ToListAsync(cancellationToken);
+
+        return appliedOperationIds.ToHashSet();
+    }
+
+    private static RemoteAppliedSyncOperation CreateAppliedOperation(SyncOperation operation, DateTime appliedAtUtc)
+    {
+        return RemoteAppliedSyncOperation.Create(
+            operation.Id,
+            operation.OperationType,
+            operation.AggregateId,
+            appliedAtUtc);
     }
 
     private static Bird RestoreBird(BirdSyncPayload payload)
@@ -650,6 +730,23 @@ public sealed class RemoteSyncService(
                   "DeletedAtUtc" TEXT NOT NULL
               );
               """;
+        var createAppliedOperationsSql = providerName.Contains("Npgsql", StringComparison.OrdinalIgnoreCase)
+            ? """
+              CREATE TABLE IF NOT EXISTS "AppliedSyncOperations" (
+                  "OperationId" uuid NOT NULL CONSTRAINT "PK_AppliedSyncOperations" PRIMARY KEY,
+                  "OperationType" text NOT NULL,
+                  "EntityId" uuid NOT NULL,
+                  "AppliedAtUtc" timestamp without time zone NOT NULL
+              );
+              """
+            : """
+              CREATE TABLE IF NOT EXISTS "AppliedSyncOperations" (
+                  "OperationId" TEXT NOT NULL CONSTRAINT "PK_AppliedSyncOperations" PRIMARY KEY,
+                  "OperationType" TEXT NOT NULL,
+                  "EntityId" TEXT NOT NULL,
+                  "AppliedAtUtc" TEXT NOT NULL
+              );
+              """;
 
         await remoteContext.Database.ExecuteSqlRawAsync(
             createBirdsSql,
@@ -657,6 +754,10 @@ public sealed class RemoteSyncService(
 
         await remoteContext.Database.ExecuteSqlRawAsync(
             createTableSql,
+            cancellationToken);
+
+        await remoteContext.Database.ExecuteSqlRawAsync(
+            createAppliedOperationsSql,
             cancellationToken);
 
         await EnsureRemoteBirdSyncStampColumnAsync(remoteContext, providerName, cancellationToken);
@@ -672,6 +773,20 @@ public sealed class RemoteSyncService(
             """
             CREATE INDEX IF NOT EXISTS "IX_BirdTombstones_DeletedAtUtc"
             ON "BirdTombstones" ("DeletedAtUtc");
+            """,
+            cancellationToken);
+
+        await remoteContext.Database.ExecuteSqlRawAsync(
+            """
+            CREATE INDEX IF NOT EXISTS "IX_AppliedSyncOperations_EntityId"
+            ON "AppliedSyncOperations" ("EntityId");
+            """,
+            cancellationToken);
+
+        await remoteContext.Database.ExecuteSqlRawAsync(
+            """
+            CREATE INDEX IF NOT EXISTS "IX_AppliedSyncOperations_AppliedAtUtc"
+            ON "AppliedSyncOperations" ("AppliedAtUtc");
             """,
             cancellationToken);
     }
@@ -798,5 +913,12 @@ public sealed class RemoteSyncService(
             operation.MarkFailed(errorMessage, attemptUtc);
     }
 
+    private sealed class LocalOutboxCleanupException(string message, Exception innerException)
+        : Exception(message, innerException);
+
     private readonly record struct PushBatchResult(int ProcessedCount, int RemoteWinsCount);
+
+    private readonly record struct PendingUpsertOperation(SyncOperation Operation, BirdSyncPayload Payload);
+
+    private readonly record struct PendingDeleteOperation(SyncOperation Operation, BirdDeleteSyncPayload Payload);
 }

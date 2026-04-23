@@ -232,6 +232,14 @@ public class BirdRepositoryTests : IAsyncLifetime
         var bird = Bird.Create(species[0], "before", DateOnly.FromDateTime(DateTime.Now.AddDays(-5)));
         await repo.AddAsync(bird);
 
+        Guid originalOperationId;
+        await using (var initialContext = _db.CreateContext())
+        {
+            originalOperationId = await initialContext.SyncOperations
+                .Select(operation => operation.Id)
+                .SingleAsync();
+        }
+
         bird.Update(species[1], "after", bird.Arrival, bird.Departure, bird.IsAlive);
         await repo.UpdateAsync(bird);
 
@@ -239,6 +247,7 @@ public class BirdRepositoryTests : IAsyncLifetime
         var operations = await context.SyncOperations.ToListAsync();
 
         operations.Should().HaveCount(1);
+        operations[0].Id.Should().Be(originalOperationId);
         operations[0].OperationType.Should().Be(SyncOperationType.Upsert);
 
         using var payload = JsonDocument.Parse(operations[0].PayloadJson);
@@ -254,12 +263,21 @@ public class BirdRepositoryTests : IAsyncLifetime
         var bird = Bird.Create(species, "delete me", DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
         await repo.AddAsync(bird);
 
+        Guid originalOperationId;
+        await using (var initialContext = _db.CreateContext())
+        {
+            originalOperationId = await initialContext.SyncOperations
+                .Select(operation => operation.Id)
+                .SingleAsync();
+        }
+
         await repo.RemoveAsync(bird);
 
         await using var context = _db.CreateContext();
         var operations = await context.SyncOperations.ToListAsync();
 
         operations.Should().HaveCount(1);
+        operations[0].Id.Should().Be(originalOperationId);
         operations[0].OperationType.Should().Be(SyncOperationType.Delete);
 
         using var payload = JsonDocument.Parse(operations[0].PayloadJson);

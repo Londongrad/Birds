@@ -43,6 +43,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
             "sync me",
             DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
         await repository.AddAsync(bird);
+        var operation = await LoadSingleOperationAsync();
 
         var sut = CreateSut(_remoteDb.CreateFactory());
 
@@ -55,6 +56,10 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
         var remoteBird = await remoteContext.Birds.SingleAsync();
         remoteBird.Id.Should().Be(bird.Id);
         remoteBird.Description.Should().Be("sync me");
+        var appliedOperation = await remoteContext.AppliedSyncOperations.SingleAsync();
+        appliedOperation.OperationId.Should().Be(operation.Id);
+        appliedOperation.OperationType.Should().Be(SyncOperationType.Upsert);
+        appliedOperation.EntityId.Should().Be(bird.Id);
 
         await using var localContext = _localDb.CreateContext();
         (await localContext.SyncOperations.CountAsync()).Should().Be(0);
@@ -125,6 +130,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
 
         await repository.AddAsync(bird);
         await repository.RemoveAsync(bird);
+        var operation = await LoadSingleOperationAsync();
 
         var sut = CreateSut(_remoteDb.CreateFactory());
 
@@ -138,9 +144,140 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
         var tombstone = await remoteVerifyContext.BirdTombstones.SingleAsync();
         tombstone.BirdId.Should().Be(bird.Id);
         tombstone.DeletedAtUtc.Kind.Should().Be(DateTimeKind.Utc);
+        var appliedOperation = await remoteVerifyContext.AppliedSyncOperations.SingleAsync();
+        appliedOperation.OperationId.Should().Be(operation.Id);
+        appliedOperation.OperationType.Should().Be(SyncOperationType.Delete);
+        appliedOperation.EntityId.Should().Be(bird.Id);
 
         await using var localContext = _localDb.CreateContext();
         (await localContext.SyncOperations.CountAsync()).Should().Be(0);
+    }
+
+    [Fact]
+    public async Task SyncPendingAsync_WhenOutboxStillContainsAlreadyAppliedUpsert_Should_ClearOutboxWithoutReapplying()
+    {
+        var repository = new BirdRepository(_localDb.CreateFactory());
+        var bird = Bird.Create(
+            Enum.GetValues<BirdSpecies>()[0],
+            "sync me",
+            DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
+        await repository.AddAsync(bird);
+        var operation = await LoadSingleOperationAsync();
+
+        var sut = CreateSut(_remoteDb.CreateFactory());
+        await sut.SyncPendingAsync(CancellationToken.None);
+
+        await using (var remoteContext = _remoteDb.CreateContext())
+        {
+            await remoteContext.Database.ExecuteSqlInterpolatedAsync(
+                $"""UPDATE "Birds" SET "Description" = {"remote survived"} WHERE "Id" = {bird.Id}""");
+        }
+
+        await RequeueOperationAsync(operation);
+
+        var retryResult = await sut.SyncPendingAsync(CancellationToken.None);
+
+        retryResult.Status.Should().Be(RemoteSyncRunStatus.Synced);
+
+        await using (var remoteVerifyContext = _remoteDb.CreateContext())
+        {
+            var remoteBird = await remoteVerifyContext.Birds.SingleAsync(b => b.Id == bird.Id);
+            remoteBird.Description.Should().Be("remote survived");
+            (await remoteVerifyContext.Birds.CountAsync()).Should().Be(1);
+            (await remoteVerifyContext.AppliedSyncOperations.CountAsync()).Should().Be(1);
+        }
+
+        await using var localVerifyContext = _localDb.CreateContext();
+        (await localVerifyContext.SyncOperations.CountAsync()).Should().Be(0);
+    }
+
+    [Fact]
+    public async Task SyncPendingAsync_WhenAlreadyAppliedDeleteIsRetried_Should_Not_Advance_Tombstone()
+    {
+        var repository = new BirdRepository(_localDb.CreateFactory());
+        var bird = Bird.Create(
+            Enum.GetValues<BirdSpecies>()[1],
+            "remove remotely",
+            DateOnly.FromDateTime(DateTime.Now.AddDays(-4)));
+
+        await using (var remoteContext = _remoteDb.CreateContext())
+        {
+            await remoteContext.Birds.AddAsync(RestoreForRemote(bird));
+            await remoteContext.SaveChangesAsync();
+        }
+
+        await repository.AddAsync(bird);
+        await repository.RemoveAsync(bird);
+        var operation = await LoadSingleOperationAsync();
+        var olderTombstoneStamp = DateTime.UtcNow.AddDays(-10);
+
+        var sut = CreateSut(_remoteDb.CreateFactory());
+        await sut.SyncPendingAsync(CancellationToken.None);
+
+        await using (var remoteContext = _remoteDb.CreateContext())
+        {
+            await remoteContext.Database.ExecuteSqlInterpolatedAsync(
+                $"""
+                 UPDATE "BirdTombstones"
+                 SET "DeletedAtUtc" = {olderTombstoneStamp}
+                 WHERE "BirdId" = {bird.Id}
+                 """);
+        }
+
+        await RequeueOperationAsync(operation);
+
+        var retryResult = await sut.SyncPendingAsync(CancellationToken.None);
+
+        retryResult.Status.Should().Be(RemoteSyncRunStatus.Synced);
+
+        await using (var remoteVerifyContext = _remoteDb.CreateContext())
+        {
+            var tombstone = await remoteVerifyContext.BirdTombstones.SingleAsync();
+            tombstone.DeletedAtUtc.Should().Be(olderTombstoneStamp);
+            (await remoteVerifyContext.AppliedSyncOperations.CountAsync()).Should().Be(1);
+        }
+
+        await using var localVerifyContext = _localDb.CreateContext();
+        (await localVerifyContext.SyncOperations.CountAsync()).Should().Be(0);
+    }
+
+    [Fact]
+    public async Task SyncPendingAsync_WhenAppliedMarkerInsertFails_Should_RollBack_RemoteMutation_And_KeepOutbox()
+    {
+        var repository = new BirdRepository(_localDb.CreateFactory());
+        var bird = Bird.Create(
+            Enum.GetValues<BirdSpecies>()[0],
+            "atomic push",
+            DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
+        await repository.AddAsync(bird);
+
+        await using (var remoteContext = _remoteDb.CreateContext())
+        {
+            await remoteContext.Database.ExecuteSqlRawAsync(
+                """
+                CREATE TRIGGER "TR_AppliedSyncOperations_FailInsert"
+                BEFORE INSERT ON "AppliedSyncOperations"
+                BEGIN
+                    SELECT RAISE(ABORT, 'applied insert failed');
+                END;
+                """);
+        }
+
+        var sut = CreateSut(_remoteDb.CreateFactory());
+
+        var result = await sut.SyncPendingAsync(CancellationToken.None);
+
+        result.Status.Should().Be(RemoteSyncRunStatus.Failed);
+
+        await using (var remoteVerifyContext = _remoteDb.CreateContext())
+        {
+            (await remoteVerifyContext.Birds.CountAsync()).Should().Be(0);
+            (await remoteVerifyContext.AppliedSyncOperations.CountAsync()).Should().Be(0);
+        }
+
+        await using var localVerifyContext = _localDb.CreateContext();
+        var operation = await localVerifyContext.SyncOperations.SingleAsync();
+        operation.RetryCount.Should().Be(1);
     }
 
     [Fact]
@@ -764,9 +901,38 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
         remoteBird.Description.Should().Be("bootstrap remote");
     }
 
+    private async Task<SyncOperation> LoadSingleOperationAsync()
+    {
+        await using var localContext = _localDb.CreateContext();
+        return await localContext.SyncOperations
+            .AsNoTracking()
+            .SingleAsync();
+    }
+
+    private async Task RequeueOperationAsync(SyncOperation operation)
+    {
+        await using var localContext = _localDb.CreateContext();
+        await localContext.SyncOperations.AddAsync(operation);
+        await localContext.SaveChangesAsync();
+    }
+
     private RemoteSyncService CreateSut(IDbContextFactory<RemoteBirdDbContext> remoteFactory)
     {
         return new RemoteSyncService(_localDb.CreateFactory(), remoteFactory, NullLogger<RemoteSyncService>.Instance);
+    }
+
+    private static Bird RestoreForRemote(Bird bird)
+    {
+        return Bird.Restore(
+            bird.Id,
+            bird.Name,
+            bird.Description,
+            bird.Arrival,
+            bird.Departure,
+            bird.IsAlive,
+            bird.CreatedAt,
+            bird.UpdatedAt,
+            bird.SyncStampUtc);
     }
 
     private static Bird CreateTestBird(Guid id, string description, DateTime syncStampUtc)
