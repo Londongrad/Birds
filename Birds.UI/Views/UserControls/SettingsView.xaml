@@ -318,6 +318,7 @@
                             </Border>
 
                             <Border
+                                DataContext="{Binding SyncSettings}"
                                 HorizontalAlignment="Stretch"
                                 Margin="0,16,0,0"
                                 Style="{StaticResource SettingsToggleRowStyle}">

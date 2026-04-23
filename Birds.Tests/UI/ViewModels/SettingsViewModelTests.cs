@@ -159,7 +159,7 @@ public class SettingsViewModelTests
     {
         _preferences.SelectedSyncInterval = RemoteSyncIntervalPresets.TenSeconds;
 
-        var sut = CreateSut();
+        var sut = CreateSyncSut();
 
         sut.SelectedSyncInterval = RemoteSyncIntervalPresets.ThirtySeconds;
 
@@ -177,7 +177,7 @@ public class SettingsViewModelTests
             0,
             3);
 
-        var sut = CreateSut();
+        var sut = CreateSyncSut();
 
         sut.RemoteSyncStatus.Should().Be(RemoteSyncDisplayState.Offline);
         sut.RemoteSyncStatusLabel.Should().Be(AppText.Get("Settings.SyncStatus.Offline", _culture));
@@ -198,7 +198,7 @@ public class SettingsViewModelTests
             remoteSnapshotState: RemoteSyncSnapshotState.Empty,
             remoteBirdCount: 0);
 
-        var sut = CreateSut();
+        var sut = CreateSyncSut();
 
         sut.RemoteSnapshotStateValue.Should().Be(AppText.Get("Settings.SyncMeta.RemoteStateEmpty", _culture));
         sut.IsRemoteSnapshotEmptyWarningVisible.Should().BeTrue();
@@ -222,7 +222,7 @@ public class SettingsViewModelTests
                     1)
             ]);
 
-        var sut = CreateSut();
+        var sut = CreateSyncSut();
 
         sut.HasRemoteSyncRecentActivity.Should().BeTrue();
         sut.RemoteSyncRecentActivityLabel.Should().Be(AppText.Get("Settings.SyncMeta.RecentActivityLabel", _culture));
@@ -235,7 +235,7 @@ public class SettingsViewModelTests
     [Fact]
     public void RemoteSyncRecentActivity_Should_BeCollapsed_ByDefault_And_Toggle()
     {
-        var sut = CreateSut();
+        var sut = CreateSyncSut();
 
         sut.IsRemoteSyncRecentActivityExpanded.Should().BeFalse();
         sut.RemoteSyncRecentActivityToggleLabel.Should()
@@ -251,7 +251,7 @@ public class SettingsViewModelTests
     [Fact]
     public async Task SyncNowCommand_Should_Invoke_RemoteSyncController()
     {
-        var sut = CreateSut();
+        var sut = CreateSyncSut();
 
         await sut.SyncNowCommand.ExecuteAsync(null);
 
@@ -261,7 +261,7 @@ public class SettingsViewModelTests
     [Fact]
     public async Task ToggleRemoteSyncPauseCommand_Should_Pause_When_CurrentlyActive()
     {
-        var sut = CreateSut();
+        var sut = CreateSyncSut();
 
         await sut.ToggleRemoteSyncPauseCommand.ExecuteAsync(null);
 
@@ -272,7 +272,7 @@ public class SettingsViewModelTests
     public async Task ToggleRemoteSyncPauseCommand_Should_Resume_When_CurrentlyPaused()
     {
         _remoteSyncStatus.SetState(RemoteSyncDisplayState.Paused, pendingOperationCount: 2);
-        var sut = CreateSut();
+        var sut = CreateSyncSut();
 
         await sut.ToggleRemoteSyncPauseCommand.ExecuteAsync(null);
 
@@ -287,7 +287,7 @@ public class SettingsViewModelTests
             new BirdDTO(Guid.NewGuid(), "Sparrow", null, new DateOnly(2026, 4, 1), null, true, null, null)
         });
 
-        var sut = CreateSut();
+        var sut = CreateSyncSut();
         sut.BeginRedownloadRemoteSnapshotCommand.Execute(null);
 
         await sut.ConfirmRedownloadRemoteSnapshotCommand.ExecuteAsync(null);
@@ -308,7 +308,7 @@ public class SettingsViewModelTests
         _remoteSyncController.Setup(x => x.RedownloadRemoteSnapshotAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
-        var sut = CreateSut();
+        var sut = CreateSyncSut();
         sut.BeginRedownloadRemoteSnapshotCommand.Execute(null);
 
         await sut.ConfirmRedownloadRemoteSnapshotCommand.ExecuteAsync(null);
@@ -328,7 +328,7 @@ public class SettingsViewModelTests
             new BirdDTO(Guid.NewGuid(), "Sparrow", null, new DateOnly(2026, 4, 1), null, true, null, null)
         });
 
-        var sut = CreateSut();
+        var sut = CreateSyncSut();
         sut.BeginUploadLocalSnapshotToRemoteCommand.Execute(null);
 
         await sut.ConfirmUploadLocalSnapshotToRemoteCommand.ExecuteAsync(null);
@@ -347,7 +347,7 @@ public class SettingsViewModelTests
         _remoteSyncController.Setup(x => x.UploadLocalSnapshotToRemoteAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
-        var sut = CreateSut();
+        var sut = CreateSyncSut();
         sut.BeginUploadLocalSnapshotToRemoteCommand.Execute(null);
 
         await sut.ConfirmUploadLocalSnapshotToRemoteCommand.ExecuteAsync(null);
@@ -355,6 +355,97 @@ public class SettingsViewModelTests
         _notificationService.Verify(
             x => x.ShowErrorLocalized("Error.CannotUploadLocalSnapshotToRemote", It.IsAny<object[]>()),
             Times.Once);
+    }
+
+    [Fact]
+    public void SyncSettings_LanguageChanged_Should_Update_Localized_Sync_Text()
+    {
+        _preferences.SelectedSyncInterval = RemoteSyncIntervalPresets.ThirtySeconds;
+        var sut = CreateSyncSut();
+        var availableSyncIntervals = sut.AvailableSyncIntervals;
+        var changedProperties = new List<string>();
+        sut.PropertyChanged += (_, args) =>
+        {
+            if (!string.IsNullOrWhiteSpace(args.PropertyName))
+                changedProperties.Add(args.PropertyName!);
+        };
+
+        _culture = CultureInfo.GetCultureInfo(AppLanguages.Russian);
+        _localization.Raise(x => x.LanguageChanged += null, EventArgs.Empty);
+
+        sut.AvailableSyncIntervals.Should().BeSameAs(availableSyncIntervals);
+        sut.SyncIntervalHint.Should().Contain(AppText.Get("Settings.SyncIntervalOption.ThirtySeconds", _culture));
+        sut.RemoteSyncStatusLabel.Should().Be(AppText.Get("Settings.SyncStatus.Disabled", _culture));
+        changedProperties.Should().Contain(nameof(SyncSettingsViewModel.AvailableSyncIntervals));
+        changedProperties.Should().Contain(nameof(SyncSettingsViewModel.SyncIntervalHint));
+        changedProperties.Should().Contain(nameof(SyncSettingsViewModel.RemoteSyncStatusLabel));
+    }
+
+    [Fact]
+    public void SyncSettings_Dispose_Should_Unsubscribe_From_LongLivedEvents()
+    {
+        var sut = CreateSyncSut();
+        var changedProperties = new List<string>();
+        sut.PropertyChanged += (_, args) =>
+        {
+            if (!string.IsNullOrWhiteSpace(args.PropertyName))
+                changedProperties.Add(args.PropertyName!);
+        };
+
+        sut.Dispose();
+        _culture = CultureInfo.GetCultureInfo(AppLanguages.Russian);
+        _localization.Raise(x => x.LanguageChanged += null, EventArgs.Empty);
+        _remoteSyncStatus.SetState(RemoteSyncDisplayState.Offline, lastErrorMessage: "offline");
+        _store.ReplaceBirds([
+            new BirdDTO(Guid.NewGuid(), "Sparrow", null, new DateOnly(2026, 4, 1), null, true, null, null)
+        ]);
+
+        changedProperties.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void SettingsViewModel_Should_Compose_SyncSettings_And_Forward_Busy_State()
+    {
+        var syncSettings = CreateSyncSut();
+        var sut = CreateSut(syncSettings);
+
+        sut.SyncSettings.Should().BeSameAs(syncSettings);
+        syncSettings.SyncNowCommand.CanExecute(null).Should().BeTrue();
+
+        sut.IsDataTransferBusy = true;
+
+        syncSettings.SyncNowCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    [Fact]
+    public void SettingsViewModel_Should_Close_Danger_Confirmation_When_Sync_Confirmation_Starts()
+    {
+        var syncSettings = CreateSyncSut();
+        var sut = CreateSut(syncSettings);
+        sut.BeginClearBirdRecordsCommand.Execute(null);
+
+        syncSettings.BeginUploadLocalSnapshotToRemoteCommand.Execute(null);
+
+        sut.IsConfirmingClearBirdRecords.Should().BeFalse();
+        syncSettings.IsConfirmingUploadLocalSnapshotToRemote.Should().BeTrue();
+    }
+
+    [Fact]
+    public void SettingsViewModel_Dispose_Should_Dispose_Composed_SyncSettings()
+    {
+        var syncSettings = CreateSyncSut();
+        var sut = CreateSut(syncSettings);
+        sut.Dispose();
+        var changedProperties = new List<string>();
+        syncSettings.PropertyChanged += (_, args) =>
+        {
+            if (!string.IsNullOrWhiteSpace(args.PropertyName))
+                changedProperties.Add(args.PropertyName!);
+        };
+
+        _remoteSyncStatus.SetState(RemoteSyncDisplayState.Offline, lastErrorMessage: "offline");
+
+        changedProperties.Should().BeEmpty();
     }
 
     [Fact]
@@ -369,7 +460,6 @@ public class SettingsViewModelTests
         var availableLanguages = sut.AvailableLanguages;
         var availableDateFormats = sut.AvailableDateFormats;
         var availableImportModes = sut.AvailableImportModes;
-        var availableSyncIntervals = sut.AvailableSyncIntervals;
         var changedProperties = new List<string>();
         sut.PropertyChanged += (_, args) =>
         {
@@ -386,12 +476,10 @@ public class SettingsViewModelTests
         sut.AvailableLanguages.Should().BeSameAs(availableLanguages);
         sut.AvailableDateFormats.Should().BeSameAs(availableDateFormats);
         sut.AvailableImportModes.Should().BeSameAs(availableImportModes);
-        sut.AvailableSyncIntervals.Should().BeSameAs(availableSyncIntervals);
         changedProperties.Should().Contain(nameof(SettingsViewModel.AvailableThemes));
         changedProperties.Should().Contain(nameof(SettingsViewModel.AvailableLanguages));
         changedProperties.Should().Contain(nameof(SettingsViewModel.AvailableDateFormats));
         changedProperties.Should().Contain(nameof(SettingsViewModel.AvailableImportModes));
-        changedProperties.Should().Contain(nameof(SettingsViewModel.AvailableSyncIntervals));
         _themeService.Verify(x => x.ApplyTheme(ThemeKeys.Steel), Times.AtLeastOnce);
     }
 
@@ -600,7 +688,7 @@ public class SettingsViewModelTests
             Times.Once);
     }
 
-    private SettingsViewModel CreateSut()
+    private SettingsViewModel CreateSut(SyncSettingsViewModel? syncSettings = null)
     {
         return new SettingsViewModel(
             _preferences,
@@ -616,6 +704,17 @@ public class SettingsViewModelTests
             _notificationService.Object,
             _mediator.Object,
             _databaseMaintenanceService.Object,
+            syncSettings ?? CreateSyncSut());
+    }
+
+    private SyncSettingsViewModel CreateSyncSut()
+    {
+        return new SyncSettingsViewModel(
+            _preferences,
+            _localization.Object,
+            _birdManager.Object,
+            _autoExportCoordinator.Object,
+            _notificationService.Object,
             _remoteSyncStatus,
             _remoteSyncController.Object);
     }
