@@ -529,6 +529,21 @@ public class SettingsViewModelTests
     }
 
     [Fact]
+    public void SettingsViewModel_Should_Compose_DangerZoneSettings_And_Forward_ImportExport_Busy_State()
+    {
+        var dangerZoneSettings = CreateDangerZoneSut();
+        var importExportSettings = CreateImportExportSut();
+        var sut = CreateSut(importExportSettings: importExportSettings, dangerZoneSettings: dangerZoneSettings);
+
+        sut.DangerZoneSettings.Should().BeSameAs(dangerZoneSettings);
+        dangerZoneSettings.BeginClearBirdRecordsCommand.CanExecute(null).Should().BeTrue();
+
+        importExportSettings.IsTransferBusy = true;
+
+        dangerZoneSettings.BeginClearBirdRecordsCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    [Fact]
     public void SettingsViewModel_Should_Compose_SyncSettings_And_Forward_Busy_State()
     {
         var syncSettings = CreateSyncSut();
@@ -546,13 +561,14 @@ public class SettingsViewModelTests
     [Fact]
     public void SettingsViewModel_Should_Compose_ImportExportSettings_And_Forward_Danger_Busy_State()
     {
+        var dangerZoneSettings = CreateDangerZoneSut();
         var importExportSettings = CreateImportExportSut();
-        var sut = CreateSut(importExportSettings: importExportSettings);
+        var sut = CreateSut(importExportSettings: importExportSettings, dangerZoneSettings: dangerZoneSettings);
 
         sut.ImportExportSettings.Should().BeSameAs(importExportSettings);
         importExportSettings.ExportDataCommand.CanExecute(null).Should().BeTrue();
 
-        sut.IsDangerZoneBusy = true;
+        dangerZoneSettings.IsDangerZoneBusy = true;
 
         importExportSettings.ExportDataCommand.CanExecute(null).Should().BeFalse();
     }
@@ -561,13 +577,28 @@ public class SettingsViewModelTests
     public void SettingsViewModel_Should_Close_Danger_Confirmation_When_Sync_Confirmation_Starts()
     {
         var syncSettings = CreateSyncSut();
-        var sut = CreateSut(syncSettings);
-        sut.BeginClearBirdRecordsCommand.Execute(null);
+        var dangerZoneSettings = CreateDangerZoneSut();
+        var sut = CreateSut(syncSettings: syncSettings, dangerZoneSettings: dangerZoneSettings);
+        dangerZoneSettings.BeginClearBirdRecordsCommand.Execute(null);
 
         syncSettings.BeginUploadLocalSnapshotToRemoteCommand.Execute(null);
 
-        sut.IsConfirmingClearBirdRecords.Should().BeFalse();
+        dangerZoneSettings.IsConfirmingClearBirdRecords.Should().BeFalse();
         syncSettings.IsConfirmingUploadLocalSnapshotToRemote.Should().BeTrue();
+    }
+
+    [Fact]
+    public void SettingsViewModel_Should_Close_Sync_Confirmation_When_Danger_Confirmation_Starts()
+    {
+        var syncSettings = CreateSyncSut();
+        var dangerZoneSettings = CreateDangerZoneSut();
+        var sut = CreateSut(syncSettings: syncSettings, dangerZoneSettings: dangerZoneSettings);
+        syncSettings.BeginUploadLocalSnapshotToRemoteCommand.Execute(null);
+
+        dangerZoneSettings.BeginClearBirdRecordsCommand.Execute(null);
+
+        syncSettings.IsConfirmingUploadLocalSnapshotToRemote.Should().BeFalse();
+        dangerZoneSettings.IsConfirmingClearBirdRecords.Should().BeTrue();
     }
 
     [Fact]
@@ -576,7 +607,8 @@ public class SettingsViewModelTests
         var appearanceSettings = CreateAppearanceSut();
         var syncSettings = CreateSyncSut();
         var importExportSettings = CreateImportExportSut();
-        var sut = CreateSut(syncSettings, importExportSettings, appearanceSettings);
+        var dangerZoneSettings = CreateDangerZoneSut();
+        var sut = CreateSut(syncSettings, importExportSettings, appearanceSettings, dangerZoneSettings);
         sut.Dispose();
         var appearanceChangedProperties = new List<string>();
         appearanceSettings.PropertyChanged += (_, args) =>
@@ -601,10 +633,12 @@ public class SettingsViewModelTests
         _preferences.SelectedTheme = ThemeKeys.Steel;
         _preferences.AutoExportEnabled = false;
         _localization.Raise(x => x.LanguageChanged += null, EventArgs.Empty);
+        dangerZoneSettings.IsDangerZoneBusy = true;
 
         appearanceChangedProperties.Should().BeEmpty();
         syncChangedProperties.Should().BeEmpty();
         importExportChangedProperties.Should().BeEmpty();
+        importExportSettings.ExportDataCommand.CanExecute(null).Should().BeTrue();
     }
 
     [Fact]
@@ -825,7 +859,7 @@ public class SettingsViewModelTests
         _databaseMaintenanceService.Setup(x => x.ClearBirdRecordsAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
-        var sut = CreateSut();
+        var sut = CreateDangerZoneSut();
         sut.BeginClearBirdRecordsCommand.Execute(null);
 
         await sut.ConfirmClearBirdRecordsCommand.ExecuteAsync(null);
@@ -848,7 +882,7 @@ public class SettingsViewModelTests
             new BirdDTO(Guid.NewGuid(), "Sparrow", null, new DateOnly(2026, 4, 1), null, true, null, null)
         });
 
-        var sut = CreateSut();
+        var sut = CreateDangerZoneSut();
         sut.BeginResetLocalDatabaseCommand.Execute(null);
 
         await sut.ConfirmResetLocalDatabaseCommand.ExecuteAsync(null);
@@ -862,20 +896,82 @@ public class SettingsViewModelTests
             Times.Once);
     }
 
+    [Fact]
+    public async Task ConfirmClearBirdRecordsCommand_Should_Not_Run_Without_Confirmation()
+    {
+        var sut = CreateDangerZoneSut();
+
+        sut.ConfirmClearBirdRecordsCommand.CanExecute(null).Should().BeFalse();
+        await sut.ConfirmClearBirdRecordsCommand.ExecuteAsync(null);
+
+        _databaseMaintenanceService.Verify(x => x.ClearBirdRecordsAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _birdManager.Verify(x => x.FlushPendingOperationsAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ConfirmResetLocalDatabaseCommand_Should_Not_Run_Without_Confirmation()
+    {
+        var sut = CreateDangerZoneSut();
+
+        sut.ConfirmResetLocalDatabaseCommand.CanExecute(null).Should().BeFalse();
+        await sut.ConfirmResetLocalDatabaseCommand.ExecuteAsync(null);
+
+        _databaseMaintenanceService.Verify(x => x.ResetLocalDatabaseAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _birdManager.Verify(x => x.FlushPendingOperationsAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public void DangerZoneCommands_Should_Be_Disabled_While_External_Busy()
+    {
+        var sut = CreateDangerZoneSut();
+
+        sut.SetExternalBusy(true);
+
+        sut.BeginClearBirdRecordsCommand.CanExecute(null).Should().BeFalse();
+        sut.BeginResetLocalDatabaseCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ConfirmClearBirdRecordsCommand_Should_ClearBusy_And_ShowError_When_ClearFails()
+    {
+        _databaseMaintenanceService.Setup(x => x.ClearBirdRecordsAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("locked"));
+        var sut = CreateDangerZoneSut();
+        sut.BeginClearBirdRecordsCommand.Execute(null);
+
+        await sut.ConfirmClearBirdRecordsCommand.ExecuteAsync(null);
+
+        sut.IsDangerZoneBusy.Should().BeFalse();
+        sut.IsConfirmingClearBirdRecords.Should().BeTrue();
+        _notificationService.Verify(
+            x => x.ShowErrorLocalized("Error.CannotClearBirdRecords", It.IsAny<object[]>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public void ResetPreferencesCommand_Should_Reset_Preferences()
+    {
+        _preferences.SelectedTheme = ThemeKeys.Steel;
+        _preferences.AutoExportEnabled = true;
+        var sut = CreateDangerZoneSut();
+
+        sut.ResetPreferencesCommand.Execute(null);
+
+        _preferences.SelectedTheme.Should().Be(AppPreferencesState.DefaultTheme);
+        _preferences.AutoExportEnabled.Should().Be(AppPreferencesState.DefaultAutoExportEnabled);
+    }
+
     private SettingsViewModel CreateSut(
         SyncSettingsViewModel? syncSettings = null,
         ImportExportSettingsViewModel? importExportSettings = null,
-        AppearanceSettingsViewModel? appearanceSettings = null)
+        AppearanceSettingsViewModel? appearanceSettings = null,
+        DangerZoneSettingsViewModel? dangerZoneSettings = null)
     {
         return new SettingsViewModel(
-            _preferences,
-            _birdManager.Object,
-            _autoExportCoordinator.Object,
-            _notificationService.Object,
-            _databaseMaintenanceService.Object,
             appearanceSettings ?? CreateAppearanceSut(),
             importExportSettings ?? CreateImportExportSut(),
-            syncSettings ?? CreateSyncSut());
+            syncSettings ?? CreateSyncSut(),
+            dangerZoneSettings ?? CreateDangerZoneSut());
     }
 
     private AppearanceSettingsViewModel CreateAppearanceSut()
@@ -913,6 +1009,16 @@ public class SettingsViewModelTests
             _notificationService.Object,
             _remoteSyncStatus,
             _remoteSyncController.Object);
+    }
+
+    private DangerZoneSettingsViewModel CreateDangerZoneSut()
+    {
+        return new DangerZoneSettingsViewModel(
+            _preferences,
+            _birdManager.Object,
+            _autoExportCoordinator.Object,
+            _notificationService.Object,
+            _databaseMaintenanceService.Object);
     }
 
     private sealed class TestPreferencesService : IAppPreferencesService

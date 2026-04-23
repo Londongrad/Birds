@@ -920,6 +920,7 @@
                     </Border>
 
                     <Border
+                        DataContext="{Binding DangerZoneSettings}"
                         Margin="0,18,0,0"
                         Style="{StaticResource SectionCardStyle}"
                         BorderBrush="{StaticResource DangerButtonBorderBrush}">
@@ -1110,6 +1111,7 @@
                     </Border>
 
                     <Border
+                        DataContext="{Binding DangerZoneSettings}"
                         Margin="0,18,0,0"
                         Padding="18,16"
                         Background="{StaticResource InsetBackgroundBrush}"

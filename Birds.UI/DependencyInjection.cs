@@ -44,6 +44,7 @@ public static class DependencyInjection
         services.AddSingleton<AppearanceSettingsViewModel>();
         services.AddSingleton<ImportExportSettingsViewModel>();
         services.AddSingleton<SyncSettingsViewModel>();
+        services.AddSingleton<DangerZoneSettingsViewModel>();
         services.AddSingleton<SettingsViewModel>();
 
         // Services
