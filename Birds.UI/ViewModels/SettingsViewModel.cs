@@ -1,26 +1,19 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
-using Birds.Application.Commands.ImportBirds;
 using Birds.Application.DTOs;
 using Birds.Application.Interfaces;
 using Birds.Shared.Localization;
-using Birds.UI.Services.Dialogs.Interfaces;
 using Birds.UI.Services.Export.Interfaces;
-using Birds.UI.Services.Import;
-using Birds.UI.Services.Import.Interfaces;
 using Birds.UI.Services.Localization;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.Services.Preferences;
 using Birds.UI.Services.Preferences.Interfaces;
-using Birds.UI.Services.Shell.Interfaces;
 using Birds.UI.Services.Theming;
 using Birds.UI.Services.Theming.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MediatR;
 
 namespace Birds.UI.ViewModels;
 
@@ -29,14 +22,9 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
     private readonly IAutoExportCoordinator _autoExportCoordinator;
     private readonly IBirdManager _birdManager;
     private readonly IDatabaseMaintenanceService _databaseMaintenanceService;
-    private readonly IDataFileDialogService _dataFileDialogService;
-    private readonly IExportPathProvider _exportPathProvider;
-    private readonly IExportService _exportService;
-    private readonly IImportService _importService;
+    private readonly ImportExportSettingsViewModel _importExportSettings;
     private readonly ILocalizationService _localization;
-    private readonly IMediator _mediator;
     private readonly INotificationService _notificationService;
-    private readonly IPathNavigationService _pathNavigationService;
     private readonly IAppPreferencesService _preferences;
     private readonly SyncSettingsViewModel _syncSettings;
     private readonly IThemeService _themeService;
@@ -45,9 +33,6 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
     private ReadOnlyCollection<DateFormatOption> _availableDateFormats =
         new(new List<DateFormatOption>());
 
-    private ReadOnlyCollection<ImportModeOption> _availableImportModes =
-        new(new List<ImportModeOption>());
-
     private ReadOnlyCollection<LanguageOption> _availableLanguages =
         new(new List<LanguageOption>());
 
@@ -55,8 +40,6 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         new(new List<ThemeOption>());
 
     private bool _isSynchronizingSelections;
-
-    [ObservableProperty] private bool autoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDangerConfirmationVisible))]
@@ -69,26 +52,13 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
     private bool isConfirmingResetLocalDatabase;
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(ExportDataCommand))]
-    [NotifyCanExecuteChangedFor(nameof(ImportDataCommand))]
     [NotifyCanExecuteChangedFor(nameof(BeginClearBirdRecordsCommand))]
     [NotifyCanExecuteChangedFor(nameof(BeginResetLocalDatabaseCommand))]
     [NotifyCanExecuteChangedFor(nameof(ConfirmClearBirdRecordsCommand))]
     [NotifyCanExecuteChangedFor(nameof(ConfirmResetLocalDatabaseCommand))]
     private bool isDangerZoneBusy;
 
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(ExportDataCommand))]
-    [NotifyCanExecuteChangedFor(nameof(ImportDataCommand))]
-    [NotifyCanExecuteChangedFor(nameof(BeginClearBirdRecordsCommand))]
-    [NotifyCanExecuteChangedFor(nameof(BeginResetLocalDatabaseCommand))]
-    [NotifyCanExecuteChangedFor(nameof(ConfirmClearBirdRecordsCommand))]
-    [NotifyCanExecuteChangedFor(nameof(ConfirmResetLocalDatabaseCommand))]
-    private bool isDataTransferBusy;
-
     [ObservableProperty] private string selectedDateFormat = AppPreferencesState.DefaultDateFormat;
-
-    [ObservableProperty] private string selectedImportMode = AppPreferencesState.DefaultImportMode;
 
     [ObservableProperty] private string selectedLanguage = AppPreferencesState.DefaultLanguage;
 
@@ -102,42 +72,32 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         IThemeService themeService,
         ILocalizationService localization,
         IBirdManager birdManager,
-        IExportService exportService,
-        IExportPathProvider exportPathProvider,
         IAutoExportCoordinator autoExportCoordinator,
-        IImportService importService,
-        IDataFileDialogService dataFileDialogService,
-        IPathNavigationService pathNavigationService,
         INotificationService notificationService,
-        IMediator mediator,
         IDatabaseMaintenanceService databaseMaintenanceService,
+        ImportExportSettingsViewModel importExportSettings,
         SyncSettingsViewModel syncSettings)
     {
         _preferences = preferences;
         _themeService = themeService;
         _localization = localization;
         _birdManager = birdManager;
-        _exportService = exportService;
-        _exportPathProvider = exportPathProvider;
         _autoExportCoordinator = autoExportCoordinator;
-        _importService = importService;
-        _dataFileDialogService = dataFileDialogService;
-        _pathNavigationService = pathNavigationService;
         _notificationService = notificationService;
-        _mediator = mediator;
         _databaseMaintenanceService = databaseMaintenanceService;
+        _importExportSettings = importExportSettings;
         _syncSettings = syncSettings;
 
         BuildAvailableLanguages();
         BuildAvailableThemes();
         BuildAvailableDateFormats();
-        BuildAvailableImportModes();
         ReloadFromPreferences();
 
         _preferences.PropertyChanged += OnPreferencesChanged;
         _localization.LanguageChanged += OnLanguageChanged;
+        _importExportSettings.PropertyChanged += OnImportExportSettingsPropertyChanged;
         _syncSettings.SyncConfirmationStarted += OnSyncConfirmationStarted;
-        UpdateSyncExternalBusy();
+        UpdateChildExternalBusy();
     }
 
     public ReadOnlyCollection<LanguageOption> AvailableLanguages
@@ -158,11 +118,7 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         private set => SetProperty(ref _availableDateFormats, value);
     }
 
-    public ReadOnlyCollection<ImportModeOption> AvailableImportModes
-    {
-        get => _availableImportModes;
-        private set => SetProperty(ref _availableImportModes, value);
-    }
+    public ImportExportSettingsViewModel ImportExportSettings => _importExportSettings;
 
     public SyncSettingsViewModel SyncSettings => _syncSettings;
 
@@ -194,24 +150,6 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
             ? _localization.GetString("Settings.SyncIndicatorHint.Enabled")
             : _localization.GetString("Settings.SyncIndicatorHint.Disabled");
 
-    public string ExportPathHint =>
-        _localization.GetString("Settings.Data.ExportHint", ResolveExportPath());
-
-    public string ImportHint =>
-        SelectedImportMode == BirdImportModes.Replace
-            ? _localization.GetString("Settings.Data.ImportHint.Replace")
-            : _localization.GetString("Settings.Data.ImportHint.Merge");
-
-    public string ImportModeHint =>
-        SelectedImportMode == BirdImportModes.Replace
-            ? _localization.GetString("Settings.ImportModeHint.Replace")
-            : _localization.GetString("Settings.ImportModeHint.Merge");
-
-    public string AutoExportHint =>
-        AutoExportEnabled
-            ? _localization.GetString("Settings.AutoExportHint.Enabled")
-            : _localization.GetString("Settings.AutoExportHint.Disabled");
-
     public bool SupportsLocalDatabaseReset => _databaseMaintenanceService.CanResetLocalDatabase;
 
     public bool IsDangerConfirmationVisible => IsConfirmingClearBirdRecords || IsConfirmingResetLocalDatabase;
@@ -221,67 +159,6 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
     {
         _preferences.ResetToDefaults();
         ReloadFromPreferences();
-    }
-
-    [RelayCommand(CanExecute = nameof(CanTransferData))]
-    private void ChooseExportPath()
-    {
-        var selectedPath = _dataFileDialogService.PickExportPath(ResolveExportPath());
-
-        if (string.IsNullOrWhiteSpace(selectedPath))
-            return;
-
-        _preferences.CustomExportPath = Path.GetFullPath(selectedPath);
-        OnPropertyChanged(nameof(ExportPathHint));
-    }
-
-    [RelayCommand(CanExecute = nameof(CanTransferData))]
-    private void OpenExportFolder()
-    {
-        var exportDirectory = Path.GetDirectoryName(ResolveExportPath());
-        if (string.IsNullOrWhiteSpace(exportDirectory))
-            exportDirectory = Environment.CurrentDirectory;
-
-        if (_pathNavigationService.OpenDirectory(exportDirectory))
-            return;
-
-        _notificationService.ShowErrorLocalized("Error.CannotOpenExportFolder");
-    }
-
-    [RelayCommand(CanExecute = nameof(CanTransferData))]
-    private void OpenExportFile()
-    {
-        if (_pathNavigationService.OpenFile(ResolveExportPath()))
-            return;
-
-        _notificationService.ShowErrorLocalized("Error.CannotOpenExportFile");
-    }
-
-    [RelayCommand(CanExecute = nameof(CanTransferData))]
-    private async Task ExportDataAsync(CancellationToken cancellationToken)
-    {
-        var targetPath = ResolveExportPath();
-
-        IsDataTransferBusy = true;
-        try
-        {
-            await _birdManager.FlushPendingOperationsAsync(cancellationToken);
-            var snapshot = _birdManager.Store.Birds.ToList();
-            await _exportService.ExportAsync(snapshot, targetPath, cancellationToken);
-            _notificationService.ShowSuccessLocalized("Info.ExportSucceeded", targetPath);
-        }
-        catch (OperationCanceledException)
-        {
-            // User canceled or application is shutting down.
-        }
-        catch
-        {
-            _notificationService.ShowErrorLocalized("Error.ExportFailed");
-        }
-        finally
-        {
-            IsDataTransferBusy = false;
-        }
     }
 
     [RelayCommand(CanExecute = nameof(CanStartDangerAction))]
@@ -340,68 +217,6 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         }, "Error.CannotResetLocalDatabase", cancellationToken);
     }
 
-    [RelayCommand(CanExecute = nameof(CanTransferData))]
-    private async Task ImportDataAsync(CancellationToken cancellationToken)
-    {
-        var suggestedPath = ResolveExportPath();
-        var sourcePath = _dataFileDialogService.PickImportPath(suggestedPath);
-
-        if (string.IsNullOrWhiteSpace(sourcePath))
-            return;
-
-        IsDataTransferBusy = true;
-        try
-        {
-            var importPayload = await _importService.ImportAsync(sourcePath, cancellationToken);
-            if (!importPayload.IsSuccess)
-            {
-                _notificationService.ShowError(importPayload.Error ?? _localization.GetString("Error.ImportFailed"));
-                return;
-            }
-
-            await _birdManager.FlushPendingOperationsAsync(cancellationToken);
-            var importMode = BirdImportModes.ToCommandMode(SelectedImportMode);
-            var importResult = await _mediator.Send(
-                new ImportBirdsCommand(importPayload.Value!, importMode),
-                cancellationToken);
-            if (!importResult.IsSuccess)
-            {
-                _notificationService.ShowError(importResult.Error ?? _localization.GetString("Error.ImportFailed"));
-                return;
-            }
-
-            _birdManager.Store.ReplaceBirds(importResult.Value!.Snapshot);
-            _birdManager.Store.CompleteLoading();
-            _autoExportCoordinator.MarkDirty();
-
-            if (importMode == BirdImportMode.Replace)
-                _notificationService.ShowSuccessLocalized(
-                    "Info.ImportReplacedSucceeded",
-                    importResult.Value.Imported,
-                    importResult.Value.Added,
-                    importResult.Value.Updated,
-                    importResult.Value.Removed);
-            else
-                _notificationService.ShowSuccessLocalized(
-                    "Info.ImportMergedSucceeded",
-                    importResult.Value.Imported,
-                    importResult.Value.Added,
-                    importResult.Value.Updated);
-        }
-        catch (OperationCanceledException)
-        {
-            // User canceled or application is shutting down.
-        }
-        catch
-        {
-            _notificationService.ShowErrorLocalized("Error.ImportFailed");
-        }
-        finally
-        {
-            IsDataTransferBusy = false;
-        }
-    }
-
     partial void OnSelectedLanguageChanged(string value)
     {
         var normalized = AppLanguages.Normalize(value);
@@ -455,38 +270,6 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(DateFormatHint));
     }
 
-    partial void OnSelectedImportModeChanged(string value)
-    {
-        var normalized = BirdImportModes.Normalize(value);
-
-        if (_isSynchronizingSelections)
-        {
-            OnPropertyChanged(nameof(ImportModeHint));
-            OnPropertyChanged(nameof(ImportHint));
-            return;
-        }
-
-        if (_preferences.SelectedImportMode != normalized)
-            _preferences.SelectedImportMode = normalized;
-
-        OnPropertyChanged(nameof(ImportModeHint));
-        OnPropertyChanged(nameof(ImportHint));
-    }
-
-    partial void OnAutoExportEnabledChanged(bool value)
-    {
-        if (_isSynchronizingSelections)
-        {
-            OnPropertyChanged(nameof(AutoExportHint));
-            return;
-        }
-
-        if (_preferences.AutoExportEnabled != value)
-            _preferences.AutoExportEnabled = value;
-
-        OnPropertyChanged(nameof(AutoExportHint));
-    }
-
     partial void OnShowNotificationBadgeChanged(bool value)
     {
         if (_isSynchronizingSelections)
@@ -517,12 +300,7 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
 
     partial void OnIsDangerZoneBusyChanged(bool value)
     {
-        UpdateSyncExternalBusy();
-    }
-
-    partial void OnIsDataTransferBusyChanged(bool value)
-    {
-        UpdateSyncExternalBusy();
+        UpdateChildExternalBusy();
     }
 
     private void OnPreferencesChanged(object? sender, PropertyChangedEventArgs e)
@@ -530,9 +308,6 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         if (e.PropertyName is nameof(IAppPreferencesService.SelectedLanguage)
             or nameof(IAppPreferencesService.SelectedTheme)
             or nameof(IAppPreferencesService.SelectedDateFormat)
-            or nameof(IAppPreferencesService.SelectedImportMode)
-            or nameof(IAppPreferencesService.CustomExportPath)
-            or nameof(IAppPreferencesService.AutoExportEnabled)
             or nameof(IAppPreferencesService.ShowNotificationBadge)
             or nameof(IAppPreferencesService.ShowSyncStatusIndicator))
             ReloadFromPreferences(true);
@@ -545,22 +320,16 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         BuildAvailableLanguages();
         BuildAvailableThemes();
         BuildAvailableDateFormats();
-        BuildAvailableImportModes();
         ReloadFromPreferences();
         _themeService.ApplyTheme(preservedTheme);
         OnPropertyChanged(nameof(AvailableLanguages));
         OnPropertyChanged(nameof(AvailableThemes));
         OnPropertyChanged(nameof(AvailableDateFormats));
-        OnPropertyChanged(nameof(AvailableImportModes));
         OnPropertyChanged(nameof(LanguageHint));
         OnPropertyChanged(nameof(ThemeHint));
         OnPropertyChanged(nameof(DateFormatHint));
-        OnPropertyChanged(nameof(ImportModeHint));
-        OnPropertyChanged(nameof(AutoExportHint));
         OnPropertyChanged(nameof(NotificationsHint));
         OnPropertyChanged(nameof(SyncIndicatorHint));
-        OnPropertyChanged(nameof(ExportPathHint));
-        OnPropertyChanged(nameof(ImportHint));
     }
 
     private void BuildAvailableLanguages()
@@ -602,25 +371,11 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
             value => AvailableDateFormats = value);
     }
 
-    private void BuildAvailableImportModes()
-    {
-        RefreshLocalizedOptions(
-            ref _availableImportModes,
-            [
-                (BirdImportModes.Merge, _localization.GetString("Settings.ImportMode.Merge")),
-                (BirdImportModes.Replace, _localization.GetString("Settings.ImportMode.Replace"))
-            ],
-            static (code, displayName) => new ImportModeOption(code, displayName),
-            static (option, displayName) => option.DisplayName = displayName,
-            value => AvailableImportModes = value);
-    }
-
     private void ReloadFromPreferences(bool reapplyTheme = false)
     {
         var normalizedLanguage = AppLanguages.Normalize(_preferences.SelectedLanguage);
         var normalizedTheme = ThemeKeys.Normalize(_preferences.SelectedTheme);
         var normalizedDateFormat = DateDisplayFormats.Normalize(_preferences.SelectedDateFormat);
-        var normalizedImportMode = BirdImportModes.Normalize(_preferences.SelectedImportMode);
 
         _isSynchronizingSelections = true;
         try
@@ -628,8 +383,6 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
             SelectedLanguage = normalizedLanguage;
             SelectedTheme = normalizedTheme;
             SelectedDateFormat = normalizedDateFormat;
-            SelectedImportMode = normalizedImportMode;
-            AutoExportEnabled = _preferences.AutoExportEnabled;
             ShowNotificationBadge = _preferences.ShowNotificationBadge;
             ShowSyncStatusIndicator = _preferences.ShowSyncStatusIndicator;
         }
@@ -644,12 +397,8 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(LanguageHint));
         OnPropertyChanged(nameof(ThemeHint));
         OnPropertyChanged(nameof(DateFormatHint));
-        OnPropertyChanged(nameof(ImportModeHint));
-        OnPropertyChanged(nameof(AutoExportHint));
         OnPropertyChanged(nameof(NotificationsHint));
         OnPropertyChanged(nameof(SyncIndicatorHint));
-        OnPropertyChanged(nameof(ExportPathHint));
-        OnPropertyChanged(nameof(ImportHint));
     }
 
     private async Task ExecuteDangerActionAsync(
@@ -676,14 +425,9 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         }
     }
 
-    private bool CanTransferData()
-    {
-        return !IsDataTransferBusy && !IsDangerZoneBusy;
-    }
-
     private bool CanStartDangerAction()
     {
-        return !IsDataTransferBusy && !IsDangerZoneBusy;
+        return !ImportExportSettings.IsTransferBusy && !IsDangerZoneBusy;
     }
 
     private bool CanConfirmClearBirdRecords()
@@ -702,16 +446,22 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         IsConfirmingResetLocalDatabase = false;
     }
 
-    private void UpdateSyncExternalBusy()
+    private void OnImportExportSettingsPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        SyncSettings.SetExternalBusy(IsDataTransferBusy || IsDangerZoneBusy);
+        if (e.PropertyName == nameof(ImportExportSettingsViewModel.IsTransferBusy))
+        {
+            BeginClearBirdRecordsCommand.NotifyCanExecuteChanged();
+            BeginResetLocalDatabaseCommand.NotifyCanExecuteChanged();
+            ConfirmClearBirdRecordsCommand.NotifyCanExecuteChanged();
+            ConfirmResetLocalDatabaseCommand.NotifyCanExecuteChanged();
+            UpdateChildExternalBusy();
+        }
     }
 
-    private string ResolveExportPath()
+    private void UpdateChildExternalBusy()
     {
-        return string.IsNullOrWhiteSpace(_preferences.CustomExportPath)
-            ? _exportPathProvider.GetLatestPath("birds")
-            : _preferences.CustomExportPath;
+        ImportExportSettings.SetExternalBusy(IsDangerZoneBusy);
+        SyncSettings.SetExternalBusy(ImportExportSettings.IsTransferBusy || IsDangerZoneBusy);
     }
 
     public void Dispose()
@@ -721,7 +471,9 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
 
         _preferences.PropertyChanged -= OnPreferencesChanged;
         _localization.LanguageChanged -= OnLanguageChanged;
+        _importExportSettings.PropertyChanged -= OnImportExportSettingsPropertyChanged;
         _syncSettings.SyncConfirmationStarted -= OnSyncConfirmationStarted;
+        _importExportSettings.Dispose();
         _syncSettings.Dispose();
         _disposed = true;
     }

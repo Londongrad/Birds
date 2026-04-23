@@ -233,6 +233,7 @@
                                 Text="{loc:Loc Key=Settings.Data.Description}" />
 
                             <Border
+                                DataContext="{Binding ImportExportSettings}"
                                 Margin="0,22,0,0"
                                 Style="{StaticResource DangerRowStyle}">
                                 <Grid>
@@ -286,6 +287,7 @@
                             </Border>
 
                             <Border
+                                DataContext="{Binding ImportExportSettings}"
                                 HorizontalAlignment="Stretch"
                                 Style="{StaticResource SettingsToggleRowStyle}">
                                 <Grid>
@@ -318,7 +320,7 @@
                             </Border>
 
                             <Border
-                                DataContext="{Binding SyncSettings}"
+                                DataContext="{Binding ImportExportSettings}"
                                 HorizontalAlignment="Stretch"
                                 Margin="0,16,0,0"
                                 Style="{StaticResource SettingsToggleRowStyle}">
@@ -350,6 +352,7 @@
                             </Border>
 
                             <Border
+                                DataContext="{Binding SyncSettings}"
                                 HorizontalAlignment="Stretch"
                                 Margin="0,16,0,0"
                                 Style="{StaticResource SettingsToggleRowStyle}">
@@ -848,6 +851,7 @@
                             </Border>
 
                             <Border
+                                DataContext="{Binding ImportExportSettings}"
                                 HorizontalAlignment="Stretch"
                                 Style="{StaticResource SettingsToggleRowStyle}">
                                 <Grid>

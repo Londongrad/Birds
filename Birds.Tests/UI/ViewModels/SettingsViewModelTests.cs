@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using Birds.Application.Commands.ImportBirds;
 using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
@@ -96,10 +97,20 @@ public class SettingsViewModelTests
 
         sut.ThemeHint.Should().Be(AppText.Get("Settings.ThemeHint.Graphite", _culture));
         sut.DateFormatHint.Should().Be(AppText.Get("Settings.DateFormatHint.DayMonthYear", _culture));
-        sut.ImportModeHint.Should().Be(AppText.Get("Settings.ImportModeHint.Merge", _culture));
-        sut.AutoExportHint.Should().Be(AppText.Get("Settings.AutoExportHint.Enabled", _culture));
         sut.NotificationsHint.Should().Be(AppText.Get("Settings.NotificationsHint.Enabled", _culture));
         sut.SyncIndicatorHint.Should().Be(AppText.Get("Settings.SyncIndicatorHint.Enabled", _culture));
+    }
+
+    [Fact]
+    public void ImportExportHints_Should_Use_LocalizationService_Strings()
+    {
+        _preferences.SelectedImportMode = BirdImportModes.Merge;
+        _preferences.AutoExportEnabled = true;
+
+        var sut = CreateImportExportSut();
+
+        sut.ImportModeHint.Should().Be(AppText.Get("Settings.ImportModeHint.Merge", _culture));
+        sut.AutoExportHint.Should().Be(AppText.Get("Settings.AutoExportHint.Enabled", _culture));
     }
 
     [Fact]
@@ -122,8 +133,6 @@ public class SettingsViewModelTests
         sut.AvailableThemes.Should().Contain(x => x.DisplayName == AppText.Get("Settings.Theme.Steel", _culture));
         sut.ThemeHint.Should().Be(AppText.Get("Settings.ThemeHint.Steel", _culture));
         sut.DateFormatHint.Should().Be(AppText.Get("Settings.DateFormatHint.YearMonthDay", _culture));
-        sut.ImportModeHint.Should().Be(AppText.Get("Settings.ImportModeHint.Replace", _culture));
-        sut.AutoExportHint.Should().Be(AppText.Get("Settings.AutoExportHint.Disabled", _culture));
         sut.NotificationsHint.Should().Be(AppText.Get("Settings.NotificationsHint.Disabled", _culture));
         sut.SyncIndicatorHint.Should().Be(AppText.Get("Settings.SyncIndicatorHint.Disabled", _culture));
     }
@@ -133,12 +142,56 @@ public class SettingsViewModelTests
     {
         _preferences.AutoExportEnabled = true;
 
-        var sut = CreateSut();
+        var sut = CreateImportExportSut();
 
         sut.AutoExportEnabled = false;
 
         _preferences.AutoExportEnabled.Should().BeFalse();
         sut.AutoExportHint.Should().Be(AppText.Get("Settings.AutoExportHint.Disabled", _culture));
+    }
+
+    [Fact]
+    public void ImportExport_LanguageChanged_Should_Update_Localized_Text()
+    {
+        _preferences.SelectedImportMode = BirdImportModes.Replace;
+        _preferences.AutoExportEnabled = false;
+        var sut = CreateImportExportSut();
+        var availableImportModes = sut.AvailableImportModes;
+        var changedProperties = new List<string>();
+        sut.PropertyChanged += (_, args) =>
+        {
+            if (!string.IsNullOrWhiteSpace(args.PropertyName))
+                changedProperties.Add(args.PropertyName!);
+        };
+
+        _culture = CultureInfo.GetCultureInfo(AppLanguages.Russian);
+        _localization.Raise(x => x.LanguageChanged += null, EventArgs.Empty);
+
+        sut.AvailableImportModes.Should().BeSameAs(availableImportModes);
+        sut.ImportModeHint.Should().Be(AppText.Get("Settings.ImportModeHint.Replace", _culture));
+        sut.AutoExportHint.Should().Be(AppText.Get("Settings.AutoExportHint.Disabled", _culture));
+        changedProperties.Should().Contain(nameof(ImportExportSettingsViewModel.AvailableImportModes));
+        changedProperties.Should().Contain(nameof(ImportExportSettingsViewModel.ImportModeHint));
+        changedProperties.Should().Contain(nameof(ImportExportSettingsViewModel.AutoExportHint));
+    }
+
+    [Fact]
+    public void ImportExport_Dispose_Should_Unsubscribe_From_LongLivedEvents()
+    {
+        var sut = CreateImportExportSut();
+        var changedProperties = new List<string>();
+        sut.PropertyChanged += (_, args) =>
+        {
+            if (!string.IsNullOrWhiteSpace(args.PropertyName))
+                changedProperties.Add(args.PropertyName!);
+        };
+
+        sut.Dispose();
+        _preferences.AutoExportEnabled = false;
+        _preferences.SelectedImportMode = BirdImportModes.Replace;
+        _localization.Raise(x => x.LanguageChanged += null, EventArgs.Empty);
+
+        changedProperties.Should().BeEmpty();
     }
 
     [Fact]
@@ -407,14 +460,29 @@ public class SettingsViewModelTests
     public void SettingsViewModel_Should_Compose_SyncSettings_And_Forward_Busy_State()
     {
         var syncSettings = CreateSyncSut();
-        var sut = CreateSut(syncSettings);
+        var importExportSettings = CreateImportExportSut();
+        var sut = CreateSut(syncSettings, importExportSettings);
 
         sut.SyncSettings.Should().BeSameAs(syncSettings);
         syncSettings.SyncNowCommand.CanExecute(null).Should().BeTrue();
 
-        sut.IsDataTransferBusy = true;
+        importExportSettings.IsTransferBusy = true;
 
         syncSettings.SyncNowCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    [Fact]
+    public void SettingsViewModel_Should_Compose_ImportExportSettings_And_Forward_Danger_Busy_State()
+    {
+        var importExportSettings = CreateImportExportSut();
+        var sut = CreateSut(importExportSettings: importExportSettings);
+
+        sut.ImportExportSettings.Should().BeSameAs(importExportSettings);
+        importExportSettings.ExportDataCommand.CanExecute(null).Should().BeTrue();
+
+        sut.IsDangerZoneBusy = true;
+
+        importExportSettings.ExportDataCommand.CanExecute(null).Should().BeFalse();
     }
 
     [Fact]
@@ -434,18 +502,28 @@ public class SettingsViewModelTests
     public void SettingsViewModel_Dispose_Should_Dispose_Composed_SyncSettings()
     {
         var syncSettings = CreateSyncSut();
-        var sut = CreateSut(syncSettings);
+        var importExportSettings = CreateImportExportSut();
+        var sut = CreateSut(syncSettings, importExportSettings);
         sut.Dispose();
-        var changedProperties = new List<string>();
+        var syncChangedProperties = new List<string>();
         syncSettings.PropertyChanged += (_, args) =>
         {
             if (!string.IsNullOrWhiteSpace(args.PropertyName))
-                changedProperties.Add(args.PropertyName!);
+                syncChangedProperties.Add(args.PropertyName!);
+        };
+        var importExportChangedProperties = new List<string>();
+        importExportSettings.PropertyChanged += (_, args) =>
+        {
+            if (!string.IsNullOrWhiteSpace(args.PropertyName))
+                importExportChangedProperties.Add(args.PropertyName!);
         };
 
         _remoteSyncStatus.SetState(RemoteSyncDisplayState.Offline, lastErrorMessage: "offline");
+        _preferences.AutoExportEnabled = false;
+        _localization.Raise(x => x.LanguageChanged += null, EventArgs.Empty);
 
-        changedProperties.Should().BeEmpty();
+        syncChangedProperties.Should().BeEmpty();
+        importExportChangedProperties.Should().BeEmpty();
     }
 
     [Fact]
@@ -459,7 +537,6 @@ public class SettingsViewModelTests
         var availableThemes = sut.AvailableThemes;
         var availableLanguages = sut.AvailableLanguages;
         var availableDateFormats = sut.AvailableDateFormats;
-        var availableImportModes = sut.AvailableImportModes;
         var changedProperties = new List<string>();
         sut.PropertyChanged += (_, args) =>
         {
@@ -475,11 +552,9 @@ public class SettingsViewModelTests
         sut.AvailableThemes.Should().BeSameAs(availableThemes);
         sut.AvailableLanguages.Should().BeSameAs(availableLanguages);
         sut.AvailableDateFormats.Should().BeSameAs(availableDateFormats);
-        sut.AvailableImportModes.Should().BeSameAs(availableImportModes);
         changedProperties.Should().Contain(nameof(SettingsViewModel.AvailableThemes));
         changedProperties.Should().Contain(nameof(SettingsViewModel.AvailableLanguages));
         changedProperties.Should().Contain(nameof(SettingsViewModel.AvailableDateFormats));
-        changedProperties.Should().Contain(nameof(SettingsViewModel.AvailableImportModes));
         _themeService.Verify(x => x.ApplyTheme(ThemeKeys.Steel), Times.AtLeastOnce);
     }
 
@@ -492,7 +567,7 @@ public class SettingsViewModelTests
         });
         _preferences.CustomExportPath = "C:\\temp\\birds-export.json";
 
-        var sut = CreateSut();
+        var sut = CreateImportExportSut();
 
         await sut.ExportDataCommand.ExecuteAsync(null);
 
@@ -511,12 +586,30 @@ public class SettingsViewModelTests
     }
 
     [Fact]
+    public async Task ExportDataCommand_Should_ClearBusy_And_ShowError_WhenExportFails()
+    {
+        _exportService.Setup(x => x.ExportAsync(
+                It.IsAny<IEnumerable<BirdDTO>>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new IOException("disk full"));
+        var sut = CreateImportExportSut();
+
+        await sut.ExportDataCommand.ExecuteAsync(null);
+
+        sut.IsTransferBusy.Should().BeFalse();
+        _notificationService.Verify(
+            x => x.ShowErrorLocalized("Error.ExportFailed", It.IsAny<object[]>()),
+            Times.Once);
+    }
+
+    [Fact]
     public void ChooseExportPathCommand_Should_Persist_Selected_Path()
     {
         _dataFileDialogService.Setup(x => x.PickExportPath(It.IsAny<string>()))
             .Returns("C:\\exports\\selected-birds.json");
 
-        var sut = CreateSut();
+        var sut = CreateImportExportSut();
 
         sut.ChooseExportPathCommand.Execute(null);
 
@@ -529,7 +622,7 @@ public class SettingsViewModelTests
     {
         _preferences.CustomExportPath = "C:\\exports\\selected-birds.json";
 
-        var sut = CreateSut();
+        var sut = CreateImportExportSut();
 
         sut.OpenExportFolderCommand.Execute(null);
 
@@ -541,7 +634,7 @@ public class SettingsViewModelTests
     {
         _preferences.CustomExportPath = "C:\\exports\\selected-birds.json";
 
-        var sut = CreateSut();
+        var sut = CreateImportExportSut();
 
         sut.OpenExportFileCommand.Execute(null);
 
@@ -553,7 +646,7 @@ public class SettingsViewModelTests
     {
         _pathNavigationService.Setup(x => x.OpenFile(It.IsAny<string>())).Returns(false);
 
-        var sut = CreateSut();
+        var sut = CreateImportExportSut();
 
         sut.OpenExportFileCommand.Execute(null);
 
@@ -567,7 +660,7 @@ public class SettingsViewModelTests
     {
         _pathNavigationService.Setup(x => x.OpenDirectory(It.IsAny<string>())).Returns(false);
 
-        var sut = CreateSut();
+        var sut = CreateImportExportSut();
 
         sut.OpenExportFolderCommand.Execute(null);
 
@@ -590,7 +683,7 @@ public class SettingsViewModelTests
             .ReturnsAsync(Result<BirdImportResultDTO>.Success(
                 new BirdImportResultDTO(1, 1, 0, 0, new[] { importedBird })));
 
-        var sut = CreateSut();
+        var sut = CreateImportExportSut();
 
         await sut.ImportDataCommand.ExecuteAsync(null);
 
@@ -620,7 +713,7 @@ public class SettingsViewModelTests
             .ReturnsAsync(Result<BirdImportResultDTO>.Success(
                 new BirdImportResultDTO(1, 1, 0, 4, new[] { importedBird })));
 
-        var sut = CreateSut();
+        var sut = CreateImportExportSut();
 
         await sut.ImportDataCommand.ExecuteAsync(null);
 
@@ -688,11 +781,26 @@ public class SettingsViewModelTests
             Times.Once);
     }
 
-    private SettingsViewModel CreateSut(SyncSettingsViewModel? syncSettings = null)
+    private SettingsViewModel CreateSut(
+        SyncSettingsViewModel? syncSettings = null,
+        ImportExportSettingsViewModel? importExportSettings = null)
     {
         return new SettingsViewModel(
             _preferences,
             _themeService.Object,
+            _localization.Object,
+            _birdManager.Object,
+            _autoExportCoordinator.Object,
+            _notificationService.Object,
+            _databaseMaintenanceService.Object,
+            importExportSettings ?? CreateImportExportSut(),
+            syncSettings ?? CreateSyncSut());
+    }
+
+    private ImportExportSettingsViewModel CreateImportExportSut()
+    {
+        return new ImportExportSettingsViewModel(
+            _preferences,
             _localization.Object,
             _birdManager.Object,
             _exportService.Object,
@@ -702,9 +810,7 @@ public class SettingsViewModelTests
             _dataFileDialogService.Object,
             _pathNavigationService.Object,
             _notificationService.Object,
-            _mediator.Object,
-            _databaseMaintenanceService.Object,
-            syncSettings ?? CreateSyncSut());
+            _mediator.Object);
     }
 
     private SyncSettingsViewModel CreateSyncSut()

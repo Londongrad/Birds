@@ -41,6 +41,7 @@ public static class DependencyInjection
         services.AddSingleton<AddBirdViewModel>();
         services.AddSingleton<MainViewModel>();
         services.AddSingleton<BirdStatisticsViewModel>();
+        services.AddSingleton<ImportExportSettingsViewModel>();
         services.AddSingleton<SyncSettingsViewModel>();
         services.AddSingleton<SettingsViewModel>();
 
