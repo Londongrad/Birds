@@ -34,8 +34,10 @@ public partial class ImportExportSettingsViewModel : ObservableObject, IDisposab
     private readonly INotificationService _notificationService;
     private readonly IPathNavigationService _pathNavigationService;
     private readonly IAppPreferencesService _preferences;
+    private readonly CancellationTokenSource _lifetimeCancellation = new();
     private bool _disposed;
     private bool _isSynchronizingSelections;
+    private CancellationTokenSource? _transferCancellation;
 
     private ReadOnlyCollection<ImportModeOption> _availableImportModes =
         new(new List<ImportModeOption>());
@@ -131,9 +133,12 @@ public partial class ImportExportSettingsViewModel : ObservableObject, IDisposab
         if (_disposed)
             return;
 
+        _disposed = true;
+        _lifetimeCancellation.Cancel();
+        _transferCancellation?.Cancel();
         _preferences.PropertyChanged -= OnPreferencesChanged;
         _localization.LanguageChanged -= OnLanguageChanged;
-        _disposed = true;
+        _lifetimeCancellation.Dispose();
     }
 
     [RelayCommand(CanExecute = nameof(CanTransferData))]
@@ -174,16 +179,21 @@ public partial class ImportExportSettingsViewModel : ObservableObject, IDisposab
     private async Task ExportDataAsync(CancellationToken cancellationToken)
     {
         var targetPath = ResolveExportPath();
+        var operationCancellation = CreateTransferCancellation(cancellationToken);
 
         IsTransferBusy = true;
         try
         {
-            await _birdManager.FlushPendingOperationsAsync(cancellationToken);
+            var operationToken = operationCancellation.Token;
+            await _birdManager.FlushPendingOperationsAsync(operationToken);
             var snapshot = _birdManager.Store.Birds.ToList();
-            await _exportService.ExportAsync(snapshot, targetPath, cancellationToken);
+            await _exportService.ExportAsync(snapshot, targetPath, operationToken);
+            if (_disposed)
+                return;
+
             _notificationService.ShowSuccessLocalized("Info.ExportSucceeded", targetPath);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (operationCancellation.IsCancellationRequested)
         {
             // User canceled or application is shutting down.
         }
@@ -193,7 +203,10 @@ public partial class ImportExportSettingsViewModel : ObservableObject, IDisposab
         }
         finally
         {
-            IsTransferBusy = false;
+            if (!_disposed)
+                IsTransferBusy = false;
+
+            ClearTransferCancellation(operationCancellation);
         }
     }
 
@@ -206,26 +219,37 @@ public partial class ImportExportSettingsViewModel : ObservableObject, IDisposab
         if (string.IsNullOrWhiteSpace(sourcePath))
             return;
 
+        var operationCancellation = CreateTransferCancellation(cancellationToken);
         IsTransferBusy = true;
         try
         {
-            var importPayload = await _importService.ImportAsync(sourcePath, cancellationToken);
+            var operationToken = operationCancellation.Token;
+            var importPayload = await _importService.ImportAsync(sourcePath, operationToken);
             if (!importPayload.IsSuccess)
             {
+                if (_disposed)
+                    return;
+
                 _notificationService.ShowError(importPayload.Error ?? _localization.GetString("Error.ImportFailed"));
                 return;
             }
 
-            await _birdManager.FlushPendingOperationsAsync(cancellationToken);
+            await _birdManager.FlushPendingOperationsAsync(operationToken);
             var importMode = BirdImportModes.ToCommandMode(SelectedImportMode);
             var importResult = await _mediator.Send(
                 new ImportBirdsCommand(importPayload.Value!, importMode),
-                cancellationToken);
+                operationToken);
             if (!importResult.IsSuccess)
             {
+                if (_disposed)
+                    return;
+
                 _notificationService.ShowError(importResult.Error ?? _localization.GetString("Error.ImportFailed"));
                 return;
             }
+
+            if (_disposed)
+                return;
 
             _birdManager.Store.ReplaceBirds(importResult.Value!.Snapshot);
             _birdManager.Store.CompleteLoading();
@@ -255,7 +279,10 @@ public partial class ImportExportSettingsViewModel : ObservableObject, IDisposab
         }
         finally
         {
-            IsTransferBusy = false;
+            if (!_disposed)
+                IsTransferBusy = false;
+
+            ClearTransferCancellation(operationCancellation);
         }
     }
 
@@ -347,6 +374,28 @@ public partial class ImportExportSettingsViewModel : ObservableObject, IDisposab
     private bool CanTransferData()
     {
         return !IsTransferBusy && !IsExternalBusy;
+    }
+
+    private CancellationTokenSource CreateTransferCancellation(CancellationToken cancellationToken)
+    {
+        var previous = _transferCancellation;
+        var current = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken,
+            _lifetimeCancellation.Token);
+        _transferCancellation = current;
+
+        previous?.Cancel();
+        previous?.Dispose();
+
+        return current;
+    }
+
+    private void ClearTransferCancellation(CancellationTokenSource operationCancellation)
+    {
+        if (ReferenceEquals(_transferCancellation, operationCancellation))
+            _transferCancellation = null;
+
+        operationCancellation.Dispose();
     }
 
     private string ResolveExportPath()

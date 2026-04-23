@@ -18,8 +18,10 @@ public partial class AppearanceSettingsViewModel : ObservableObject, IDisposable
     private readonly ILocalizationService _localization;
     private readonly IAppPreferencesService _preferences;
     private readonly IThemeService _themeService;
+    private readonly CancellationTokenSource _lifetimeCancellation = new();
     private bool _disposed;
     private bool _isSynchronizingSelections;
+    private CancellationTokenSource? _languageReloadCancellation;
 
     private ReadOnlyCollection<DateFormatOption> _availableDateFormats =
         new(new List<DateFormatOption>());
@@ -111,9 +113,12 @@ public partial class AppearanceSettingsViewModel : ObservableObject, IDisposable
         if (_disposed)
             return;
 
+        _disposed = true;
+        _lifetimeCancellation.Cancel();
+        _languageReloadCancellation?.Cancel();
         _preferences.PropertyChanged -= OnPreferencesChanged;
         _localization.LanguageChanged -= OnLanguageChanged;
-        _disposed = true;
+        _lifetimeCancellation.Dispose();
     }
 
     partial void OnSelectedLanguageChanged(string value)
@@ -130,7 +135,7 @@ public partial class AppearanceSettingsViewModel : ObservableObject, IDisposable
             _preferences.SelectedLanguage = normalized;
 
         if (_localization.ApplyLanguage(normalized))
-            _ = _birdManager.ReloadAsync(CancellationToken.None);
+            _ = ReloadBirdsForLanguageChangeAsync();
 
         OnPropertyChanged(nameof(LanguageHint));
     }
@@ -224,6 +229,44 @@ public partial class AppearanceSettingsViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(DateFormatHint));
         OnPropertyChanged(nameof(NotificationsHint));
         OnPropertyChanged(nameof(SyncIndicatorHint));
+    }
+
+    private async Task ReloadBirdsForLanguageChangeAsync()
+    {
+        var operationCancellation = CreateLanguageReloadCancellation();
+
+        try
+        {
+            await _birdManager.ReloadAsync(operationCancellation.Token);
+        }
+        catch (OperationCanceledException) when (operationCancellation.IsCancellationRequested)
+        {
+            // A newer language change superseded this reload or the view model is being disposed.
+        }
+        finally
+        {
+            ClearLanguageReloadCancellation(operationCancellation);
+        }
+    }
+
+    private CancellationTokenSource CreateLanguageReloadCancellation()
+    {
+        var previous = _languageReloadCancellation;
+        var current = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeCancellation.Token);
+        _languageReloadCancellation = current;
+
+        previous?.Cancel();
+        previous?.Dispose();
+
+        return current;
+    }
+
+    private void ClearLanguageReloadCancellation(CancellationTokenSource operationCancellation)
+    {
+        if (ReferenceEquals(_languageReloadCancellation, operationCancellation))
+            _languageReloadCancellation = null;
+
+        operationCancellation.Dispose();
     }
 
     private void BuildAvailableLanguages()

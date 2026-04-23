@@ -25,8 +25,10 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
     private readonly IAppPreferencesService _preferences;
     private readonly IRemoteSyncController _remoteSyncController;
     private readonly IRemoteSyncStatusSource _remoteSyncStatus;
+    private readonly CancellationTokenSource _lifetimeCancellation = new();
     private bool _disposed;
     private bool _isSynchronizingSelections;
+    private CancellationTokenSource? _syncControlCancellation;
 
     private ReadOnlyCollection<SyncIntervalOption> _availableSyncIntervals =
         new(new List<SyncIntervalOption>());
@@ -188,11 +190,14 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
         if (_disposed)
             return;
 
+        _disposed = true;
+        _lifetimeCancellation.Cancel();
+        _syncControlCancellation?.Cancel();
         _preferences.PropertyChanged -= OnPreferencesChanged;
         _localization.LanguageChanged -= OnLanguageChanged;
         _remoteSyncStatus.PropertyChanged -= OnRemoteSyncStatusChanged;
         _birdManager.Store.Birds.CollectionChanged -= OnBirdStoreCollectionChanged;
-        _disposed = true;
+        _lifetimeCancellation.Dispose();
     }
 
     [RelayCommand]
@@ -207,18 +212,22 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
         if (!IsRemoteSyncConfigured)
             return;
 
+        var operationCancellation = CreateSyncControlCancellation(cancellationToken);
         IsSyncControlBusy = true;
         try
         {
-            await _remoteSyncController.SyncNowAsync(cancellationToken);
+            await _remoteSyncController.SyncNowAsync(operationCancellation.Token);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (operationCancellation.IsCancellationRequested)
         {
             // User canceled or application is shutting down.
         }
         finally
         {
-            IsSyncControlBusy = false;
+            if (!_disposed)
+                IsSyncControlBusy = false;
+
+            ClearSyncControlCancellation(operationCancellation);
         }
     }
 
@@ -228,21 +237,25 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
         if (!IsRemoteSyncConfigured)
             return;
 
+        var operationCancellation = CreateSyncControlCancellation(cancellationToken);
         IsSyncControlBusy = true;
         try
         {
             if (IsRemoteSyncPaused)
-                await _remoteSyncController.ResumeAsync(cancellationToken);
+                await _remoteSyncController.ResumeAsync(operationCancellation.Token);
             else
-                await _remoteSyncController.PauseAsync(cancellationToken);
+                await _remoteSyncController.PauseAsync(operationCancellation.Token);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (operationCancellation.IsCancellationRequested)
         {
             // User canceled or application is shutting down.
         }
         finally
         {
-            IsSyncControlBusy = false;
+            if (!_disposed)
+                IsSyncControlBusy = false;
+
+            ClearSyncControlCancellation(operationCancellation);
         }
     }
 
@@ -266,21 +279,29 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
         if (!IsRemoteSyncConfigured)
             return;
 
+        var operationCancellation = CreateSyncControlCancellation(cancellationToken);
         IsSyncControlBusy = true;
         try
         {
-            await _birdManager.FlushPendingOperationsAsync(cancellationToken);
-            var uploaded = await _remoteSyncController.UploadLocalSnapshotToRemoteAsync(cancellationToken);
+            var operationToken = operationCancellation.Token;
+            await _birdManager.FlushPendingOperationsAsync(operationToken);
+            var uploaded = await _remoteSyncController.UploadLocalSnapshotToRemoteAsync(operationToken);
             if (!uploaded)
             {
+                if (_disposed)
+                    return;
+
                 _notificationService.ShowErrorLocalized("Error.CannotUploadLocalSnapshotToRemote");
                 return;
             }
 
+            if (_disposed)
+                return;
+
             IsConfirmingUploadLocalSnapshotToRemote = false;
             _notificationService.ShowSuccessLocalized("Info.RemoteSnapshotUploaded");
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (operationCancellation.IsCancellationRequested)
         {
             // User canceled or application is shutting down.
         }
@@ -290,7 +311,10 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
         }
         finally
         {
-            IsSyncControlBusy = false;
+            if (!_disposed)
+                IsSyncControlBusy = false;
+
+            ClearSyncControlCancellation(operationCancellation);
         }
     }
 
@@ -314,23 +338,31 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
         if (!IsRemoteSyncConfigured)
             return;
 
+        var operationCancellation = CreateSyncControlCancellation(cancellationToken);
         IsSyncControlBusy = true;
         try
         {
-            await _birdManager.FlushPendingOperationsAsync(cancellationToken);
-            var restored = await _remoteSyncController.RedownloadRemoteSnapshotAsync(cancellationToken);
+            var operationToken = operationCancellation.Token;
+            await _birdManager.FlushPendingOperationsAsync(operationToken);
+            var restored = await _remoteSyncController.RedownloadRemoteSnapshotAsync(operationToken);
             if (!restored)
             {
+                if (_disposed)
+                    return;
+
                 _notificationService.ShowErrorLocalized("Error.CannotRedownloadRemoteSnapshot");
                 return;
             }
 
-            await _birdManager.ReloadAsync(cancellationToken);
+            await _birdManager.ReloadAsync(operationToken);
+            if (_disposed)
+                return;
+
             _autoExportCoordinator.MarkDirty();
             IsConfirmingRedownloadRemoteSnapshot = false;
             _notificationService.ShowSuccessLocalized("Info.RemoteSnapshotRedownloaded");
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (operationCancellation.IsCancellationRequested)
         {
             // User canceled or application is shutting down.
         }
@@ -340,7 +372,10 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
         }
         finally
         {
-            IsSyncControlBusy = false;
+            if (!_disposed)
+                IsSyncControlBusy = false;
+
+            ClearSyncControlCancellation(operationCancellation);
         }
     }
 
@@ -458,6 +493,28 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
     private bool CanConfirmUploadLocalSnapshotToRemote()
     {
         return IsConfirmingUploadLocalSnapshotToRemote && CanBeginUploadLocalSnapshotToRemote();
+    }
+
+    private CancellationTokenSource CreateSyncControlCancellation(CancellationToken cancellationToken)
+    {
+        var previous = _syncControlCancellation;
+        var current = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken,
+            _lifetimeCancellation.Token);
+        _syncControlCancellation = current;
+
+        previous?.Cancel();
+        previous?.Dispose();
+
+        return current;
+    }
+
+    private void ClearSyncControlCancellation(CancellationTokenSource operationCancellation)
+    {
+        if (ReferenceEquals(_syncControlCancellation, operationCancellation))
+            _syncControlCancellation = null;
+
+        operationCancellation.Dispose();
     }
 
     private void OnRemoteSyncStatusChanged(object? sender, PropertyChangedEventArgs e)

@@ -116,7 +116,7 @@ public sealed class AutoExportCoordinator : IAutoExportCoordinator, IDisposable
         try
         {
             await Task.Delay(_debounceDelay, debounceCancellation.Token).ConfigureAwait(false);
-            await FlushCoreAsync(CancellationToken.None, false).ConfigureAwait(false);
+            await FlushCoreAsync(debounceCancellation.Token, false).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (debounceCancellation.IsCancellationRequested)
         {

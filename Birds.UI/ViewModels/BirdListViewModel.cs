@@ -22,7 +22,9 @@ public partial class BirdListViewModel : ObservableObject, IDisposable
     private readonly IBirdNameDisplayService _birdNameDisplay;
     private readonly IBirdViewModelCache _birdViewModelCache;
     private readonly ILocalizationService _localization;
+    private readonly CancellationTokenSource _lifetimeCancellation = new();
     private bool _disposed;
+    private CancellationTokenSource? _reloadCancellation;
 
     [ObservableProperty] private IReadOnlyList<FilterOption> filters = Array.Empty<FilterOption>();
 
@@ -105,9 +107,22 @@ public partial class BirdListViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private async Task ReloadBirdsAsync()
+    private async Task ReloadBirdsAsync(CancellationToken cancellationToken)
     {
-        await _birdManager.ReloadAsync(CancellationToken.None);
+        var operationCancellation = CreateReloadCancellation(cancellationToken);
+
+        try
+        {
+            await _birdManager.ReloadAsync(operationCancellation.Token);
+        }
+        catch (OperationCanceledException) when (operationCancellation.IsCancellationRequested)
+        {
+            // A newer reload superseded this one or the view model is being disposed.
+        }
+        finally
+        {
+            ClearReloadCancellation(operationCancellation);
+        }
     }
 
     [RelayCommand]
@@ -134,6 +149,9 @@ public partial class BirdListViewModel : ObservableObject, IDisposable
         if (_disposed)
             return;
 
+        _disposed = true;
+        _lifetimeCancellation.Cancel();
+        _reloadCancellation?.Cancel();
         _birdManager.Store.PropertyChanged -= OnStorePropertyChanged;
 
         if (Birds is INotifyCollectionChanged birdsChanged)
@@ -141,7 +159,29 @@ public partial class BirdListViewModel : ObservableObject, IDisposable
 
         _localization.LanguageChanged -= OnLanguageChanged;
         _birdViewModelCache.Dispose();
-        _disposed = true;
+        _lifetimeCancellation.Dispose();
+    }
+
+    private CancellationTokenSource CreateReloadCancellation(CancellationToken cancellationToken)
+    {
+        var previous = _reloadCancellation;
+        var current = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken,
+            _lifetimeCancellation.Token);
+        _reloadCancellation = current;
+
+        previous?.Cancel();
+        previous?.Dispose();
+
+        return current;
+    }
+
+    private void ClearReloadCancellation(CancellationTokenSource operationCancellation)
+    {
+        if (ReferenceEquals(_reloadCancellation, operationCancellation))
+            _reloadCancellation = null;
+
+        operationCancellation.Dispose();
     }
 
     private IReadOnlyList<FilterOption> CreateFilters()

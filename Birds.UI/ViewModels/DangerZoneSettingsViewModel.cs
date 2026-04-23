@@ -16,7 +16,9 @@ public partial class DangerZoneSettingsViewModel : ObservableObject, IDisposable
     private readonly IDatabaseMaintenanceService _databaseMaintenanceService;
     private readonly INotificationService _notificationService;
     private readonly IAppPreferencesService _preferences;
+    private readonly CancellationTokenSource _lifetimeCancellation = new();
     private bool _disposed;
+    private CancellationTokenSource? _dangerActionCancellation;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(BeginClearBirdRecordsCommand))]
@@ -78,8 +80,11 @@ public partial class DangerZoneSettingsViewModel : ObservableObject, IDisposable
         if (_disposed)
             return;
 
-        DangerConfirmationStarted = null;
         _disposed = true;
+        _lifetimeCancellation.Cancel();
+        _dangerActionCancellation?.Cancel();
+        DangerConfirmationStarted = null;
+        _lifetimeCancellation.Dispose();
     }
 
     [RelayCommand]
@@ -119,16 +124,20 @@ public partial class DangerZoneSettingsViewModel : ObservableObject, IDisposable
         if (!CanConfirmClearBirdRecords())
             return;
 
+        var operationCancellation = CreateDangerActionCancellation(cancellationToken);
         await ExecuteDangerActionAsync(async token =>
         {
             await _birdManager.FlushPendingOperationsAsync(token);
             var removed = await _databaseMaintenanceService.ClearBirdRecordsAsync(token);
+            if (_disposed)
+                return;
+
             _birdManager.Store.ReplaceBirds(Array.Empty<BirdDTO>());
             _birdManager.Store.CompleteLoading();
             _autoExportCoordinator.MarkDirty();
             IsConfirmingClearBirdRecords = false;
             _notificationService.ShowSuccessLocalized("Info.BirdRecordsCleared", removed);
-        }, "Error.CannotClearBirdRecords", cancellationToken);
+        }, "Error.CannotClearBirdRecords", operationCancellation);
     }
 
     [RelayCommand(CanExecute = nameof(CanConfirmResetLocalDatabase))]
@@ -137,29 +146,33 @@ public partial class DangerZoneSettingsViewModel : ObservableObject, IDisposable
         if (!CanConfirmResetLocalDatabase())
             return;
 
+        var operationCancellation = CreateDangerActionCancellation(cancellationToken);
         await ExecuteDangerActionAsync(async token =>
         {
             await _birdManager.FlushPendingOperationsAsync(token);
             await _databaseMaintenanceService.ResetLocalDatabaseAsync(token);
+            if (_disposed)
+                return;
+
             _birdManager.Store.ReplaceBirds(Array.Empty<BirdDTO>());
             _birdManager.Store.CompleteLoading();
             _autoExportCoordinator.MarkDirty();
             IsConfirmingResetLocalDatabase = false;
             _notificationService.ShowSuccessLocalized("Info.LocalDatabaseReset");
-        }, "Error.CannotResetLocalDatabase", cancellationToken);
+        }, "Error.CannotResetLocalDatabase", operationCancellation);
     }
 
     private async Task ExecuteDangerActionAsync(
         Func<CancellationToken, Task> action,
         string errorKey,
-        CancellationToken cancellationToken)
+        CancellationTokenSource operationCancellation)
     {
         IsDangerZoneBusy = true;
         try
         {
-            await action(cancellationToken);
+            await action(operationCancellation.Token);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (operationCancellation.IsCancellationRequested)
         {
             // User canceled or application is shutting down.
         }
@@ -169,7 +182,10 @@ public partial class DangerZoneSettingsViewModel : ObservableObject, IDisposable
         }
         finally
         {
-            IsDangerZoneBusy = false;
+            if (!_disposed)
+                IsDangerZoneBusy = false;
+
+            ClearDangerActionCancellation(operationCancellation);
         }
     }
 
@@ -186,5 +202,27 @@ public partial class DangerZoneSettingsViewModel : ObservableObject, IDisposable
     private bool CanConfirmResetLocalDatabase()
     {
         return SupportsLocalDatabaseReset && IsConfirmingResetLocalDatabase && CanStartDangerAction();
+    }
+
+    private CancellationTokenSource CreateDangerActionCancellation(CancellationToken cancellationToken)
+    {
+        var previous = _dangerActionCancellation;
+        var current = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken,
+            _lifetimeCancellation.Token);
+        _dangerActionCancellation = current;
+
+        previous?.Cancel();
+        previous?.Dispose();
+
+        return current;
+    }
+
+    private void ClearDangerActionCancellation(CancellationTokenSource operationCancellation)
+    {
+        if (ReferenceEquals(_dangerActionCancellation, operationCancellation))
+            _dangerActionCancellation = null;
+
+        operationCancellation.Dispose();
     }
 }

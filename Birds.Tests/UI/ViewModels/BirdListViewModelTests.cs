@@ -155,6 +155,48 @@ public class BirdListViewModelTests
         cache.Verify(x => x.Dispose(), Times.Once);
     }
 
+    [Fact]
+    public async Task ReloadBirdsCommand_Should_Pass_Cancelable_Token_To_Manager()
+    {
+        CancellationToken capturedToken = default;
+        var sut = CreateViewModelWithManager(
+            out var manager,
+            out _,
+            DateDisplayFormats.DayMonthYear);
+        manager.Setup(x => x.ReloadAsync(It.IsAny<CancellationToken>()))
+            .Callback<CancellationToken>(token => capturedToken = token)
+            .Returns(Task.CompletedTask);
+
+        await sut.ReloadBirdsCommand.ExecuteAsync(null);
+
+        capturedToken.CanBeCanceled.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Dispose_Should_Cancel_Running_Reload()
+    {
+        var reloadStarted = new TaskCompletionSource<CancellationToken>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var sut = CreateViewModelWithManager(
+            out var manager,
+            out _,
+            DateDisplayFormats.DayMonthYear);
+        manager.Setup(x => x.ReloadAsync(It.IsAny<CancellationToken>()))
+            .Returns<CancellationToken>(async token =>
+            {
+                reloadStarted.TrySetResult(token);
+                await Task.Delay(Timeout.InfiniteTimeSpan, token);
+            });
+
+        var reloadTask = sut.ReloadBirdsCommand.ExecuteAsync(null);
+        var reloadToken = await reloadStarted.Task.WaitAsync(TimeSpan.FromSeconds(3));
+
+        sut.Dispose();
+
+        reloadToken.IsCancellationRequested.Should().BeTrue();
+        await reloadTask.WaitAsync(TimeSpan.FromSeconds(3));
+    }
+
     private static BirdListViewModel CreateViewModel(params BirdDTO[] birds)
     {
         return CreateViewModel(DateDisplayFormats.DayMonthYear, birds);
@@ -170,13 +212,22 @@ public class BirdListViewModelTests
         string dateFormat,
         params BirdDTO[] birds)
     {
+        return CreateViewModelWithManager(out _, out cache, dateFormat, birds);
+    }
+
+    private static BirdListViewModel CreateViewModelWithManager(
+        out Mock<IBirdManager> manager,
+        out Mock<IBirdViewModelCache> cache,
+        string dateFormat,
+        params BirdDTO[] birds)
+    {
         var store = new BirdStore();
         store.CompleteLoading();
 
         foreach (var bird in birds)
             store.Birds.Add(bird);
 
-        var manager = new Mock<IBirdManager>();
+        manager = new Mock<IBirdManager>();
         manager.SetupGet(x => x.Store).Returns(store);
 
         var localization = new Mock<ILocalizationService>();

@@ -237,7 +237,7 @@ public partial class BirdManager(
         try
         {
             await Task.Delay(PendingDeleteUndoDuration, context.CancellationTokenSource.Token);
-            await CommitPendingDeleteAsync(context, CancellationToken.None);
+            await CommitPendingDeleteAsync(context, context.CancellationTokenSource.Token);
         }
         catch (OperationCanceledException)
         {
@@ -276,7 +276,7 @@ public partial class BirdManager(
             return;
         }
 
-        await RestoreBirdToStore(context, CancellationToken.None);
+        await RestoreBirdToStore(context, cancellationToken);
         _notificationService.ShowErrorLocalized("Error.CannotDeleteBird");
     }
 

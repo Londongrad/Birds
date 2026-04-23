@@ -1,5 +1,6 @@
 ﻿using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
+using System.ComponentModel;
 using Birds.UI.Services.Managers.Bird;
 using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.ViewModels.Base;
@@ -15,7 +16,7 @@ namespace Birds.UI.ViewModels;
 /// <remarks>
 ///     Contains commands for saving a new bird and notifying the user about the result.
 /// </remarks>
-public partial class AddBirdViewModel : BirdValidationBaseViewModel
+public partial class AddBirdViewModel : BirdValidationBaseViewModel, IDisposable
 {
     /// <summary>
     ///     Creates a new instance of <see cref="AddBirdViewModel" />.
@@ -27,8 +28,7 @@ public partial class AddBirdViewModel : BirdValidationBaseViewModel
         _notification = notification;
         _birdManager = birdManager;
 
-        // When validation errors change — update the Save command availability
-        ErrorsChanged += (_, __) => SaveCommand.NotifyCanExecuteChanged();
+        ErrorsChanged += OnErrorsChanged;
 
         // Run initial validation so that the Save button is disabled by default
         ValidateAllProperties();
@@ -52,15 +52,21 @@ public partial class AddBirdViewModel : BirdValidationBaseViewModel
     ///     Command to save a new bird to the system.
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanSave))]
-    private async Task SaveAsync()
+    private async Task SaveAsync(CancellationToken cancellationToken)
     {
+        if (_disposed)
+            return;
+
         // Force validation of all properties before saving
         ValidateAllProperties();
         if (HasErrors)
             return;
 
+        using var operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken,
+            _lifetimeCancellation.Token);
+        var operationToken = operationCancellation.Token;
         IsBusy = true; // Disable button
-        Result<BirdDTO> result;
         SaveCommand.NotifyCanExecuteChanged();
 
         _notification.ShowInfoLocalized("Info.AddingBird");
@@ -75,23 +81,32 @@ public partial class AddBirdViewModel : BirdValidationBaseViewModel
 
         try
         {
-            result = await _birdManager.AddAsync(dto, CancellationToken.None);
+            var result = await _birdManager.AddAsync(dto, operationToken);
+            if (_disposed)
+                return;
+
+            if (result.IsSuccess)
+            {
+                _notification.ShowSuccessLocalized("Info.BirdAdded");
+                // Reset the description after successful save
+                Description = string.Empty;
+            }
+            else
+            {
+                _notification.ShowErrorLocalized("Error.CannotSaveBird");
+            }
+        }
+        catch (OperationCanceledException) when (operationToken.IsCancellationRequested)
+        {
+            // The save was canceled because the command, view model, or app lifetime ended.
         }
         finally
         {
-            IsBusy = false; // Enable button again
-            SaveCommand.NotifyCanExecuteChanged();
-        }
-
-        if (result.IsSuccess)
-        {
-            _notification.ShowSuccessLocalized("Info.BirdAdded");
-            // Reset the description after successful save
-            Description = string.Empty;
-        }
-        else
-        {
-            _notification.ShowErrorLocalized("Error.CannotSaveBird");
+            if (!_disposed)
+            {
+                IsBusy = false; // Enable button again
+                SaveCommand.NotifyCanExecuteChanged();
+            }
         }
     }
 
@@ -101,6 +116,8 @@ public partial class AddBirdViewModel : BirdValidationBaseViewModel
 
     private readonly INotificationService _notification;
     private readonly IBirdManager _birdManager;
+    private readonly CancellationTokenSource _lifetimeCancellation = new();
+    private bool _disposed;
 
     #endregion [ Fields ]
 
@@ -111,4 +128,21 @@ public partial class AddBirdViewModel : BirdValidationBaseViewModel
     [ObservableProperty] private bool isOneTime;
 
     #endregion [ Observable Properties ]
+
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
+
+        _disposed = true;
+        _lifetimeCancellation.Cancel();
+        _lifetimeCancellation.Dispose();
+        ErrorsChanged -= OnErrorsChanged;
+    }
+
+    private void OnErrorsChanged(object? sender, DataErrorsChangedEventArgs e)
+    {
+        if (!_disposed)
+            SaveCommand.NotifyCanExecuteChanged();
+    }
 }

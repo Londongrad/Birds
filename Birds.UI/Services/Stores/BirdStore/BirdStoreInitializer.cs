@@ -47,6 +47,10 @@ public class BirdStoreInitializer(
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        var policyContext = new Context
+        {
+            [CancellationTokenContextKey] = cancellationToken
+        };
 
         // Begin loading indication
         await InvokeAsync(() =>
@@ -56,8 +60,8 @@ public class BirdStoreInitializer(
         }, cancellationToken);
 
         // Execute the query through the retry policy
-        var result = await _policy.ExecuteAsync(async ct =>
-            await _mediator.Send(new GetAllBirdsQuery(), ct), cancellationToken);
+        var result = await _policy.ExecuteAsync(async (_, ct) =>
+            await _mediator.Send(new GetAllBirdsQuery(), ct), policyContext, cancellationToken);
 
         if (!result.IsSuccess)
         {
@@ -107,6 +111,8 @@ public class BirdStoreInitializer(
     private readonly IAutoExportCoordinator _autoExportCoordinator = autoExportCoordinator;
     private readonly IUiDispatcher _ui = uiDispatcher;
 
+    private const string CancellationTokenContextKey = "CancellationToken";
+
     // Define a retry policy: retry if the Result is not successful
     private readonly IAsyncPolicy<Result<IReadOnlyList<BirdDTO>>> _policy =
         retryPolicy
@@ -122,13 +128,18 @@ public class BirdStoreInitializer(
                         delay.TotalSeconds,
                         outcome.Result?.Error ?? ErrorMessages.UnknownError);
 
+                    var cancellationToken = context.TryGetValue(CancellationTokenContextKey, out var value)
+                                            && value is CancellationToken token
+                        ? token
+                        : default;
+
                     await uiDispatcher.InvokeAsync(() =>
                     {
                         notificationService.ShowWarningLocalized(
                             "Info.LoadFailed",
                             attempt,
                             delay.TotalSeconds);
-                    }, CancellationToken.None);
+                    }, cancellationToken);
                 });
 
     #endregion [ Fields ]

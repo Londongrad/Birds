@@ -195,6 +195,38 @@ public class SettingsViewModelTests
     }
 
     [Fact]
+    public async Task ImportExport_Dispose_Should_Cancel_Running_Export()
+    {
+        _store.ReplaceBirds(new[]
+        {
+            new BirdDTO(Guid.NewGuid(), "Sparrow", "desc", new DateOnly(2026, 4, 1), null, true, null, null)
+        });
+        var exportStarted = new TaskCompletionSource<CancellationToken>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        _exportService.Setup(x => x.ExportAsync(
+                It.IsAny<IEnumerable<BirdDTO>>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()))
+            .Returns<IEnumerable<BirdDTO>, string, CancellationToken>(async (_, _, token) =>
+            {
+                exportStarted.TrySetResult(token);
+                await Task.Delay(Timeout.InfiniteTimeSpan, token);
+            });
+
+        var sut = CreateImportExportSut();
+        var exportTask = sut.ExportDataCommand.ExecuteAsync(null);
+        var exportToken = await exportStarted.Task.WaitAsync(TimeSpan.FromSeconds(3));
+
+        sut.Dispose();
+
+        exportToken.IsCancellationRequested.Should().BeTrue();
+        await exportTask.WaitAsync(TimeSpan.FromSeconds(3));
+        _notificationService.Verify(
+            x => x.ShowErrorLocalized("Error.ExportFailed", It.IsAny<object[]>()),
+            Times.Never);
+    }
+
+    [Fact]
     public void SelectedLanguageChanged_Should_PersistPreference_ApplyLocalization_And_ReloadBirds()
     {
         _preferences.SelectedLanguage = AppLanguages.Russian;
@@ -207,6 +239,41 @@ public class SettingsViewModelTests
         _preferences.SelectedLanguage.Should().Be(AppLanguages.English);
         _localization.Verify(x => x.ApplyLanguage(AppLanguages.English), Times.Once);
         _birdManager.Verify(x => x.ReloadAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SelectedLanguageChanged_Should_Cancel_Previous_Reload_When_Superseded()
+    {
+        _preferences.SelectedLanguage = AppLanguages.Russian;
+        _localization.Setup(x => x.ApplyLanguage(It.IsAny<string>())).Returns(true);
+        var firstReloadStarted = new TaskCompletionSource<CancellationToken>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var secondReloadStarted = new TaskCompletionSource<CancellationToken>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var reloadCallCount = 0;
+        _birdManager.Setup(x => x.ReloadAsync(It.IsAny<CancellationToken>()))
+            .Returns<CancellationToken>(async token =>
+            {
+                var callNumber = Interlocked.Increment(ref reloadCallCount);
+                if (callNumber == 1)
+                    firstReloadStarted.TrySetResult(token);
+                else
+                    secondReloadStarted.TrySetResult(token);
+
+                await Task.Delay(Timeout.InfiniteTimeSpan, token);
+            });
+
+        var sut = CreateAppearanceSut();
+        sut.SelectedLanguage = AppLanguages.English;
+        var firstToken = await firstReloadStarted.Task.WaitAsync(TimeSpan.FromSeconds(3));
+
+        sut.SelectedLanguage = AppLanguages.Russian;
+        var secondToken = await secondReloadStarted.Task.WaitAsync(TimeSpan.FromSeconds(3));
+
+        firstToken.IsCancellationRequested.Should().BeTrue();
+        secondToken.CanBeCanceled.Should().BeTrue();
+        sut.Dispose();
+        secondToken.IsCancellationRequested.Should().BeTrue();
     }
 
     [Fact]
@@ -367,11 +434,44 @@ public class SettingsViewModelTests
     [Fact]
     public async Task SyncNowCommand_Should_Invoke_RemoteSyncController()
     {
+        CancellationToken capturedToken = default;
+        _remoteSyncController.Setup(x => x.SyncNowAsync(It.IsAny<CancellationToken>()))
+            .Callback<CancellationToken>(token => capturedToken = token)
+            .Returns(Task.CompletedTask);
         var sut = CreateSyncSut();
 
         await sut.SyncNowCommand.ExecuteAsync(null);
 
         _remoteSyncController.Verify(x => x.SyncNowAsync(It.IsAny<CancellationToken>()), Times.Once);
+        capturedToken.CanBeCanceled.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task SyncNowCommand_Should_ResetBusy_And_Not_ShowError_When_Canceled()
+    {
+        var syncStarted = new TaskCompletionSource<CancellationToken>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        _remoteSyncController.Setup(x => x.SyncNowAsync(It.IsAny<CancellationToken>()))
+            .Returns<CancellationToken>(async token =>
+            {
+                syncStarted.TrySetResult(token);
+                await Task.Delay(Timeout.InfiniteTimeSpan, token);
+            });
+        var sut = CreateSyncSut();
+
+        var syncTask = sut.SyncNowCommand.ExecuteAsync(null);
+        var syncToken = await syncStarted.Task.WaitAsync(TimeSpan.FromSeconds(3));
+        sut.IsSyncControlBusy.Should().BeTrue();
+
+        sut.SyncNowCommand.Cancel();
+
+        syncToken.IsCancellationRequested.Should().BeTrue();
+        await syncTask.WaitAsync(TimeSpan.FromSeconds(3));
+        sut.IsSyncControlBusy.Should().BeFalse();
+        _notificationService.Verify(
+            x => x.ShowErrorLocalized(It.IsAny<string>(), It.IsAny<object[]>()),
+            Times.Never);
+        _notificationService.Verify(x => x.ShowError(It.IsAny<string>()), Times.Never);
     }
 
     [Fact]

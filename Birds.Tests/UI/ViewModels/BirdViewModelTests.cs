@@ -87,6 +87,51 @@ public class BirdViewModelTests
     }
 
     [Fact]
+    public async Task SaveCommand_Should_Pass_Cancelable_Token_To_Manager()
+    {
+        var original = CreateBirdDto((BirdSpecies)1);
+        CancellationToken capturedToken = default;
+        _birdManager.Setup(x => x.UpdateAsync(It.IsAny<BirdUpdateDTO>(), It.IsAny<CancellationToken>()))
+            .Callback<BirdUpdateDTO, CancellationToken>((_, token) => capturedToken = token)
+            .ReturnsAsync(Result<BirdDTO>.Success(original));
+
+        var sut = CreateViewModel(original);
+        sut.EditCommand.Execute(null);
+
+        await sut.SaveCommand.ExecuteAsync(null);
+
+        capturedToken.CanBeCanceled.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Dispose_Should_Cancel_Running_Save()
+    {
+        var original = CreateBirdDto((BirdSpecies)1);
+        var saveStarted = new TaskCompletionSource<CancellationToken>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        _birdManager.Setup(x => x.UpdateAsync(It.IsAny<BirdUpdateDTO>(), It.IsAny<CancellationToken>()))
+            .Returns<BirdUpdateDTO, CancellationToken>(async (_, token) =>
+            {
+                saveStarted.TrySetResult(token);
+                await Task.Delay(Timeout.InfiniteTimeSpan, token);
+                return Result<BirdDTO>.Success(original);
+            });
+
+        var sut = CreateViewModel(original);
+        sut.EditCommand.Execute(null);
+        var saveTask = sut.SaveCommand.ExecuteAsync(null);
+        var saveToken = await saveStarted.Task.WaitAsync(TimeSpan.FromSeconds(3));
+
+        sut.Dispose();
+
+        saveToken.IsCancellationRequested.Should().BeTrue();
+        await saveTask.WaitAsync(TimeSpan.FromSeconds(3));
+        _notification.Verify(
+            x => x.ShowErrorLocalized("Error.CannotUpdateBird", It.IsAny<object[]>()),
+            Times.Never);
+    }
+
+    [Fact]
     public async Task CancelEdit_After_Successful_Save_Restores_Latest_Saved_State()
     {
         var sparrow = (BirdSpecies)1;

@@ -16,7 +16,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace Birds.UI.ViewModels;
 
-public partial class MainViewModel : ObservableObject
+public partial class MainViewModel : ObservableObject, IDisposable
 {
     private readonly IAppPreferencesService _appPreferences;
     private readonly IBirdManager _birdManager;
@@ -24,7 +24,9 @@ public partial class MainViewModel : ObservableObject
     private readonly INotificationManager _notificationManager;
     private readonly IRemoteSyncStatusSource _remoteSyncStatus;
     private readonly IThemeService _themeService;
+    private readonly CancellationTokenSource _lifetimeCancellation = new();
     private Type? _currentViewModelType;
+    private bool _disposed;
 
     [ObservableProperty] private string headerSubtitle = AppText.Get("Main.Header.AddBird.Subtitle");
 
@@ -163,9 +165,48 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private Task UndoPendingDelete()
+    private async Task UndoPendingDelete(CancellationToken cancellationToken)
     {
-        return _birdManager.UndoPendingDeleteAsync(CancellationToken.None);
+        using var operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken,
+            _lifetimeCancellation.Token);
+
+        try
+        {
+            await _birdManager.UndoPendingDeleteAsync(operationCancellation.Token);
+        }
+        catch (OperationCanceledException) when (operationCancellation.IsCancellationRequested)
+        {
+            // The undo operation was canceled because the command, view model, or app lifetime ended.
+        }
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
+
+        _disposed = true;
+        _lifetimeCancellation.Cancel();
+
+        if (Navigation is INotifyPropertyChanged navigationNotify)
+            navigationNotify.PropertyChanged -= OnNavigationPropertyChanged;
+
+        if (_notificationManager is INotifyPropertyChanged notificationNotify)
+            notificationNotify.PropertyChanged -= OnNotificationManagerPropertyChanged;
+
+        if (_appPreferences is INotifyPropertyChanged preferencesNotify)
+            preferencesNotify.PropertyChanged -= OnPreferencesPropertyChanged;
+
+        if (_remoteSyncStatus is INotifyPropertyChanged remoteSyncNotify)
+            remoteSyncNotify.PropertyChanged -= OnRemoteSyncStatusPropertyChanged;
+
+        if (_notificationManager.ActiveNotifications is INotifyCollectionChanged notificationsChanged)
+            notificationsChanged.CollectionChanged -= OnNotificationsCollectionChanged;
+
+        _birdManager.PropertyChanged -= OnBirdManagerPropertyChanged;
+        _localization.LanguageChanged -= OnLanguageChanged;
+        _lifetimeCancellation.Dispose();
     }
 
     private void OnNavigationPropertyChanged(object? sender, PropertyChangedEventArgs e)

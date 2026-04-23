@@ -44,6 +44,7 @@ public partial class BirdViewModel : BirdValidationBaseViewModel, IDisposable
     private readonly IBirdNameDisplayService _birdNameDisplay;
     private readonly ILocalizationService _localization;
     private readonly INotificationService _notificationService;
+    private readonly CancellationTokenSource _lifetimeCancellation = new();
     private bool _disposed;
 
     #endregion [ Fields ]
@@ -159,14 +160,31 @@ public partial class BirdViewModel : BirdValidationBaseViewModel, IDisposable
     ///     Command for deleting a bird.
     /// </summary>
     [RelayCommand]
-    private async Task DeleteAsync()
+    private async Task DeleteAsync(CancellationToken cancellationToken)
     {
-        var result = await _birdManager.DeleteAsync(Id, CancellationToken.None);
+        if (_disposed)
+            return;
 
-        if (!result.IsSuccess)
-            _notificationService.ShowErrorLocalized("Error.CannotDeleteBird");
+        using var operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken,
+            _lifetimeCancellation.Token);
+        var operationToken = operationCancellation.Token;
 
-        IsConfirmingDelete = false;
+        try
+        {
+            var result = await _birdManager.DeleteAsync(Id, operationToken);
+            if (_disposed)
+                return;
+
+            if (!result.IsSuccess)
+                _notificationService.ShowErrorLocalized("Error.CannotDeleteBird");
+
+            IsConfirmingDelete = false;
+        }
+        catch (OperationCanceledException) when (operationToken.IsCancellationRequested)
+        {
+            // The delete was canceled because the command, view model, or app lifetime ended.
+        }
     }
 
     /// <summary>
@@ -210,8 +228,11 @@ public partial class BirdViewModel : BirdValidationBaseViewModel, IDisposable
     ///     Command that validates user input and updates the bird through <see cref="IBirdManager" />.
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanSave))]
-    private async Task SaveAsync()
+    private async Task SaveAsync(CancellationToken cancellationToken)
     {
+        if (_disposed)
+            return;
+
         ValidateAllProperties();
         if (HasErrors)
             return;
@@ -224,27 +245,42 @@ public partial class BirdViewModel : BirdValidationBaseViewModel, IDisposable
 
         _notificationService.ShowInfoLocalized("Info.UpdatingBird");
 
-        var result = await _birdManager.UpdateAsync(
-            new BirdUpdateDTO(
-                Id,
-                selectedBirdName,
-                Description,
-                Arrival,
-                Departure,
-                IsAlive), CancellationToken.None);
+        using var operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken,
+            _lifetimeCancellation.Token);
+        var operationToken = operationCancellation.Token;
 
-        if (result.IsSuccess)
+        try
         {
-            ApplyDto(result.Value);
-            _notificationService.ShowSuccessLocalized("Info.UpdatedBird");
-        }
-        else
-        {
-            CancelEdit();
-            _notificationService.ShowErrorLocalized("Error.CannotUpdateBird");
-        }
+            var result = await _birdManager.UpdateAsync(
+                new BirdUpdateDTO(
+                    Id,
+                    selectedBirdName,
+                    Description,
+                    Arrival,
+                    Departure,
+                    IsAlive), operationToken);
 
-        IsEditing = false;
+            if (_disposed)
+                return;
+
+            if (result.IsSuccess)
+            {
+                ApplyDto(result.Value);
+                _notificationService.ShowSuccessLocalized("Info.UpdatedBird");
+            }
+            else
+            {
+                CancelEdit();
+                _notificationService.ShowErrorLocalized("Error.CannotUpdateBird");
+            }
+
+            IsEditing = false;
+        }
+        catch (OperationCanceledException) when (operationToken.IsCancellationRequested)
+        {
+            // The save was canceled because the command, view model, or app lifetime ended.
+        }
     }
 
     /// <summary>
@@ -273,9 +309,11 @@ public partial class BirdViewModel : BirdValidationBaseViewModel, IDisposable
         if (_disposed)
             return;
 
+        _disposed = true;
+        _lifetimeCancellation.Cancel();
         _localization.LanguageChanged -= OnLanguageChanged;
         ErrorsChanged -= OnErrorsChanged;
-        _disposed = true;
+        _lifetimeCancellation.Dispose();
     }
 
     #endregion [ Lifecycle ]
