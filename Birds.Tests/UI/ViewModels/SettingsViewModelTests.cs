@@ -83,7 +83,7 @@ public class SettingsViewModelTests
     }
 
     [Fact]
-    public void Hints_Should_Use_LocalizationService_Strings()
+    public void AppearanceHints_Should_Use_LocalizationService_Strings()
     {
         _preferences.SelectedLanguage = AppLanguages.English;
         _preferences.SelectedTheme = ThemeKeys.Graphite;
@@ -93,7 +93,7 @@ public class SettingsViewModelTests
         _preferences.ShowNotificationBadge = true;
         _preferences.ShowSyncStatusIndicator = true;
 
-        var sut = CreateSut();
+        var sut = CreateAppearanceSut();
 
         sut.ThemeHint.Should().Be(AppText.Get("Settings.ThemeHint.Graphite", _culture));
         sut.DateFormatHint.Should().Be(AppText.Get("Settings.DateFormatHint.DayMonthYear", _culture));
@@ -114,7 +114,7 @@ public class SettingsViewModelTests
     }
 
     [Fact]
-    public void LanguageChanged_Should_Rebuild_Localized_Options_And_Hints()
+    public void AppearanceSettings_LanguageChanged_Should_Rebuild_Localized_Options_And_Hints()
     {
         _preferences.SelectedLanguage = AppLanguages.Russian;
         _preferences.SelectedTheme = ThemeKeys.Steel;
@@ -124,7 +124,7 @@ public class SettingsViewModelTests
         _preferences.ShowNotificationBadge = false;
         _preferences.ShowSyncStatusIndicator = false;
 
-        var sut = CreateSut();
+        var sut = CreateAppearanceSut();
 
         _culture = CultureInfo.GetCultureInfo(AppLanguages.English);
         _localization.Raise(x => x.LanguageChanged += null, EventArgs.Empty);
@@ -195,11 +195,74 @@ public class SettingsViewModelTests
     }
 
     [Fact]
+    public void SelectedLanguageChanged_Should_PersistPreference_ApplyLocalization_And_ReloadBirds()
+    {
+        _preferences.SelectedLanguage = AppLanguages.Russian;
+        _localization.Setup(x => x.ApplyLanguage(AppLanguages.English)).Returns(true);
+
+        var sut = CreateAppearanceSut();
+
+        sut.SelectedLanguage = AppLanguages.English;
+
+        _preferences.SelectedLanguage.Should().Be(AppLanguages.English);
+        _localization.Verify(x => x.ApplyLanguage(AppLanguages.English), Times.Once);
+        _birdManager.Verify(x => x.ReloadAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public void SelectedThemeChanged_Should_PersistPreference_And_ApplyTheme()
+    {
+        _preferences.SelectedTheme = ThemeKeys.Graphite;
+
+        var sut = CreateAppearanceSut();
+
+        sut.SelectedTheme = ThemeKeys.Steel;
+
+        _preferences.SelectedTheme.Should().Be(ThemeKeys.Steel);
+        _themeService.Verify(x => x.ApplyTheme(ThemeKeys.Steel), Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public void SelectedDateFormatChanged_Should_PersistPreference_And_ApplyDateFormat()
+    {
+        _preferences.SelectedDateFormat = DateDisplayFormats.DayMonthYear;
+
+        var sut = CreateAppearanceSut();
+
+        sut.SelectedDateFormat = DateDisplayFormats.YearMonthDay;
+
+        _preferences.SelectedDateFormat.Should().Be(DateDisplayFormats.YearMonthDay);
+        _localization.Verify(x => x.ApplyDateFormat(DateDisplayFormats.YearMonthDay), Times.Once);
+    }
+
+    [Fact]
+    public void AppearanceSettings_Dispose_Should_Unsubscribe_From_LongLivedEvents()
+    {
+        var sut = CreateAppearanceSut();
+        var changedProperties = new List<string>();
+        sut.PropertyChanged += (_, args) =>
+        {
+            if (!string.IsNullOrWhiteSpace(args.PropertyName))
+                changedProperties.Add(args.PropertyName!);
+        };
+
+        sut.Dispose();
+        _preferences.SelectedTheme = ThemeKeys.Steel;
+        _preferences.SelectedDateFormat = DateDisplayFormats.YearMonthDay;
+        _preferences.ShowNotificationBadge = false;
+        _preferences.ShowSyncStatusIndicator = false;
+        _culture = CultureInfo.GetCultureInfo(AppLanguages.Russian);
+        _localization.Raise(x => x.LanguageChanged += null, EventArgs.Empty);
+
+        changedProperties.Should().BeEmpty();
+    }
+
+    [Fact]
     public void ShowSyncStatusIndicatorChanged_Should_PersistPreference_And_UpdateHint()
     {
         _preferences.ShowSyncStatusIndicator = true;
 
-        var sut = CreateSut();
+        var sut = CreateAppearanceSut();
 
         sut.ShowSyncStatusIndicator = false;
 
@@ -457,6 +520,15 @@ public class SettingsViewModelTests
     }
 
     [Fact]
+    public void SettingsViewModel_Should_Compose_AppearanceSettings()
+    {
+        var appearanceSettings = CreateAppearanceSut();
+        var sut = CreateSut(appearanceSettings: appearanceSettings);
+
+        sut.AppearanceSettings.Should().BeSameAs(appearanceSettings);
+    }
+
+    [Fact]
     public void SettingsViewModel_Should_Compose_SyncSettings_And_Forward_Busy_State()
     {
         var syncSettings = CreateSyncSut();
@@ -499,12 +571,19 @@ public class SettingsViewModelTests
     }
 
     [Fact]
-    public void SettingsViewModel_Dispose_Should_Dispose_Composed_SyncSettings()
+    public void SettingsViewModel_Dispose_Should_Dispose_Composed_Settings()
     {
+        var appearanceSettings = CreateAppearanceSut();
         var syncSettings = CreateSyncSut();
         var importExportSettings = CreateImportExportSut();
-        var sut = CreateSut(syncSettings, importExportSettings);
+        var sut = CreateSut(syncSettings, importExportSettings, appearanceSettings);
         sut.Dispose();
+        var appearanceChangedProperties = new List<string>();
+        appearanceSettings.PropertyChanged += (_, args) =>
+        {
+            if (!string.IsNullOrWhiteSpace(args.PropertyName))
+                appearanceChangedProperties.Add(args.PropertyName!);
+        };
         var syncChangedProperties = new List<string>();
         syncSettings.PropertyChanged += (_, args) =>
         {
@@ -519,9 +598,11 @@ public class SettingsViewModelTests
         };
 
         _remoteSyncStatus.SetState(RemoteSyncDisplayState.Offline, lastErrorMessage: "offline");
+        _preferences.SelectedTheme = ThemeKeys.Steel;
         _preferences.AutoExportEnabled = false;
         _localization.Raise(x => x.LanguageChanged += null, EventArgs.Empty);
 
+        appearanceChangedProperties.Should().BeEmpty();
         syncChangedProperties.Should().BeEmpty();
         importExportChangedProperties.Should().BeEmpty();
     }
@@ -533,7 +614,7 @@ public class SettingsViewModelTests
         _preferences.SelectedTheme = ThemeKeys.Steel;
         _preferences.SelectedSyncInterval = RemoteSyncIntervalPresets.ThirtySeconds;
 
-        var sut = CreateSut();
+        var sut = CreateAppearanceSut();
         var availableThemes = sut.AvailableThemes;
         var availableLanguages = sut.AvailableLanguages;
         var availableDateFormats = sut.AvailableDateFormats;
@@ -552,9 +633,9 @@ public class SettingsViewModelTests
         sut.AvailableThemes.Should().BeSameAs(availableThemes);
         sut.AvailableLanguages.Should().BeSameAs(availableLanguages);
         sut.AvailableDateFormats.Should().BeSameAs(availableDateFormats);
-        changedProperties.Should().Contain(nameof(SettingsViewModel.AvailableThemes));
-        changedProperties.Should().Contain(nameof(SettingsViewModel.AvailableLanguages));
-        changedProperties.Should().Contain(nameof(SettingsViewModel.AvailableDateFormats));
+        changedProperties.Should().Contain(nameof(AppearanceSettingsViewModel.AvailableThemes));
+        changedProperties.Should().Contain(nameof(AppearanceSettingsViewModel.AvailableLanguages));
+        changedProperties.Should().Contain(nameof(AppearanceSettingsViewModel.AvailableDateFormats));
         _themeService.Verify(x => x.ApplyTheme(ThemeKeys.Steel), Times.AtLeastOnce);
     }
 
@@ -783,18 +864,27 @@ public class SettingsViewModelTests
 
     private SettingsViewModel CreateSut(
         SyncSettingsViewModel? syncSettings = null,
-        ImportExportSettingsViewModel? importExportSettings = null)
+        ImportExportSettingsViewModel? importExportSettings = null,
+        AppearanceSettingsViewModel? appearanceSettings = null)
     {
         return new SettingsViewModel(
             _preferences,
-            _themeService.Object,
-            _localization.Object,
             _birdManager.Object,
             _autoExportCoordinator.Object,
             _notificationService.Object,
             _databaseMaintenanceService.Object,
+            appearanceSettings ?? CreateAppearanceSut(),
             importExportSettings ?? CreateImportExportSut(),
             syncSettings ?? CreateSyncSut());
+    }
+
+    private AppearanceSettingsViewModel CreateAppearanceSut()
+    {
+        return new AppearanceSettingsViewModel(
+            _preferences,
+            _themeService.Object,
+            _localization.Object,
+            _birdManager.Object);
     }
 
     private ImportExportSettingsViewModel CreateImportExportSut()
