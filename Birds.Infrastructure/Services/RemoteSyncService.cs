@@ -178,12 +178,10 @@ public sealed class RemoteSyncService(
 
                 if (localBirds.Count > 0)
                 {
-                    var lastSyncStamp = localBirds
-                        .Select(GetSyncStamp)
-                        .Max();
+                    var lastSyncedBird = localBirds[^1];
 
                     await localContext.RemoteSyncCursors.AddAsync(
-                        RemoteSyncCursor.Create(BirdsPullCursorKey, lastSyncStamp),
+                        RemoteSyncCursor.Create(BirdsPullCursorKey, GetSyncStamp(lastSyncedBird), lastSyncedBird.Id),
                         cancellationToken);
                     await localContext.SaveChangesAsync(cancellationToken);
                 }
@@ -229,15 +227,26 @@ public sealed class RemoteSyncService(
         var cursor = await localContext.RemoteSyncCursors
             .SingleOrDefaultAsync(syncCursor => syncCursor.CursorKey == BirdsPullCursorKey, cancellationToken);
         var watermarkUtc = cursor?.LastSyncedAtUtc;
+        var watermarkEntityId = cursor?.LastSyncedEntityId;
 
-        var remoteChanges = await remoteContext.Birds
+        var remoteChangesQuery = remoteContext.Birds
             .AsNoTracking()
             .Select(bird => new
             {
                 Bird = bird,
                 SyncStamp = bird.SyncStampUtc
-            })
-            .Where(change => watermarkUtc == null || change.SyncStamp > watermarkUtc.Value)
+            });
+
+        if (watermarkUtc is { } syncedAtUtc)
+        {
+            remoteChangesQuery = watermarkEntityId is { } syncedEntityId
+                ? remoteChangesQuery.Where(change =>
+                    change.SyncStamp > syncedAtUtc ||
+                    change.SyncStamp == syncedAtUtc && change.Bird.Id.CompareTo(syncedEntityId) > 0)
+                : remoteChangesQuery.Where(change => change.SyncStamp >= syncedAtUtc);
+        }
+
+        var remoteChanges = await remoteChangesQuery
             .OrderBy(change => change.SyncStamp)
             .ThenBy(change => change.Bird.Id)
             .Take(PullBatchSize)
@@ -289,15 +298,15 @@ public sealed class RemoteSyncService(
         if (birdsToUpdate.Count > 0)
             localContext.Birds.UpdateRange(birdsToUpdate);
 
-        var latestSyncStamp = remoteChanges[^1].SyncStamp;
+        var latestChange = remoteChanges[^1];
         if (cursor is null)
         {
-            cursor = RemoteSyncCursor.Create(BirdsPullCursorKey, latestSyncStamp);
+            cursor = RemoteSyncCursor.Create(BirdsPullCursorKey, latestChange.SyncStamp, latestChange.Bird.Id);
             await localContext.RemoteSyncCursors.AddAsync(cursor, cancellationToken);
         }
         else
         {
-            cursor.AdvanceTo(latestSyncStamp);
+            cursor.AdvanceTo(latestChange.SyncStamp, latestChange.Bird.Id);
         }
 
         await localContext.SaveChangesAsync(cancellationToken);
@@ -312,10 +321,21 @@ public sealed class RemoteSyncService(
         var cursor = await localContext.RemoteSyncCursors
             .SingleOrDefaultAsync(syncCursor => syncCursor.CursorKey == BirdDeletesPullCursorKey, cancellationToken);
         var watermarkUtc = cursor?.LastSyncedAtUtc;
+        var watermarkEntityId = cursor?.LastSyncedEntityId;
 
-        var remoteDeletes = await remoteContext.BirdTombstones
-            .AsNoTracking()
-            .Where(tombstone => watermarkUtc == null || tombstone.DeletedAtUtc > watermarkUtc.Value)
+        var remoteDeletesQuery = remoteContext.BirdTombstones
+            .AsNoTracking();
+
+        if (watermarkUtc is { } syncedAtUtc)
+        {
+            remoteDeletesQuery = watermarkEntityId is { } syncedEntityId
+                ? remoteDeletesQuery.Where(tombstone =>
+                    tombstone.DeletedAtUtc > syncedAtUtc ||
+                    tombstone.DeletedAtUtc == syncedAtUtc && tombstone.BirdId.CompareTo(syncedEntityId) > 0)
+                : remoteDeletesQuery.Where(tombstone => tombstone.DeletedAtUtc >= syncedAtUtc);
+        }
+
+        var remoteDeletes = await remoteDeletesQuery
             .OrderBy(tombstone => tombstone.DeletedAtUtc)
             .ThenBy(tombstone => tombstone.BirdId)
             .Take(PullBatchSize)
@@ -354,15 +374,16 @@ public sealed class RemoteSyncService(
                 localContext.Birds.Remove(localBird);
         }
 
-        var latestDeleteStamp = remoteDeletes[^1].DeletedAtUtc;
+        var latestDelete = remoteDeletes[^1];
         if (cursor is null)
         {
-            cursor = RemoteSyncCursor.Create(BirdDeletesPullCursorKey, latestDeleteStamp);
+            cursor = RemoteSyncCursor.Create(BirdDeletesPullCursorKey, latestDelete.DeletedAtUtc,
+                latestDelete.BirdId);
             await localContext.RemoteSyncCursors.AddAsync(cursor, cancellationToken);
         }
         else
         {
-            cursor.AdvanceTo(latestDeleteStamp);
+            cursor.AdvanceTo(latestDelete.DeletedAtUtc, latestDelete.BirdId);
         }
 
         await localContext.SaveChangesAsync(cancellationToken);

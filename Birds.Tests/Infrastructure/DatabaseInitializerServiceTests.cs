@@ -55,6 +55,15 @@ public sealed class DatabaseInitializerServiceTests
 
             var syncStampColumnCount = (long)(await command.ExecuteScalarAsync() ?? 0L);
             syncStampColumnCount.Should().Be(1);
+
+            command.CommandText = """
+                                  SELECT COUNT(*)
+                                  FROM pragma_table_info('RemoteSyncCursors')
+                                  WHERE name = 'LastSyncedEntityId';
+                                  """;
+
+            var cursorEntityIdColumnCount = (long)(await command.ExecuteScalarAsync() ?? 0L);
+            cursorEntityIdColumnCount.Should().Be(1);
         }
         finally
         {

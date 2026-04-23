@@ -16,6 +16,7 @@ namespace Birds.Tests.Infrastructure;
 
 public sealed class RemoteSyncServiceTests : IAsyncLifetime
 {
+    private const int TestPullBatchSize = 128;
     private SqliteInMemoryDb _localDb = null!;
     private RemoteSqliteInMemoryDb _remoteDb = null!;
 
@@ -293,6 +294,86 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
         var cursor = await localContext.RemoteSyncCursors.SingleAsync();
         cursor.CursorKey.Should().Be("Birds.Pull");
         cursor.LastSyncedAtUtc.Should().Be(remoteBird.SyncStampUtc);
+        cursor.LastSyncedEntityId.Should().Be(remoteBird.Id);
+    }
+
+    [Fact]
+    public async Task SyncPendingAsync_WhenMoreThanBatchRemoteBirdsShareSyncStamp_Should_PullAllWithoutSkips()
+    {
+        var syncStampUtc = new DateTime(2026, 2, 3, 4, 5, 6, DateTimeKind.Utc);
+        var remoteBirds = Enumerable.Range(1, TestPullBatchSize + 2)
+            .Select(index => CreateTestBird(CreateDeterministicGuid(index), $"remote {index}", syncStampUtc))
+            .ToList();
+        var expectedLastBird = remoteBirds.OrderBy(bird => bird.Id).Last();
+
+        await using (var remoteContext = _remoteDb.CreateContext())
+        {
+            await remoteContext.Birds.AddRangeAsync(remoteBirds);
+            await remoteContext.SaveChangesAsync();
+        }
+
+        var sut = CreateSut(_remoteDb.CreateFactory());
+
+        var firstResult = await sut.SyncPendingAsync(CancellationToken.None);
+        var secondResult = await sut.SyncPendingAsync(CancellationToken.None);
+        var thirdResult = await sut.SyncPendingAsync(CancellationToken.None);
+
+        firstResult.ProcessedCount.Should().Be(TestPullBatchSize);
+        secondResult.ProcessedCount.Should().Be(2);
+        thirdResult.Status.Should().Be(RemoteSyncRunStatus.NothingToSync);
+
+        await using var localContext = _localDb.CreateContext();
+        var localBirdIds = await localContext.Birds
+            .OrderBy(bird => bird.Id)
+            .Select(bird => bird.Id)
+            .ToListAsync();
+        localBirdIds.Should().Equal(remoteBirds.OrderBy(bird => bird.Id).Select(bird => bird.Id));
+        localBirdIds.Should().OnlyHaveUniqueItems();
+
+        var cursor = await localContext.RemoteSyncCursors.SingleAsync(c => c.CursorKey == "Birds.Pull");
+        cursor.LastSyncedAtUtc.Should().Be(syncStampUtc);
+        cursor.LastSyncedEntityId.Should().Be(expectedLastBird.Id);
+    }
+
+    [Fact]
+    public async Task SyncPendingAsync_WhenExistingCursorHasNullEntityId_Should_StartAtTimestampGroupBeginning()
+    {
+        var syncStampUtc = new DateTime(2026, 2, 4, 4, 5, 6, DateTimeKind.Utc);
+        var remoteBirds = new[]
+        {
+            CreateTestBird(CreateDeterministicGuid(1), "first same stamp", syncStampUtc),
+            CreateTestBird(CreateDeterministicGuid(2), "second same stamp", syncStampUtc)
+        };
+
+        await using (var localContext = _localDb.CreateContext())
+        {
+            await localContext.RemoteSyncCursors.AddAsync(RemoteSyncCursor.Create("Birds.Pull", syncStampUtc));
+            await localContext.SaveChangesAsync();
+        }
+
+        await using (var remoteContext = _remoteDb.CreateContext())
+        {
+            await remoteContext.Birds.AddRangeAsync(remoteBirds);
+            await remoteContext.SaveChangesAsync();
+        }
+
+        var sut = CreateSut(_remoteDb.CreateFactory());
+
+        var result = await sut.SyncPendingAsync(CancellationToken.None);
+
+        result.Status.Should().Be(RemoteSyncRunStatus.Synced);
+        result.ProcessedCount.Should().Be(2);
+
+        await using var verifyContext = _localDb.CreateContext();
+        var localBirdIds = await verifyContext.Birds
+            .OrderBy(bird => bird.Id)
+            .Select(bird => bird.Id)
+            .ToListAsync();
+        localBirdIds.Should().Equal(remoteBirds.OrderBy(bird => bird.Id).Select(bird => bird.Id));
+
+        var cursor = await verifyContext.RemoteSyncCursors.SingleAsync(c => c.CursorKey == "Birds.Pull");
+        cursor.LastSyncedAtUtc.Should().Be(syncStampUtc);
+        cursor.LastSyncedEntityId.Should().Be(remoteBirds.OrderBy(bird => bird.Id).Last().Id);
     }
 
     [Fact]
@@ -422,6 +503,48 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
         (await localContext.Birds.CountAsync(bird => bird.Id == localBird.Id)).Should().Be(0);
         var cursor = await localContext.RemoteSyncCursors.SingleAsync(c => c.CursorKey == "Birds.Deletes.Pull");
         cursor.LastSyncedAtUtc.Should().Be(deleteStamp);
+        cursor.LastSyncedEntityId.Should().Be(localBird.Id);
+    }
+
+    [Fact]
+    public async Task SyncPendingAsync_WhenMoreThanBatchTombstonesShareDeleteStamp_Should_DeleteAllWithoutSkips()
+    {
+        var localSyncStampUtc = new DateTime(2026, 2, 1, 0, 0, 0, DateTimeKind.Utc);
+        var deletedAtUtc = new DateTime(2026, 2, 3, 4, 5, 6, DateTimeKind.Utc);
+        var birds = Enumerable.Range(1, TestPullBatchSize + 2)
+            .Select(index => CreateTestBird(CreateDeterministicGuid(index), $"delete {index}", localSyncStampUtc))
+            .ToList();
+        var expectedLastBirdId = birds.OrderBy(bird => bird.Id).Last().Id;
+
+        await using (var localContext = _localDb.CreateContext())
+        {
+            await localContext.Birds.AddRangeAsync(birds);
+            await localContext.SaveChangesAsync();
+        }
+
+        await using (var remoteContext = _remoteDb.CreateContext())
+        {
+            await remoteContext.BirdTombstones.AddRangeAsync(
+                birds.Select(bird => RemoteBirdTombstone.Create(bird.Id, deletedAtUtc)));
+            await remoteContext.SaveChangesAsync();
+        }
+
+        var sut = CreateSut(_remoteDb.CreateFactory());
+
+        var firstResult = await sut.SyncPendingAsync(CancellationToken.None);
+        var secondResult = await sut.SyncPendingAsync(CancellationToken.None);
+        var thirdResult = await sut.SyncPendingAsync(CancellationToken.None);
+
+        firstResult.ProcessedCount.Should().Be(TestPullBatchSize);
+        secondResult.ProcessedCount.Should().Be(2);
+        thirdResult.Status.Should().Be(RemoteSyncRunStatus.NothingToSync);
+
+        await using var verifyContext = _localDb.CreateContext();
+        (await verifyContext.Birds.CountAsync()).Should().Be(0);
+
+        var cursor = await verifyContext.RemoteSyncCursors.SingleAsync(c => c.CursorKey == "Birds.Deletes.Pull");
+        cursor.LastSyncedAtUtc.Should().Be(deletedAtUtc);
+        cursor.LastSyncedEntityId.Should().Be(expectedLastBirdId);
     }
 
     [Fact]
@@ -569,7 +692,12 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
             (await localVerifyContext.SyncOperations.CountAsync()).Should().Be(0);
             var cursor = await localVerifyContext.RemoteSyncCursors.SingleAsync();
             cursor.CursorKey.Should().Be("Birds.Pull");
-            cursor.LastSyncedAtUtc.Should().Be(new[] { firstBird.SyncStampUtc, secondBird.SyncStampUtc }.Max());
+            var expectedLastBird = new[] { firstBird, secondBird }
+                .OrderBy(bird => bird.SyncStampUtc)
+                .ThenBy(bird => bird.Id)
+                .Last();
+            cursor.LastSyncedAtUtc.Should().Be(expectedLastBird.SyncStampUtc);
+            cursor.LastSyncedEntityId.Should().Be(expectedLastBird.Id);
         }
     }
 
@@ -598,6 +726,25 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
     private RemoteSyncService CreateSut(IDbContextFactory<RemoteBirdDbContext> remoteFactory)
     {
         return new RemoteSyncService(_localDb.CreateFactory(), remoteFactory, NullLogger<RemoteSyncService>.Instance);
+    }
+
+    private static Bird CreateTestBird(Guid id, string description, DateTime syncStampUtc)
+    {
+        return Bird.Restore(
+            id,
+            Enum.GetValues<BirdsName>()[0],
+            description,
+            DateOnly.FromDateTime(DateTime.Today.AddDays(-1)),
+            null,
+            true,
+            new DateTime(2026, 2, 3, 13, 5, 6, DateTimeKind.Unspecified),
+            null,
+            syncStampUtc);
+    }
+
+    private static Guid CreateDeterministicGuid(int value)
+    {
+        return Guid.Parse($"00000000-0000-0000-0000-{value:000000000000}");
     }
 
     private sealed class RemoteSqliteInMemoryDb : IAsyncDisposable

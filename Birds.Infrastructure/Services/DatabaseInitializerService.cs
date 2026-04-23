@@ -80,7 +80,7 @@ public sealed class DatabaseInitializerService(
 
     private static async Task EnsureBirdSyncStampSchemaAsync(BirdDbContext context, CancellationToken cancellationToken)
     {
-        if (!await BirdColumnExistsAsync(context, "SyncStampUtc", cancellationToken))
+        if (!await ColumnExistsAsync(context, "Birds", "SyncStampUtc", cancellationToken))
             await context.Database.ExecuteSqlRawAsync(
                 """
                 ALTER TABLE "Birds"
@@ -104,7 +104,8 @@ public sealed class DatabaseInitializerService(
             cancellationToken);
     }
 
-    private static async Task<bool> BirdColumnExistsAsync(BirdDbContext context,
+    private static async Task<bool> ColumnExistsAsync(BirdDbContext context,
+        string tableName,
         string columnName,
         CancellationToken cancellationToken)
     {
@@ -117,7 +118,7 @@ public sealed class DatabaseInitializerService(
         try
         {
             await using var command = connection.CreateCommand();
-            command.CommandText = "SELECT COUNT(*) FROM pragma_table_info('Birds') WHERE name = $columnName;";
+            command.CommandText = $"SELECT COUNT(*) FROM pragma_table_info('{tableName}') WHERE name = $columnName;";
             var parameter = command.CreateParameter();
             parameter.ParameterName = "$columnName";
             parameter.Value = columnName;
@@ -133,15 +134,24 @@ public sealed class DatabaseInitializerService(
         }
     }
 
-    private static Task EnsureRemoteSyncCursorSchemaAsync(BirdDbContext context, CancellationToken cancellationToken)
+    private static async Task EnsureRemoteSyncCursorSchemaAsync(BirdDbContext context, CancellationToken cancellationToken)
     {
-        return context.Database.ExecuteSqlRawAsync(
+        await context.Database.ExecuteSqlRawAsync(
             """
             CREATE TABLE IF NOT EXISTS "RemoteSyncCursors" (
                 "CursorKey" TEXT NOT NULL CONSTRAINT "PK_RemoteSyncCursors" PRIMARY KEY,
-                "LastSyncedAtUtc" TEXT NULL
+                "LastSyncedAtUtc" TEXT NULL,
+                "LastSyncedEntityId" TEXT NULL
             );
             """,
             cancellationToken);
+
+        if (!await ColumnExistsAsync(context, "RemoteSyncCursors", "LastSyncedEntityId", cancellationToken))
+            await context.Database.ExecuteSqlRawAsync(
+                """
+                ALTER TABLE "RemoteSyncCursors"
+                ADD COLUMN "LastSyncedEntityId" TEXT NULL;
+                """,
+                cancellationToken);
     }
 }

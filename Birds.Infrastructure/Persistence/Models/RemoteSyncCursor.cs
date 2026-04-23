@@ -8,8 +8,11 @@ public sealed class RemoteSyncCursor
 
     public string CursorKey { get; private set; } = string.Empty;
     public DateTime? LastSyncedAtUtc { get; private set; }
+    public Guid? LastSyncedEntityId { get; private set; }
 
-    public static RemoteSyncCursor Create(string cursorKey, DateTime? lastSyncedAtUtc = null)
+    public static RemoteSyncCursor Create(string cursorKey,
+        DateTime? lastSyncedAtUtc = null,
+        Guid? lastSyncedEntityId = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(cursorKey);
 
@@ -18,14 +21,23 @@ public sealed class RemoteSyncCursor
             CursorKey = cursorKey,
             LastSyncedAtUtc = lastSyncedAtUtc.HasValue
                 ? UtcDateTimeStorage.Normalize(lastSyncedAtUtc.Value)
-                : null
+                : null,
+            LastSyncedEntityId = lastSyncedAtUtc.HasValue ? lastSyncedEntityId : null
         };
     }
 
-    public void AdvanceTo(DateTime syncedAtUtc)
+    public void AdvanceTo(DateTime syncedAtUtc, Guid syncedEntityId)
     {
         var normalized = UtcDateTimeStorage.Normalize(syncedAtUtc);
-        if (LastSyncedAtUtc is null || normalized > LastSyncedAtUtc.Value)
+        var shouldAdvance = LastSyncedAtUtc is null ||
+                            normalized > LastSyncedAtUtc.Value ||
+                            normalized == LastSyncedAtUtc.Value &&
+                            (LastSyncedEntityId is null || syncedEntityId.CompareTo(LastSyncedEntityId.Value) > 0);
+
+        if (shouldAdvance)
+        {
             LastSyncedAtUtc = normalized;
+            LastSyncedEntityId = syncedEntityId;
+        }
     }
 }
