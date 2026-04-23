@@ -1,6 +1,5 @@
 using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
-using Birds.Application.DTOs.Helpers;
 using Birds.Application.Interfaces;
 using Birds.Application.Mappings;
 using Birds.Domain.Entities;
@@ -54,13 +53,13 @@ public sealed class ImportBirdsCommandHandler(IBirdRepository repository)
 
         foreach (var dto in request.Birds)
         {
-            var parsedName = BirdEnumHelper.ParseBirdName(dto.Name);
-            if (!parsedName.HasValue)
+            var species = dto.ResolveSpecies();
+            if (!species.HasValue)
                 return Result<BirdImportResultDTO>.Failure(ErrorMessages.InvalidImportedBirdName(dto.Name));
 
             restoredBirds.Add(Bird.Restore(
                 dto.Id,
-                parsedName.Value,
+                species.Value,
                 dto.Description,
                 dto.Arrival,
                 dto.Departure,
