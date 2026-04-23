@@ -49,11 +49,17 @@ in the background.
 - Search, filtering, and compact status presentation.
 - Short undo for destructive delete operations.
 
-> ⚡ **Memory-efficient archive rendering**
+> [!IMPORTANT]
+> **⚡ Memory-efficient archive rendering**
 >
 > The archive keeps lightweight DTO records in memory and materializes full `BirdViewModel` instances only for visible
 > cards.
 > As the user scrolls, view models are created on demand, which keeps memory usage lower even for very large archives.
+>
+> This optimization comes with a deliberate tradeoff: the archive stays on the current `ListBox` virtualization path
+> with coarse item-based scrolling instead of smooth pixel scrolling. In practice, the list advances in larger card
+> steps. That behavior is what keeps on-demand view model materialization working. If the scrolling mode is changed,
+> the current memory-saving approach stops working as intended.
 
 #### Statistics
 
@@ -74,13 +80,15 @@ in the background.
 
 - .NET 9
 - WPF
-- MVVM
+- CommunityToolkit.Mvvm
 - MediatR / CQRS
+- FluentValidation
 - EF Core
 - SQLite
-- PostgreSQL
+- PostgreSQL / Npgsql
+- Polly
 - Serilog
-- xUnit + FluentAssertions
+- xUnit + FluentAssertions + Moq
 
 ### 📁 Repository structure
 
@@ -140,11 +148,17 @@ Birds — это WPF-приложение для учёта птиц: посту
 - Поиск, фильтрация и компактное отображение статусов.
 - Короткий undo для удаления.
 
-> ⚡ **Экономный рендеринг архива по памяти**
+> [!IMPORTANT]
+> **⚡ Экономный рендеринг архива по памяти**
 >
 > Архив хранит в памяти лёгкие DTO-записи, а полноценные `BirdViewModel` создаются только для видимых карточек.
 > По мере прокрутки view model материализуются на лету, поэтому даже на больших архивах расход памяти остаётся заметно
 > ниже.
+>
+> У этой оптимизации есть сознательный компромисс: архив остаётся на текущем пути виртуализации `ListBox` с
+> пошаговой прокруткой по элементам вместо плавной пиксельной прокрутки. На практике список листается более крупными
+> шагами. Именно это и сохраняет материализацию `BirdViewModel` на лету. Если менять режим прокрутки, текущая схема
+> экономии памяти перестаёт работать как задумано.
 
 #### Статистика
 
@@ -165,13 +179,15 @@ Birds — это WPF-приложение для учёта птиц: посту
 
 - .NET 9
 - WPF
-- MVVM
+- CommunityToolkit.Mvvm
 - MediatR / CQRS
+- FluentValidation
 - EF Core
 - SQLite
-- PostgreSQL
+- PostgreSQL / Npgsql
+- Polly
 - Serilog
-- xUnit + FluentAssertions
+- xUnit + FluentAssertions + Moq
 
 ### 📁 Структура репозитория
 
