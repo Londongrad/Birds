@@ -1,8 +1,10 @@
+using System.Collections.Specialized;
 using System.Globalization;
 using Birds.Application.DTOs;
 using Birds.Application.DTOs.Helpers;
 using Birds.Domain.Enums;
 using Birds.Shared.Localization;
+using Birds.Tests.Helpers;
 using Birds.Tests.UI.Services;
 using Birds.UI.Enums;
 using Birds.UI.Services.BirdNames;
@@ -10,6 +12,7 @@ using Birds.UI.Services.Caching;
 using Birds.UI.Services.Localization;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Managers.Bird;
+using Birds.UI.Services.Search;
 using Birds.UI.Services.Stores.BirdStore;
 using Birds.UI.ViewModels;
 using FluentAssertions;
@@ -19,6 +22,8 @@ namespace Birds.Tests.UI.ViewModels;
 
 public class BirdListViewModelTests
 {
+    private static readonly TimeSpan SearchDebounceDelay = TimeSpan.FromMilliseconds(30);
+
     [Fact]
     public void Filters_Should_Contain_Default_Options_And_All_Bird_Species()
     {
@@ -70,7 +75,7 @@ public class BirdListViewModelTests
     }
 
     [Fact]
-    public void BirdCount_Should_Track_Filtered_View()
+    public async Task BirdCount_Should_Track_Filtered_View()
     {
         var sparrow = CreateBird((BirdSpecies)1, "forest visitor");
         var chickadee = CreateBird((BirdSpecies)6, "city bird");
@@ -82,10 +87,108 @@ public class BirdListViewModelTests
         sut.BirdCount.Should().Be(1);
 
         sut.SearchText = "city";
+        await WaitUntilAsync(() => sut.BirdCount == 1);
         sut.BirdCount.Should().Be(1);
 
         sut.SearchText = "forest";
+        await WaitUntilAsync(() => sut.BirdCount == 0);
         sut.BirdCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task SearchTextChanged_Should_Debounce_Filter_Refresh()
+    {
+        var sparrow = CreateBird((BirdSpecies)1, "forest visitor");
+        var chickadee = CreateBird((BirdSpecies)6, "city bird");
+        var sut = CreateViewModel(sparrow, chickadee);
+
+        sut.SearchText = "forest";
+
+        sut.BirdCount.Should().Be(2);
+        await WaitUntilAsync(() => sut.BirdCount == 1);
+    }
+
+    [Fact]
+    public async Task SearchTextChanged_WhenTypedRapidly_Should_Refresh_Only_Final_Search()
+    {
+        var sparrow = CreateBird((BirdSpecies)1, "forest visitor");
+        var chickadee = CreateBird((BirdSpecies)6, "city bird");
+        var sut = CreateViewModel(sparrow, chickadee);
+        var refreshCount = 0;
+        ((INotifyCollectionChanged)sut.BirdsView).CollectionChanged += (_, e) =>
+        {
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+                refreshCount++;
+        };
+
+        sut.SearchText = "f";
+        sut.SearchText = "fo";
+        sut.SearchText = "forest";
+
+        refreshCount.Should().Be(0);
+        await WaitUntilAsync(() => refreshCount == 1);
+        await Task.Delay(SearchDebounceDelay * 3);
+
+        refreshCount.Should().Be(1);
+        sut.BirdCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task ClearSearch_Should_Restore_All_Birds()
+    {
+        var sparrow = CreateBird((BirdSpecies)1, "forest visitor");
+        var chickadee = CreateBird((BirdSpecies)6, "city bird");
+        var sut = CreateViewModel(sparrow, chickadee);
+
+        sut.SearchText = "city";
+        await WaitUntilAsync(() => sut.BirdCount == 1);
+
+        sut.ClearSearchCommand.Execute(null);
+        await WaitUntilAsync(() => sut.BirdCount == 2);
+
+        sut.BirdCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task Search_Should_Match_DisplayName_Description_And_Dates()
+    {
+        var bird = CreateBird((BirdSpecies)1, "forest visitor");
+        var sut = CreateViewModel(DateDisplayFormats.YearMonthDay, bird);
+
+        sut.SearchText = BirdNameDisplayNames.GetDisplayName((BirdSpecies)1);
+        await WaitUntilAsync(() => sut.BirdCount == 1);
+        sut.BirdCount.Should().Be(1);
+
+        sut.SearchText = "forest";
+        await WaitUntilAsync(() => sut.BirdCount == 1);
+        sut.BirdCount.Should().Be(1);
+
+        sut.SearchText = "2026-04";
+        await WaitUntilAsync(() => sut.BirdCount == 1);
+        sut.BirdCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task LanguageChanged_Should_Refresh_Search_When_Localized_DisplayNames_Change()
+    {
+        var culture = CultureInfo.GetCultureInfo(AppLanguages.Russian);
+        var bird = TestHelpers.Bird(name: "legacy", desc: "bird") with
+        {
+            Species = BirdSpecies.Sparrow
+        };
+        var sut = CreateViewModelWithCulture(
+            out var localization,
+            () => culture,
+            DateDisplayFormats.DayMonthYear,
+            bird);
+
+        sut.SearchText = "Sparrow";
+        await WaitUntilAsync(() => sut.BirdCount == 0);
+
+        culture = CultureInfo.GetCultureInfo(AppLanguages.English);
+        localization.Raise(x => x.LanguageChanged += null, EventArgs.Empty);
+
+        sut.BirdCount.Should().Be(1);
     }
 
     [Fact]
@@ -106,6 +209,21 @@ public class BirdListViewModelTests
             .ToArray();
 
         _ = CreateViewModelWithCache(out var cache, DateDisplayFormats.DayMonthYear, birds);
+
+        cache.Verify(x => x.GetOrCreate(It.IsAny<BirdDTO>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Search_Should_Not_Create_Item_ViewModels_For_Dtos()
+    {
+        var birds = Enumerable.Range(0, 50)
+            .Select(_ => CreateBird((BirdSpecies)1))
+            .ToArray();
+
+        var sut = CreateViewModelWithCache(out var cache, DateDisplayFormats.DayMonthYear, birds);
+
+        sut.SearchText = "not-present";
+        await WaitUntilAsync(() => sut.BirdCount == 0);
 
         cache.Verify(x => x.GetOrCreate(It.IsAny<BirdDTO>()), Times.Never);
     }
@@ -221,36 +339,94 @@ public class BirdListViewModelTests
         string dateFormat,
         params BirdDTO[] birds)
     {
+        manager = new Mock<IBirdManager>();
+        cache = new Mock<IBirdViewModelCache>();
+
+        return CreateViewModelWithCulture(
+            out _,
+            () => CultureInfo.GetCultureInfo(AppLanguages.Russian),
+            dateFormat,
+            manager,
+            cache,
+            birds);
+    }
+
+    private static BirdListViewModel CreateViewModelWithCulture(
+        out Mock<ILocalizationService> localization,
+        Func<CultureInfo> getCulture,
+        string dateFormat,
+        params BirdDTO[] birds)
+    {
+        return CreateViewModelWithCulture(
+            out localization,
+            getCulture,
+            dateFormat,
+            null,
+            null,
+            birds);
+    }
+
+    private static BirdListViewModel CreateViewModelWithCulture(
+        out Mock<ILocalizationService> localization,
+        Func<CultureInfo> getCulture,
+        string dateFormat,
+        Mock<IBirdManager>? manager = null,
+        Mock<IBirdViewModelCache>? cache = null,
+        params BirdDTO[] birds)
+    {
         var store = new BirdStore();
         store.CompleteLoading();
 
         foreach (var bird in birds)
             store.Birds.Add(bird);
 
-        manager = new Mock<IBirdManager>();
+        manager ??= new Mock<IBirdManager>();
         manager.SetupGet(x => x.Store).Returns(store);
 
-        var localization = new Mock<ILocalizationService>();
-        var culture = CultureInfo.GetCultureInfo(AppLanguages.Russian);
-        localization.SetupGet(x => x.CurrentCulture).Returns(culture);
+        localization = new Mock<ILocalizationService>();
+        localization.SetupGet(x => x.CurrentCulture).Returns(() => getCulture());
         localization.SetupGet(x => x.CurrentDateFormat).Returns(dateFormat);
         localization.Setup(x => x.FormatDate(It.IsAny<DateOnly>(), It.IsAny<DateDisplayStyle>()))
             .Returns((DateOnly value, DateDisplayStyle style) =>
-                DateDisplayFormats.FormatDate(value, culture, dateFormat, style));
+                DateDisplayFormats.FormatDate(value, getCulture(), dateFormat, style));
         localization.Setup(x => x.FormatDate(It.IsAny<DateOnly?>(), It.IsAny<DateDisplayStyle>(), It.IsAny<string?>()))
             .Returns((DateOnly? value, DateDisplayStyle style, string? fallback) =>
                 value.HasValue
-                    ? DateDisplayFormats.FormatDate(value.Value, culture, dateFormat, style)
+                    ? DateDisplayFormats.FormatDate(value.Value, getCulture(), dateFormat, style)
                     : fallback ?? "\u2014");
 
         var birdNameDisplay = new BirdNameDisplayService(localization.Object);
-        cache = new Mock<IBirdViewModelCache>();
+        var birdSearchMatcher = new BirdSearchMatcher(localization.Object, birdNameDisplay);
+        cache ??= new Mock<IBirdViewModelCache>();
 
-        return new BirdListViewModel(manager.Object, localization.Object, birdNameDisplay, cache.Object);
+        return new BirdListViewModel(
+            manager.Object,
+            localization.Object,
+            birdNameDisplay,
+            birdSearchMatcher,
+            cache.Object,
+            new InlineUiDispatcher(),
+            TestBackgroundTaskRunner.Create(),
+            SearchDebounceDelay);
     }
 
     private static BirdDTO CreateBird(BirdSpecies species, string? desc = null)
     {
         return TestHelpers.Bird(name: BirdNameDisplayNames.GetDisplayName(species), desc: desc);
+    }
+
+    private static async Task WaitUntilAsync(Func<bool> condition)
+    {
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(3);
+
+        while (DateTime.UtcNow < deadline)
+        {
+            if (condition())
+                return;
+
+            await Task.Delay(10);
+        }
+
+        condition().Should().BeTrue("the expected debounced filter state should eventually be reached");
     }
 }

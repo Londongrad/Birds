@@ -6,10 +6,13 @@ using Birds.Application.DTOs;
 using Birds.Domain.Enums;
 using Birds.Shared.Localization;
 using Birds.UI.Enums;
+using Birds.UI.Services.Background;
 using Birds.UI.Services.BirdNames;
 using Birds.UI.Services.Caching;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Managers.Bird;
+using Birds.UI.Services.Search;
+using Birds.UI.Threading.Abstractions;
 using Birds.UI.Views.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -18,13 +21,21 @@ namespace Birds.UI.ViewModels;
 
 public partial class BirdListViewModel : ObservableObject, IDisposable
 {
+    private static readonly TimeSpan DefaultSearchDebounceDelay = TimeSpan.FromMilliseconds(200);
+
+    private readonly IBackgroundTaskRunner _backgroundTaskRunner;
     private readonly IBirdManager _birdManager;
     private readonly IBirdNameDisplayService _birdNameDisplay;
+    private readonly IBirdSearchMatcher _birdSearchMatcher;
     private readonly IBirdViewModelCache _birdViewModelCache;
     private readonly ILocalizationService _localization;
+    private readonly TimeSpan _searchDebounceDelay;
+    private readonly IUiDispatcher _uiDispatcher;
     private readonly CancellationTokenSource _lifetimeCancellation = new();
     private bool _disposed;
+    private string _normalizedSearchText = string.Empty;
     private CancellationTokenSource? _reloadCancellation;
+    private CancellationTokenSource? _searchRefreshCancellation;
 
     [ObservableProperty] private IReadOnlyList<FilterOption> filters = Array.Empty<FilterOption>();
 
@@ -35,12 +46,20 @@ public partial class BirdListViewModel : ObservableObject, IDisposable
     public BirdListViewModel(IBirdManager birdManager,
         ILocalizationService localization,
         IBirdNameDisplayService birdNameDisplay,
-        IBirdViewModelCache birdViewModelCache)
+        IBirdSearchMatcher birdSearchMatcher,
+        IBirdViewModelCache birdViewModelCache,
+        IUiDispatcher uiDispatcher,
+        IBackgroundTaskRunner backgroundTaskRunner,
+        TimeSpan? searchDebounceDelay = null)
     {
         _birdManager = birdManager;
         _localization = localization;
         _birdNameDisplay = birdNameDisplay;
+        _birdSearchMatcher = birdSearchMatcher;
         _birdViewModelCache = birdViewModelCache;
+        _uiDispatcher = uiDispatcher;
+        _backgroundTaskRunner = backgroundTaskRunner;
+        _searchDebounceDelay = searchDebounceDelay ?? DefaultSearchDebounceDelay;
 
         Birds = birdManager.Store.Birds;
         Filters = CreateFilters();
@@ -74,14 +93,13 @@ public partial class BirdListViewModel : ObservableObject, IDisposable
 
     partial void OnSelectedFilterChanged(FilterOption value)
     {
-        BirdsView.Refresh();
-        OnPropertyChanged(nameof(BirdCount));
+        RefreshFilterView();
     }
 
     partial void OnSearchTextChanged(string? value)
     {
-        BirdsView.Refresh();
-        OnPropertyChanged(nameof(BirdCount));
+        _normalizedSearchText = _birdSearchMatcher.NormalizeQuery(value);
+        ScheduleSearchRefresh();
     }
 
     public bool FilterBirds(object obj)
@@ -89,7 +107,7 @@ public partial class BirdListViewModel : ObservableObject, IDisposable
         if (obj is not BirdDTO bird)
             return false;
 
-        if (!MatchesSearchText(bird))
+        if (!_birdSearchMatcher.Matches(bird, _normalizedSearchText))
             return false;
 
         if (SelectedFilter is null)
@@ -140,8 +158,8 @@ public partial class BirdListViewModel : ObservableObject, IDisposable
             Filters.FirstOrDefault(x => x.Filter == selectedFilter.Filter && x.Species == selectedFilter.Species)
             ?? Filters[0];
 
-        BirdsView.Refresh();
-        OnPropertyChanged(nameof(BirdCount));
+        _searchRefreshCancellation?.Cancel();
+        RefreshFilterView();
     }
 
     public void Dispose()
@@ -152,6 +170,7 @@ public partial class BirdListViewModel : ObservableObject, IDisposable
         _disposed = true;
         _lifetimeCancellation.Cancel();
         _reloadCancellation?.Cancel();
+        _searchRefreshCancellation?.Cancel();
         _birdManager.Store.PropertyChanged -= OnStorePropertyChanged;
 
         if (Birds is INotifyCollectionChanged birdsChanged)
@@ -184,6 +203,68 @@ public partial class BirdListViewModel : ObservableObject, IDisposable
         operationCancellation.Dispose();
     }
 
+    private void ScheduleSearchRefresh()
+    {
+        var operationCancellation = CreateSearchRefreshCancellation();
+        _backgroundTaskRunner.Run(
+            token => RefreshSearchAfterDelayAsync(operationCancellation, token),
+            new BackgroundTaskOptions("Debounced bird list filter refresh"),
+            operationCancellation.Token);
+    }
+
+    private CancellationTokenSource CreateSearchRefreshCancellation()
+    {
+        var previous = _searchRefreshCancellation;
+        var current = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeCancellation.Token);
+        _searchRefreshCancellation = current;
+
+        previous?.Cancel();
+
+        return current;
+    }
+
+    private async Task RefreshSearchAfterDelayAsync(
+        CancellationTokenSource operationCancellation,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(_searchDebounceDelay, cancellationToken);
+            await _uiDispatcher.InvokeAsync(() =>
+            {
+                if (_disposed || operationCancellation.IsCancellationRequested)
+                    return;
+
+                RefreshFilterView();
+            }, cancellationToken);
+        }
+        catch (OperationCanceledException) when (operationCancellation.IsCancellationRequested)
+        {
+            // A newer search text change superseded this refresh.
+        }
+        finally
+        {
+            ClearSearchRefreshCancellation(operationCancellation);
+        }
+    }
+
+    private void ClearSearchRefreshCancellation(CancellationTokenSource operationCancellation)
+    {
+        if (ReferenceEquals(_searchRefreshCancellation, operationCancellation))
+            _searchRefreshCancellation = null;
+
+        operationCancellation.Dispose();
+    }
+
+    private void RefreshFilterView()
+    {
+        if (_disposed)
+            return;
+
+        BirdsView.Refresh();
+        OnPropertyChanged(nameof(BirdCount));
+    }
+
     private IReadOnlyList<FilterOption> CreateFilters()
     {
         var filters = new List<FilterOption>
@@ -199,23 +280,6 @@ public partial class BirdListViewModel : ObservableObject, IDisposable
                 species)));
 
         return filters;
-    }
-
-    private bool MatchesSearchText(BirdDTO bird)
-    {
-        if (string.IsNullOrWhiteSpace(SearchText))
-            return true;
-
-        var text = SearchText.Trim();
-        var species = bird.ResolveSpecies();
-        var localizedName = species.HasValue ? _birdNameDisplay.GetDisplayName(species.Value) : bird.Name;
-
-        return localizedName.Contains(text, StringComparison.CurrentCultureIgnoreCase)
-               || bird.Name?.Contains(text, StringComparison.CurrentCultureIgnoreCase) == true
-               || _localization.FormatDate(bird.Arrival).Contains(text, StringComparison.CurrentCultureIgnoreCase)
-               || (bird.Departure is { } departure && _localization.FormatDate(departure)
-                   .Contains(text, StringComparison.CurrentCultureIgnoreCase))
-               || bird.Description?.Contains(text, StringComparison.CurrentCultureIgnoreCase) == true;
     }
 
     private void OnStorePropertyChanged(object? sender, PropertyChangedEventArgs e)
