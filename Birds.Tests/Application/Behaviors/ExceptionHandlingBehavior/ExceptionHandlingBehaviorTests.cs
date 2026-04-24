@@ -89,7 +89,8 @@ public class ExceptionHandlingBehaviorTests
 
         result.Should().NotBeNull();
         result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Be(ExceptionMessages.UnexpectedFailure("Something failed"));
+        result.Error.Should().Be(ErrorMessages.UnexpectedError);
+        result.Error.Should().NotContain("Something failed");
     }
 
     [Fact]

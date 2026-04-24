@@ -56,7 +56,7 @@ public class ExceptionHandlingBehavior<TRequest, TResponse>(
         catch (Exception ex)
         {
             _logger.LogError(ex, LogMessages.UnhandledException, typeof(TRequest).Name);
-            return CreateFailureResponse(ExceptionMessages.UnexpectedFailure(ex.Message));
+            return CreateFailureResponse(ErrorMessages.UnexpectedError);
         }
     }
 

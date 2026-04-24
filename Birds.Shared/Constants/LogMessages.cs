@@ -15,6 +15,7 @@ public static class LogMessages
 
     public const string HandlingRequest = "Handling {RequestType}.";
     public const string HandledRequest = "Handled {RequestType}.";
+    public const string FailedRequest = "Failed {RequestType}.";
 
     public const string LogsDirectoryResolved = "Logs directory resolved to {LogsDirectory}.";
     public const string AppStarting = "\n\n\n\tApplication starting...";

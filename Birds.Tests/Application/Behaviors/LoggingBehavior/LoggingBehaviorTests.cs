@@ -13,7 +13,6 @@ public class LoggingBehaviorTests
     [Fact]
     public async Task Logs_Before_And_After_And_CallsNext()
     {
-        // Arrange
         var logger = new Mock<ILogger<LoggingBehavior<CreateBirdCommand, string>>>();
         var behavior = new LoggingBehavior<CreateBirdCommand, string>(logger.Object);
 
@@ -25,42 +24,17 @@ public class LoggingBehaviorTests
 
         RequestHandlerDelegate<string> next = cancellationToken => Task.FromResult("OK");
 
-        // Act
         var result = await behavior.Handle(cmd, next, CancellationToken.None);
 
-        // Assert
         result.Should().Be("OK");
-
-        // "Handling {RequestName}"
-        logger.Verify(x => x.Log(
-                LogLevel.Information,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, _) =>
-                    v != null &&
-                    // матчим и слово, и имя запроса
-                    v.ToString()!.IndexOf("Handling", StringComparison.OrdinalIgnoreCase) >= 0 &&
-                    v.ToString()!.IndexOf(nameof(CreateBirdCommand), StringComparison.OrdinalIgnoreCase) >= 0),
-                It.IsAny<Exception?>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Once);
-
-        // "Handled {RequestName}"
-        logger.Verify(x => x.Log(
-                LogLevel.Information,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, _) =>
-                    v != null &&
-                    v.ToString()!.IndexOf("Handled", StringComparison.OrdinalIgnoreCase) >= 0 &&
-                    v.ToString()!.IndexOf(nameof(CreateBirdCommand), StringComparison.OrdinalIgnoreCase) >= 0),
-                It.IsAny<Exception?>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Once);
+        VerifyLog(logger, "Handling", Times.Once());
+        VerifyLog(logger, "Handled", Times.Once());
+        VerifyLog(logger, "Failed", Times.Never());
     }
 
     [Fact]
-    public async Task Logs_Before_And_Rethrows_When_Next_Throws_No_AfterLog()
+    public async Task Logs_Before_And_Failure_Then_Rethrows_When_Next_Throws()
     {
-        // Arrange
         var logger = new Mock<ILogger<LoggingBehavior<CreateBirdCommand, string>>>();
         var behavior = new LoggingBehavior<CreateBirdCommand, string>(logger.Object);
 
@@ -72,34 +46,29 @@ public class LoggingBehaviorTests
 
         RequestHandlerDelegate<string> next = cancellationToken => throw new InvalidOperationException("boom");
 
-        // Act
         Func<Task> act = async () => await behavior.Handle(cmd, next, CancellationToken.None);
 
-        // Assert
         await act.Should().ThrowAsync<InvalidOperationException>();
 
-        // Был "Handling ..."
-        logger.Verify(x => x.Log(
-                LogLevel.Information,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, _) =>
-                    v != null &&
-                    v.ToString()!.IndexOf("Handling", StringComparison.OrdinalIgnoreCase) >= 0 &&
-                    v.ToString()!.IndexOf(nameof(CreateBirdCommand), StringComparison.OrdinalIgnoreCase) >= 0),
-                It.IsAny<Exception?>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Once);
+        VerifyLog(logger, "Handling", Times.Once());
+        VerifyLog(logger, "Handled", Times.Never());
+        VerifyLog(logger, "Failed", Times.Once());
+    }
 
-        // Не было "Handled ..." (упали раньше)
+    private static void VerifyLog(
+        Mock<ILogger<LoggingBehavior<CreateBirdCommand, string>>> logger,
+        string expectedText,
+        Times times)
+    {
         logger.Verify(x => x.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
                 It.Is<It.IsAnyType>((v, _) =>
                     v != null &&
-                    v.ToString()!.IndexOf("Handled", StringComparison.OrdinalIgnoreCase) >= 0 &&
+                    v.ToString()!.IndexOf(expectedText, StringComparison.OrdinalIgnoreCase) >= 0 &&
                     v.ToString()!.IndexOf(nameof(CreateBirdCommand), StringComparison.OrdinalIgnoreCase) >= 0),
                 It.IsAny<Exception?>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Never);
+            times);
     }
 }

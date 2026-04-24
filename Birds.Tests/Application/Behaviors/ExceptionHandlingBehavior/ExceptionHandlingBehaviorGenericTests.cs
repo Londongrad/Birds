@@ -88,7 +88,8 @@ public class ExceptionHandlingBehaviorGenericTests
 
         result.Should().NotBeNull();
         result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Be(ExceptionMessages.UnexpectedFailure("Something went wrong"));
+        result.Error.Should().Be(ErrorMessages.UnexpectedError);
+        result.Error.Should().NotContain("Something went wrong");
     }
 
     public sealed class DummyRequest

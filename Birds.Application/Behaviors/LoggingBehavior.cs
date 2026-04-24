@@ -16,10 +16,18 @@ public class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior<TReque
     {
         _logger.LogInformation(LogMessages.HandlingRequest, typeof(TRequest).Name);
 
-        var response = await next();
+        try
+        {
+            var response = await next();
 
-        _logger.LogInformation(LogMessages.HandledRequest, typeof(TRequest).Name);
+            _logger.LogInformation(LogMessages.HandledRequest, typeof(TRequest).Name);
 
-        return response;
+            return response;
+        }
+        catch
+        {
+            _logger.LogInformation(LogMessages.FailedRequest, typeof(TRequest).Name);
+            throw;
+        }
     }
 }
