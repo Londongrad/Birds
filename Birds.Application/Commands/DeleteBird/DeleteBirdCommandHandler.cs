@@ -11,7 +11,7 @@ public class DeleteBirdCommandHandler(IBirdRepository birdRepository)
     public async Task<Result> Handle(DeleteBirdCommand request, CancellationToken cancellationToken)
     {
         if (request is null)
-            return Result.Failure(ErrorMessages.RequestCannotBeNull);
+            return Result.Failure(AppErrors.InvalidRequest(ErrorMessages.RequestCannotBeNull));
 
         var bird = await birdRepository.GetByIdAsync(request.Id, cancellationToken);
 

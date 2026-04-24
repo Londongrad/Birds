@@ -72,7 +72,8 @@ public partial class BirdManager(
         else if (Store.LoadState is LoadState.Loading) await WaitUntilLoadedOrFailedAsync(cancellationToken);
 
         if (Store.LoadState is not LoadState.Loaded)
-            return Result<BirdDTO>.Failure("Bird store cannot be loaded.");
+            return Result<BirdDTO>.Failure(
+                AppErrors.Failure("Bird store cannot be loaded.", AppErrorCodes.BirdStoreUnavailable));
 
         var result = await _mediator.Send(
             new CreateBirdCommand(

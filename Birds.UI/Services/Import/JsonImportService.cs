@@ -19,10 +19,12 @@ public sealed class JsonImportService : IImportService
     public async Task<Result<IReadOnlyList<BirdDTO>>> ImportAsync(string path, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(path))
-            return Result<IReadOnlyList<BirdDTO>>.Failure(ErrorMessages.ImportPathCannotBeEmpty);
+            return Result<IReadOnlyList<BirdDTO>>.Failure(
+                AppErrors.Import(ErrorMessages.ImportPathCannotBeEmpty, AppErrorCodes.ImportInvalidFile));
 
         if (!File.Exists(path))
-            return Result<IReadOnlyList<BirdDTO>>.Failure(ErrorMessages.ImportFileNotFound(path));
+            return Result<IReadOnlyList<BirdDTO>>.Failure(
+                AppErrors.Import(ErrorMessages.ImportFileNotFound(path), AppErrorCodes.ImportInvalidFile));
 
         try
         {
@@ -31,23 +33,30 @@ public sealed class JsonImportService : IImportService
                 await JsonSerializer.DeserializeAsync<ExportEnvelope>(stream, JsonOptions, cancellationToken);
 
             if (envelope is null)
-                return Result<IReadOnlyList<BirdDTO>>.Failure(ErrorMessages.InvalidImportFileFormat);
+                return Result<IReadOnlyList<BirdDTO>>.Failure(
+                    AppErrors.Import(ErrorMessages.InvalidImportFileFormat, AppErrorCodes.ImportInvalidFile));
 
             if (envelope.Version != 1)
-                return Result<IReadOnlyList<BirdDTO>>.Failure(ErrorMessages.UnsupportedImportVersion(envelope.Version));
+                return Result<IReadOnlyList<BirdDTO>>.Failure(
+                    AppErrors.Import(
+                        ErrorMessages.UnsupportedImportVersion(envelope.Version),
+                        AppErrorCodes.ImportInvalidFile));
 
             if (envelope.Items is null)
-                return Result<IReadOnlyList<BirdDTO>>.Failure(ErrorMessages.ImportPayloadCannotBeNull);
+                return Result<IReadOnlyList<BirdDTO>>.Failure(
+                    AppErrors.Import(ErrorMessages.ImportPayloadCannotBeNull, AppErrorCodes.ImportInvalidPayload));
 
             return Result<IReadOnlyList<BirdDTO>>.Success(envelope.Items);
         }
         catch (JsonException)
         {
-            return Result<IReadOnlyList<BirdDTO>>.Failure(ErrorMessages.InvalidImportFileFormat);
+            return Result<IReadOnlyList<BirdDTO>>.Failure(
+                AppErrors.Import(ErrorMessages.InvalidImportFileFormat, AppErrorCodes.ImportInvalidFile));
         }
         catch (IOException ex)
         {
-            return Result<IReadOnlyList<BirdDTO>>.Failure(ex.Message);
+            return Result<IReadOnlyList<BirdDTO>>.Failure(
+                AppErrors.Import(ex.Message, AppErrorCodes.ImportInvalidFile));
         }
     }
 

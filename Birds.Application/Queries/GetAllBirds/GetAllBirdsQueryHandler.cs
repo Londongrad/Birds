@@ -14,12 +14,12 @@ public class GetAllBirdsQueryHandler(IBirdRepository repository)
         CancellationToken cancellationToken)
     {
         if (query is null)
-            return Result<IReadOnlyList<BirdDTO>>.Failure(ErrorMessages.QueryCannotBeNull);
+            return Result<IReadOnlyList<BirdDTO>>.Failure(AppErrors.InvalidRequest(ErrorMessages.QueryCannotBeNull));
 
         var birds = await repository.GetAllAsync(cancellationToken);
 
         if (birds is null)
-            return Result<IReadOnlyList<BirdDTO>>.Failure(ErrorMessages.UnexpectedError);
+            return Result<IReadOnlyList<BirdDTO>>.Failure(AppErrors.Unexpected());
 
         if (birds.Count == 0)
             return Result<IReadOnlyList<BirdDTO>>.Success(Array.Empty<BirdDTO>());

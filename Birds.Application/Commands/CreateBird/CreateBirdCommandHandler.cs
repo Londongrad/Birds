@@ -13,7 +13,7 @@ public class CreateBirdCommandHandler(IBirdRepository birdRepository)
     public async Task<Result<BirdDTO>> Handle(CreateBirdCommand request, CancellationToken cancellationToken)
     {
         if (request == null)
-            return Result<BirdDTO>.Failure(ErrorMessages.RequestCannotBeNull);
+            return Result<BirdDTO>.Failure(AppErrors.InvalidRequest(ErrorMessages.RequestCannotBeNull));
 
         var bird = request.ToEntity();
 

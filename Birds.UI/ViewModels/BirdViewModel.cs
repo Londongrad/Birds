@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
 using Birds.Domain.Common;
 using Birds.Domain.Enums;
@@ -274,9 +275,9 @@ public partial class BirdViewModel : BirdValidationBaseViewModel, IDisposable
             else
             {
                 CancelEdit();
-                if (result.Error == ErrorMessages.BirdConcurrencyConflict)
+                if (result.AppError?.Code == AppErrorCodes.BirdConcurrencyConflict)
                 {
-                    _notificationService.ShowWarning(result.Error);
+                    _notificationService.ShowWarning(result.Error ?? ErrorMessages.BirdConcurrencyConflict);
                     await _birdManager.ReloadAsync(operationToken);
                 }
                 else

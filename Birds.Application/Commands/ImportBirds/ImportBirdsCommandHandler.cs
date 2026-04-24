@@ -16,10 +16,11 @@ public sealed class ImportBirdsCommandHandler(IBirdRepository repository)
         CancellationToken cancellationToken)
     {
         if (request is null)
-            return Result<BirdImportResultDTO>.Failure(ErrorMessages.RequestCannotBeNull);
+            return Result<BirdImportResultDTO>.Failure(AppErrors.InvalidRequest(ErrorMessages.RequestCannotBeNull));
 
         if (request.Birds is null)
-            return Result<BirdImportResultDTO>.Failure(ErrorMessages.ImportPayloadCannotBeNull);
+            return Result<BirdImportResultDTO>.Failure(
+                AppErrors.Import(ErrorMessages.ImportPayloadCannotBeNull, AppErrorCodes.ImportInvalidPayload));
 
         if (request.Birds.Count == 0)
         {
@@ -47,7 +48,10 @@ public sealed class ImportBirdsCommandHandler(IBirdRepository repository)
             .Key;
 
         if (duplicateId.HasValue)
-            return Result<BirdImportResultDTO>.Failure(ErrorMessages.ImportContainsDuplicateIds(duplicateId.Value));
+            return Result<BirdImportResultDTO>.Failure(
+                AppErrors.Import(
+                    ErrorMessages.ImportContainsDuplicateIds(duplicateId.Value),
+                    AppErrorCodes.ImportDuplicateIds));
 
         var restoredBirds = new List<Bird>(request.Birds.Count);
 
@@ -55,7 +59,10 @@ public sealed class ImportBirdsCommandHandler(IBirdRepository repository)
         {
             var species = dto.ResolveSpecies();
             if (!species.HasValue)
-                return Result<BirdImportResultDTO>.Failure(ErrorMessages.InvalidImportedBirdName(dto.Name));
+                return Result<BirdImportResultDTO>.Failure(
+                    AppErrors.Import(
+                        ErrorMessages.InvalidImportedBirdName(dto.Name),
+                        AppErrorCodes.ImportInvalidSpecies));
 
             restoredBirds.Add(Bird.Restore(
                 dto.Id,

@@ -14,7 +14,7 @@ public class UpdateBirdCommandHandler(IBirdRepository birdRepository)
     public async Task<Result<BirdDTO>> Handle(UpdateBirdCommand request, CancellationToken cancellationToken)
     {
         if (request is null)
-            return Result<BirdDTO>.Failure(ErrorMessages.RequestCannotBeNull);
+            return Result<BirdDTO>.Failure(AppErrors.InvalidRequest(ErrorMessages.RequestCannotBeNull));
 
         BirdDTO birdDTO;
         try
@@ -33,7 +33,7 @@ public class UpdateBirdCommandHandler(IBirdRepository birdRepository)
         }
         catch (ConcurrencyConflictException)
         {
-            return Result<BirdDTO>.Failure(ErrorMessages.BirdConcurrencyConflict);
+            return Result<BirdDTO>.Failure(AppErrors.ConcurrencyConflict(ErrorMessages.BirdConcurrencyConflict));
         }
 
         return Result<BirdDTO>.Success(birdDTO);
