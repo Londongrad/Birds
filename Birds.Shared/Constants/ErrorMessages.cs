@@ -33,6 +33,15 @@ public static class ErrorMessages
     public static string ImportFailed
         => AppText.Get("Error.ImportFailed");
 
+    public static string ImportValidationFailed
+        => AppText.Get("Error.ImportValidationFailed");
+
+    public static string ImportTransactionFailed
+        => AppText.Get("Error.ImportTransactionFailed");
+
+    public static string InvalidImportedBirdSpecies
+        => AppText.Get("Error.InvalidImportedBirdSpecies");
+
     public static string ExportFailed
         => AppText.Get("Error.ExportFailed");
 

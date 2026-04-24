@@ -15,6 +15,9 @@ public static class AppErrorCodes
 
     public const string ImportInvalidFile = "Import.InvalidFile";
     public const string ImportInvalidPayload = "Import.InvalidPayload";
+    public const string ImportUnsupportedVersion = "Import.UnsupportedVersion";
+    public const string ImportValidationFailed = "Import.ValidationFailed";
+    public const string ImportTransactionFailed = "Import.TransactionFailed";
     public const string ImportDuplicateIds = "Import.DuplicateIds";
     public const string ImportInvalidSpecies = "Import.InvalidSpecies";
 

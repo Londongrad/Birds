@@ -378,6 +378,10 @@ public static partial class AppText
             ["Error.ImportContainsDuplicateIds"] = "Файл импорта содержит дублирующийся Id: {0}.",
             ["Error.InvalidImportedBirdName"] = "Импорт прерван: неизвестное имя птицы '{0}'.",
             ["Error.ImportFailed"] = "Не удалось импортировать данные о птицах.",
+            ["Error.ImportValidationFailed"] = "Импорт прерван: архив содержит некорректные данные о птицах.",
+            ["Error.ImportTransactionFailed"] =
+                "Не удалось применить импорт. Текущий архив не был частично изменён.",
+            ["Error.InvalidImportedBirdSpecies"] = "Импорт прерван: неизвестное значение вида птицы.",
             ["Error.ExportFailed"] = "Не удалось экспортировать данные о птицах.",
             ["Error.CannotOpenExportFile"] = "Не удалось открыть файл экспорта.",
             ["Error.CannotOpenExportFolder"] = "Не удалось открыть папку экспорта.",

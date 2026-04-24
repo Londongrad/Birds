@@ -379,6 +379,10 @@ public static partial class AppText
             ["Error.ImportContainsDuplicateIds"] = "The import file contains a duplicate Id: {0}.",
             ["Error.InvalidImportedBirdName"] = "Import aborted: unknown bird name '{0}'.",
             ["Error.ImportFailed"] = "Unable to import bird data.",
+            ["Error.ImportValidationFailed"] = "Import aborted because the archive contains invalid bird data.",
+            ["Error.ImportTransactionFailed"] =
+                "Import failed while applying changes. Your existing archive was not partially updated.",
+            ["Error.InvalidImportedBirdSpecies"] = "Import aborted: unknown bird species value.",
             ["Error.ExportFailed"] = "Unable to export bird data.",
             ["Error.CannotOpenExportFile"] = "Unable to open the export file.",
             ["Error.CannotOpenExportFolder"] = "Unable to open the export folder.",
