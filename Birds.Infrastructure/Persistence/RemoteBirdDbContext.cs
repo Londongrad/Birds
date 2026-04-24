@@ -15,6 +15,7 @@ public sealed class RemoteBirdDbContext(DbContextOptions<RemoteBirdDbContext> op
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new BirdConfiguration());
+        modelBuilder.Entity<Bird>().Ignore(bird => bird.Version);
 
         modelBuilder.Entity<RemoteBirdTombstone>(builder =>
         {

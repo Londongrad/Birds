@@ -34,6 +34,11 @@ public class BirdConfiguration : IEntityTypeConfiguration<Bird>
             .IsRequired()
             .HasDefaultValue(true);
 
+        builder.Property(b => b.Version)
+            .IsRequired()
+            .HasDefaultValue(Bird.InitialVersion)
+            .IsConcurrencyToken();
+
         builder.Property(b => b.CreatedAt)
             .IsRequired()
             .HasColumnType("timestamp without time zone");

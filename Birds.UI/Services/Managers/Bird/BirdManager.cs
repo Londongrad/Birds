@@ -101,7 +101,8 @@ public partial class BirdManager(
             updatedBird.Description,
             updatedBird.Arrival,
             updatedBird.Departure,
-            updatedBird.IsAlive);
+            updatedBird.IsAlive,
+            updatedBird.Version);
 
         var result = await _mediator.Send(command, cancellationToken);
 

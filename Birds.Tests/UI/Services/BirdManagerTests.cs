@@ -174,7 +174,7 @@ public class BirdManagerTests
             .ReturnsAsync(Result<BirdDTO>.Success(updated));
 
         var sut = MakeManager(store, Init(store, mediator.Object), mediator.Object);
-        var dto = new BirdUpdateDTO(id, BirdSpecies.BlackCappedChickadee, "new", TestHelpers.Today(), null, true);
+        var dto = new BirdUpdateDTO(id, BirdSpecies.BlackCappedChickadee, "new", TestHelpers.Today(), null, true, 7);
 
         // Act
         var result = await sut.UpdateAsync(dto, CancellationToken.None);
@@ -184,7 +184,9 @@ public class BirdManagerTests
         store.Birds.Should().ContainSingle(b =>
             b.Id == id && b.Species == BirdSpecies.BlackCappedChickadee && b.Name == "Синица" && b.Description == "new");
         mediator.Verify(m => m.Send(
-                It.Is<UpdateBirdCommand>(command => command.Name == BirdSpecies.BlackCappedChickadee),
+                It.Is<UpdateBirdCommand>(command =>
+                    command.Name == BirdSpecies.BlackCappedChickadee
+                    && command.Version == dto.Version),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }

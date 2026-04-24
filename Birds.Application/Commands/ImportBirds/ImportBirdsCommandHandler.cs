@@ -65,7 +65,8 @@ public sealed class ImportBirdsCommandHandler(IBirdRepository repository)
                 dto.Departure,
                 dto.IsAlive,
                 dto.CreatedAt,
-                dto.UpdatedAt));
+                dto.UpdatedAt,
+                version: dto.Version));
         }
 
         var upsertResult = request.Mode == BirdImportMode.Replace

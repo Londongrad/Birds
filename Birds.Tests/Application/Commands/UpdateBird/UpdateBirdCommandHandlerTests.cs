@@ -21,9 +21,19 @@ public class UpdateBirdCommandHandlerTests
         var id = Guid.NewGuid();
         var existing = Bird.Restore(id, (BirdSpecies)1, "old",
             DateOnly.FromDateTime(DateTime.Now.AddDays(-30)), null, true);
+        var updated = Bird.Restore(id, (BirdSpecies)6, "new",
+            DateOnly.FromDateTime(DateTime.Now.AddDays(-20)), null, true, version: 2);
 
-        _repo.Setup(r => r.GetByIdAsync(id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(existing);
+        _repo.Setup(r => r.UpdateAsync(
+                id,
+                existing.Version,
+                (BirdSpecies)6,
+                "new",
+                It.IsAny<DateOnly>(),
+                null,
+                true,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(updated);
 
         var cmd = new UpdateBirdCommand(
             id,
@@ -39,26 +49,31 @@ public class UpdateBirdCommandHandlerTests
         var result = await handler.Handle(cmd, CancellationToken.None);
 
         var expectedDto = new BirdDTO(
-            existing.Id,
-            BirdNameDisplayNames.GetDisplayName(existing.Name),
-            existing.Description,
-            existing.Arrival,
-            existing.Departure,
-            existing.IsAlive,
-            existing.CreatedAt,
-            existing.UpdatedAt);
+            updated.Id,
+            BirdNameDisplayNames.GetDisplayName(updated.Name),
+            updated.Description,
+            updated.Arrival,
+            updated.Departure,
+            updated.IsAlive,
+            updated.CreatedAt,
+            updated.UpdatedAt)
+        {
+            Species = updated.Name,
+            Version = updated.Version
+        };
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeEquivalentTo(expectedDto);
 
-        existing.Name.Should().Be(cmd.Name);
-        existing.Description.Should().Be(cmd.Description);
-        existing.Arrival.Should().Be(cmd.Arrival);
-        existing.Departure.Should().Be(cmd.Departure);
-        existing.IsAlive.Should().BeTrue();
-
-        _repo.Verify(r => r.GetByIdAsync(id, It.IsAny<CancellationToken>()), Times.Once);
-        _repo.Verify(r => r.UpdateAsync(existing, It.IsAny<CancellationToken>()), Times.Once);
+        _repo.Verify(r => r.UpdateAsync(
+            id,
+            cmd.Version,
+            cmd.Name,
+            cmd.Description,
+            cmd.Arrival,
+            cmd.Departure,
+            cmd.IsAlive,
+            It.IsAny<CancellationToken>()), Times.Once);
         _repo.VerifyNoOtherCalls();
     }
 
@@ -78,7 +93,15 @@ public class UpdateBirdCommandHandlerTests
     public async Task Handle_Should_Throw_NotFound_When_Repo_Throws_NotFound()
     {
         var id = Guid.NewGuid();
-        _repo.Setup(r => r.GetByIdAsync(id, It.IsAny<CancellationToken>()))
+        _repo.Setup(r => r.UpdateAsync(
+                id,
+                It.IsAny<long>(),
+                It.IsAny<BirdSpecies>(),
+                It.IsAny<string?>(),
+                It.IsAny<DateOnly>(),
+                It.IsAny<DateOnly?>(),
+                It.IsAny<bool>(),
+                It.IsAny<CancellationToken>()))
             .ThrowsAsync(new NotFoundException(nameof(Bird), id));
 
         var handler = new UpdateBirdCommandHandler(_repo.Object);
@@ -95,8 +118,45 @@ public class UpdateBirdCommandHandlerTests
         Func<Task> act = async () => await handler.Handle(cmd, CancellationToken.None);
 
         await act.Should().ThrowAsync<NotFoundException>();
-        _repo.Verify(r => r.GetByIdAsync(id, It.IsAny<CancellationToken>()), Times.Once);
-        _repo.Verify(r => r.UpdateAsync(It.IsAny<Bird>(), It.IsAny<CancellationToken>()), Times.Never);
+        _repo.Verify(r => r.UpdateAsync(
+            id,
+            cmd.Version,
+            cmd.Name,
+            cmd.Description,
+            cmd.Arrival,
+            cmd.Departure,
+            cmd.IsAlive,
+            It.IsAny<CancellationToken>()), Times.Once);
         _repo.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Handle_Should_Return_Concurrency_Failure_When_Repository_Detects_Stale_Version()
+    {
+        var id = Guid.NewGuid();
+        _repo.Setup(r => r.UpdateAsync(
+                id,
+                1,
+                It.IsAny<BirdSpecies>(),
+                It.IsAny<string?>(),
+                It.IsAny<DateOnly>(),
+                It.IsAny<DateOnly?>(),
+                It.IsAny<bool>(),
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new ConcurrencyConflictException(nameof(Bird), id));
+
+        var handler = new UpdateBirdCommandHandler(_repo.Object);
+        var cmd = new UpdateBirdCommand(
+            id,
+            (BirdSpecies)4,
+            "stale",
+            DateOnly.FromDateTime(DateTime.Now.AddDays(-20)),
+            null,
+            true);
+
+        var result = await handler.Handle(cmd, CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Be(ErrorMessages.BirdConcurrencyConflict);
     }
 }

@@ -12,6 +12,7 @@ public static class ErrorMessages
     public static string CannotSaveBird => AppText.Get("Error.CannotSaveBird");
     public static string CannotDeleteBird => AppText.Get("Error.CannotDeleteBird");
     public static string CannotUpdateBird => AppText.Get("Error.CannotUpdateBird");
+    public static string BirdConcurrencyConflict => AppText.Get("Error.BirdConcurrencyConflict");
 
     public static string RequestCannotBeNull => AppText.Get("Error.RequestCannotBeNull");
     public static string QueryCannotBeNull => AppText.Get("Error.QueryCannotBeNull");

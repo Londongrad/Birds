@@ -3,13 +3,17 @@ using Birds.Application.Common.Models;
 using Birds.Application.Exceptions;
 using Birds.Application.Interfaces;
 using Birds.Domain.Entities;
+using Birds.Domain.Enums;
 using Birds.Infrastructure.Persistence;
 using Birds.Infrastructure.Persistence.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Birds.Infrastructure.Repositories;
 
-public class BirdRepository(IDbContextFactory<BirdDbContext> contextFactory) : IBirdRepository
+public class BirdRepository(
+    IDbContextFactory<BirdDbContext> contextFactory,
+    ILogger<BirdRepository>? logger = null) : IBirdRepository
 {
     private const string BirdAggregateType = "Bird";
 
@@ -51,12 +55,30 @@ public class BirdRepository(IDbContextFactory<BirdDbContext> contextFactory) : I
     }
 
     /// <inheritdoc />
-    public async Task UpdateAsync(Bird bird, CancellationToken cancellationToken = default)
+    public async Task<Bird> UpdateAsync(
+        Guid id,
+        long expectedVersion,
+        BirdSpecies name,
+        string? description,
+        DateOnly arrival,
+        DateOnly? departure,
+        bool isAlive,
+        CancellationToken cancellationToken = default)
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-        context.Birds.Update(bird);
+        var bird = await context.Birds
+                       .FirstOrDefaultAsync(candidate => candidate.Id == id, cancellationToken)
+                   ?? throw new NotFoundException(nameof(Bird), id);
+
+        if (bird.Version != expectedVersion)
+            throw CreateConcurrencyConflict(id);
+
+        bird.Update(name, description, arrival, departure, isAlive);
+
         await QueueUpsertAsync(context, bird, cancellationToken);
-        await context.SaveChangesAsync(cancellationToken);
+        await SaveChangesWithConcurrencyHandlingAsync(context, id, cancellationToken);
+
+        return bird;
     }
 
     /// <inheritdoc />
@@ -76,26 +98,32 @@ public class BirdRepository(IDbContextFactory<BirdDbContext> contextFactory) : I
             .Distinct()
             .ToArray();
 
-        var existingIds = await context.Birds
-            .AsNoTracking()
+        var existingBirds = await context.Birds
             .Where(bird => ids.Contains(bird.Id))
-            .Select(static bird => bird.Id)
-            .ToListAsync(cancellationToken);
+            .ToDictionaryAsync(bird => bird.Id, cancellationToken);
 
-        var existingSet = existingIds.ToHashSet();
-        var toAdd = birds.Where(bird => !existingSet.Contains(bird.Id)).ToList();
-        var toUpdate = birds.Where(bird => existingSet.Contains(bird.Id)).ToList();
+        var toAdd = new List<Bird>();
+        var updatedCount = 0;
+        foreach (var bird in birds)
+        {
+            if (existingBirds.TryGetValue(bird.Id, out var existing))
+            {
+                ApplyExternalState(context, existing, bird);
+                updatedCount++;
+            }
+            else
+            {
+                toAdd.Add(bird);
+            }
+        }
 
         if (toAdd.Count > 0)
             await context.Birds.AddRangeAsync(toAdd, cancellationToken);
 
-        if (toUpdate.Count > 0)
-            context.Birds.UpdateRange(toUpdate);
-
         await QueueUpsertsAsync(context, birds, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
 
-        return new UpsertBirdsResult(toAdd.Count, toUpdate.Count);
+        return new UpsertBirdsResult(toAdd.Count, updatedCount);
     }
 
     /// <inheritdoc />
@@ -113,17 +141,26 @@ public class BirdRepository(IDbContextFactory<BirdDbContext> contextFactory) : I
             .Distinct()
             .ToArray();
 
-        var existingIds = ids.Length == 0
-            ? Array.Empty<Guid>()
+        var existingBirds = ids.Length == 0
+            ? new Dictionary<Guid, Bird>()
             : await context.Birds
-                .AsNoTracking()
                 .Where(bird => ids.Contains(bird.Id))
-                .Select(static bird => bird.Id)
-                .ToArrayAsync(cancellationToken);
+                .ToDictionaryAsync(bird => bird.Id, cancellationToken);
 
-        var existingSet = existingIds.ToHashSet();
-        var toAdd = birds.Where(bird => !existingSet.Contains(bird.Id)).ToList();
-        var toUpdate = birds.Where(bird => existingSet.Contains(bird.Id)).ToList();
+        var toAdd = new List<Bird>();
+        var updatedCount = 0;
+        foreach (var bird in birds)
+        {
+            if (existingBirds.TryGetValue(bird.Id, out var existing))
+            {
+                ApplyExternalState(context, existing, bird);
+                updatedCount++;
+            }
+            else
+            {
+                toAdd.Add(bird);
+            }
+        }
 
         var removedBirdIds = ids.Length == 0
             ? await context.Birds
@@ -145,20 +182,60 @@ public class BirdRepository(IDbContextFactory<BirdDbContext> contextFactory) : I
         if (toAdd.Count > 0)
             await context.Birds.AddRangeAsync(toAdd, cancellationToken);
 
-        if (toUpdate.Count > 0)
-            context.Birds.UpdateRange(toUpdate);
-
         await QueueUpsertsAsync(context, birds, cancellationToken);
         await QueueDeletesAsync(context, removedBirdIds, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
 
-        return new UpsertBirdsResult(toAdd.Count, toUpdate.Count, removed);
+        return new UpsertBirdsResult(toAdd.Count, updatedCount, removed);
     }
 
     private static Task QueueUpsertAsync(BirdDbContext context, Bird bird, CancellationToken cancellationToken)
     {
         return QueueUpsertsAsync(context, [bird], cancellationToken);
+    }
+
+    private static void ApplyExternalState(BirdDbContext context, Bird target, Bird source)
+    {
+        var nextVersion = GetNextVersion(target.Version);
+        var entry = context.Entry(target);
+
+        entry.CurrentValues.SetValues(source);
+        entry.Property(bird => bird.Version).CurrentValue = nextVersion;
+    }
+
+    private static long GetNextVersion(long currentVersion)
+    {
+        return currentVersion < Bird.InitialVersion
+            ? Bird.InitialVersion
+            : currentVersion + 1;
+    }
+
+    private async Task SaveChangesWithConcurrencyHandlingAsync(
+        BirdDbContext context,
+        Guid birdId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            throw CreateConcurrencyConflict(birdId, ex);
+        }
+    }
+
+    private ConcurrencyConflictException CreateConcurrencyConflict(
+        Guid birdId,
+        Exception? exception = null)
+    {
+        logger?.LogWarning(
+            exception,
+            "Optimistic concurrency conflict for bird {BirdId}.",
+            birdId);
+
+        return new ConcurrencyConflictException(nameof(Bird), birdId, exception);
     }
 
     private static async Task QueueUpsertsAsync(BirdDbContext context,

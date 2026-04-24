@@ -24,5 +24,6 @@ public sealed class BirdDtoTests
 
         dto.ResolveSpecies().Should().Be(BirdSpecies.Goldfinch);
         dto.Name.Should().Be("Unknown display text");
+        dto.Version.Should().Be(1);
     }
 }

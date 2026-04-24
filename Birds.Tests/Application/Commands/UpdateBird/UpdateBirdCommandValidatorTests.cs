@@ -79,4 +79,22 @@ public class UpdateBirdCommandValidatorTests
 
         result.ShouldNotHaveAnyValidationErrors();
     }
+
+    [Fact]
+    public void Should_Have_Error_When_Version_Is_Invalid()
+    {
+        var command = new UpdateBirdCommand(
+            Guid.NewGuid(),
+            (BirdSpecies)1,
+            "Healthy sparrow",
+            new DateOnly(2024, 5, 1),
+            null,
+            true,
+            0);
+
+        var result = _validator.TestValidate(command);
+
+        result.ShouldHaveValidationErrorFor(x => x.Version)
+            .WithErrorMessage("Version must be greater than zero");
+    }
 }

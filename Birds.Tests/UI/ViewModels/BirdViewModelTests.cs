@@ -3,6 +3,7 @@ using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
 using Birds.Application.DTOs.Helpers;
 using Birds.Domain.Enums;
+using Birds.Shared.Constants;
 using Birds.Shared.Localization;
 using Birds.UI.Services.BirdNames;
 using Birds.UI.Services.Localization;
@@ -81,6 +82,7 @@ public class BirdViewModelTests
 
         sentDto.Should().NotBeNull();
         sentDto!.Species.Should().Be(chickadee);
+        sentDto.Version.Should().Be(original.Version);
         sut.Name.Should().Be(BirdNameDisplayNames.GetDisplayName(chickadee, _currentCulture));
         sut.Dto.Species.Should().Be(chickadee);
         sut.IsEditing.Should().BeFalse();
@@ -129,6 +131,32 @@ public class BirdViewModelTests
         _notification.Verify(
             x => x.ShowErrorLocalized("Error.CannotUpdateBird", It.IsAny<object[]>()),
             Times.Never);
+    }
+
+    [Fact]
+    public async Task SaveAsync_When_Concurrency_Conflict_Should_Show_Clear_Warning_And_Reload()
+    {
+        var original = CreateBirdDto((BirdSpecies)1);
+        _birdManager.Setup(x => x.UpdateAsync(It.IsAny<BirdUpdateDTO>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<BirdDTO>.Failure(ErrorMessages.BirdConcurrencyConflict));
+        _birdManager.Setup(x => x.ReloadAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var sut = CreateViewModel(original);
+        sut.EditCommand.Execute(null);
+        sut.Description = "stale edit";
+
+        await sut.SaveCommand.ExecuteAsync(null);
+
+        _notification.Verify(
+            x => x.ShowWarning(ErrorMessages.BirdConcurrencyConflict),
+            Times.Once);
+        _notification.Verify(
+            x => x.ShowErrorLocalized("Error.CannotUpdateBird", It.IsAny<object[]>()),
+            Times.Never);
+        _birdManager.Verify(x => x.ReloadAsync(It.IsAny<CancellationToken>()), Times.Once);
+        sut.Description.Should().Be(original.Description);
+        sut.IsEditing.Should().BeFalse();
     }
 
     [Fact]

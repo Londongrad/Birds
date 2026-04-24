@@ -33,7 +33,8 @@ internal static class BirdMappingExtensions
             bird.CreatedAt,
             bird.UpdatedAt)
         {
-            Species = bird.Name
+            Species = bird.Name,
+            Version = bird.Version
         };
     }
 

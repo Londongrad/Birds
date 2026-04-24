@@ -1,5 +1,6 @@
 using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
+using Birds.Application.Exceptions;
 using Birds.Application.Interfaces;
 using Birds.Application.Mappings;
 using Birds.Shared.Constants;
@@ -15,18 +16,25 @@ public class UpdateBirdCommandHandler(IBirdRepository birdRepository)
         if (request is null)
             return Result<BirdDTO>.Failure(ErrorMessages.RequestCannotBeNull);
 
-        var bird = await birdRepository.GetByIdAsync(request.Id, cancellationToken);
+        BirdDTO birdDTO;
+        try
+        {
+            var bird = await birdRepository.UpdateAsync(
+                request.Id,
+                request.Version,
+                request.Name,
+                request.Description,
+                request.Arrival,
+                request.Departure,
+                request.IsAlive,
+                cancellationToken);
 
-        bird.Update(
-            request.Name,
-            request.Description,
-            request.Arrival,
-            request.Departure,
-            request.IsAlive);
-
-        await birdRepository.UpdateAsync(bird, cancellationToken);
-
-        var birdDTO = bird.ToDto();
+            birdDTO = bird.ToDto();
+        }
+        catch (ConcurrencyConflictException)
+        {
+            return Result<BirdDTO>.Failure(ErrorMessages.BirdConcurrencyConflict);
+        }
 
         return Result<BirdDTO>.Success(birdDTO);
     }

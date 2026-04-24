@@ -24,9 +24,14 @@ public class ImportBirdsCommandHandlerTests
             null,
             true,
             DateTime.UtcNow.AddDays(-2),
-            DateTime.UtcNow.AddDays(-1));
+            DateTime.UtcNow.AddDays(-1))
+        {
+            Version = 5
+        };
 
+        IReadOnlyCollection<Bird>? savedBirds = null;
         repository.Setup(x => x.UpsertAsync(It.IsAny<IReadOnlyCollection<Bird>>(), It.IsAny<CancellationToken>()))
+            .Callback<IReadOnlyCollection<Bird>, CancellationToken>((birds, _) => savedBirds = birds)
             .ReturnsAsync(new UpsertBirdsResult(1, 0));
         repository.Setup(x =>
                 x.ReplaceWithSnapshotAsync(It.IsAny<IReadOnlyCollection<Bird>>(), It.IsAny<CancellationToken>()))
@@ -54,6 +59,7 @@ public class ImportBirdsCommandHandlerTests
         result.Value.Updated.Should().Be(0);
         result.Value.Removed.Should().Be(0);
         result.Value.Snapshot.Should().ContainSingle(x => x.Id == importedBird.Id);
+        savedBirds.Should().ContainSingle(x => x.Version == importedBird.Version);
         repository.Verify(
             x => x.UpsertAsync(
                 It.Is<IReadOnlyCollection<Bird>>(items => items.Count == 1),

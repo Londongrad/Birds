@@ -105,15 +105,107 @@ public class BirdRepositoryTests : IAsyncLifetime
 
         var bird = Bird.Create(originalSpecies, "old", DateOnly.FromDateTime(DateTime.Now.AddDays(-10)));
         await repo.AddAsync(bird);
+        var createdAt = bird.CreatedAt;
 
-        bird.Update(updatedSpecies, "new", bird.Arrival, bird.Departure, true);
-        await repo.UpdateAsync(bird);
+        await repo.UpdateAsync(
+            bird.Id,
+            bird.Version,
+            updatedSpecies,
+            "new",
+            bird.Arrival,
+            bird.Departure,
+            true);
 
         var repo2 = new BirdRepository(_db.CreateFactory());
         var again = await repo2.GetByIdAsync(bird.Id);
 
         again.Name.Should().Be(updatedSpecies);
         again.Description.Should().Be("new");
+        again.CreatedAt.Should().Be(createdAt);
+        again.Version.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task Add_Should_Start_With_Initial_Version()
+    {
+        var repo = new BirdRepository(_db.CreateFactory());
+        var bird = Bird.Create(
+            BirdSpecies.Sparrow,
+            "versioned",
+            DateOnly.FromDateTime(DateTime.Now.AddDays(-10)));
+
+        await repo.AddAsync(bird);
+
+        var stored = await repo.GetByIdAsync(bird.Id);
+        stored.Version.Should().Be(Bird.InitialVersion);
+    }
+
+    [Fact]
+    public async Task Update_With_Stale_Version_Should_Not_Overwrite_Newer_Data()
+    {
+        var repo = new BirdRepository(_db.CreateFactory());
+        var bird = Bird.Create(
+            BirdSpecies.Sparrow,
+            "original",
+            DateOnly.FromDateTime(DateTime.Now.AddDays(-10)));
+        await repo.AddAsync(bird);
+        var staleVersion = bird.Version;
+
+        await repo.UpdateAsync(
+            bird.Id,
+            staleVersion,
+            BirdSpecies.Goldfinch,
+            "newer value",
+            bird.Arrival,
+            bird.Departure,
+            bird.IsAlive);
+
+        Func<Task> act = async () => await repo.UpdateAsync(
+            bird.Id,
+            staleVersion,
+            BirdSpecies.Amadin,
+            "stale value",
+            bird.Arrival,
+            bird.Departure,
+            bird.IsAlive);
+
+        await act.Should().ThrowAsync<ConcurrencyConflictException>();
+        var stored = await repo.GetByIdAsync(bird.Id);
+        stored.Name.Should().Be(BirdSpecies.Goldfinch);
+        stored.Description.Should().Be("newer value");
+        stored.Version.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task Ef_Should_Reject_Concurrent_Bird_Update_When_Version_Is_Stale()
+    {
+        var bird = Bird.Create(
+            BirdSpecies.Sparrow,
+            "original",
+            DateOnly.FromDateTime(DateTime.Now.AddDays(-10)));
+
+        await using (var seedContext = _db.CreateContext())
+        {
+            await seedContext.Birds.AddAsync(bird);
+            await seedContext.SaveChangesAsync();
+        }
+
+        await using var firstContext = _db.CreateContext();
+        await using var secondContext = _db.CreateContext();
+        var firstCopy = await firstContext.Birds.SingleAsync(candidate => candidate.Id == bird.Id);
+        var staleCopy = await secondContext.Birds.SingleAsync(candidate => candidate.Id == bird.Id);
+
+        firstCopy.Update(BirdSpecies.Goldfinch, "newer", firstCopy.Arrival, firstCopy.Departure, firstCopy.IsAlive);
+        await firstContext.SaveChangesAsync();
+
+        staleCopy.Update(BirdSpecies.Amadin, "stale", staleCopy.Arrival, staleCopy.Departure, staleCopy.IsAlive);
+        Func<Task> act = async () => await secondContext.SaveChangesAsync();
+
+        await act.Should().ThrowAsync<DbUpdateConcurrencyException>();
+        await using var verifyContext = _db.CreateContext();
+        var stored = await verifyContext.Birds.SingleAsync(candidate => candidate.Id == bird.Id);
+        stored.Description.Should().Be("newer");
+        stored.Version.Should().Be(2);
     }
 
     [Fact]
@@ -159,6 +251,7 @@ public class BirdRepositoryTests : IAsyncLifetime
         result.Updated.Should().Be(1);
         list.Should().HaveCount(2);
         list.Should().Contain(x => x.Id == existing.Id && x.Description == "updated");
+        list.Single(x => x.Id == existing.Id).Version.Should().Be(2);
         list.Should().Contain(x => x.Id == added.Id);
     }
 
@@ -240,8 +333,14 @@ public class BirdRepositoryTests : IAsyncLifetime
                 .SingleAsync();
         }
 
-        bird.Update(species[1], "after", bird.Arrival, bird.Departure, bird.IsAlive);
-        await repo.UpdateAsync(bird);
+        await repo.UpdateAsync(
+            bird.Id,
+            bird.Version,
+            species[1],
+            "after",
+            bird.Arrival,
+            bird.Departure,
+            bird.IsAlive);
 
         await using var context = _db.CreateContext();
         var operations = await context.SyncOperations.ToListAsync();

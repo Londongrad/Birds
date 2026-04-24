@@ -8,5 +8,6 @@ public record BirdUpdateDTO(
     string? Description,
     DateOnly Arrival,
     DateOnly? Departure,
-    bool IsAlive
+    bool IsAlive,
+    long Version = 1
 );

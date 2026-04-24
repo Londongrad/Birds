@@ -1,6 +1,7 @@
-﻿using Birds.Application.Common.Models;
+using Birds.Application.Common.Models;
 using Birds.Application.Exceptions;
 using Birds.Domain.Entities;
+using Birds.Domain.Enums;
 
 namespace Birds.Application.Interfaces;
 
@@ -24,9 +25,17 @@ public interface IBirdRepository
 
     /// <summary>Updates an existing bird and immediately persists the changes to the database.</summary>
     /// <remarks>
-    ///     This method marks the provided <see cref="Bird" /> entity as modified and saves the update to the data source.
+    ///     The update succeeds only when <paramref name="expectedVersion" /> matches the current persisted version.
     /// </remarks>
-    Task UpdateAsync(Bird bird, CancellationToken cancellationToken = default);
+    Task<Bird> UpdateAsync(
+        Guid id,
+        long expectedVersion,
+        BirdSpecies name,
+        string? description,
+        DateOnly arrival,
+        DateOnly? departure,
+        bool isAlive,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Adds missing birds and updates existing ones in a single persistence operation.

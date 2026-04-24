@@ -279,22 +279,15 @@ public sealed class RemoteSyncService(
 
         var ids = remoteChanges.Select(change => change.Bird.Id).ToArray();
         var existingBirds = await localContext.Birds
-            .AsNoTracking()
             .Where(bird => ids.Contains(bird.Id))
-            .Select(bird => new
-            {
-                Bird = bird,
-                SyncStamp = bird.SyncStampUtc
-            })
-            .ToDictionaryAsync(bird => bird.Bird.Id, cancellationToken);
+            .ToDictionaryAsync(bird => bird.Id, cancellationToken);
 
         var birdsToAdd = new List<Bird>();
-        var birdsToUpdate = new List<Bird>();
 
         foreach (var change in remoteChanges)
         {
             if (existingBirds.TryGetValue(change.Bird.Id, out var localBird) &&
-                CompareStamps(localBird.SyncStamp, change.SyncStamp) > 0)
+                CompareStamps(GetSyncStamp(localBird), change.SyncStamp) > 0)
                 continue;
 
             var restored = Bird.Restore(
@@ -308,17 +301,14 @@ public sealed class RemoteSyncService(
                 change.Bird.UpdatedAt,
                 change.Bird.SyncStampUtc);
 
-            if (existingBirds.ContainsKey(change.Bird.Id))
-                birdsToUpdate.Add(restored);
+            if (existingBirds.TryGetValue(change.Bird.Id, out var existingBird))
+                ApplyExternalState(localContext, existingBird, restored);
             else
                 birdsToAdd.Add(restored);
         }
 
         if (birdsToAdd.Count > 0)
             await localContext.Birds.AddRangeAsync(birdsToAdd, cancellationToken);
-
-        if (birdsToUpdate.Count > 0)
-            localContext.Birds.UpdateRange(birdsToUpdate);
 
         var latestChange = remoteChanges[^1];
         if (cursor is null)
@@ -489,7 +479,7 @@ public sealed class RemoteSyncService(
 
                     var restoredRemoteBird = RestoreBird(remoteBird);
                     if (existingLocalBirds.TryGetValue(payload.Id, out var localBird))
-                        localContext.Entry(localBird).CurrentValues.SetValues(restoredRemoteBird);
+                        ApplyExternalState(localContext, localBird, restoredRemoteBird);
                     else
                         await localContext.Birds.AddAsync(restoredRemoteBird, cancellationToken);
 
@@ -561,7 +551,7 @@ public sealed class RemoteSyncService(
 
                     var restoredRemoteBird = RestoreBird(remoteBird);
                     if (existingLocalBirds.TryGetValue(payload.Id, out var localBird))
-                        localContext.Entry(localBird).CurrentValues.SetValues(restoredRemoteBird);
+                        ApplyExternalState(localContext, localBird, restoredRemoteBird);
                     else
                         await localContext.Birds.AddAsync(restoredRemoteBird, cancellationToken);
 
@@ -659,6 +649,17 @@ public sealed class RemoteSyncService(
             bird.CreatedAt,
             bird.UpdatedAt,
             bird.SyncStampUtc);
+    }
+
+    private static void ApplyExternalState(BirdDbContext context, Bird target, Bird source)
+    {
+        var nextVersion = target.Version < Bird.InitialVersion
+            ? Bird.InitialVersion
+            : target.Version + 1;
+        var entry = context.Entry(target);
+
+        entry.CurrentValues.SetValues(source);
+        entry.Property(bird => bird.Version).CurrentValue = nextVersion;
     }
 
     private static DateTime GetSyncStamp(Bird bird)

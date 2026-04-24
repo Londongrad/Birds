@@ -79,6 +79,15 @@ public sealed class DatabaseInitializerServiceTests
 
             command.CommandText = """
                                   SELECT COUNT(*)
+                                  FROM pragma_table_info('Birds')
+                                  WHERE name = 'Version';
+                                  """;
+
+            var versionColumnCount = (long)(await command.ExecuteScalarAsync() ?? 0L);
+            versionColumnCount.Should().Be(1);
+
+            command.CommandText = """
+                                  SELECT COUNT(*)
                                   FROM pragma_table_info('RemoteSyncCursors')
                                   WHERE name = 'LastSyncedEntityId';
                                   """;

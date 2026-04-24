@@ -43,6 +43,16 @@ public class ExceptionHandlingBehavior<TRequest, TResponse>(
             _logger.LogWarning(ex, LogMessages.EntityNotFound, typeof(TRequest).Name);
             return CreateFailureResponse(ExceptionMessages.NotFoundFailure(ex.Message));
         }
+        catch (ConcurrencyConflictException ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Optimistic concurrency conflict while handling {RequestName} for {EntityName} {EntityKey}.",
+                typeof(TRequest).Name,
+                ex.EntityName,
+                ex.EntityKey);
+            return CreateFailureResponse(ex.Message);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, LogMessages.UnhandledException, typeof(TRequest).Name);

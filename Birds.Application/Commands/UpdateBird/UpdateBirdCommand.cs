@@ -11,5 +11,6 @@ public record UpdateBirdCommand(
     string? Description,
     DateOnly Arrival,
     DateOnly? Departure,
-    bool IsAlive)
+    bool IsAlive,
+    long Version = 1)
     : IRequest<Result<BirdDTO>>;

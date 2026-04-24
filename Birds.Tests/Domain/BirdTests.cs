@@ -36,6 +36,7 @@ public class BirdTests
         bird.UpdatedAt.Should().BeNull();
         bird.SyncStampUtc.Should().BeOnOrAfter(beforeUtc).And.BeOnOrBefore(afterUtc);
         bird.SyncStampUtc.Kind.Should().Be(DateTimeKind.Utc);
+        bird.Version.Should().Be(Bird.InitialVersion);
     }
 
     [Fact]
@@ -59,6 +60,7 @@ public class BirdTests
         bird.Arrival.Should().Be(arrival);
         bird.Departure.Should().Be(departure);
         bird.IsAlive.Should().BeFalse();
+        bird.Version.Should().Be(Bird.InitialVersion);
     }
 
     [Fact]
@@ -87,6 +89,7 @@ public class BirdTests
         bird.UpdatedAt.Should().NotBe(oldUpdatedAt);
         bird.SyncStampUtc.Should().BeOnOrAfter(beforeUtc).And.BeOnOrBefore(afterUtc);
         bird.SyncStampUtc.Kind.Should().Be(DateTimeKind.Utc);
+        bird.Version.Should().Be(2);
     }
 
     [Fact]

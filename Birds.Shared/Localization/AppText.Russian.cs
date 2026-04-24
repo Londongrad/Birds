@@ -354,6 +354,8 @@ public static partial class AppText
             ["Error.CannotSaveBird"] = "Не удалось сохранить птицу!",
             ["Error.CannotDeleteBird"] = "Не удалось удалить птицу!",
             ["Error.CannotUpdateBird"] = "Не удалось обновить птицу!",
+            ["Error.BirdConcurrencyConflict"] =
+                "Эта птица была изменена другой операцией. Перезагрузите данные и попробуйте снова.",
             ["Error.RequestCannotBeNull"] = "Запрос не может быть null.",
             ["Error.QueryCannotBeNull"] = "Query не может быть null.",
             ["Error.ConnectionStringNotFound"] = "Строка подключения к базе данных не найдена.",

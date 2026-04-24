@@ -15,6 +15,7 @@ public record BirdDTO(
 )
 {
     public BirdSpecies Species { get; init; } = BirdEnumHelper.ParseBirdName(Name) ?? default;
+    public long Version { get; init; } = 1;
 
     public BirdSpecies? ResolveSpecies()
     {

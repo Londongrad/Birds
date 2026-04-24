@@ -602,6 +602,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
         var localBird = await localContext.Birds.SingleAsync(bird => bird.Id == birdId);
         localBird.Description.Should().Be("after pull");
         localBird.UpdatedAt.Should().Be(updatedRemoteBird.UpdatedAt);
+        localBird.Version.Should().Be(2);
     }
 
     [Fact]

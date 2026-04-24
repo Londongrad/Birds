@@ -94,6 +94,7 @@ public sealed class DatabaseInitializerService(
         // compatibility pieces into place, verify the expected shape, and then baseline the known
         // migrations so future startup can use MigrateAsync normally.
         await EnsureLegacyBirdSyncStampSchemaAsync(context, cancellationToken);
+        await EnsureLegacyBirdVersionSchemaAsync(context, cancellationToken);
         await EnsureLegacySyncOutboxSchemaAsync(context, cancellationToken);
         await EnsureLegacyRemoteSyncCursorSchemaAsync(context, cancellationToken);
         await VerifyCurrentLocalSchemaAsync(context, cancellationToken);
@@ -190,6 +191,21 @@ public sealed class DatabaseInitializerService(
                 cancellationToken);
     }
 
+    private static async Task EnsureLegacyBirdVersionSchemaAsync(BirdDbContext context,
+        CancellationToken cancellationToken)
+    {
+        if (!await TableExistsAsync(context, "Birds", cancellationToken))
+            return;
+
+        if (!await ColumnExistsAsync(context, "Birds", "Version", cancellationToken))
+            await context.Database.ExecuteSqlRawAsync(
+                """
+                ALTER TABLE "Birds"
+                ADD COLUMN "Version" INTEGER NOT NULL DEFAULT 1;
+                """,
+                cancellationToken);
+    }
+
     private static async Task VerifyCurrentLocalSchemaAsync(BirdDbContext context, CancellationToken cancellationToken)
     {
         await VerifyRequiredColumnsAsync(context, "Birds",
@@ -202,7 +218,8 @@ public sealed class DatabaseInitializerService(
                 "IsAlive",
                 "CreatedAt",
                 "UpdatedAt",
-                "SyncStampUtc"
+                "SyncStampUtc",
+                "Version"
             ],
             cancellationToken);
 

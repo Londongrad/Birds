@@ -5,6 +5,8 @@ namespace Birds.Domain.Entities;
 
 public class Bird : EntityBase
 {
+    public const long InitialVersion = 1;
+
     #region [ Properties ]
 
     public BirdSpecies Name { get; private set; }
@@ -12,6 +14,7 @@ public class Bird : EntityBase
     public DateOnly Arrival { get; private set; }
     public DateOnly? Departure { get; private set; }
     public bool IsAlive { get; private set; }
+    public long Version { get; private set; } = InitialVersion;
 
     #endregion [ Properties ]
 
@@ -27,10 +30,12 @@ public class Bird : EntityBase
         string? description,
         DateOnly arrival,
         DateOnly? departure = null,
-        bool isAlive = true)
+        bool isAlive = true,
+        long version = InitialVersion)
         : base(id)
     {
         Initialize(id, name, description, arrival, departure, isAlive);
+        SetVersion(version);
     }
 
     private Bird(
@@ -42,10 +47,12 @@ public class Bird : EntityBase
         bool isAlive,
         DateTime createdAt,
         DateTime? updatedAt,
-        DateTime? syncStampUtc = null)
+        DateTime? syncStampUtc = null,
+        long version = InitialVersion)
         : base(id, createdAt, updatedAt, syncStampUtc)
     {
         Initialize(id, name, description, arrival, departure, isAlive);
+        SetVersion(version);
     }
 
     private void Initialize(
@@ -114,7 +121,8 @@ public class Bird : EntityBase
         bool isAlive,
         DateTime? createdAt = null,
         DateTime? updatedAt = null,
-        DateTime? syncStampUtc = null)
+        DateTime? syncStampUtc = null,
+        long version = InitialVersion)
     {
         GuardHelper.AgainstInvalidEnum(name, nameof(name));
         GuardHelper.AgainstExceedsMaxLength(description, BirdValidationRules.DescriptionMaxLength, nameof(description));
@@ -125,8 +133,9 @@ public class Bird : EntityBase
         GuardHelper.AgainstEmptyGuid(id, nameof(id));
 
         return createdAt.HasValue
-            ? new Bird(id, name, description, arrival, departure, isAlive, createdAt.Value, updatedAt, syncStampUtc)
-            : new Bird(id, name, description, arrival, departure, isAlive);
+            ? new Bird(id, name, description, arrival, departure, isAlive, createdAt.Value, updatedAt, syncStampUtc,
+                version)
+            : new Bird(id, name, description, arrival, departure, isAlive, version);
     }
 
     /// <summary>
@@ -149,9 +158,18 @@ public class Bird : EntityBase
         Arrival = arrival;
         Departure = departure;
         IsAlive = isAlive;
+        Version++;
 
         UpdateTimestamp();
     }
 
     #endregion [ Methods ]
+
+    private void SetVersion(long version)
+    {
+        if (version < InitialVersion)
+            throw new ArgumentOutOfRangeException(nameof(version), version, "Version must be greater than zero.");
+
+        Version = version;
+    }
 }

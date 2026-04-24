@@ -357,6 +357,8 @@ public static partial class AppText
             ["Error.CannotSaveBird"] = "Unable to save bird!",
             ["Error.CannotDeleteBird"] = "Unable to delete bird!",
             ["Error.CannotUpdateBird"] = "Unable to update bird!",
+            ["Error.BirdConcurrencyConflict"] =
+                "This bird was changed by another operation. Reload and try again.",
             ["Error.RequestCannotBeNull"] = "Request cannot be null.",
             ["Error.QueryCannotBeNull"] = "Query cannot be null.",
             ["Error.ConnectionStringNotFound"] = "Database connection string not found.",

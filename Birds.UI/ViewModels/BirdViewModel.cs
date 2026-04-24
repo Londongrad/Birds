@@ -259,7 +259,8 @@ public partial class BirdViewModel : BirdValidationBaseViewModel, IDisposable
                     Description,
                     Arrival,
                     Departure,
-                    IsAlive), operationToken);
+                    IsAlive,
+                    Dto.Version), operationToken);
 
             if (_disposed)
                 return;
@@ -272,7 +273,15 @@ public partial class BirdViewModel : BirdValidationBaseViewModel, IDisposable
             else
             {
                 CancelEdit();
-                _notificationService.ShowErrorLocalized("Error.CannotUpdateBird");
+                if (result.Error == ErrorMessages.BirdConcurrencyConflict)
+                {
+                    _notificationService.ShowWarning(result.Error);
+                    await _birdManager.ReloadAsync(operationToken);
+                }
+                else
+                {
+                    _notificationService.ShowErrorLocalized("Error.CannotUpdateBird");
+                }
             }
 
             IsEditing = false;
