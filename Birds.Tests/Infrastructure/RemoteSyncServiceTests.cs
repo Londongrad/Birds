@@ -791,6 +791,7 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
         var sut = new RemoteSyncService(
             _localDb.CreateFactory(),
             remoteFactory.Object,
+            CreateSchemaInitializer(),
             NullLogger<RemoteSyncService>.Instance);
 
         var result = await sut.SyncPendingAsync(CancellationToken.None);
@@ -803,6 +804,42 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
         operation.RetryCount.Should().Be(1);
         operation.LastAttemptAtUtc.Should().NotBeNull();
         operation.LastError.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task SyncPendingAsync_WhenRemoteSchemaInitializationFails_Should_ReturnClearFailure_And_KeepOutbox()
+    {
+        var repository = new BirdRepository(_localDb.CreateFactory());
+        var bird = Bird.Create(
+            Enum.GetValues<BirdSpecies>()[1],
+            "schema failure",
+            DateOnly.FromDateTime(DateTime.Now.AddDays(-2)));
+        await repository.AddAsync(bird);
+
+        var schemaInitializer = new Mock<IRemoteSyncSchemaInitializer>();
+        schemaInitializer
+            .Setup(x => x.InitializeAsync(It.IsAny<RemoteBirdDbContext>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new RemoteSyncSchemaException(
+                "Remote sync schema initialization failed.",
+                new InvalidOperationException("broken ddl")));
+        var sut = new RemoteSyncService(
+            _localDb.CreateFactory(),
+            _remoteDb.CreateFactory(),
+            schemaInitializer.Object,
+            NullLogger<RemoteSyncService>.Instance);
+
+        var result = await sut.SyncPendingAsync(CancellationToken.None);
+
+        result.Status.Should().Be(RemoteSyncRunStatus.Failed);
+        result.ErrorMessage.Should().Be("Remote sync schema initialization failed.");
+        schemaInitializer.Verify(
+            x => x.InitializeAsync(It.IsAny<RemoteBirdDbContext>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+
+        await using var localContext = _localDb.CreateContext();
+        var operation = await localContext.SyncOperations.SingleAsync();
+        operation.RetryCount.Should().Be(1);
+        operation.LastError.Should().Be("Remote sync schema initialization failed.");
     }
 
     [Fact]
@@ -919,7 +956,16 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
 
     private RemoteSyncService CreateSut(IDbContextFactory<RemoteBirdDbContext> remoteFactory)
     {
-        return new RemoteSyncService(_localDb.CreateFactory(), remoteFactory, NullLogger<RemoteSyncService>.Instance);
+        return new RemoteSyncService(
+            _localDb.CreateFactory(),
+            remoteFactory,
+            CreateSchemaInitializer(),
+            NullLogger<RemoteSyncService>.Instance);
+    }
+
+    private static IRemoteSyncSchemaInitializer CreateSchemaInitializer()
+    {
+        return new RemoteSyncSchemaInitializer(NullLogger<RemoteSyncSchemaInitializer>.Instance);
     }
 
     private static Bird RestoreForRemote(Bird bird)

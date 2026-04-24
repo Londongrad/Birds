@@ -37,6 +37,7 @@ public static class DependencyInjection
         {
             services.AddDbContextFactory<RemoteBirdDbContext>(options =>
                 options.UseNpgsql(remoteSyncOptions.ConnectionString!, n => n.EnableRetryOnFailure(0)));
+            services.AddSingleton<IRemoteSyncSchemaInitializer, RemoteSyncSchemaInitializer>();
             services.AddSingleton<IRemoteSyncService, RemoteSyncService>();
         }
         else
