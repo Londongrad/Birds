@@ -48,10 +48,10 @@ public static class GuardHelper
         if (value.Value == default)
             throw new DomainValidationException($"{argumentName} cannot be default");
 
-        if (!allowFuture && value > DateOnly.FromDateTime(DateTime.Now))
+        if (!allowFuture && value > BirdValidationRules.CurrentLocalDate())
             throw new DomainValidationException($"{argumentName} cannot be in the future");
 
-        if (value < BirdValidationRules.MinimumArrivalDate)
+        if (!BirdValidationRules.IsOptionalDateInAllowedRange(value, allowFuture))
             throw new DomainValidationException($"{argumentName} is too far in the past");
     }
 
@@ -83,11 +83,11 @@ public static class GuardHelper
         if (value == default)
             throw new DomainValidationException($"{argumentName} cannot be default");
 
-        if (!allowFuture && value > DateTime.Now)
-            throw new DomainValidationException($"{argumentName} cannot be in the future");
-
-        if (value < BirdValidationRules.MinimumTimestamp)
+        if (!BirdValidationRules.IsTimestampInAllowedRange(value, true))
             throw new DomainValidationException($"{argumentName} is too far in the past");
+
+        if (!allowFuture && !BirdValidationRules.IsTimestampInAllowedRange(value))
+            throw new DomainValidationException($"{argumentName} cannot be in the future");
     }
 
     /// <summary>
@@ -124,7 +124,7 @@ public static class GuardHelper
     /// <exception cref="DomainValidationException">Thrown when the enum value is not defined.</exception>
     public static void AgainstInvalidEnum<TEnum>(TEnum value, string argumentName) where TEnum : struct, Enum
     {
-        if (!Enum.IsDefined(value))
+        if (!BirdValidationRules.IsDefinedEnum(value))
             throw new DomainValidationException($"{argumentName} has invalid value: {value}");
     }
 
@@ -155,7 +155,7 @@ public static class GuardHelper
         AgainstInvalidDateOnly(from, nameof(from));
         AgainstInvalidDateOnly(to, nameof(to));
 
-        if (from > to)
+        if (!BirdValidationRules.IsDateRangeValid(from, to))
             throw new DomainValidationException($"Invalid date range: from {from} cannot be later than to {to}");
     }
 
@@ -173,7 +173,7 @@ public static class GuardHelper
     {
         AgainstInvalidDateOnly(departure, nameof(departure));
 
-        if (departure is null && !isAlive)
+        if (!BirdValidationRules.HasRequiredDeparture(departure, isAlive))
             throw new DomainValidationException($"{argumentName} date must be set before marking the bird as dead.");
     }
 }

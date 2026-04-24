@@ -2,6 +2,7 @@ using System.Globalization;
 using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
 using Birds.Application.DTOs.Helpers;
+using Birds.Domain.Common;
 using Birds.Domain.Enums;
 using Birds.Shared.Constants;
 using Birds.Shared.Localization;
@@ -214,6 +215,49 @@ public class BirdViewModelTests
 
         sut.IsSaveLockedByDepartureRequirement.Should().BeFalse();
         sut.SaveCommand.CanExecute(null).Should().BeTrue();
+    }
+
+    [Fact]
+    public void DescriptionValidation_Should_Use_Shared_Max_Length()
+    {
+        var sut = CreateViewModel(CreateBirdDto((BirdSpecies)1));
+
+        sut.Description = new string('A', BirdValidationRules.DescriptionMaxLength);
+
+        sut.GetErrors(nameof(BirdViewModel.Description)).Should().BeEmpty();
+
+        sut.Description = new string('A', BirdValidationRules.DescriptionMaxLength + 1);
+
+        sut.GetErrors(nameof(BirdViewModel.Description)).Should().ContainSingle();
+    }
+
+    [Fact]
+    public void DepartureValidation_Should_Use_Shared_Date_Range_Rules()
+    {
+        var dto = CreateBirdDto((BirdSpecies)1) with
+        {
+            Arrival = BirdValidationRules.MinimumArrivalDate
+        };
+        var sut = CreateViewModel(dto);
+
+        sut.Departure = BirdValidationRules.MinimumArrivalDate.AddDays(-1);
+
+        GetValidationError(sut, nameof(BirdViewModel.Departure))
+            .Should().Be(string.Format(
+                ValidationMessages.InvalidDateRange,
+                BirdValidationRules.MinimumArrivalDate,
+                BirdValidationRules.CurrentLocalDate()));
+    }
+
+    [Fact]
+    public void DepartureValidation_Should_Accept_Required_Departure_For_DeadBird()
+    {
+        var sut = CreateViewModel(CreateBirdDto((BirdSpecies)1));
+
+        sut.IsAlive = false;
+        sut.Departure = DateOnly.FromDateTime(DateTime.Today);
+
+        sut.GetErrors(nameof(BirdViewModel.Departure)).Should().BeEmpty();
     }
 
     [Fact]

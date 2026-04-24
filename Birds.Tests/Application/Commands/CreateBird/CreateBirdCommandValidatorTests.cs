@@ -72,6 +72,23 @@ public class CreateBirdCommandValidatorTests
     }
 
     [Fact]
+    public void Should_Have_Error_When_Departure_Too_Early()
+    {
+        var command = new CreateBirdCommand(
+            (BirdSpecies)1,
+            "Old bird",
+            BirdValidationRules.MinimumArrivalDate,
+            BirdValidationRules.MinimumArrivalDate.AddDays(-1),
+            false
+        );
+
+        var result = _validator.TestValidate(command);
+
+        result.ShouldHaveValidationErrorFor(x => x.Departure)
+            .WithErrorMessage("Departure date cannot be earlier than 2020.");
+    }
+
+    [Fact]
     public void Should_Have_Error_When_Dead_Bird_Has_No_Departure()
     {
         var command = new CreateBirdCommand(

@@ -5,7 +5,7 @@ namespace Birds.Domain.Entities;
 
 public class Bird : EntityBase
 {
-    public const long InitialVersion = 1;
+    public const long InitialVersion = BirdValidationRules.MinimumVersion;
 
     #region [ Properties ]
 
@@ -64,12 +64,7 @@ public class Bird : EntityBase
         bool isAlive)
     {
         GuardHelper.AgainstEmptyGuid(id, nameof(id));
-        GuardHelper.AgainstInvalidEnum(name, nameof(name));
-        GuardHelper.AgainstExceedsMaxLength(description, BirdValidationRules.DescriptionMaxLength, nameof(description));
-        GuardHelper.AgainstInvalidDateOnly(arrival, nameof(arrival));
-        GuardHelper.AgainstInvalidDateOnly(departure, nameof(departure));
-        GuardHelper.AgainstInvalidDateRange(arrival, departure);
-        GuardHelper.AgainstInvalidStatusUpdate(departure, isAlive, nameof(departure));
+        ValidateState(name, description, arrival, departure, isAlive);
 
         Name = name;
         Description = description;
@@ -93,13 +88,6 @@ public class Bird : EntityBase
         DateOnly? departure = null,
         bool isAlive = true)
     {
-        GuardHelper.AgainstInvalidEnum(name, nameof(name));
-        GuardHelper.AgainstExceedsMaxLength(description, BirdValidationRules.DescriptionMaxLength, nameof(description));
-        GuardHelper.AgainstInvalidDateOnly(arrival, nameof(arrival));
-        GuardHelper.AgainstInvalidDateOnly(departure, nameof(departure));
-        GuardHelper.AgainstInvalidDateRange(arrival, departure);
-        GuardHelper.AgainstInvalidStatusUpdate(departure, isAlive, nameof(departure));
-
         return new Bird(Guid.NewGuid(), name, description, arrival, departure, isAlive);
     }
 
@@ -124,14 +112,6 @@ public class Bird : EntityBase
         DateTime? syncStampUtc = null,
         long version = InitialVersion)
     {
-        GuardHelper.AgainstInvalidEnum(name, nameof(name));
-        GuardHelper.AgainstExceedsMaxLength(description, BirdValidationRules.DescriptionMaxLength, nameof(description));
-        GuardHelper.AgainstInvalidDateOnly(arrival, nameof(arrival));
-        GuardHelper.AgainstInvalidDateOnly(departure, nameof(departure));
-        GuardHelper.AgainstInvalidDateRange(arrival, departure);
-        GuardHelper.AgainstInvalidStatusUpdate(departure, isAlive, nameof(departure));
-        GuardHelper.AgainstEmptyGuid(id, nameof(id));
-
         return createdAt.HasValue
             ? new Bird(id, name, description, arrival, departure, isAlive, createdAt.Value, updatedAt, syncStampUtc,
                 version)
@@ -146,12 +126,7 @@ public class Bird : EntityBase
     /// </remarks>
     public void Update(BirdSpecies name, string? description, DateOnly arrival, DateOnly? departure, bool isAlive)
     {
-        GuardHelper.AgainstInvalidEnum(name, nameof(name));
-        GuardHelper.AgainstExceedsMaxLength(description, BirdValidationRules.DescriptionMaxLength, nameof(description));
-        GuardHelper.AgainstInvalidDateOnly(arrival, nameof(arrival));
-        GuardHelper.AgainstInvalidDateOnly(departure, nameof(departure));
-        GuardHelper.AgainstInvalidDateRange(arrival, departure);
-        GuardHelper.AgainstInvalidStatusUpdate(departure, isAlive, nameof(departure));
+        ValidateState(name, description, arrival, departure, isAlive);
 
         Name = name;
         Description = description;
@@ -167,9 +142,28 @@ public class Bird : EntityBase
 
     private void SetVersion(long version)
     {
-        if (version < InitialVersion)
+        if (!BirdValidationRules.IsVersionValid(version))
             throw new ArgumentOutOfRangeException(nameof(version), version, "Version must be greater than zero.");
 
         Version = version;
+    }
+
+    private static void ValidateState(
+        BirdSpecies name,
+        string? description,
+        DateOnly arrival,
+        DateOnly? departure,
+        bool isAlive)
+    {
+        GuardHelper.AgainstInvalidEnum(name, nameof(name));
+
+        if (!BirdValidationRules.IsDescriptionLengthValid(description))
+            GuardHelper.AgainstExceedsMaxLength(description, BirdValidationRules.DescriptionMaxLength,
+                nameof(description));
+
+        GuardHelper.AgainstInvalidDateOnly(arrival, nameof(arrival));
+        GuardHelper.AgainstInvalidDateOnly(departure, nameof(departure));
+        GuardHelper.AgainstInvalidDateRange(arrival, departure);
+        GuardHelper.AgainstInvalidStatusUpdate(departure, isAlive, nameof(departure));
     }
 }

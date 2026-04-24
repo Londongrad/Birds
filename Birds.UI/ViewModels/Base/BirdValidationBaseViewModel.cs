@@ -75,9 +75,9 @@ public abstract partial class BirdValidationBaseViewModel : ObservableValidator
             return new ValidationResult(ValidationMessages.DateIsNotSpecified);
 
         var min = BirdValidationRules.MinimumArrivalDate;
-        var max = DateOnly.FromDateTime(DateTime.Today);
+        var max = BirdValidationRules.CurrentLocalDate();
 
-        if (d < min || d > max)
+        if (!BirdValidationRules.IsDateInAllowedRange(d, today: max))
             return new ValidationResult(
                 string.Format(CultureInfo.CurrentCulture, ValidationMessages.InvalidDateRange, min, max));
 

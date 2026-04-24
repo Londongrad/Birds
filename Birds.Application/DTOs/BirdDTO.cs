@@ -1,4 +1,5 @@
 using Birds.Application.DTOs.Helpers;
+using Birds.Domain.Common;
 using Birds.Domain.Enums;
 
 namespace Birds.Application.DTOs;
@@ -15,7 +16,7 @@ public record BirdDTO(
 )
 {
     public BirdSpecies Species { get; init; } = BirdEnumHelper.ParseBirdName(Name) ?? default;
-    public long Version { get; init; } = 1;
+    public long Version { get; init; } = BirdValidationRules.MinimumVersion;
 
     public BirdSpecies? ResolveSpecies()
     {

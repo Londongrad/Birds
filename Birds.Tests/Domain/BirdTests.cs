@@ -104,6 +104,45 @@ public class BirdTests
     }
 
     [Fact]
+    public void Create_ShouldAllow_Description_At_Shared_Max_Length()
+    {
+        var description = new string('A', BirdValidationRules.DescriptionMaxLength);
+
+        var bird = Bird.Create(
+            (BirdSpecies)1,
+            description,
+            new DateOnly(2024, 5, 10));
+
+        bird.Description.Should().Be(description);
+    }
+
+    [Fact]
+    public void Create_ShouldThrow_When_Arrival_Is_Before_Shared_Minimum()
+    {
+        Action act = () => Bird.Create(
+            (BirdSpecies)1,
+            "Old bird",
+            BirdValidationRules.MinimumArrivalDate.AddDays(-1));
+
+        act.Should().Throw<DomainValidationException>()
+            .WithMessage("*too far in the past*");
+    }
+
+    [Fact]
+    public void Create_ShouldThrow_When_Dead_Bird_Has_No_Departure()
+    {
+        Action act = () => Bird.Create(
+            (BirdSpecies)1,
+            "Dead bird",
+            new DateOnly(2024, 5, 10),
+            null,
+            false);
+
+        act.Should().Throw<DomainValidationException>()
+            .WithMessage("*date must be set*");
+    }
+
+    [Fact]
     public void Update_ShouldThrow_When_Departure_Earlier_Than_Arrival()
     {
         var bird = Bird.Create((BirdSpecies)6, "Tiny bird", new DateOnly(2024, 5, 1));

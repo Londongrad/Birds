@@ -28,6 +28,24 @@ public class UpdateBirdCommandValidatorTests
     }
 
     [Fact]
+    public void Should_Have_Error_When_Arrival_Too_Early()
+    {
+        var command = new UpdateBirdCommand(
+            Guid.NewGuid(),
+            (BirdSpecies)1,
+            "Old bird",
+            BirdValidationRules.MinimumArrivalDate.AddDays(-1),
+            null,
+            true
+        );
+
+        var result = _validator.TestValidate(command);
+
+        result.ShouldHaveValidationErrorFor(x => x.Arrival)
+            .WithErrorMessage("Arrival date cannot be earlier than 2020.");
+    }
+
+    [Fact]
     public void Should_Have_Error_When_Departure_Earlier_Than_Arrival()
     {
         var command = new UpdateBirdCommand(
@@ -43,6 +61,24 @@ public class UpdateBirdCommandValidatorTests
 
         result.ShouldHaveValidationErrorFor(x => x)
             .WithErrorMessage("Departure date cannot be earlier than arrival date");
+    }
+
+    [Fact]
+    public void Should_Have_Error_When_Departure_Too_Early()
+    {
+        var command = new UpdateBirdCommand(
+            Guid.NewGuid(),
+            (BirdSpecies)1,
+            "Old bird",
+            BirdValidationRules.MinimumArrivalDate,
+            BirdValidationRules.MinimumArrivalDate.AddDays(-1),
+            false
+        );
+
+        var result = _validator.TestValidate(command);
+
+        result.ShouldHaveValidationErrorFor(x => x.Departure)
+            .WithErrorMessage("Departure date cannot be earlier than 2020.");
     }
 
     [Fact]

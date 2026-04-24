@@ -13,20 +13,13 @@ public class UpdateBirdCommandValidator : AbstractValidator<UpdateBirdCommand>
 
         RuleFor(x => x.Description).ApplyDescriptionRules();
 
-        RuleFor(x => x.Version)
-            .GreaterThanOrEqualTo(1)
-            .WithMessage("Version must be greater than zero");
+        RuleFor(x => x.Version).ApplyVersionRules();
 
-        RuleFor(x => x.Departure)
-            .Must(departure => departure is null || departure <= DateOnly.FromDateTime(DateTime.Today))
-            .WithMessage("Departure date cannot be in the future");
+        RuleFor(x => x.Departure).ApplyDepartureDateRules();
 
-        RuleFor(x => x)
-            .Must(x => x.Departure is null || x.Departure >= x.Arrival)
-            .WithMessage("Departure date cannot be earlier than arrival date");
-
-        RuleFor(x => x)
-            .Must(x => x.IsAlive || x.Departure is not null)
-            .WithMessage("Departure date is required when the bird is marked as dead");
+        this.ApplyBirdStateRules(
+            command => command.Arrival,
+            command => command.Departure,
+            command => command.IsAlive);
     }
 }

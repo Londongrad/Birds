@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Birds.Application.DTOs;
+using Birds.Domain.Common;
 using Birds.Domain.Enums;
 using Birds.Shared.Constants;
 using Birds.UI.Services.BirdNames;
@@ -69,7 +70,7 @@ public partial class BirdViewModel : BirdValidationBaseViewModel, IDisposable
     /// <summary>
     ///     Indicates that saving is intentionally blocked because a dead bird requires a departure date.
     /// </summary>
-    public bool IsSaveLockedByDepartureRequirement => !IsAlive && Departure is null;
+    public bool IsSaveLockedByDepartureRequirement => !BirdValidationRules.HasRequiredDeparture(Departure, IsAlive);
 
     /// <summary>
     ///     Indicates whether this view model has released external event subscriptions.
@@ -433,25 +434,33 @@ public partial class BirdViewModel : BirdValidationBaseViewModel, IDisposable
 
     /// <summary>
     ///     Validates the departure date.
-    ///     Allows null, disallows future dates and dates earlier than Arrival.
+    ///     Allows null for living birds, disallows future dates and dates earlier than Arrival.
     /// </summary>
     public static ValidationResult? ValidateDeparture(object? value, ValidationContext ctx)
     {
-        if (ctx.ObjectInstance is BirdViewModel birdVM && value is null && !birdVM.IsAlive)
-            return new ValidationResult(ValidationMessages.DateIsNotSpecified);
-
         if (value is null)
+        {
+            if (ctx.ObjectInstance is BirdViewModel birdVM
+                && !BirdValidationRules.HasRequiredDeparture(null, birdVM.IsAlive))
+                return new ValidationResult(ValidationMessages.DateIsNotSpecified);
+
             return ValidationResult.Success;
+        }
 
         if (value is not DateOnly d)
             return new ValidationResult(ValidationMessages.DateIsNotValid);
 
-        var today = DateOnly.FromDateTime(DateTime.Today);
-        if (d > today)
+        var today = BirdValidationRules.CurrentLocalDate();
+        if (!BirdValidationRules.IsDateInAllowedRange(d, true))
+            return new ValidationResult(
+                string.Format(ValidationMessages.InvalidDateRange, BirdValidationRules.MinimumArrivalDate, today));
+
+        if (!BirdValidationRules.IsDateInAllowedRange(d, today: today))
             return new ValidationResult(
                 string.Format(ValidationMessages.DateCannotBeInTheFuture, today));
 
-        if (ctx.ObjectInstance is BirdValidationBaseViewModel vm && d < vm.Arrival)
+        if (ctx.ObjectInstance is BirdValidationBaseViewModel vm
+            && !BirdValidationRules.IsDateRangeValid(vm.Arrival, d))
             return new ValidationResult(
                 string.Format(ValidationMessages.DepartureLaterThenArrival, vm.Arrival));
 
