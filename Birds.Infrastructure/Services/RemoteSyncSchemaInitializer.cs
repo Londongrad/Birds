@@ -260,19 +260,18 @@ public sealed class RemoteSyncSchemaInitializer(ILogger<RemoteSyncSchemaInitiali
             return;
         }
 
-        var appliedAtUtc = UtcDateTimeStorage.NormalizeForStorage(DateTime.UtcNow);
         var rowsAffected = IsPostgres(providerName)
             ? await remoteContext.Database.ExecuteSqlInterpolatedAsync(
                 $"""
                  INSERT INTO "RemoteSyncSchemaVersions" ("Version", "AppliedAtUtc", "Description")
-                 VALUES ({CurrentSchemaVersion}, {appliedAtUtc}, {CurrentSchemaDescription})
+                 VALUES ({CurrentSchemaVersion}, CURRENT_TIMESTAMP AT TIME ZONE 'UTC', {CurrentSchemaDescription})
                  ON CONFLICT ("Version") DO NOTHING;
                  """,
                 cancellationToken)
             : await remoteContext.Database.ExecuteSqlInterpolatedAsync(
                 $"""
                  INSERT OR IGNORE INTO "RemoteSyncSchemaVersions" ("Version", "AppliedAtUtc", "Description")
-                 VALUES ({CurrentSchemaVersion}, {appliedAtUtc}, {CurrentSchemaDescription});
+                 VALUES ({CurrentSchemaVersion}, strftime('%Y-%m-%d %H:%M:%f', 'now'), {CurrentSchemaDescription});
                  """,
                 cancellationToken);
 
