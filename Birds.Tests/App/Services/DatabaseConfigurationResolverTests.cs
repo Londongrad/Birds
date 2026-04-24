@@ -79,6 +79,24 @@ public sealed class DatabaseConfigurationResolverTests
     }
 
     [Fact]
+    public void Resolve_WhenRemoteSyncEnabledBySimpleEnvironmentAlias_Should_ConfigureRemoteSync()
+    {
+        var configuration = BuildConfiguration(new Dictionary<string, string?>
+        {
+            ["REMOTE_SYNC_ENABLED"] = "true",
+            ["Database:RemoteSync:ConnectionStringName"] = "SyncBackend",
+            ["ConnectionStrings:Sqlite"] = "Data Source=offline.db",
+            ["ConnectionStrings:SyncBackend"] = "Host=sync;Database=birds_sync;Username=user;Password=secret"
+        });
+
+        var result = DatabaseConfigurationResolver.Resolve(configuration);
+
+        result.RemoteSync.IsEnabled.Should().BeTrue();
+        result.RemoteSync.IsConfigured.Should().BeTrue();
+        result.RemoteSync.ConnectionString.Should().Be("Host=sync;Database=birds_sync;Username=user;Password=secret");
+    }
+
+    [Fact]
     public void Resolve_WhenRemoteSyncEnabledButConnectionStringMissing_Should_ReportIncompleteConfiguration()
     {
         var configuration = BuildConfiguration(new Dictionary<string, string?>

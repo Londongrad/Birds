@@ -44,7 +44,8 @@ internal static class DatabaseConfigurationResolver
     private static RemoteSyncRuntimeOptions ResolveRemoteSyncOptions(IConfiguration configuration,
         DatabaseProvider legacyProvider)
     {
-        var explicitlyEnabled = configuration.GetValue<bool?>("Database:RemoteSync:Enabled");
+        var explicitlyEnabled = configuration.GetValue<bool?>("Database:RemoteSync:Enabled")
+                                ?? configuration.GetValue<bool?>("REMOTE_SYNC_ENABLED");
         var isEnabled = explicitlyEnabled ?? false;
 
         if (!isEnabled)

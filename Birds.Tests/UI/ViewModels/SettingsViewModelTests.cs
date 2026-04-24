@@ -354,6 +354,21 @@ public class SettingsViewModelTests
     }
 
     [Fact]
+    public void SyncIntervalChanged_Should_Work_WhenRemoteSyncIsDisabled()
+    {
+        _remoteSyncController.SetupGet(x => x.IsEnabled).Returns(false);
+        _remoteSyncController.SetupGet(x => x.IsConfigured).Returns(false);
+        _preferences.SelectedSyncInterval = RemoteSyncIntervalPresets.OneMinute;
+
+        var sut = CreateSyncSut();
+
+        sut.SelectedSyncInterval = RemoteSyncIntervalPresets.FiveSeconds;
+
+        _preferences.SelectedSyncInterval.Should().Be(RemoteSyncIntervalPresets.FiveSeconds);
+        sut.SyncIntervalHint.Should().Contain(AppText.Get("Settings.SyncIntervalOption.FiveSeconds", _culture));
+    }
+
+    [Fact]
     public void RemoteSyncStatus_Should_Project_Localized_Label_And_Hint()
     {
         _remoteSyncStatus.SetState(

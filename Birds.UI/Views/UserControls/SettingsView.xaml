@@ -555,7 +555,6 @@
                                                 Grid.Column="1"
                                                 Width="190"
                                                 HorizontalAlignment="Right"
-                                                IsEnabled="{Binding IsRemoteSyncConfigured}"
                                                 ItemsSource="{Binding AvailableSyncIntervals}"
                                                 TextSearch.TextPath="DisplayName"
                                                 SelectedValue="{Binding SelectedSyncInterval, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
