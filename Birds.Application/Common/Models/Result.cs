@@ -7,10 +7,10 @@ namespace Birds.Application.Common.Models;
 /// </summary>
 public class Result
 {
-    private Result(bool isSuccess, string? error)
+    private Result(bool isSuccess, AppError? appError)
     {
         IsSuccess = isSuccess;
-        Error = error;
+        AppError = appError;
     }
 
     /// <summary>
@@ -19,9 +19,24 @@ public class Result
     public bool IsSuccess { get; }
 
     /// <summary>
+    ///     Gets the structured error if the operation failed.
+    /// </summary>
+    public AppError? AppError { get; }
+
+    /// <summary>
     ///     Gets an error message if the operation failed.
     /// </summary>
-    public string? Error { get; }
+    public string? Error => AppError?.Message;
+
+    /// <summary>
+    ///     Gets an error message if the operation failed.
+    /// </summary>
+    public string? ErrorMessage => Error;
+
+    /// <summary>
+    ///     Gets the stable machine-readable error code if the operation failed.
+    /// </summary>
+    public string? ErrorCode => AppError?.Code;
 
     /// <summary>
     ///     Creates a successful result.
@@ -32,11 +47,21 @@ public class Result
     }
 
     /// <summary>
+    ///     Creates a failed result with the specified structured error.
+    /// </summary>
+    public static Result Failure(AppError error)
+    {
+        ArgumentNullException.ThrowIfNull(error);
+
+        return new Result(false, error);
+    }
+
+    /// <summary>
     ///     Creates a failed result with the specified error message.
     /// </summary>
     public static Result Failure(string error)
     {
-        return new Result(false, error);
+        return Failure(AppErrors.Failure(error));
     }
 }
 
@@ -46,10 +71,10 @@ public class Result
 /// <typeparam name="T">Type of the value returned if the operation succeeds.</typeparam>
 public class Result<T>
 {
-    private Result(bool isSuccess, string? error, T? value)
+    private Result(bool isSuccess, AppError? appError, T? value)
     {
         IsSuccess = isSuccess;
-        Error = error;
+        AppError = appError;
         Value = value;
     }
 
@@ -60,9 +85,24 @@ public class Result<T>
     public bool IsSuccess { get; }
 
     /// <summary>
+    ///     Gets the structured error if the operation failed.
+    /// </summary>
+    public AppError? AppError { get; }
+
+    /// <summary>
     ///     Gets an error message if the operation failed.
     /// </summary>
-    public string? Error { get; }
+    public string? Error => AppError?.Message;
+
+    /// <summary>
+    ///     Gets an error message if the operation failed.
+    /// </summary>
+    public string? ErrorMessage => Error;
+
+    /// <summary>
+    ///     Gets the stable machine-readable error code if the operation failed.
+    /// </summary>
+    public string? ErrorCode => AppError?.Code;
 
     /// <summary>
     ///     Gets the value of the operation if it succeeded.
@@ -78,10 +118,20 @@ public class Result<T>
     }
 
     /// <summary>
+    ///     Creates a failed result with the specified structured error.
+    /// </summary>
+    public static Result<T> Failure(AppError error)
+    {
+        ArgumentNullException.ThrowIfNull(error);
+
+        return new Result<T>(false, error, default);
+    }
+
+    /// <summary>
     ///     Creates a failed result with the specified error message.
     /// </summary>
     public static Result<T> Failure(string error)
     {
-        return new Result<T>(false, error, default);
+        return Failure(AppErrors.Failure(error));
     }
 }
