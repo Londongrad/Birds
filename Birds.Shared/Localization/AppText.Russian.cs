@@ -394,8 +394,14 @@ public static partial class AppText
             ["Error.FailedToDisplayErrorNotification"] = "Не удалось показать уведомление об ошибке",
             ["Error.StartupErrorTitle"] = "Ошибка запуска",
             ["Error.StartupError"] = "Во время запуска приложения произошла ошибка:\n{0}",
+            ["Error.StartupFailure"] =
+                "Приложение не смогло безопасно запуститься. Ошибка записана в лог-файл.\n\nПапка логов: {0}",
+            ["Error.GlobalCrashMessage"] =
+                "Что-то пошло не так. Ошибка записана в лог-файл.\n\nПапка логов: {0}",
             ["Error.ShutdownWarningTitle"] = "Предупреждение при завершении",
             ["Error.ShutdownError"] = "Ошибка при завершении приложения:\n{0}",
+            ["Error.ShutdownFailure"] =
+                "При завершении приложения произошла ошибка. Подробности записаны в лог-файл.\n\nПапка логов: {0}",
 
             ["Validation.UnselectedBird"] = "Выберите вид птицы из списка.",
             ["Validation.LongDescription"] = "Описание слишком длинное. Максимум 200 символов.",

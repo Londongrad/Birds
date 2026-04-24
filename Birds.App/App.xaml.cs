@@ -1,8 +1,10 @@
 using System.Windows;
+using Birds.App.Services;
 using Birds.Shared.Constants;
 using Birds.UI.Services.Export.Interfaces;
 using Birds.UI.Services.Localization;
 using Birds.UI.Services.Managers.Bird;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
@@ -42,6 +44,7 @@ public partial class App : System.Windows.Application
             // 5) Start the Host (background services etc.).
             await _host.StartAsync();
 
+            _host.Services.GetRequiredService<IDiagnosticsService>().LogStartupDiagnostics();
             Log.Information(LogMessages.HostStarted);
 
             // 6) Bootstrap UI: configure converter & navigation, open main window via INavigationService.
@@ -54,7 +57,7 @@ public partial class App : System.Windows.Application
         {
             Log.Fatal(ex, LogMessages.AppFailed);
             MessageBox.Show(
-                ErrorMessages.StartupError(ex.Message),
+                ErrorMessages.StartupFailure(ResolveCurrentLogDirectory()),
                 ErrorMessages.StartupErrorTitle,
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
@@ -84,8 +87,9 @@ public partial class App : System.Windows.Application
             }
             catch (Exception ex)
             {
+                Log.Warning(ex, LogMessages.AppShutdownFailed);
                 MessageBox.Show(
-                    ErrorMessages.ShotdownError(ex.Message),
+                    ErrorMessages.ShutdownFailure(ResolveCurrentLogDirectory()),
                     ErrorMessages.ShotdownWarningTitle,
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
@@ -115,5 +119,12 @@ public partial class App : System.Windows.Application
         Log.CloseAndFlush();
 
         base.OnExit(e);
+    }
+
+    private static string ResolveCurrentLogDirectory()
+    {
+        return string.IsNullOrWhiteSpace(SerilogSetup.CurrentLogsDirectory)
+            ? AppLogPathResolver.ResolveLogsDirectory()
+            : SerilogSetup.CurrentLogsDirectory;
     }
 }

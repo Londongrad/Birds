@@ -20,9 +20,13 @@ public static class LogMessages
     public const string LogsDirectoryResolved = "Logs directory resolved to {LogsDirectory}.";
     public const string AppStarting = "\n\n\n\tApplication starting...";
 
+    public const string StartupDiagnostics =
+        "Startup diagnostics: AppVersion={AppVersion}; OS={OSVersion}; Runtime={RuntimeVersion}; Architecture={ProcessArchitecture}; Culture={Culture}; UiCulture={UiCulture}; TimeZone={TimeZone}; UtcOffset={UtcOffset}; DatabaseProvider={DatabaseProvider}; DatabasePath={DatabasePath}; RemoteSyncEnabled={RemoteSyncEnabled}; RemoteSyncConfigured={RemoteSyncConfigured}; RemoteSyncHasConfigurationError={RemoteSyncHasConfigurationError}; RemoteSyncConfigurationError={RemoteSyncConfigurationError}; LogDirectory={LogDirectory}; CurrentLogFile={CurrentLogFilePath}.";
+
     public const string HostStarted = "Host started successfully.";
 
     public const string AppFailed = "Application failed during startup.";
+    public const string AppShutdownFailed = "Application shutdown encountered an error.";
     public const string AppExited = "Application exiting normally.";
     public const string InitializerStopped = "BirdStore initialization cancelled because the application is stopping.";
 

@@ -103,8 +103,23 @@ public static class ErrorMessages
         return AppText.Format("Error.StartupError", message);
     }
 
+    public static string StartupFailure(string logDirectory)
+    {
+        return AppText.Format("Error.StartupFailure", logDirectory);
+    }
+
+    public static string GlobalCrashMessage(string logDirectory)
+    {
+        return AppText.Format("Error.GlobalCrashMessage", logDirectory);
+    }
+
     public static string ShotdownError(string message)
     {
         return AppText.Format("Error.ShutdownError", message);
+    }
+
+    public static string ShutdownFailure(string logDirectory)
+    {
+        return AppText.Format("Error.ShutdownFailure", logDirectory);
     }
 }

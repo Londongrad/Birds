@@ -3,6 +3,7 @@ using Birds.App.Services;
 using Birds.Shared.Constants;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 
 namespace Birds.App;
@@ -13,6 +14,11 @@ namespace Birds.App;
 /// </summary>
 internal static class SerilogSetup
 {
+    private const long LogFileSizeLimitBytes = 10 * 1024 * 1024;
+
+    private const string OutputTemplate =
+        "[{UtcTimestamp:yyyy-MM-dd HH:mm:ss.fff zzz} UTC | {Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} LOCAL {Level:u3}] {Message:lj}{NewLine}{Exception}";
+
     public static string CurrentLogsDirectory { get; private set; } = string.Empty;
 
     /// <summary>
@@ -26,13 +32,15 @@ internal static class SerilogSetup
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .Enrich.FromLogContext()
+            .Enrich.With(new UtcTimestampEnricher())
             .WriteTo.File(
                 Path.Combine(logsDir, "bootstrap-.log"),
                 rollingInterval: RollingInterval.Day,
                 retainedFileCountLimit: 5,
+                fileSizeLimitBytes: LogFileSizeLimitBytes,
                 rollOnFileSizeLimit: true,
                 shared: true,
-                outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+                outputTemplate: OutputTemplate)
             .WriteTo.Debug()
             .CreateLogger();
 
@@ -50,21 +58,24 @@ internal static class SerilogSetup
         cfg.ReadFrom.Configuration(ctx.Configuration)
             .ReadFrom.Services(services)
             .Enrich.FromLogContext()
+            .Enrich.With(new UtcTimestampEnricher())
             .WriteTo.File(
                 Path.Combine(logsDir, "app-.log"),
                 rollingInterval: RollingInterval.Day,
                 retainedFileCountLimit: 10,
+                fileSizeLimitBytes: LogFileSizeLimitBytes,
                 rollOnFileSizeLimit: true,
                 shared: true,
-                outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+                outputTemplate: OutputTemplate)
             .WriteTo.File(
                 Path.Combine(logsDir, "error-.log"),
                 rollingInterval: RollingInterval.Day,
                 retainedFileCountLimit: 14,
+                fileSizeLimitBytes: LogFileSizeLimitBytes,
                 rollOnFileSizeLimit: true,
                 shared: true,
                 restrictedToMinimumLevel: LogEventLevel.Error,
-                outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+                outputTemplate: OutputTemplate)
             .WriteTo.Debug();
     }
 
@@ -74,5 +85,13 @@ internal static class SerilogSetup
         Directory.CreateDirectory(logsDir);
         CurrentLogsDirectory = logsDir;
         return logsDir;
+    }
+}
+
+internal sealed class UtcTimestampEnricher : ILogEventEnricher
+{
+    public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
+    {
+        logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("UtcTimestamp", DateTimeOffset.UtcNow));
     }
 }

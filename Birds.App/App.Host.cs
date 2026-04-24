@@ -54,6 +54,8 @@ public partial class App
                 services.AddInfrastructure(databaseConfiguration.LocalStoreConnectionString,
                     databaseConfiguration.SeedingOptions,
                     databaseConfiguration.RemoteSync);
+                services.AddSingleton<IDiagnosticsService, DiagnosticsService>();
+                services.AddSingleton<IGlobalExceptionHandler, GlobalExceptionHandler>();
 
                 // Register the UI layer (ViewModels, stores, navigation, etc.)
                 services.AddUI();

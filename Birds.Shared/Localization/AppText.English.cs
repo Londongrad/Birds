@@ -395,8 +395,14 @@ public static partial class AppText
             ["Error.FailedToDisplayErrorNotification"] = "Failed to display error notification",
             ["Error.StartupErrorTitle"] = "Startup error",
             ["Error.StartupError"] = "An error occurred during application startup:\n{0}",
+            ["Error.StartupFailure"] =
+                "The application could not start safely. The error was written to the log file.\n\nLog folder: {0}",
+            ["Error.GlobalCrashMessage"] =
+                "Something went wrong. The error was written to the log file.\n\nLog folder: {0}",
             ["Error.ShutdownWarningTitle"] = "Shutdown warning",
             ["Error.ShutdownError"] = "Error during application shutdown:\n{0}",
+            ["Error.ShutdownFailure"] =
+                "An error occurred while the application was shutting down. Details were written to the log file.\n\nLog folder: {0}",
 
             ["Validation.UnselectedBird"] = "Select a bird species from the list.",
             ["Validation.LongDescription"] = "Description is too long. Maximum is 200 characters.",
