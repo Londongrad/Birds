@@ -83,6 +83,7 @@ public sealed class DatabaseConfigurationResolverTests
     {
         var configuration = BuildConfiguration(new Dictionary<string, string?>
         {
+            ["Database:RemoteSync:Enabled"] = "false",
             ["REMOTE_SYNC_ENABLED"] = "true",
             ["Database:RemoteSync:ConnectionStringName"] = "SyncBackend",
             ["ConnectionStrings:Sqlite"] = "Data Source=offline.db",
