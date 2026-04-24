@@ -2,13 +2,17 @@ using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
 using Birds.Application.Interfaces;
 using Birds.Application.Mappings;
+using Birds.Domain.Common.Exceptions;
 using Birds.Domain.Entities;
 using Birds.Shared.Constants;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Birds.Application.Commands.ImportBirds;
 
-public sealed class ImportBirdsCommandHandler(IBirdRepository repository)
+public sealed class ImportBirdsCommandHandler(
+    IBirdRepository repository,
+    ILogger<ImportBirdsCommandHandler>? logger = null)
     : IRequestHandler<ImportBirdsCommand, Result<BirdImportResultDTO>>
 {
     public async Task<Result<BirdImportResultDTO>> Handle(
@@ -64,21 +68,62 @@ public sealed class ImportBirdsCommandHandler(IBirdRepository repository)
                         ErrorMessages.InvalidImportedBirdName(dto.Name),
                         AppErrorCodes.ImportInvalidSpecies));
 
-            restoredBirds.Add(Bird.Restore(
-                dto.Id,
-                species.Value,
-                dto.Description,
-                dto.Arrival,
-                dto.Departure,
-                dto.IsAlive,
-                dto.CreatedAt,
-                dto.UpdatedAt,
-                version: dto.Version));
+            try
+            {
+                restoredBirds.Add(Bird.Restore(
+                    dto.Id,
+                    species.Value,
+                    dto.Description,
+                    dto.Arrival,
+                    dto.Departure,
+                    dto.IsAlive,
+                    dto.CreatedAt,
+                    dto.UpdatedAt,
+                    version: dto.Version));
+            }
+            catch (Exception ex) when (IsValidationException(ex))
+            {
+                logger?.LogWarning(
+                    ex,
+                    "Rejected invalid imported bird {BirdId}.",
+                    dto.Id);
+
+                return Result<BirdImportResultDTO>.Failure(
+                    AppErrors.Validation(
+                        ErrorMessages.ImportValidationFailed,
+                        new Dictionary<string, string[]>
+                        {
+                            [nameof(BirdDTO)] = [ex.Message]
+                        },
+                        AppErrorCodes.ImportValidationFailed));
+            }
         }
 
-        var upsertResult = request.Mode == BirdImportMode.Replace
-            ? await repository.ReplaceWithSnapshotAsync(restoredBirds, cancellationToken)
-            : await repository.UpsertAsync(restoredBirds, cancellationToken);
+        UpsertBirdsResult upsertResult;
+        try
+        {
+            upsertResult = request.Mode == BirdImportMode.Replace
+                ? await repository.ReplaceWithSnapshotAsync(restoredBirds, cancellationToken)
+                : await repository.UpsertAsync(restoredBirds, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger?.LogError(
+                ex,
+                "Failed to apply bird import in {ImportMode} mode for {BirdCount} bird(s).",
+                request.Mode,
+                restoredBirds.Count);
+
+            return Result<BirdImportResultDTO>.Failure(
+                AppErrors.Import(
+                    ErrorMessages.ImportTransactionFailed,
+                    AppErrorCodes.ImportTransactionFailed));
+        }
+
         var snapshot = (await repository.GetAllAsync(cancellationToken)).ToDtos();
 
         return Result<BirdImportResultDTO>.Success(
@@ -88,5 +133,10 @@ public sealed class ImportBirdsCommandHandler(IBirdRepository repository)
                 upsertResult.Updated,
                 upsertResult.Removed,
                 snapshot));
+    }
+
+    private static bool IsValidationException(Exception exception)
+    {
+        return exception is DomainValidationException or ArgumentOutOfRangeException or ArgumentException;
     }
 }

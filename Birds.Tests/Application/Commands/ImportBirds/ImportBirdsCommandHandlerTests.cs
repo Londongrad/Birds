@@ -120,6 +120,52 @@ public class ImportBirdsCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_Should_Fail_For_Invalid_Bird_Data_Before_Mutating_Repository()
+    {
+        var repository = new Mock<IBirdRepository>();
+        var sut = new ImportBirdsCommandHandler(repository.Object);
+        var invalidBird = new BirdDTO(
+            Guid.NewGuid(),
+            "Sparrow",
+            null,
+            new DateOnly(2026, 4, 2),
+            new DateOnly(2026, 4, 1),
+            true,
+            null,
+            null);
+
+        var result = await sut.Handle(
+            new ImportBirdsCommand(new[] { invalidBird }, BirdImportMode.Replace),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be(AppErrorCodes.ImportValidationFailed);
+        repository.Verify(
+            x => x.ReplaceWithSnapshotAsync(It.IsAny<IReadOnlyCollection<Bird>>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+        repository.Verify(
+            x => x.UpsertAsync(It.IsAny<IReadOnlyCollection<Bird>>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_Should_Return_Transaction_Error_When_Repository_Import_Fails()
+    {
+        var repository = new Mock<IBirdRepository>();
+        var importedBird =
+            new BirdDTO(Guid.NewGuid(), "Sparrow", null, new DateOnly(2026, 4, 1), null, true, null, null);
+        repository.Setup(x => x.UpsertAsync(It.IsAny<IReadOnlyCollection<Bird>>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new IOException("database write failed"));
+        var sut = new ImportBirdsCommandHandler(repository.Object);
+
+        var result = await sut.Handle(new ImportBirdsCommand(new[] { importedBird }), CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be(AppErrorCodes.ImportTransactionFailed);
+        repository.Verify(x => x.GetAllAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task Handle_Should_Replace_Snapshot_When_Mode_Is_Replace()
     {
         var repository = new Mock<IBirdRepository>();

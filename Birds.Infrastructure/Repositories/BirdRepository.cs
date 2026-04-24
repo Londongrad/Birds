@@ -92,6 +92,7 @@ public class BirdRepository(
             return new UpsertBirdsResult(0, 0);
 
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
 
         var ids = birds
             .Select(static bird => bird.Id)
@@ -122,6 +123,7 @@ public class BirdRepository(
 
         await QueueUpsertsAsync(context, birds, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
 
         return new UpsertBirdsResult(toAdd.Count, updatedCount);
     }
