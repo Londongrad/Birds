@@ -3,6 +3,7 @@ using Birds.Infrastructure.Configuration;
 using Birds.Infrastructure.Services;
 using Birds.Shared.Constants;
 using Birds.Shared.Sync;
+using Birds.UI.Services.Background;
 using Birds.UI.Services.Preferences.Interfaces;
 using Birds.UI.Services.Notification.Interfaces;
 using Serilog;
@@ -16,13 +17,15 @@ internal sealed class RemoteSyncCoordinator(
     ILocalStoreStateService localStoreStateService,
     IDatabaseMaintenanceService databaseMaintenanceService,
     IAppPreferencesService preferences,
-    INotificationService notificationService) : IRemoteSyncCoordinator
+    INotificationService notificationService,
+    IBackgroundTaskRunner backgroundTaskRunner) : IRemoteSyncCoordinator
 {
     private const int MaxBootstrapPasses = 512;
     private readonly IDatabaseMaintenanceService _databaseMaintenanceService = databaseMaintenanceService;
     private readonly ILocalStoreStateService _localStoreStateService = localStoreStateService;
     private readonly INotificationService _notificationService = notificationService;
     private readonly IAppPreferencesService _preferences = preferences;
+    private readonly IBackgroundTaskRunner _backgroundTaskRunner = backgroundTaskRunner;
     private readonly RemoteSyncRuntimeOptions _remoteSyncOptions = remoteSyncOptions;
 
     private readonly IRemoteSyncService _remoteSyncService = remoteSyncService;
@@ -38,14 +41,20 @@ internal sealed class RemoteSyncCoordinator(
     {
         if (!_remoteSyncOptions.IsConfigured)
         {
-            _ = PublishDisabledStateAsync(CancellationToken.None);
+            _backgroundTaskRunner.Run(
+                _ => PublishDisabledStateAsync(stoppingToken),
+                new BackgroundTaskOptions("Publish disabled remote sync state"),
+                stoppingToken);
             return;
         }
 
         if (Interlocked.Exchange(ref _started, 1) == 1)
             return;
 
-        _ = Task.Run(() => RunAsync(stoppingToken), CancellationToken.None);
+        _backgroundTaskRunner.Run(
+            _ => RunAsync(stoppingToken),
+            new BackgroundTaskOptions("Remote sync loop"),
+            stoppingToken);
     }
 
     public async Task BootstrapLocalStoreAsync(CancellationToken cancellationToken)

@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Birds.Application.DTOs;
 using Birds.Shared.Constants;
+using Birds.UI.Services.Background;
 using Birds.UI.Services.Export.Interfaces;
 using Birds.UI.Services.Preferences.Interfaces;
 using Birds.UI.Services.Stores.BirdStore;
@@ -13,6 +14,7 @@ public sealed class AutoExportCoordinator : IAutoExportCoordinator, IDisposable
 {
     private readonly IBirdStore _birdStore;
     private readonly TimeSpan _debounceDelay;
+    private readonly IBackgroundTaskRunner _backgroundTaskRunner;
     private readonly object _debounceSync = new();
     private readonly IExportPathProvider _exportPathProvider;
     private readonly IExportService _exportService;
@@ -33,6 +35,7 @@ public sealed class AutoExportCoordinator : IAutoExportCoordinator, IDisposable
         IAppPreferencesService preferences,
         IUiDispatcher uiDispatcher,
         ILogger<AutoExportCoordinator> logger,
+        IBackgroundTaskRunner backgroundTaskRunner,
         TimeSpan? debounceDelay = null)
     {
         _birdStore = birdStore;
@@ -41,6 +44,7 @@ public sealed class AutoExportCoordinator : IAutoExportCoordinator, IDisposable
         _preferences = preferences;
         _uiDispatcher = uiDispatcher;
         _logger = logger;
+        _backgroundTaskRunner = backgroundTaskRunner;
         _debounceDelay = debounceDelay ?? TimeSpan.FromSeconds(2);
         _preferences.PropertyChanged += OnPreferencesChanged;
     }
@@ -108,7 +112,10 @@ public sealed class AutoExportCoordinator : IAutoExportCoordinator, IDisposable
             debounceCancellation = _debounceCancellation;
         }
 
-        _ = DebouncedFlushAsync(debounceCancellation);
+        _backgroundTaskRunner.Run(
+            _ => DebouncedFlushAsync(debounceCancellation),
+            new BackgroundTaskOptions("Debounced auto-export"),
+            debounceCancellation.Token);
     }
 
     private async Task DebouncedFlushAsync(CancellationTokenSource debounceCancellation)

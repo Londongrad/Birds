@@ -8,6 +8,7 @@ using Birds.UI.Services.Export.Interfaces;
 using Birds.UI.Services.Factories.BirdViewModelFactory;
 using Birds.UI.Services.Import;
 using Birds.UI.Services.Import.Interfaces;
+using Birds.UI.Services.Background;
 using Birds.UI.Services.Localization;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Managers.Bird;
@@ -48,6 +49,7 @@ public static class DependencyInjection
         services.AddSingleton<SettingsViewModel>();
 
         // Services
+        services.AddSingleton<IBackgroundTaskRunner, BackgroundTaskRunner>();
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<INotificationService, NotificationService>();
         services.AddSingleton<IBirdViewModelFactory, BirdViewModelFactory>();

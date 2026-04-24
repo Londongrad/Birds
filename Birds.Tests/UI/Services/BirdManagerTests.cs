@@ -6,6 +6,7 @@ using Birds.Application.DTOs;
 using Birds.Application.Queries.GetAllBirds;
 using Birds.Domain.Enums;
 using Birds.Tests.Helpers;
+using Birds.UI.Services.Background;
 using Birds.UI.Enums;
 using Birds.UI.Services.Export.Interfaces;
 using Birds.UI.Services.Managers.Bird;
@@ -30,6 +31,7 @@ public class BirdManagerTests
         IMediator mediator,
         INotificationService? notificationService = null,
         IAutoExportCoordinator? autoExportCoordinator = null,
+        IBackgroundTaskRunner? backgroundTaskRunner = null,
         TimeSpan? pendingDeleteUndoDuration = null)
     {
         return new BirdManager(
@@ -39,6 +41,7 @@ public class BirdManagerTests
             new InlineUiDispatcher(),
             notificationService ?? Mock.Of<INotificationService>(),
             autoExportCoordinator ?? Mock.Of<IAutoExportCoordinator>(),
+            backgroundTaskRunner ?? TestBackgroundTaskRunner.Create(),
             pendingDeleteUndoDuration);
     }
 
@@ -263,10 +266,45 @@ public class BirdManagerTests
         // Act
         var result = await sut.DeleteAsync(id, CancellationToken.None);
         await WaitUntilAsync(
-            () => store.Birds.Any(b => b.Id == id),
+            () => store.Birds.Any(b => b.Id == id)
+                  && notifications.Invocations.Any(invocation =>
+                      invocation.Method.Name == nameof(INotificationService.ShowErrorLocalized)),
             timeout: TimeSpan.FromSeconds(2));
 
         // Assert
+        result.IsSuccess.Should().BeTrue();
+        store.Birds.Should().ContainSingle(b => b.Id == id);
+        notifications.Verify(n => n.ShowErrorLocalized("Error.CannotDeleteBird", It.IsAny<object[]>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenFinalDeleteThrows_Should_RestoreBird_And_SurfaceFailure()
+    {
+        var store = new BirdStore();
+        store.CompleteLoading();
+        var mediator = new Mock<IMediator>();
+        var notifications = new Mock<INotificationService>();
+
+        var id = Guid.NewGuid();
+        store.Birds.Add(new BirdDTO(id, "Sparrow", null, TestHelpers.Today(), null, true, null, null));
+
+        mediator.Setup(m => m.Send(It.IsAny<DeleteBirdCommand>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("database locked"));
+
+        var sut = MakeManager(
+            store,
+            Init(store, mediator.Object),
+            mediator.Object,
+            notifications.Object,
+            pendingDeleteUndoDuration: TimeSpan.FromMilliseconds(60));
+
+        var result = await sut.DeleteAsync(id, CancellationToken.None);
+        await WaitUntilAsync(
+            () => store.Birds.Any(b => b.Id == id)
+                  && notifications.Invocations.Any(invocation =>
+                      invocation.Method.Name == nameof(INotificationService.ShowErrorLocalized)),
+            timeout: TimeSpan.FromSeconds(2));
+
         result.IsSuccess.Should().BeTrue();
         store.Birds.Should().ContainSingle(b => b.Id == id);
         notifications.Verify(n => n.ShowErrorLocalized("Error.CannotDeleteBird", It.IsAny<object[]>()), Times.Once);

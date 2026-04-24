@@ -12,7 +12,7 @@ public sealed class NotificationManagerTests
     [Fact]
     public async Task ShowNotification_WhenSameToastRepeated_Should_CoalesceIntoSingleEntry()
     {
-        var sut = new NotificationManager(new InlineUiDispatcher());
+        var sut = CreateSut();
         var options = new NotificationOptions(NotificationType.Info, Timeout.InfiniteTimeSpan);
 
         sut.ShowNotification("Loading bird data...", options);
@@ -28,7 +28,7 @@ public sealed class NotificationManagerTests
     [Fact]
     public async Task ShowLocalizedNotification_WhenSameToastRepeated_Should_CoalesceIntoSingleEntry()
     {
-        var sut = new NotificationManager(new InlineUiDispatcher());
+        var sut = CreateSut();
         var options = new NotificationOptions(NotificationType.Info, Timeout.InfiniteTimeSpan);
 
         sut.ShowLocalizedNotification("Info.LoadingBirdData", options);
@@ -43,7 +43,7 @@ public sealed class NotificationManagerTests
     [Fact]
     public async Task ShowNotification_WhenSameSuccessRepeated_Should_KeepSeparateEntries()
     {
-        var sut = new NotificationManager(new InlineUiDispatcher());
+        var sut = CreateSut();
         var options = new NotificationOptions(NotificationType.Success, Timeout.InfiniteTimeSpan);
 
         sut.ShowNotification("Bird added successfully!", options);
@@ -58,7 +58,7 @@ public sealed class NotificationManagerTests
     [Fact]
     public async Task ShowNotification_WhenSuccessShown_Should_DisplayRecentOperationIndicatorTemporarily()
     {
-        var sut = new NotificationManager(new InlineUiDispatcher(), TimeSpan.FromMilliseconds(40));
+        var sut = CreateSut(TimeSpan.FromMilliseconds(40));
 
         sut.ShowNotification("Bird added successfully!",
             new NotificationOptions(NotificationType.Success, Timeout.InfiniteTimeSpan));
@@ -77,7 +77,7 @@ public sealed class NotificationManagerTests
     [Fact]
     public async Task ShowNotification_WhenInfoShown_Should_NotDisplayRecentOperationIndicator()
     {
-        var sut = new NotificationManager(new InlineUiDispatcher(), TimeSpan.FromMilliseconds(40));
+        var sut = CreateSut(TimeSpan.FromMilliseconds(40));
 
         sut.ShowNotification("Archive reloaded.",
             new NotificationOptions(NotificationType.Info, Timeout.InfiniteTimeSpan));
@@ -91,7 +91,7 @@ public sealed class NotificationManagerTests
     [Fact]
     public async Task LocalizedNotification_Should_Update_Message_When_Language_Changes()
     {
-        var sut = new NotificationManager(new InlineUiDispatcher());
+        var sut = CreateSut();
         var localization = LocalizationService.Instance;
         var previousLanguage = localization.CurrentLanguage;
 
@@ -126,7 +126,7 @@ public sealed class NotificationManagerTests
     [Fact]
     public async Task DismissNotification_Should_RemoveToastFromActiveCollection()
     {
-        var sut = new NotificationManager(new InlineUiDispatcher());
+        var sut = CreateSut();
         sut.ShowNotification("Bird added successfully!",
             new NotificationOptions(NotificationType.Success, Timeout.InfiniteTimeSpan));
 
@@ -145,7 +145,7 @@ public sealed class NotificationManagerTests
     [Fact]
     public async Task MarkAllAsRead_Should_ResetUnreadCounter()
     {
-        var sut = new NotificationManager(new InlineUiDispatcher());
+        var sut = CreateSut();
 
         sut.ShowNotification("Archive reloaded.",
             new NotificationOptions(NotificationType.Info, Timeout.InfiniteTimeSpan));
@@ -165,7 +165,7 @@ public sealed class NotificationManagerTests
     [Fact]
     public async Task ClearNotifications_Should_RemoveHistoryAndResetCounters()
     {
-        var sut = new NotificationManager(new InlineUiDispatcher());
+        var sut = CreateSut();
 
         sut.ShowNotification("One", new NotificationOptions(NotificationType.Info, Timeout.InfiniteTimeSpan));
         sut.ShowNotification("Two", new NotificationOptions(NotificationType.Warning, Timeout.InfiniteTimeSpan));
@@ -179,5 +179,13 @@ public sealed class NotificationManagerTests
         sut.ActiveNotifications.Should().BeEmpty();
         sut.HasNotifications.Should().BeFalse();
         sut.UnreadCount.Should().Be(0);
+    }
+
+    private static NotificationManager CreateSut(TimeSpan? recentOperationStatusDuration = null)
+    {
+        return new NotificationManager(
+            new InlineUiDispatcher(),
+            TestBackgroundTaskRunner.Create(),
+            recentOperationStatusDuration);
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Birds.UI.Services.Background;
 using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.Threading.Abstractions;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -9,6 +10,7 @@ public partial class NotificationManager : ObservableObject, INotificationManage
 {
     private const int MaxHistoryNotifications = 80;
     private readonly ObservableCollection<NotificationToast> _activeNotifications = [];
+    private readonly IBackgroundTaskRunner _backgroundTaskRunner;
     private readonly TimeSpan _recentOperationStatusDuration;
 
     private readonly IUiDispatcher _uiDispatcher;
@@ -22,9 +24,13 @@ public partial class NotificationManager : ObservableObject, INotificationManage
 
     [ObservableProperty] private int unreadCount;
 
-    public NotificationManager(IUiDispatcher uiDispatcher, TimeSpan? recentOperationStatusDuration = null)
+    public NotificationManager(
+        IUiDispatcher uiDispatcher,
+        IBackgroundTaskRunner backgroundTaskRunner,
+        TimeSpan? recentOperationStatusDuration = null)
     {
         _uiDispatcher = uiDispatcher;
+        _backgroundTaskRunner = backgroundTaskRunner;
         _recentOperationStatusDuration = recentOperationStatusDuration ?? TimeSpan.FromSeconds(3);
         ActiveNotifications = new ReadOnlyObservableCollection<NotificationToast>(_activeNotifications);
     }
@@ -37,10 +43,12 @@ public partial class NotificationManager : ObservableObject, INotificationManage
             return;
 
         var normalizedMessage = message.Trim();
-        _ = ShowInternalAsync(
-            options,
-            toast => toast.Matches(normalizedMessage, options),
-            () => NotificationToast.Create(normalizedMessage, options));
+        _backgroundTaskRunner.Run(
+            _ => ShowInternalAsync(
+                options,
+                toast => toast.Matches(normalizedMessage, options),
+                () => NotificationToast.Create(normalizedMessage, options)),
+            new BackgroundTaskOptions("Show notification"));
     }
 
     public void ShowLocalizedNotification(string messageKey, NotificationOptions options, params object[] args)
@@ -51,10 +59,12 @@ public partial class NotificationManager : ObservableObject, INotificationManage
         var normalizedKey = messageKey.Trim();
         var normalizedArgs = args?.ToArray() ?? Array.Empty<object>();
 
-        _ = ShowInternalAsync(
-            options,
-            toast => toast.MatchesLocalized(normalizedKey, options, normalizedArgs),
-            () => NotificationToast.CreateLocalized(normalizedKey, options, normalizedArgs));
+        _backgroundTaskRunner.Run(
+            _ => ShowInternalAsync(
+                options,
+                toast => toast.MatchesLocalized(normalizedKey, options, normalizedArgs),
+                () => NotificationToast.CreateLocalized(normalizedKey, options, normalizedArgs)),
+            new BackgroundTaskOptions("Show localized notification"));
     }
 
     public void DismissNotification(NotificationToast notification)
@@ -62,27 +72,33 @@ public partial class NotificationManager : ObservableObject, INotificationManage
         if (notification is null)
             return;
 
-        _ = _uiDispatcher.InvokeAsync(() => RemoveNotification(notification.Id));
+        _backgroundTaskRunner.Run(
+            _ => _uiDispatcher.InvokeAsync(() => RemoveNotification(notification.Id)),
+            new BackgroundTaskOptions("Dismiss notification"));
     }
 
     public void ClearNotifications()
     {
-        _ = _uiDispatcher.InvokeAsync(() =>
-        {
-            _activeNotifications.Clear();
-            RefreshCounters();
-        });
+        _backgroundTaskRunner.Run(
+            _ => _uiDispatcher.InvokeAsync(() =>
+            {
+                _activeNotifications.Clear();
+                RefreshCounters();
+            }),
+            new BackgroundTaskOptions("Clear notifications"));
     }
 
     public void MarkAllAsRead()
     {
-        _ = _uiDispatcher.InvokeAsync(() =>
-        {
-            foreach (var item in _activeNotifications.Where(x => !x.IsRead))
-                item.IsRead = true;
+        _backgroundTaskRunner.Run(
+            _ => _uiDispatcher.InvokeAsync(() =>
+            {
+                foreach (var item in _activeNotifications.Where(x => !x.IsRead))
+                    item.IsRead = true;
 
-            RefreshCounters();
-        });
+                RefreshCounters();
+            }),
+            new BackgroundTaskOptions("Mark notifications as read"));
     }
 
     private async Task ShowInternalAsync(
@@ -128,7 +144,10 @@ public partial class NotificationManager : ObservableObject, INotificationManage
         HasRecentOperationStatus = true;
         RecentOperationStatusType = type;
 
-        _ = HideRecentOperationStatusAsync(cts.Token);
+        _backgroundTaskRunner.Run(
+            _ => HideRecentOperationStatusAsync(cts.Token),
+            new BackgroundTaskOptions("Hide recent operation status"),
+            cts.Token);
     }
 
     private async Task HideRecentOperationStatusAsync(CancellationToken cancellationToken)

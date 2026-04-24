@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Birds.Application.DTOs;
 using Birds.Tests.Helpers;
+using Birds.UI.Services.Background;
 using Birds.UI.Services.Export;
 using Birds.UI.Services.Export.Interfaces;
 using Birds.UI.Services.Import;
@@ -39,6 +40,7 @@ public sealed class AutoExportCoordinatorTests
             preferences,
             new InlineUiDispatcher(),
             NullLogger<AutoExportCoordinator>.Instance,
+            CreateBackgroundTaskRunner(),
             TimeSpan.FromMilliseconds(40));
 
         sut.MarkDirty();
@@ -81,6 +83,7 @@ public sealed class AutoExportCoordinatorTests
             new TestPreferencesService(),
             new InlineUiDispatcher(),
             NullLogger<AutoExportCoordinator>.Instance,
+            CreateBackgroundTaskRunner(),
             TimeSpan.FromSeconds(5));
 
         sut.MarkDirty();
@@ -121,6 +124,7 @@ public sealed class AutoExportCoordinatorTests
             preferences,
             new InlineUiDispatcher(),
             NullLogger<AutoExportCoordinator>.Instance,
+            CreateBackgroundTaskRunner(),
             TimeSpan.FromMilliseconds(40));
 
         sut.MarkDirty();
@@ -241,5 +245,10 @@ public sealed class AutoExportCoordinatorTests
             field = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+    }
+
+    private static IBackgroundTaskRunner CreateBackgroundTaskRunner()
+    {
+        return TestBackgroundTaskRunner.Create();
     }
 }

@@ -1,16 +1,15 @@
 using Birds.App.Services;
-using Birds.Shared.Constants;
+using Birds.UI.Services.Background;
 using Birds.UI.Services.Stores.BirdStore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Serilog;
 
 namespace Birds.App;
 
 public partial class App
 {
     /// <summary>
-    ///     Starts, on a background thread, the full data bootstrap for the application:
+    ///     Starts the full data bootstrap for the application as an observed background operation:
     ///     prepares the database and then loads the shared bird collection for the UI.
     /// </summary>
     /// <param name="host">
@@ -18,31 +17,22 @@ public partial class App
     ///     initializer and to obtain <see cref="IHostApplicationLifetime" /> for cancellation.
     /// </param>
     /// <remarks>
-    ///     Fire-and-forget: returns immediately while work continues in the background.
-    ///     Errors are not thrown to the caller; they are logged via Serilog. Cancellation
-    ///     is observed through <see cref="IHostApplicationLifetime.ApplicationStopping" />.
+    ///     Returns immediately while work continues in the background. Errors are observed by
+    ///     <see cref="IBackgroundTaskRunner" /> and cancellation is tied to
+    ///     <see cref="IHostApplicationLifetime.ApplicationStopping" />.
     /// </remarks>
     internal void StartBackgroundInitialization(IHost host)
     {
         var birdStore = host.Services.GetRequiredService<IBirdStore>();
         birdStore.BeginLoading();
 
-        _ = Task.Run(async () =>
-        {
-            var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
-            var coordinator = host.Services.GetRequiredService<StartupDataCoordinator>();
-            try
-            {
-                await coordinator.InitializeAsync(lifetime.ApplicationStopping);
-            }
-            catch (OperationCanceledException)
-            {
-                Log.Warning(LogMessages.InitializerStopped);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, LogMessages.UnhandledExceptionInSource, coordinator.GetType().Name);
-            }
-        });
+        var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
+        var coordinator = host.Services.GetRequiredService<StartupDataCoordinator>();
+        var backgroundTasks = host.Services.GetRequiredService<IBackgroundTaskRunner>();
+
+        backgroundTasks.Run(
+            token => coordinator.InitializeAsync(token),
+            new BackgroundTaskOptions("Startup data initialization"),
+            lifetime.ApplicationStopping);
     }
 }

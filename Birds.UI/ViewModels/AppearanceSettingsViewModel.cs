@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Birds.Shared.Localization;
+using Birds.UI.Services.Background;
 using Birds.UI.Services.Localization;
 using Birds.UI.Services.Localization.Interfaces;
 using Birds.UI.Services.Managers.Bird;
@@ -15,6 +16,7 @@ namespace Birds.UI.ViewModels;
 public partial class AppearanceSettingsViewModel : ObservableObject, IDisposable
 {
     private readonly IBirdManager _birdManager;
+    private readonly IBackgroundTaskRunner _backgroundTaskRunner;
     private readonly ILocalizationService _localization;
     private readonly IAppPreferencesService _preferences;
     private readonly IThemeService _themeService;
@@ -46,12 +48,14 @@ public partial class AppearanceSettingsViewModel : ObservableObject, IDisposable
         IAppPreferencesService preferences,
         IThemeService themeService,
         ILocalizationService localization,
-        IBirdManager birdManager)
+        IBirdManager birdManager,
+        IBackgroundTaskRunner backgroundTaskRunner)
     {
         _preferences = preferences;
         _themeService = themeService;
         _localization = localization;
         _birdManager = birdManager;
+        _backgroundTaskRunner = backgroundTaskRunner;
 
         BuildAvailableLanguages();
         BuildAvailableThemes();
@@ -135,7 +139,10 @@ public partial class AppearanceSettingsViewModel : ObservableObject, IDisposable
             _preferences.SelectedLanguage = normalized;
 
         if (_localization.ApplyLanguage(normalized))
-            _ = ReloadBirdsForLanguageChangeAsync();
+            _backgroundTaskRunner.Run(
+                ReloadBirdsForLanguageChangeAsync,
+                new BackgroundTaskOptions("Reload birds after language change"),
+                _lifetimeCancellation.Token);
 
         OnPropertyChanged(nameof(LanguageHint));
     }
@@ -231,9 +238,9 @@ public partial class AppearanceSettingsViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(SyncIndicatorHint));
     }
 
-    private async Task ReloadBirdsForLanguageChangeAsync()
+    private async Task ReloadBirdsForLanguageChangeAsync(CancellationToken cancellationToken)
     {
-        var operationCancellation = CreateLanguageReloadCancellation();
+        var operationCancellation = CreateLanguageReloadCancellation(cancellationToken);
 
         try
         {
@@ -249,10 +256,12 @@ public partial class AppearanceSettingsViewModel : ObservableObject, IDisposable
         }
     }
 
-    private CancellationTokenSource CreateLanguageReloadCancellation()
+    private CancellationTokenSource CreateLanguageReloadCancellation(CancellationToken cancellationToken)
     {
         var previous = _languageReloadCancellation;
-        var current = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeCancellation.Token);
+        var current = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken,
+            _lifetimeCancellation.Token);
         _languageReloadCancellation = current;
 
         previous?.Cancel();

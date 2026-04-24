@@ -5,6 +5,7 @@ using System.IO;
 using Birds.Application.Commands.ImportBirds;
 using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
+using Birds.Tests.Helpers;
 using Birds.Application.Interfaces;
 using Birds.Shared.Localization;
 using Birds.Shared.Sync;
@@ -1080,7 +1081,8 @@ public class SettingsViewModelTests
             _preferences,
             _themeService.Object,
             _localization.Object,
-            _birdManager.Object);
+            _birdManager.Object,
+            TestBackgroundTaskRunner.Create());
     }
 
     private ImportExportSettingsViewModel CreateImportExportSut()

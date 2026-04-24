@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Diagnostics;
 using Birds.Application.Commands.CreateBird;
 using Birds.Application.Commands.DeleteBird;
 using Birds.Application.Commands.UpdateBird;
@@ -7,6 +6,7 @@ using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
 using Birds.UI.Enums;
 using Birds.UI.Extensions;
+using Birds.UI.Services.Background;
 using Birds.UI.Services.Export.Interfaces;
 using Birds.UI.Services.Notification.Interfaces;
 using Birds.UI.Services.Stores.BirdStore;
@@ -23,6 +23,7 @@ public partial class BirdManager(
     IUiDispatcher uiDispatcher,
     INotificationService notificationService,
     IAutoExportCoordinator autoExportCoordinator,
+    IBackgroundTaskRunner backgroundTaskRunner,
     TimeSpan? pendingDeleteUndoDuration = null)
     : ObservableObject, IBirdManager
 {
@@ -38,6 +39,7 @@ public partial class BirdManager(
     private readonly IUiDispatcher _uiDispatcher = uiDispatcher;
     private readonly INotificationService _notificationService = notificationService;
     private readonly IAutoExportCoordinator _autoExportCoordinator = autoExportCoordinator;
+    private readonly IBackgroundTaskRunner _backgroundTaskRunner = backgroundTaskRunner;
     private PendingDeleteContext? _pendingDelete;
 
     #endregion [ Fields ]
@@ -148,7 +150,12 @@ public partial class BirdManager(
 
         var context = new PendingDeleteContext(deletedBird, originalIndex);
         await _uiDispatcher.InvokeAsync(() => SetPendingDelete(context), cancellationToken);
-        _ = FinalizePendingDeleteAfterDelayAsync(context);
+        _backgroundTaskRunner.Run(
+            _ => FinalizePendingDeleteAfterDelayAsync(context),
+            new BackgroundTaskOptions(
+                "Finalize pending bird delete",
+                _ => _notificationService.ShowErrorLocalized("Error.CannotDeleteBird")),
+            context.CancellationTokenSource.Token);
 
         return Result.Success();
     }
@@ -243,10 +250,6 @@ public partial class BirdManager(
         {
             // Delete was undone or replaced by a new pending operation.
         }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Deferred bird deletion failed unexpectedly: {ex}");
-        }
     }
 
     private async Task CommitPendingDeleteIfAnyAsync(CancellationToken cancellationToken)
@@ -266,18 +269,33 @@ public partial class BirdManager(
 
         await _uiDispatcher.InvokeAsync(() => ClearPendingDelete(context), cancellationToken);
 
-        var result = await _mediator.Send(new DeleteBirdCommand(context.Bird.Id), cancellationToken);
-        context.CancellationTokenSource.Dispose();
-
-        if (result.IsSuccess)
+        try
         {
-            _autoExportCoordinator.MarkDirty();
-            _notificationService.ShowSuccessLocalized("Info.DeletedBird");
-            return;
-        }
+            var result = await _mediator.Send(new DeleteBirdCommand(context.Bird.Id), cancellationToken);
 
-        await RestoreBirdToStore(context, cancellationToken);
-        _notificationService.ShowErrorLocalized("Error.CannotDeleteBird");
+            if (result.IsSuccess)
+            {
+                _autoExportCoordinator.MarkDirty();
+                _notificationService.ShowSuccessLocalized("Info.DeletedBird");
+                return;
+            }
+
+            await RestoreBirdToStore(context, cancellationToken);
+            _notificationService.ShowErrorLocalized("Error.CannotDeleteBird");
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch
+        {
+            await RestoreBirdToStore(context, cancellationToken);
+            throw;
+        }
+        finally
+        {
+            context.CancellationTokenSource.Dispose();
+        }
     }
 
     /// <summary>
