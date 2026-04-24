@@ -8,20 +8,27 @@ namespace Birds.Tests.App.Services;
 public sealed class DiagnosticsServiceTests
 {
     [Fact]
-    public void CaptureStartupDiagnostics_Should_Resolve_Log_Path_Under_User_App_Data()
+    public void CaptureStartupDiagnostics_Should_Resolve_Development_Log_Path_Under_Repository()
     {
-        var databasePath = Path.Combine(Path.GetTempPath(), "birds.db");
-        var sut = CreateService($"Data Source={databasePath};Cache=Shared");
+        var previousLogDirectory = Environment.GetEnvironmentVariable("BIRDS_LOG_DIR");
 
-        var snapshot = sut.CaptureStartupDiagnostics();
+        try
+        {
+            Environment.SetEnvironmentVariable("BIRDS_LOG_DIR", null);
+            var databasePath = Path.Combine(Path.GetTempPath(), "birds.db");
+            var sut = CreateService($"Data Source={databasePath};Cache=Shared");
 
-        snapshot.LogDirectory.Should().Be(Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Birds",
-            "Logs"));
-        snapshot.CurrentLogFilePath.Should().StartWith(snapshot.LogDirectory);
-        snapshot.DatabaseProvider.Should().Be(DatabaseProvider.Sqlite.ToString());
-        snapshot.DatabasePath.Should().Be(databasePath);
+            var snapshot = sut.CaptureStartupDiagnostics();
+
+            snapshot.LogDirectory.Should().Be(Path.Combine(FindRepositoryRoot(), "logs"));
+            snapshot.CurrentLogFilePath.Should().StartWith(snapshot.LogDirectory);
+            snapshot.DatabaseProvider.Should().Be(DatabaseProvider.Sqlite.ToString());
+            snapshot.DatabasePath.Should().Be(databasePath);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("BIRDS_LOG_DIR", previousLogDirectory);
+        }
     }
 
     [Fact]
@@ -53,6 +60,20 @@ public sealed class DiagnosticsServiceTests
             new TestLogger<DiagnosticsService>(),
             new DatabaseRuntimeOptions(DatabaseProvider.Sqlite, localConnectionString),
             RemoteSyncRuntimeOptions.Disabled);
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "Birds.sln")))
+                return directory.FullName;
+
+            directory = directory.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Could not locate the repository root.");
     }
 
     private sealed record LogEntry(LogLevel Level, Exception? Exception, string Message);
