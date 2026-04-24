@@ -35,7 +35,11 @@ internal sealed class RemoteSyncCoordinator(
     private volatile bool _isPaused;
     private int _started;
 
+    public bool IsEnabled => _remoteSyncOptions.IsEnabled;
+
     public bool IsConfigured => _remoteSyncOptions.IsConfigured;
+
+    public string? ConfigurationErrorMessage => _remoteSyncOptions.ConfigurationErrorMessage;
 
     public void Start(CancellationToken stoppingToken)
     {
@@ -382,7 +386,10 @@ internal sealed class RemoteSyncCoordinator(
     private async Task PublishDisabledStateAsync(CancellationToken cancellationToken)
     {
         var localState = await TryGetLocalStateAsync(cancellationToken);
-        await _remoteSyncStatusReporter.SetDisabledAsync(localState.PendingOperationCount, cancellationToken);
+        await _remoteSyncStatusReporter.SetDisabledAsync(
+            localState.PendingOperationCount,
+            _remoteSyncOptions.ConfigurationErrorMessage,
+            cancellationToken);
     }
 
     private async Task PublishSyncingStateAsync(CancellationToken cancellationToken)

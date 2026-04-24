@@ -58,7 +58,10 @@ public static class RemoteSyncStatusTextFormatter
                 Combine(localization.GetString("Settings.SyncStatusHint.Error"), pendingText),
                 source.LastErrorMessage,
                 localization),
-            _ => Combine(localization.GetString("Settings.SyncStatusHint.Disabled"), pendingText)
+            _ => AppendErrorDetail(
+                Combine(localization.GetString("Settings.SyncStatusHint.Disabled"), pendingText),
+                source.LastErrorMessage,
+                localization)
         };
     }
 

@@ -27,4 +27,17 @@ public partial class App
             return Environment.GetEnvironmentVariable(key) ?? m.Value;
         });
     }
+
+    internal static IReadOnlyList<string> FindEnvPlaceholders(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return [];
+
+        return EnvPattern
+            .Matches(raw)
+            .Select(match => match.Groups[1].Value)
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+    }
 }

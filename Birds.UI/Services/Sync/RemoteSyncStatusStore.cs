@@ -30,12 +30,21 @@ public sealed class RemoteSyncStatusStore : ObservableObject, IRemoteSyncStatusS
 
     public Task SetDisabledAsync(int pendingOperationCount, CancellationToken cancellationToken = default)
     {
+        return SetDisabledAsync(pendingOperationCount, null, cancellationToken);
+    }
+
+    public Task SetDisabledAsync(int pendingOperationCount,
+        string? errorMessage,
+        CancellationToken cancellationToken = default)
+    {
         return _uiDispatcher.InvokeAsync(() =>
         {
             Status = RemoteSyncDisplayState.Disabled;
             LastAttemptAtUtc = null;
             LastSuccessfulSyncAtUtc = null;
-            LastErrorMessage = null;
+            LastErrorMessage = string.IsNullOrWhiteSpace(errorMessage)
+                ? null
+                : errorMessage;
             LastProcessedCount = 0;
             PendingOperationCount = pendingOperationCount;
             RemoteSnapshotState = RemoteSyncSnapshotState.Unknown;

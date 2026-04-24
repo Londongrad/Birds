@@ -40,6 +40,21 @@ public sealed class RemoteSyncStatusStoreTests
     }
 
     [Fact]
+    public async Task SetDisabledAsync_WhenConfigurationErrorIsProvided_Should_PublishDisabledStateWithError()
+    {
+        var sut = new RemoteSyncStatusStore(new InlineUiDispatcher());
+
+        await sut.SetDisabledAsync(2, "missing configuration");
+
+        sut.Status.Should().Be(RemoteSyncDisplayState.Disabled);
+        sut.PendingOperationCount.Should().Be(2);
+        sut.LastErrorMessage.Should().Be("missing configuration");
+        sut.LastAttemptAtUtc.Should().BeNull();
+        sut.LastSuccessfulSyncAtUtc.Should().BeNull();
+        sut.RecentActivity.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task SetPausedAsync_WhenCalled_Should_PublishPausedState()
     {
         var sut = new RemoteSyncStatusStore(new InlineUiDispatcher());

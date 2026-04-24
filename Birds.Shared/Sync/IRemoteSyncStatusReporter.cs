@@ -4,6 +4,10 @@ public interface IRemoteSyncStatusReporter
 {
     Task SetDisabledAsync(int pendingOperationCount, CancellationToken cancellationToken = default);
 
+    Task SetDisabledAsync(int pendingOperationCount,
+        string? errorMessage,
+        CancellationToken cancellationToken = default);
+
     Task SetRemoteSnapshotStateAsync(RemoteSyncSnapshotState snapshotState,
         int? remoteBirdCount = null,
         CancellationToken cancellationToken = default);

@@ -2,7 +2,11 @@ namespace Birds.Shared.Sync;
 
 public interface IRemoteSyncController
 {
+    bool IsEnabled { get; }
+
     bool IsConfigured { get; }
+
+    string? ConfigurationErrorMessage { get; }
 
     Task SyncNowAsync(CancellationToken cancellationToken);
 

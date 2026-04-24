@@ -363,6 +363,10 @@ public static partial class AppText
             ["Error.QueryCannotBeNull"] = "Query cannot be null.",
             ["Error.ConnectionStringNotFound"] = "Database connection string not found.",
             ["Error.ConnectionStringNotFoundFor"] = "Database connection string not found. Expected one of: {0}.",
+            ["Error.RemoteSyncConfigurationMissing"] =
+                "Remote synchronization is enabled, but the PostgreSQL connection string is not configured.",
+            ["Error.RemoteSyncMissingEnvironmentVariables"] =
+                "Remote synchronization is enabled, but required environment variables are missing: {0}.",
             ["Error.InvalidDatabaseProvider"] = "Unsupported database provider '{0}'. Use 'Sqlite' or 'Postgres'.",
             ["Error.InvalidDatabaseSeedingMode"] =
                 "Unsupported database seeding mode '{0}'. Use 'None', 'SeedIfEmpty' or 'RecreateAndSeed'.",

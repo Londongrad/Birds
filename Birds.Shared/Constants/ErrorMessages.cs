@@ -19,6 +19,8 @@ public static class ErrorMessages
 
     public static string ConnectionStringNotFound => AppText.Get("Error.ConnectionStringNotFound");
 
+    public static string RemoteSyncConfigurationMissing => AppText.Get("Error.RemoteSyncConfigurationMissing");
+
     public static string ImportPathCannotBeEmpty
         => AppText.Get("Error.ImportPathCannotBeEmpty");
 
@@ -50,6 +52,11 @@ public static class ErrorMessages
     public static string ConnectionStringNotFoundFor(params string[] names)
     {
         return AppText.Format("Error.ConnectionStringNotFoundFor", string.Join(", ", names));
+    }
+
+    public static string RemoteSyncMissingEnvironmentVariables(string names)
+    {
+        return AppText.Format("Error.RemoteSyncMissingEnvironmentVariables", names);
     }
 
     public static string InvalidDatabaseProvider(string provider)

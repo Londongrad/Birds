@@ -19,7 +19,7 @@ public sealed class RemoteSyncCoordinatorTests
         var remoteSyncService = new Mock<IRemoteSyncService>();
         var statusReporter = new Mock<IRemoteSyncStatusReporter>();
         var localStoreStateService = CreateLocalStateServiceMock();
-        statusReporter.Setup(x => x.SetDisabledAsync(0, It.IsAny<CancellationToken>()))
+        statusReporter.Setup(x => x.SetDisabledAsync(0, null, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         var sut = new RemoteSyncCoordinator(
@@ -36,7 +36,37 @@ public sealed class RemoteSyncCoordinatorTests
 
         delay.Should().Be(TimeSpan.FromSeconds(15));
         remoteSyncService.Verify(x => x.SyncPendingAsync(It.IsAny<CancellationToken>()), Times.Never);
-        statusReporter.Verify(x => x.SetDisabledAsync(0, It.IsAny<CancellationToken>()), Times.Once);
+        statusReporter.Verify(x => x.SetDisabledAsync(0, null, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SyncNowAsync_WhenRemoteSyncIsEnabledButMisconfigured_Should_ReportConfigurationError_And_SkipService()
+    {
+        const string configurationError = "missing remote sync configuration";
+        var remoteSyncService = new Mock<IRemoteSyncService>();
+        var statusReporter = new Mock<IRemoteSyncStatusReporter>();
+        var localStoreStateService = CreateLocalStateServiceMock(pendingOperationCount: 3);
+        statusReporter.Setup(x => x.SetDisabledAsync(3, configurationError, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var sut = new RemoteSyncCoordinator(
+            remoteSyncService.Object,
+            RemoteSyncRuntimeOptions.EnabledButNotConfigured(configurationError),
+            statusReporter.Object,
+            localStoreStateService.Object,
+            CreateDatabaseMaintenanceService().Object,
+            CreatePreferencesService().Object,
+            CreateNotificationService(),
+            TestBackgroundTaskRunner.Create());
+
+        await sut.SyncNowAsync(CancellationToken.None);
+
+        sut.IsEnabled.Should().BeTrue();
+        sut.IsConfigured.Should().BeFalse();
+        sut.ConfigurationErrorMessage.Should().Be(configurationError);
+        remoteSyncService.Verify(x => x.SyncPendingAsync(It.IsAny<CancellationToken>()), Times.Never);
+        statusReporter.Verify(x => x.SetDisabledAsync(3, configurationError, It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Fact]

@@ -2,6 +2,7 @@ using System.Configuration;
 using Birds.Infrastructure.Configuration;
 using Birds.Shared.Constants;
 using Microsoft.Extensions.Configuration;
+using Serilog;
 
 namespace Birds.App.Services;
 
@@ -44,7 +45,7 @@ internal static class DatabaseConfigurationResolver
         DatabaseProvider legacyProvider)
     {
         var explicitlyEnabled = configuration.GetValue<bool?>("Database:RemoteSync:Enabled");
-        var isEnabled = explicitlyEnabled ?? legacyProvider == DatabaseProvider.Postgres;
+        var isEnabled = explicitlyEnabled ?? false;
 
         if (!isEnabled)
             return RemoteSyncRuntimeOptions.Disabled;
@@ -54,12 +55,42 @@ internal static class DatabaseConfigurationResolver
         if (string.IsNullOrWhiteSpace(configuredConnectionName) && legacyProvider == DatabaseProvider.Postgres)
             configuredConnectionName = configuration["Database:ConnectionStringName"];
 
-        var connectionString =
-            ResolveConnectionString(configuration, configuredConnectionName, "Postgres", "DefaultConnection");
-        return new RemoteSyncRuntimeOptions(true, connectionString);
+        var resolvedConnection =
+            TryResolveConnectionString(configuration, configuredConnectionName, "Postgres", "DefaultConnection");
+        if (resolvedConnection.ConnectionString is null)
+        {
+            Log.Warning("Remote PostgreSQL sync is enabled, but no remote connection string was found.");
+            return RemoteSyncRuntimeOptions.EnabledButNotConfigured(ErrorMessages.RemoteSyncConfigurationMissing);
+        }
+
+        var unresolvedPlaceholders = App.FindEnvPlaceholders(resolvedConnection.ConnectionString);
+        if (unresolvedPlaceholders.Count > 0)
+        {
+            var placeholderList = string.Join(", ", unresolvedPlaceholders);
+            Log.Warning(
+                "Remote PostgreSQL sync is enabled, but connection string '{ConnectionStringName}' has unresolved environment variables: {EnvironmentVariables}.",
+                resolvedConnection.Name,
+                placeholderList);
+            return RemoteSyncRuntimeOptions.EnabledButNotConfigured(
+                ErrorMessages.RemoteSyncMissingEnvironmentVariables(placeholderList));
+        }
+
+        return new RemoteSyncRuntimeOptions(true, resolvedConnection.ConnectionString);
     }
 
     private static string ResolveConnectionString(IConfiguration configuration,
+        string? configuredConnectionName,
+        params string[] fallbackNames)
+    {
+        var resolvedConnection = TryResolveConnectionString(configuration, configuredConnectionName, fallbackNames);
+        if (resolvedConnection.ConnectionString is not null)
+            return resolvedConnection.ConnectionString;
+
+        throw new ConfigurationErrorsException(
+            ErrorMessages.ConnectionStringNotFoundFor(resolvedConnection.Names.ToArray()));
+    }
+
+    private static ResolvedConnectionString TryResolveConnectionString(IConfiguration configuration,
         string? configuredConnectionName,
         params string[] fallbackNames)
     {
@@ -71,10 +102,10 @@ internal static class DatabaseConfigurationResolver
         {
             var rawConnection = configuration.GetConnectionString(name);
             if (!string.IsNullOrWhiteSpace(rawConnection))
-                return App.ReplaceEnvPlaceholders(rawConnection);
+                return new ResolvedConnectionString(App.ReplaceEnvPlaceholders(rawConnection), name, candidateNames);
         }
 
-        throw new ConfigurationErrorsException(ErrorMessages.ConnectionStringNotFoundFor(candidateNames));
+        return new ResolvedConnectionString(null, null, candidateNames);
     }
 
     private static DatabaseSeedingOptions ResolveSeedingOptions(IConfiguration configuration)
@@ -98,3 +129,8 @@ internal sealed record DatabaseStartupConfiguration(
     string LocalStoreConnectionString,
     DatabaseSeedingOptions SeedingOptions,
     RemoteSyncRuntimeOptions RemoteSync);
+
+internal sealed record ResolvedConnectionString(
+    string? ConnectionString,
+    string? Name,
+    IReadOnlyList<string> Names);

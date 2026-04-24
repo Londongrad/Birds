@@ -69,7 +69,9 @@ public class SettingsViewModelTests
         _exportPathProvider.Setup(x => x.GetLatestPath(It.IsAny<string>(), It.IsAny<string>()))
             .Returns("C:\\temp\\birds.json");
         _databaseMaintenanceService.SetupGet(x => x.CanResetLocalDatabase).Returns(true);
+        _remoteSyncController.SetupGet(x => x.IsEnabled).Returns(true);
         _remoteSyncController.SetupGet(x => x.IsConfigured).Returns(true);
+        _remoteSyncController.SetupGet(x => x.ConfigurationErrorMessage).Returns((string?)null);
         _remoteSyncController.Setup(x => x.SyncNowAsync(It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         _remoteSyncController.Setup(x => x.UploadLocalSnapshotToRemoteAsync(It.IsAny<CancellationToken>()))
@@ -473,6 +475,37 @@ public class SettingsViewModelTests
             x => x.ShowErrorLocalized(It.IsAny<string>(), It.IsAny<object[]>()),
             Times.Never);
         _notificationService.Verify(x => x.ShowError(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SyncNowCommand_WhenRemoteSyncEnabledButMisconfigured_Should_ReportConfigurationIssue()
+    {
+        const string configurationError = "Remote synchronization is enabled, but configuration is incomplete.";
+        _remoteSyncController.SetupGet(x => x.IsConfigured).Returns(false);
+        _remoteSyncController.SetupGet(x => x.ConfigurationErrorMessage).Returns(configurationError);
+        var sut = CreateSyncSut();
+
+        sut.IsRemoteSyncEnabled.Should().BeTrue();
+        sut.IsRemoteSyncConfigured.Should().BeFalse();
+        sut.SyncNowCommand.CanExecute(null).Should().BeTrue();
+
+        await sut.SyncNowCommand.ExecuteAsync(null);
+
+        _remoteSyncController.Verify(x => x.SyncNowAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _notificationService.Verify(x => x.ShowWarning(configurationError), Times.Once);
+        sut.IsSyncControlBusy.Should().BeFalse();
+    }
+
+    [Fact]
+    public void SyncNowCommand_WhenRemoteSyncDisabled_Should_BeDisabled()
+    {
+        _remoteSyncController.SetupGet(x => x.IsEnabled).Returns(false);
+        _remoteSyncController.SetupGet(x => x.IsConfigured).Returns(false);
+        var sut = CreateSyncSut();
+
+        sut.IsRemoteSyncEnabled.Should().BeFalse();
+        sut.IsRemoteSyncConfigured.Should().BeFalse();
+        sut.SyncNowCommand.CanExecute(null).Should().BeFalse();
     }
 
     [Fact]

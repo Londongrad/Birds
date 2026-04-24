@@ -116,7 +116,11 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
 
     public string RemoteSyncStatusHint => RemoteSyncStatusTextFormatter.GetHint(_localization, _remoteSyncStatus);
 
+    public bool IsRemoteSyncEnabled => _remoteSyncController.IsEnabled;
+
     public bool IsRemoteSyncConfigured => _remoteSyncController.IsConfigured;
+
+    public string? RemoteSyncConfigurationErrorMessage => _remoteSyncController.ConfigurationErrorMessage;
 
     public bool IsRemoteSyncPaused => RemoteSyncStatus == RemoteSyncDisplayState.Paused;
 
@@ -209,14 +213,15 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
     [RelayCommand(CanExecute = nameof(CanSyncNow))]
     private async Task SyncNowAsync(CancellationToken cancellationToken)
     {
-        if (!IsRemoteSyncConfigured)
-            return;
-
         var operationCancellation = CreateSyncControlCancellation(cancellationToken);
         IsSyncControlBusy = true;
         try
         {
-            await _remoteSyncController.SyncNowAsync(operationCancellation.Token);
+            var operationToken = operationCancellation.Token;
+            await _remoteSyncController.SyncNowAsync(operationToken);
+
+            if (!IsRemoteSyncConfigured && !_disposed)
+                ShowRemoteSyncConfigurationIssue();
         }
         catch (OperationCanceledException) when (operationCancellation.IsCancellationRequested)
         {
@@ -458,7 +463,7 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
 
     private bool CanSyncNow()
     {
-        return IsRemoteSyncConfigured
+        return IsRemoteSyncEnabled
                && !IsExternalBusy
                && !IsSyncControlBusy
                && !IsRemoteSyncSyncing;
@@ -532,7 +537,9 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(RemoteSyncStatus));
             OnPropertyChanged(nameof(RemoteSyncStatusLabel));
             OnPropertyChanged(nameof(RemoteSyncStatusHint));
+            OnPropertyChanged(nameof(IsRemoteSyncEnabled));
             OnPropertyChanged(nameof(IsRemoteSyncConfigured));
+            OnPropertyChanged(nameof(RemoteSyncConfigurationErrorMessage));
             OnPropertyChanged(nameof(IsRemoteSyncPaused));
             OnPropertyChanged(nameof(IsRemoteSyncSyncing));
             OnPropertyChanged(nameof(IsRemoteUploadConfirmationVisible));
@@ -594,6 +601,14 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
             : DateTime.SpecifyKind(value, DateTimeKind.Utc);
 
         return utc.ToLocalTime();
+    }
+
+    private void ShowRemoteSyncConfigurationIssue()
+    {
+        if (string.IsNullOrWhiteSpace(RemoteSyncConfigurationErrorMessage))
+            return;
+
+        _notificationService.ShowWarning(RemoteSyncConfigurationErrorMessage);
     }
 
     private static void RefreshLocalizedOptions<TOption>(

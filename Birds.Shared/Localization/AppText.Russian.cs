@@ -361,6 +361,10 @@ public static partial class AppText
             ["Error.ConnectionStringNotFound"] = "Строка подключения к базе данных не найдена.",
             ["Error.ConnectionStringNotFoundFor"] =
                 "Строка подключения к базе данных не найдена. Ожидалась одна из: {0}.",
+            ["Error.RemoteSyncConfigurationMissing"] =
+                "Удалённая синхронизация включена, но строка подключения PostgreSQL не настроена.",
+            ["Error.RemoteSyncMissingEnvironmentVariables"] =
+                "Удалённая синхронизация включена, но не заданы обязательные переменные окружения: {0}.",
             ["Error.InvalidDatabaseProvider"] =
                 "Неподдерживаемый провайдер базы данных '{0}'. Используйте 'Sqlite' или 'Postgres'.",
             ["Error.InvalidDatabaseSeedingMode"] =
