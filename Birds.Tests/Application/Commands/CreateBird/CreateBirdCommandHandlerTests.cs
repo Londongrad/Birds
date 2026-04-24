@@ -1,4 +1,5 @@
 using Birds.Application.Commands.CreateBird;
+using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
 using Birds.Application.DTOs.Helpers;
 using Birds.Application.Interfaces;
@@ -71,5 +72,6 @@ public class CreateBirdCommandHandlerTests
 
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Be(ErrorMessages.RequestCannotBeNull);
+        result.ErrorCode.Should().Be(AppErrorCodes.ApplicationInvalidRequest);
     }
 }

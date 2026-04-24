@@ -1,4 +1,5 @@
 using Birds.Application.Commands.DeleteBird;
+using Birds.Application.Common.Models;
 using Birds.Application.Exceptions;
 using Birds.Application.Interfaces;
 using Birds.Domain.Entities;
@@ -46,6 +47,7 @@ public class DeleteBirdCommandHandlerTests
 
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Be(ErrorMessages.RequestCannotBeNull);
+        result.ErrorCode.Should().Be(AppErrorCodes.ApplicationInvalidRequest);
         _repo.VerifyNoOtherCalls();
     }
 

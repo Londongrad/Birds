@@ -120,6 +120,7 @@ public class BirdManagerTests
         // Assert
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Be("Bird store cannot be loaded.");
+        result.ErrorCode.Should().Be(AppErrorCodes.BirdStoreUnavailable);
         store.LoadState.Should().Be(LoadState.Failed);
         mediator.Verify(m => m.Send(It.IsAny<CreateBirdCommand>(), It.IsAny<CancellationToken>()), Times.Never);
     }

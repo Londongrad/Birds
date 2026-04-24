@@ -46,6 +46,7 @@ public class ExceptionHandlingBehaviorGenericTests
         result.Should().NotBeNull();
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Be(ExceptionMessages.ValidationFailure("Invalid value!"));
+        result.ErrorCode.Should().Be(AppErrorCodes.ApplicationValidationFailed);
     }
 
     [Fact]
@@ -60,6 +61,7 @@ public class ExceptionHandlingBehaviorGenericTests
         result.Should().NotBeNull();
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Contain("Broken rule");
+        result.ErrorCode.Should().Be(AppErrorCodes.ApplicationValidationFailed);
     }
 
     [Fact]
@@ -75,6 +77,7 @@ public class ExceptionHandlingBehaviorGenericTests
         result.Should().NotBeNull();
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Be(ExceptionMessages.NotFoundFailure(notFound.Message));
+        result.ErrorCode.Should().Be(AppErrorCodes.BirdNotFound);
     }
 
     [Fact]
@@ -90,6 +93,7 @@ public class ExceptionHandlingBehaviorGenericTests
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Be(ErrorMessages.UnexpectedError);
         result.Error.Should().NotContain("Something went wrong");
+        result.ErrorCode.Should().Be(AppErrorCodes.ApplicationUnexpected);
     }
 
     public sealed class DummyRequest

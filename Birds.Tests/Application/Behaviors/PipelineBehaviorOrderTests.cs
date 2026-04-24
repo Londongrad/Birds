@@ -49,9 +49,12 @@ public class PipelineBehaviorOrderTests
         var result = await mediator.Send(command);
 
         result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be(AppErrorCodes.ApplicationValidationFailed);
         result.Error.Should().Contain("Arrival date cannot be in the future");
         result.Error.Should().Contain(
             $"Description must not exceed {BirdValidationRules.DescriptionMaxLength} characters");
+        result.AppError!.ValidationErrors.Should().ContainKey(nameof(CreateBirdCommand.Arrival));
+        result.AppError.ValidationErrors.Should().ContainKey(nameof(CreateBirdCommand.Description));
         repository.Verify(
             x => x.AddAsync(It.IsAny<Bird>(), It.IsAny<CancellationToken>()),
             Times.Never);
@@ -87,6 +90,7 @@ public class PipelineBehaviorOrderTests
         var result = await mediator.Send(command);
 
         result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be(AppErrorCodes.ApplicationUnexpected);
         result.Error.Should().Be(ErrorMessages.UnexpectedError);
         result.Error.Should().NotContain("secret connection detail");
         repository.Verify(

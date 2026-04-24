@@ -139,7 +139,8 @@ public class BirdViewModelTests
     {
         var original = CreateBirdDto((BirdSpecies)1);
         _birdManager.Setup(x => x.UpdateAsync(It.IsAny<BirdUpdateDTO>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<BirdDTO>.Failure(ErrorMessages.BirdConcurrencyConflict));
+            .ReturnsAsync(Result<BirdDTO>.Failure(
+                AppErrors.ConcurrencyConflict(ErrorMessages.BirdConcurrencyConflict)));
         _birdManager.Setup(x => x.ReloadAsync(It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 

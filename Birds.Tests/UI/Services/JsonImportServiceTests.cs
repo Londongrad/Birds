@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Birds.Application.Common.Models;
 using Birds.Domain.Enums;
 using Birds.UI.Services.Import;
 using FluentAssertions;
@@ -197,6 +198,7 @@ public class JsonImportServiceTests
             var result = await sut.ImportAsync(path, CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
+            result.ErrorCode.Should().Be(AppErrorCodes.ImportInvalidFile);
             result.Error.Should().NotBeNullOrWhiteSpace();
         }
         finally

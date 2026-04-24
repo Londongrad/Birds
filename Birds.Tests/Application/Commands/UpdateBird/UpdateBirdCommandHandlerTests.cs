@@ -1,4 +1,5 @@
 using Birds.Application.Commands.UpdateBird;
+using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
 using Birds.Application.DTOs.Helpers;
 using Birds.Application.Exceptions;
@@ -86,6 +87,7 @@ public class UpdateBirdCommandHandlerTests
 
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Be(ErrorMessages.RequestCannotBeNull);
+        result.ErrorCode.Should().Be(AppErrorCodes.ApplicationInvalidRequest);
         _repo.VerifyNoOtherCalls();
     }
 
@@ -158,5 +160,6 @@ public class UpdateBirdCommandHandlerTests
 
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Be(ErrorMessages.BirdConcurrencyConflict);
+        result.ErrorCode.Should().Be(AppErrorCodes.BirdConcurrencyConflict);
     }
 }

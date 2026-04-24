@@ -1,3 +1,4 @@
+using Birds.Application.Common.Models;
 using Birds.Application.DTOs;
 using Birds.Application.DTOs.Helpers;
 using Birds.Application.Interfaces;
@@ -60,6 +61,7 @@ public class GetAllBirdsQueryHandlerTests
 
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Be(ErrorMessages.QueryCannotBeNull);
+        result.ErrorCode.Should().Be(AppErrorCodes.ApplicationInvalidRequest);
 
         _repo.VerifyNoOtherCalls();
     }
@@ -94,6 +96,7 @@ public class GetAllBirdsQueryHandlerTests
 
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Be(ErrorMessages.UnexpectedError);
+        result.ErrorCode.Should().Be(AppErrorCodes.ApplicationUnexpected);
 
         _repo.Verify(r => r.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
         _repo.VerifyNoOtherCalls();

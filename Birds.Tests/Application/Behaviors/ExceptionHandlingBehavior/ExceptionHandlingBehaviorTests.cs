@@ -45,6 +45,7 @@ public class ExceptionHandlingBehaviorTests
         result.Should().NotBeNull();
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Be(ExceptionMessages.ValidationFailure("Invalid!"));
+        result.ErrorCode.Should().Be(AppErrorCodes.ApplicationValidationFailed);
     }
 
     [Fact]
@@ -59,6 +60,7 @@ public class ExceptionHandlingBehaviorTests
         result.Should().NotBeNull();
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Contain("Rule broken");
+        result.ErrorCode.Should().Be(AppErrorCodes.ApplicationValidationFailed);
     }
 
     [Fact]
@@ -75,6 +77,24 @@ public class ExceptionHandlingBehaviorTests
         result.Should().NotBeNull();
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Be(ExceptionMessages.NotFoundFailure(notFound.Message));
+        result.ErrorCode.Should().Be(AppErrorCodes.BirdNotFound);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldReturnFailureWithConcurrencyCode_WhenConcurrencyConflictThrown()
+    {
+        var id = Guid.NewGuid();
+        var conflict = new ConcurrencyConflictException("Bird", id);
+        var behavior = new ExceptionHandlingBehavior<DummyRequest, Result>(_loggerMock.Object);
+        var request = new DummyRequest();
+        RequestHandlerDelegate<Result> next = cancellationToken => throw conflict;
+
+        var result = await behavior.Handle(request, next, CancellationToken.None);
+
+        result.Should().NotBeNull();
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Be(ErrorMessages.BirdConcurrencyConflict);
+        result.ErrorCode.Should().Be(AppErrorCodes.BirdConcurrencyConflict);
     }
 
     [Fact]
@@ -91,6 +111,7 @@ public class ExceptionHandlingBehaviorTests
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Be(ErrorMessages.UnexpectedError);
         result.Error.Should().NotContain("Something failed");
+        result.ErrorCode.Should().Be(AppErrorCodes.ApplicationUnexpected);
     }
 
     [Fact]

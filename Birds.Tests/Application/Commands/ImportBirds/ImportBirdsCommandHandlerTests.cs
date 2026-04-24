@@ -114,6 +114,7 @@ public class ImportBirdsCommandHandlerTests
             CancellationToken.None);
 
         result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be(AppErrorCodes.ImportInvalidSpecies);
         repository.Verify(x => x.UpsertAsync(It.IsAny<IReadOnlyCollection<Bird>>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
