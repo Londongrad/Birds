@@ -256,6 +256,47 @@ public class BirdRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Upsert_Should_Not_Partially_Update_Birds_When_Batch_Fails()
+    {
+        var repo = new BirdRepository(_db.CreateFactory());
+        var species = Enum.GetValues<BirdSpecies>()[0];
+        var existing = Bird.Create(species, "original", DateOnly.FromDateTime(DateTime.Now.AddDays(-3)));
+        await repo.AddAsync(existing);
+
+        var updatedExisting = Bird.Restore(
+            existing.Id,
+            existing.Name,
+            "updated",
+            existing.Arrival,
+            existing.Departure,
+            existing.IsAlive,
+            existing.CreatedAt,
+            existing.UpdatedAt);
+        var duplicateId = Guid.NewGuid();
+        var duplicateA = Bird.Restore(
+            duplicateId,
+            species,
+            "duplicate-a",
+            DateOnly.FromDateTime(DateTime.Now.AddDays(-2)),
+            null,
+            true);
+        var duplicateB = Bird.Restore(
+            duplicateId,
+            species,
+            "duplicate-b",
+            DateOnly.FromDateTime(DateTime.Now.AddDays(-1)),
+            null,
+            true);
+
+        var act = async () => await repo.UpsertAsync([updatedExisting, duplicateA, duplicateB]);
+
+        await act.Should().ThrowAsync<Exception>();
+        var list = await repo.GetAllAsync();
+        list.Should().ContainSingle(x => x.Id == existing.Id && x.Description == "original");
+        list.Should().NotContain(x => x.Id == duplicateId);
+    }
+
+    [Fact]
     public async Task ReplaceWithSnapshot_Should_Remove_Missing_Birds_And_Upsert_Current_Ones()
     {
         var repo = new BirdRepository(_db.CreateFactory());
