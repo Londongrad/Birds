@@ -7,6 +7,7 @@ using Birds.UI.Services.Localization;
 using Birds.UI.Services.Preferences.Interfaces;
 using Birds.UI.Services.Theming;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.Logging;
 
 namespace Birds.UI.Services.Preferences;
 
@@ -19,6 +20,8 @@ public sealed partial class JsonAppPreferencesService : ObservableObject, IAppPr
     };
 
     private readonly IAppPreferencesPathProvider _pathProvider;
+    private readonly ILogger<JsonAppPreferencesService> _logger;
+    private readonly SemaphoreSlim _saveLock = new(1, 1);
 
     [ObservableProperty] private bool autoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
 
@@ -38,11 +41,14 @@ public sealed partial class JsonAppPreferencesService : ObservableObject, IAppPr
 
     [ObservableProperty] private bool showSyncStatusIndicator = AppPreferencesState.DefaultShowSyncStatusIndicator;
 
-    public JsonAppPreferencesService(IAppPreferencesPathProvider pathProvider)
+    public JsonAppPreferencesService(
+        IAppPreferencesPathProvider pathProvider,
+        ILogger<JsonAppPreferencesService> logger)
     {
         _pathProvider = pathProvider;
+        _logger = logger;
 
-        var state = LoadState();
+        var state = LoadState(out var shouldPersistDefaults);
         selectedLanguage = AppLanguages.Normalize(state.SelectedLanguage);
         selectedTheme = ThemeKeys.Normalize(state.SelectedTheme);
         selectedDateFormat = DateDisplayFormats.Normalize(state.SelectedDateFormat);
@@ -52,6 +58,9 @@ public sealed partial class JsonAppPreferencesService : ObservableObject, IAppPr
         autoExportEnabled = state.AutoExportEnabled;
         showNotificationBadge = state.ShowNotificationBadge;
         showSyncStatusIndicator = state.ShowSyncStatusIndicator;
+
+        if (shouldPersistDefaults)
+            SaveState();
     }
 
     public void ResetToDefaults()
@@ -117,28 +126,54 @@ public sealed partial class JsonAppPreferencesService : ObservableObject, IAppPr
         SaveState();
     }
 
-    private AppPreferencesState LoadState()
+    private AppPreferencesState LoadState(out bool shouldPersistDefaults)
     {
+        shouldPersistDefaults = false;
+        var path = _pathProvider.GetPreferencesPath();
+
         try
         {
-            var path = _pathProvider.GetPreferencesPath();
             if (!File.Exists(path))
                 return new AppPreferencesState();
 
             var json = File.ReadAllText(path);
-            return JsonSerializer.Deserialize<AppPreferencesState>(json, JsonOptions) ?? new AppPreferencesState();
+            var state = JsonSerializer.Deserialize<AppPreferencesState>(json, JsonOptions);
+            if (state is not null)
+                return state;
+
+            BackupBrokenPreferences(path, "deserialized preferences were null");
+            shouldPersistDefaults = true;
+            return new AppPreferencesState();
         }
-        catch
+        catch (JsonException ex)
         {
+            _logger.LogError(ex, "Failed to load preferences from {Path}. The file appears to be malformed.", path);
+            BackupBrokenPreferences(path, "malformed JSON");
+            shouldPersistDefaults = true;
+            return new AppPreferencesState();
+        }
+        catch (NotSupportedException ex)
+        {
+            _logger.LogError(ex, "Failed to deserialize preferences from {Path}.", path);
+            BackupBrokenPreferences(path, "unsupported JSON shape");
+            shouldPersistDefaults = true;
+            return new AppPreferencesState();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to load preferences from {Path}. Defaults will be used.", path);
             return new AppPreferencesState();
         }
     }
 
     private void SaveState()
     {
+        var path = _pathProvider.GetPreferencesPath();
+        var tempPath = CreateTempPath(path);
+
+        _saveLock.Wait();
         try
         {
-            var path = _pathProvider.GetPreferencesPath();
             var directory = Path.GetDirectoryName(path);
 
             if (!string.IsNullOrWhiteSpace(directory))
@@ -159,11 +194,97 @@ public sealed partial class JsonAppPreferencesService : ObservableObject, IAppPr
                 },
                 JsonOptions);
 
-            File.WriteAllText(path, json);
+            WriteAllTextDurably(tempPath, json);
+            ReplacePreferencesFile(tempPath, path);
         }
-        catch
+        catch (Exception ex)
         {
-            // User preferences should never crash the UI.
+            _logger.LogError(ex, "Failed to save preferences to {Path}.", path);
+        }
+        finally
+        {
+            TryDeleteTempFile(tempPath);
+            _saveLock.Release();
+        }
+    }
+
+    private void BackupBrokenPreferences(string path, string reason)
+    {
+        try
+        {
+            if (!File.Exists(path))
+                return;
+
+            var backupPath = CreateBrokenBackupPath(path);
+            File.Copy(path, backupPath, overwrite: false);
+            _logger.LogWarning(
+                "Backed up broken preferences file {Path} to {BackupPath}. Reason: {Reason}.",
+                path,
+                backupPath,
+                reason);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to back up broken preferences file {Path}.", path);
+        }
+    }
+
+    private static string CreateBrokenBackupPath(string path)
+    {
+        var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+        var candidate = $"{path}.broken-{timestamp}";
+        var counter = 0;
+
+        while (File.Exists(candidate))
+            candidate = $"{path}.broken-{timestamp}-{++counter}";
+
+        return candidate;
+    }
+
+    private static string CreateTempPath(string path)
+    {
+        var directory = Path.GetDirectoryName(path);
+        var fileName = $"{Path.GetFileName(path)}.{Guid.NewGuid():N}.tmp";
+
+        return string.IsNullOrWhiteSpace(directory)
+            ? fileName
+            : Path.Combine(directory, fileName);
+    }
+
+    private static void WriteAllTextDurably(string path, string contents)
+    {
+        using var stream = new FileStream(
+            path,
+            FileMode.CreateNew,
+            FileAccess.Write,
+            FileShare.None,
+            bufferSize: 4096,
+            FileOptions.WriteThrough);
+        using var writer = new StreamWriter(stream);
+        writer.Write(contents);
+    }
+
+    private static void ReplacePreferencesFile(string tempPath, string path)
+    {
+        if (File.Exists(path))
+        {
+            File.Replace(tempPath, path, null);
+            return;
+        }
+
+        File.Move(tempPath, path);
+    }
+
+    private void TryDeleteTempFile(string tempPath)
+    {
+        try
+        {
+            if (File.Exists(tempPath))
+                File.Delete(tempPath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to delete temporary preferences file {TempPath}.", tempPath);
         }
     }
 }
