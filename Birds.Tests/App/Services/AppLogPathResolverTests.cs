@@ -6,7 +6,7 @@ namespace Birds.Tests.App.Services;
 public sealed class AppLogPathResolverTests
 {
     [Fact]
-    public void ResolveLogsDirectory_WhenRepositoryRootExists_UsesRepositoryLogsFolder()
+    public void ResolveLogsDirectory_UsesUserLocalAppDataLogsFolder()
     {
         var root = CreateTempDirectory();
         var nested = Path.Combine(root, "Birds.App", "bin", "Debug", "net9.0-windows");
@@ -17,7 +17,10 @@ public sealed class AppLogPathResolverTests
         {
             var logsDirectory = AppLogPathResolver.ResolveLogsDirectory(nested);
 
-            logsDirectory.Should().Be(Path.Combine(root, "logs"));
+            logsDirectory.Should().Be(Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Birds",
+                "Logs"));
         }
         finally
         {
@@ -26,25 +29,14 @@ public sealed class AppLogPathResolverTests
     }
 
     [Fact]
-    public void ResolveLogsDirectory_WhenRepositoryRootIsMissing_UsesLocalAppData()
+    public void ResolveLogsDirectory_WithoutStartPath_UsesUserLocalAppDataLogsFolder()
     {
-        var root = CreateTempDirectory();
-        var nested = Path.Combine(root, "Birds.App", "bin");
-        Directory.CreateDirectory(nested);
+        var logsDirectory = AppLogPathResolver.ResolveLogsDirectory();
 
-        try
-        {
-            var logsDirectory = AppLogPathResolver.ResolveLogsDirectory(nested);
-
-            logsDirectory.Should().Be(Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Birds",
-                "logs"));
-        }
-        finally
-        {
-            Directory.Delete(root, true);
-        }
+        logsDirectory.Should().Be(Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Birds",
+            "Logs"));
     }
 
     private static string CreateTempDirectory()
