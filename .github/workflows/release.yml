@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version label for artifact names, for example v1.0.0"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  package:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: |
+            Directory.Packages.props
+            **/*.csproj
+
+      - name: Package release artifacts
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}"
+          if ("${{ github.event_name }}" -eq "workflow_dispatch" -and -not [string]::IsNullOrWhiteSpace("${{ inputs.version }}")) {
+            $version = "${{ inputs.version }}"
+          }
+          if ([string]::IsNullOrWhiteSpace($version) -or $version -eq "master") {
+            $version = "manual-${{ github.run_number }}"
+          }
+
+          ./deploy/package-release.ps1 -Version $version
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: birds-release-artifacts
+          path: artifacts/release/*.zip
+          if-no-files-found: error
+
+      - name: Publish GitHub release assets
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $files = Get-ChildItem -Path artifacts/release -Filter *.zip | ForEach-Object { $_.FullName }
+          if (-not $files) {
+            throw "No release artifacts found."
+          }
+
+          gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -eq 0) {
+            & gh release upload $tag @files --repo $env:GITHUB_REPOSITORY --clobber
+          } else {
+            & gh release create $tag @files --repo $env:GITHUB_REPOSITORY --title $tag --notes "Automated Birds release build."
+          }

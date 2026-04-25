@@ -100,6 +100,23 @@ and opt-in, so the application can run safely as a local-only archive unless rem
 - When remote sync is configured, the remote schema initializer prepares required tables, indexes, and schema version
   metadata idempotently.
 
+### 📦 Release packaging
+
+Local release artifacts can be created from the repository root:
+
+```powershell
+./deploy/package-release.ps1 -Version v1.0.0
+```
+
+The script creates two Windows x64 self-contained archives under `artifacts/release`:
+
+- `Birds-v1.0.0-win-x64-folder.zip` - a portable folder with `Birds.App.exe`, dependencies, and configuration files.
+- `Birds-v1.0.0-win-x64-single.zip` - a portable single-file `Birds.App.exe` for quick distribution.
+
+Publishing a Git tag such as `v1.0.0` runs the `Release` GitHub Actions workflow, builds the same archives, stores them
+as workflow artifacts, and uploads them to the matching GitHub Release. The single-file build can start without
+`appsettings.json`; it falls back to the local SQLite store and can use remote sync through environment variables.
+
 ### 🛠 Technology
 
 - .NET 9
@@ -224,6 +241,24 @@ Birds — это WPF-приложение для учёта птиц: посту
   настроен, вместо попытки подключиться с битой PostgreSQL connection string.
 - Если remote sync настроен, remote schema initializer идемпотентно готовит нужные таблицы, индексы и метаданные версии
   схемы.
+
+### 📦 Релизная упаковка
+
+Локальные релизные артефакты можно собрать из корня репозитория:
+
+```powershell
+./deploy/package-release.ps1 -Version v1.0.0
+```
+
+Скрипт создаёт два self-contained архива для Windows x64 в `artifacts/release`:
+
+- `Birds-v1.0.0-win-x64-folder.zip` - portable-папка с `Birds.App.exe`, зависимостями и конфигурационными файлами.
+- `Birds-v1.0.0-win-x64-single.zip` - portable single-file `Birds.App.exe` для быстрой передачи.
+
+Публикация Git tag вроде `v1.0.0` запускает GitHub Actions workflow `Release`, собирает такие же архивы, сохраняет их
+как workflow artifacts и загружает в соответствующий GitHub Release. Single-file сборка может стартовать без
+`appsettings.json`: она использует локальную SQLite-базу по умолчанию и может подключить remote sync через переменные
+окружения.
 
 ### 🛠 Технологии
 
