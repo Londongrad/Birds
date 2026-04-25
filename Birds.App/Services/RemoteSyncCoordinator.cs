@@ -144,13 +144,13 @@ internal sealed class RemoteSyncCoordinator(
 
             var result = await _remoteSyncService.UploadLocalSnapshotAsync(cancellationToken);
             var localState = await _localStoreStateService.GetSnapshotAsync(cancellationToken);
+            await PublishRemoteSnapshotStateAsync(result.Status, cancellationToken);
             await _remoteSyncStatusReporter.SetResultAsync(
                 ToDisplayState(result.Status),
                 result.ProcessedCount,
                 localState.PendingOperationCount,
                 result.ErrorMessage,
                 cancellationToken);
-            await PublishRemoteSnapshotStateAsync(result.Status, cancellationToken);
 
             if (wasPaused && result.Status == RemoteSyncRunStatus.Synced)
                 await _remoteSyncStatusReporter.SetPausedAsync(localState.PendingOperationCount, cancellationToken);
@@ -243,25 +243,25 @@ internal sealed class RemoteSyncCoordinator(
 
                 case RemoteSyncRunStatus.NothingToSync:
                     var syncedState = await _localStoreStateService.GetSnapshotAsync(cancellationToken);
+                    await PublishRemoteSnapshotStateAsync(RemoteSyncRunStatus.NothingToSync, cancellationToken);
                     await _remoteSyncStatusReporter.SetResultAsync(
                         RemoteSyncDisplayState.Synced,
                         totalProcessed,
                         syncedState.PendingOperationCount,
                         null,
                         cancellationToken);
-                    await PublishRemoteSnapshotStateAsync(RemoteSyncRunStatus.NothingToSync, cancellationToken);
                     ShowConflictResolutionWarning(totalRemoteWins);
                     return true;
 
                 default:
                     var localState = await _localStoreStateService.GetSnapshotAsync(cancellationToken);
+                    await PublishRemoteSnapshotStateAsync(result.Status, cancellationToken);
                     await _remoteSyncStatusReporter.SetResultAsync(
                         ToDisplayState(result.Status),
                         totalProcessed,
                         localState.PendingOperationCount,
                         result.ErrorMessage,
                         cancellationToken);
-                    await PublishRemoteSnapshotStateAsync(result.Status, cancellationToken);
                     ShowConflictResolutionWarning(totalRemoteWins);
                     return false;
             }
@@ -351,13 +351,13 @@ internal sealed class RemoteSyncCoordinator(
 
             var result = await _remoteSyncService.SyncPendingAsync(cancellationToken);
             var localState = await _localStoreStateService.GetSnapshotAsync(cancellationToken);
+            await PublishRemoteSnapshotStateAsync(result.Status, cancellationToken);
             await _remoteSyncStatusReporter.SetResultAsync(
                 ToDisplayState(result.Status),
                 result.ProcessedCount,
                 localState.PendingOperationCount,
                 result.ErrorMessage,
                 cancellationToken);
-            await PublishRemoteSnapshotStateAsync(result.Status, cancellationToken);
             ShowConflictResolutionWarning(result.RemoteWinsCount);
 
             return result;

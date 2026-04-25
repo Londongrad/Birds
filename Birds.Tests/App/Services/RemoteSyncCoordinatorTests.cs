@@ -109,11 +109,17 @@ public sealed class RemoteSyncCoordinatorTests
         var localStoreStateService = CreateLocalStateServiceMock();
         remoteSyncService.Setup(x => x.SyncPendingAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(RemoteSyncRunResult.NothingToSync);
+        remoteSyncService.Setup(x => x.CheckBackendAvailabilityAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new RemoteSyncBackendCheckResult(RemoteSyncRunStatus.Synced, null, 42));
 
         var statusReporter = new Mock<IRemoteSyncStatusReporter>();
         var sequence = new MockSequence();
         statusReporter.InSequence(sequence)
             .Setup(x => x.SetSyncingAsync(0, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        statusReporter.InSequence(sequence)
+            .Setup(x => x.SetRemoteSnapshotStateAsync(RemoteSyncSnapshotState.HasData, 42,
+                It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         statusReporter.InSequence(sequence)
             .Setup(x => x.SetResultAsync(RemoteSyncDisplayState.Synced, 0, 0, null, It.IsAny<CancellationToken>()))
@@ -147,11 +153,17 @@ public sealed class RemoteSyncCoordinatorTests
             .ReturnsAsync(new RemoteSyncRunResult(RemoteSyncRunStatus.Synced, 128))
             .ReturnsAsync(new RemoteSyncRunResult(RemoteSyncRunStatus.Synced, 64))
             .ReturnsAsync(RemoteSyncRunResult.NothingToSync);
+        remoteSyncService.Setup(x => x.CheckBackendAvailabilityAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new RemoteSyncBackendCheckResult(RemoteSyncRunStatus.Synced, null, 192));
 
         var statusReporter = new Mock<IRemoteSyncStatusReporter>();
         var sequence = new MockSequence();
         statusReporter.InSequence(sequence)
             .Setup(x => x.SetSyncingAsync(0, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        statusReporter.InSequence(sequence)
+            .Setup(x => x.SetRemoteSnapshotStateAsync(RemoteSyncSnapshotState.HasData, 192,
+                It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         statusReporter.InSequence(sequence)
             .Setup(x => x.SetResultAsync(RemoteSyncDisplayState.Synced, 192, 0, null, It.IsAny<CancellationToken>()))
@@ -429,6 +441,8 @@ public sealed class RemoteSyncCoordinatorTests
         var remoteSyncService = new Mock<IRemoteSyncService>();
         remoteSyncService.Setup(x => x.UploadLocalSnapshotAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new RemoteSyncRunResult(RemoteSyncRunStatus.Synced, 372));
+        remoteSyncService.Setup(x => x.CheckBackendAvailabilityAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new RemoteSyncBackendCheckResult(RemoteSyncRunStatus.Synced, null, 372));
 
         var localStoreStateService = new Mock<ILocalStoreStateService>();
         localStoreStateService.SetupSequence(x => x.GetSnapshotAsync(It.IsAny<CancellationToken>()))
@@ -439,6 +453,10 @@ public sealed class RemoteSyncCoordinatorTests
         var sequence = new MockSequence();
         statusReporter.InSequence(sequence)
             .Setup(x => x.SetSyncingAsync(4, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        statusReporter.InSequence(sequence)
+            .Setup(x => x.SetRemoteSnapshotStateAsync(RemoteSyncSnapshotState.HasData, 372,
+                It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         statusReporter.InSequence(sequence)
             .Setup(x => x.SetResultAsync(RemoteSyncDisplayState.Synced, 372, 0, null, It.IsAny<CancellationToken>()))
