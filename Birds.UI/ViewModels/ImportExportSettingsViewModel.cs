@@ -288,6 +288,12 @@ public partial class ImportExportSettingsViewModel : ObservableObject, IDisposab
 
     partial void OnSelectedImportModeChanged(string value)
     {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            RestoreSelectedImportModeFromPreferences();
+            return;
+        }
+
         var normalized = BirdImportModes.Normalize(value);
 
         if (_isSynchronizingSelections)
@@ -366,6 +372,23 @@ public partial class ImportExportSettingsViewModel : ObservableObject, IDisposab
         OnPropertyChanged(nameof(ImportModeHint));
         OnPropertyChanged(nameof(AutoExportHint));
         OnPropertyChanged(nameof(ExportPathHint));
+        OnPropertyChanged(nameof(ImportHint));
+    }
+
+    private void RestoreSelectedImportModeFromPreferences()
+    {
+        _isSynchronizingSelections = true;
+        try
+        {
+            SelectedImportMode = BirdImportModes.Normalize(_preferences.SelectedImportMode);
+        }
+        finally
+        {
+            _isSynchronizingSelections = false;
+        }
+
+        OnPropertyChanged(nameof(SelectedImportMode));
+        OnPropertyChanged(nameof(ImportModeHint));
         OnPropertyChanged(nameof(ImportHint));
     }
 

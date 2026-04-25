@@ -164,6 +164,19 @@ public class SettingsViewModelTests
     }
 
     [Fact]
+    public void ImportExportSettings_Should_Ignore_Transient_Null_ImportMode_Selection()
+    {
+        _preferences.SelectedImportMode = BirdImportModes.Replace;
+        var sut = CreateImportExportSut();
+
+        sut.SelectedImportMode = null!;
+
+        sut.SelectedImportMode.Should().Be(BirdImportModes.Replace);
+        _preferences.SelectedImportMode.Should().Be(BirdImportModes.Replace);
+        sut.ImportModeHint.Should().Be(AppText.Get("Settings.ImportModeHint.Replace", _culture));
+    }
+
+    [Fact]
     public void ImportExport_LanguageChanged_Should_Update_Localized_Text()
     {
         _preferences.SelectedImportMode = BirdImportModes.Replace;
@@ -319,6 +332,33 @@ public class SettingsViewModelTests
     }
 
     [Fact]
+    public void AppearanceSettings_Should_Ignore_Transient_Null_ComboBox_Selections()
+    {
+        _preferences.SelectedLanguage = AppLanguages.English;
+        _preferences.SelectedTheme = ThemeKeys.Steel;
+        _preferences.SelectedDateFormat = DateDisplayFormats.YearMonthDay;
+        var sut = CreateAppearanceSut();
+        _localization.Invocations.Clear();
+        _themeService.Invocations.Clear();
+        _birdManager.Invocations.Clear();
+
+        sut.SelectedLanguage = null!;
+        sut.SelectedTheme = null!;
+        sut.SelectedDateFormat = null!;
+
+        sut.SelectedLanguage.Should().Be(AppLanguages.English);
+        sut.SelectedTheme.Should().Be(ThemeKeys.Steel);
+        sut.SelectedDateFormat.Should().Be(DateDisplayFormats.YearMonthDay);
+        _preferences.SelectedLanguage.Should().Be(AppLanguages.English);
+        _preferences.SelectedTheme.Should().Be(ThemeKeys.Steel);
+        _preferences.SelectedDateFormat.Should().Be(DateDisplayFormats.YearMonthDay);
+        _localization.Verify(x => x.ApplyLanguage(It.IsAny<string>()), Times.Never);
+        _localization.Verify(x => x.ApplyDateFormat(It.IsAny<string>()), Times.Never);
+        _themeService.Verify(x => x.ApplyTheme(It.IsAny<string>()), Times.Never);
+        _birdManager.Verify(x => x.ReloadAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public void AppearanceSettings_Dispose_Should_Unsubscribe_From_LongLivedEvents()
     {
         var sut = CreateAppearanceSut();
@@ -379,6 +419,19 @@ public class SettingsViewModelTests
 
         _preferences.SelectedSyncInterval.Should().Be(RemoteSyncIntervalPresets.FiveSeconds);
         sut.SyncIntervalHint.Should().Contain(AppText.Get("Settings.SyncIntervalOption.FiveSeconds", _culture));
+    }
+
+    [Fact]
+    public void SyncSettings_Should_Ignore_Transient_Null_SyncInterval_Selection()
+    {
+        _preferences.SelectedSyncInterval = RemoteSyncIntervalPresets.OneMinute;
+        var sut = CreateSyncSut();
+
+        sut.SelectedSyncInterval = null!;
+
+        sut.SelectedSyncInterval.Should().Be(RemoteSyncIntervalPresets.OneMinute);
+        _preferences.SelectedSyncInterval.Should().Be(RemoteSyncIntervalPresets.OneMinute);
+        sut.SyncIntervalHint.Should().Contain(AppText.Get("Settings.SyncIntervalOption.OneMinute", _culture));
     }
 
     [Fact]

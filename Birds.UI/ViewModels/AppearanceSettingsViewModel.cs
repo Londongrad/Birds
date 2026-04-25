@@ -127,6 +127,12 @@ public partial class AppearanceSettingsViewModel : ObservableObject, IDisposable
 
     partial void OnSelectedLanguageChanged(string value)
     {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            RestoreSelectedLanguageFromPreferences();
+            return;
+        }
+
         var normalized = AppLanguages.Normalize(value);
 
         if (_isSynchronizingSelections)
@@ -149,6 +155,12 @@ public partial class AppearanceSettingsViewModel : ObservableObject, IDisposable
 
     partial void OnSelectedThemeChanged(string value)
     {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            RestoreSelectedThemeFromPreferences();
+            return;
+        }
+
         var normalized = ThemeKeys.Normalize(value);
 
         if (_isSynchronizingSelections)
@@ -166,6 +178,12 @@ public partial class AppearanceSettingsViewModel : ObservableObject, IDisposable
 
     partial void OnSelectedDateFormatChanged(string value)
     {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            RestoreSelectedDateFormatFromPreferences();
+            return;
+        }
+
         var normalized = DateDisplayFormats.Normalize(value);
 
         if (_isSynchronizingSelections)
@@ -339,6 +357,49 @@ public partial class AppearanceSettingsViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(DateFormatHint));
         OnPropertyChanged(nameof(NotificationsHint));
         OnPropertyChanged(nameof(SyncIndicatorHint));
+    }
+
+    private void RestoreSelectedLanguageFromPreferences()
+    {
+        RestoreSelection(
+            AppLanguages.Normalize(_preferences.SelectedLanguage),
+            value => SelectedLanguage = value,
+            nameof(SelectedLanguage),
+            nameof(LanguageHint));
+    }
+
+    private void RestoreSelectedThemeFromPreferences()
+    {
+        RestoreSelection(
+            ThemeKeys.Normalize(_preferences.SelectedTheme),
+            value => SelectedTheme = value,
+            nameof(SelectedTheme),
+            nameof(ThemeHint));
+    }
+
+    private void RestoreSelectedDateFormatFromPreferences()
+    {
+        RestoreSelection(
+            DateDisplayFormats.Normalize(_preferences.SelectedDateFormat),
+            value => SelectedDateFormat = value,
+            nameof(SelectedDateFormat),
+            nameof(DateFormatHint));
+    }
+
+    private void RestoreSelection(string value, Action<string> assign, params string[] propertyNames)
+    {
+        _isSynchronizingSelections = true;
+        try
+        {
+            assign(value);
+        }
+        finally
+        {
+            _isSynchronizingSelections = false;
+        }
+
+        foreach (var propertyName in propertyNames)
+            OnPropertyChanged(propertyName);
     }
 
     private static ReadOnlyCollection<TOption> CreateLocalizedOptions<TOption>(

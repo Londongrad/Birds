@@ -386,6 +386,12 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
 
     partial void OnSelectedSyncIntervalChanged(string value)
     {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            RestoreSelectedSyncIntervalFromPreferences();
+            return;
+        }
+
         var normalized = RemoteSyncIntervalPresets.Normalize(value);
 
         if (_isSynchronizingSelections)
@@ -456,6 +462,22 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
             _isSynchronizingSelections = false;
         }
 
+        OnPropertyChanged(nameof(SyncIntervalHint));
+    }
+
+    private void RestoreSelectedSyncIntervalFromPreferences()
+    {
+        _isSynchronizingSelections = true;
+        try
+        {
+            SelectedSyncInterval = RemoteSyncIntervalPresets.Normalize(_preferences.SelectedSyncInterval);
+        }
+        finally
+        {
+            _isSynchronizingSelections = false;
+        }
+
+        OnPropertyChanged(nameof(SelectedSyncInterval));
         OnPropertyChanged(nameof(SyncIntervalHint));
     }
 
