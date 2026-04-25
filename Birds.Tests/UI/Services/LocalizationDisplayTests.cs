@@ -66,6 +66,33 @@ public sealed class LocalizationDisplayTests
     }
 
     [Fact]
+    public void BirdNameDisplayConverter_MultiBinding_Should_Recompute_When_App_Language_Binding_Changes()
+    {
+        var localization = LocalizationService.Instance;
+        var previousLanguage = localization.CurrentLanguage;
+        var previousDateFormat = localization.CurrentDateFormat;
+
+        try
+        {
+            localization.ApplyLanguage(AppLanguages.English);
+
+            var sut = new BirdNameDisplayConverter();
+            var result = sut.Convert(
+                [(BirdSpecies)3, localization.CurrentLanguage],
+                typeof(string),
+                string.Empty,
+                CultureInfo.GetCultureInfo(AppLanguages.Russian));
+
+            result.Should().Be("Amadin");
+        }
+        finally
+        {
+            localization.ApplyLanguage(previousLanguage);
+            localization.ApplyDateFormat(previousDateFormat);
+        }
+    }
+
+    [Fact]
     public void BirdNameDisplayService_Should_Return_Localized_Name_For_Current_App_Language()
     {
         var localization = LocalizationService.Instance;

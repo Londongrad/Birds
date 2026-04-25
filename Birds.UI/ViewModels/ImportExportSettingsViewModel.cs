@@ -339,15 +339,12 @@ public partial class ImportExportSettingsViewModel : ObservableObject, IDisposab
 
     private void BuildAvailableImportModes()
     {
-        RefreshLocalizedOptions(
-            ref _availableImportModes,
+        AvailableImportModes = CreateLocalizedOptions(
             [
                 (BirdImportModes.Merge, _localization.GetString("Settings.ImportMode.Merge")),
                 (BirdImportModes.Replace, _localization.GetString("Settings.ImportMode.Replace"))
             ],
-            static (code, displayName) => new ImportModeOption(code, displayName),
-            static (option, displayName) => option.DisplayName = displayName,
-            value => AvailableImportModes = value);
+            static (code, displayName) => new ImportModeOption(code, displayName));
     }
 
     private void ReloadFromPreferences()
@@ -405,24 +402,12 @@ public partial class ImportExportSettingsViewModel : ObservableObject, IDisposab
             : _preferences.CustomExportPath;
     }
 
-    private static void RefreshLocalizedOptions<TOption>(
-        ref ReadOnlyCollection<TOption> current,
+    private static ReadOnlyCollection<TOption> CreateLocalizedOptions<TOption>(
         IReadOnlyList<(string Code, string DisplayName)> entries,
-        Func<string, string, TOption> factory,
-        Action<TOption, string> updateDisplayName,
-        Action<ReadOnlyCollection<TOption>> assign)
+        Func<string, string, TOption> factory)
         where TOption : class
     {
-        if (current.Count == entries.Count)
-        {
-            for (var index = 0; index < entries.Count; index++)
-                updateDisplayName(current[index], entries[index].DisplayName);
-
-            return;
-        }
-
-        current = new ReadOnlyCollection<TOption>(
+        return new ReadOnlyCollection<TOption>(
             entries.Select(entry => factory(entry.Code, entry.DisplayName)).ToList());
-        assign(current);
     }
 }

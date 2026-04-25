@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Windows.Data;
 using Birds.Application.DTOs;
 using Birds.Domain.Enums;
-using Birds.Shared.Localization;
 using Birds.UI.Enums;
 using Birds.UI.Services.Background;
 using Birds.UI.Services.BirdNames;
@@ -269,10 +268,10 @@ public partial class BirdListViewModel : ObservableObject, IDisposable
     {
         var filters = new List<FilterOption>
         {
-            new(BirdFilter.All, AppText.Get("BirdList.Filter.All")),
-            new(BirdFilter.Alive, AppText.Get("BirdList.Filter.Alive")),
-            new(BirdFilter.Dead, AppText.Get("BirdList.Filter.Dead")),
-            new(BirdFilter.DepartedButAlive, AppText.Get("BirdList.Filter.Released"))
+            new(BirdFilter.All, _localization.GetString("BirdList.Filter.All")),
+            new(BirdFilter.Alive, _localization.GetString("BirdList.Filter.Alive")),
+            new(BirdFilter.Dead, _localization.GetString("BirdList.Filter.Dead")),
+            new(BirdFilter.DepartedButAlive, _localization.GetString("BirdList.Filter.Released"))
         };
 
         filters.AddRange(Enum.GetValues<BirdSpecies>()

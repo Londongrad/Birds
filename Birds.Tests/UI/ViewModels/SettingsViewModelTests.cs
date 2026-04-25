@@ -128,12 +128,22 @@ public class SettingsViewModelTests
         _preferences.ShowSyncStatusIndicator = false;
 
         var sut = CreateAppearanceSut();
+        var availableLanguages = sut.AvailableLanguages;
+        var availableThemes = sut.AvailableThemes;
+        var availableDateFormats = sut.AvailableDateFormats;
 
         _culture = CultureInfo.GetCultureInfo(AppLanguages.English);
         _localization.Raise(x => x.LanguageChanged += null, EventArgs.Empty);
 
+        sut.AvailableLanguages.Should().NotBeSameAs(availableLanguages);
+        sut.AvailableThemes.Should().NotBeSameAs(availableThemes);
+        sut.AvailableDateFormats.Should().NotBeSameAs(availableDateFormats);
         sut.AvailableLanguages[0].DisplayName.Should().Be(AppText.Get("Language.Russian", _culture));
         sut.AvailableThemes.Should().Contain(x => x.DisplayName == AppText.Get("Settings.Theme.Steel", _culture));
+        sut.AvailableThemes.Single(x => x.Code == ThemeKeys.Steel).DisplayName
+            .Should().Be(AppText.Get("Settings.Theme.Steel", _culture));
+        sut.AvailableDateFormats.Single(x => x.Code == DateDisplayFormats.YearMonthDay).DisplayName
+            .Should().Be(AppText.Get("Settings.DateFormat.YearMonthDay", _culture));
         sut.ThemeHint.Should().Be(AppText.Get("Settings.ThemeHint.Steel", _culture));
         sut.DateFormatHint.Should().Be(AppText.Get("Settings.DateFormatHint.YearMonthDay", _culture));
         sut.NotificationsHint.Should().Be(AppText.Get("Settings.NotificationsHint.Disabled", _culture));
@@ -170,7 +180,9 @@ public class SettingsViewModelTests
         _culture = CultureInfo.GetCultureInfo(AppLanguages.Russian);
         _localization.Raise(x => x.LanguageChanged += null, EventArgs.Empty);
 
-        sut.AvailableImportModes.Should().BeSameAs(availableImportModes);
+        sut.AvailableImportModes.Should().NotBeSameAs(availableImportModes);
+        sut.AvailableImportModes.Single(x => x.Code == BirdImportModes.Replace).DisplayName
+            .Should().Be(AppText.Get("Settings.ImportMode.Replace", _culture));
         sut.ImportModeHint.Should().Be(AppText.Get("Settings.ImportModeHint.Replace", _culture));
         sut.AutoExportHint.Should().Be(AppText.Get("Settings.AutoExportHint.Disabled", _culture));
         changedProperties.Should().Contain(nameof(ImportExportSettingsViewModel.AvailableImportModes));
@@ -638,7 +650,9 @@ public class SettingsViewModelTests
         _culture = CultureInfo.GetCultureInfo(AppLanguages.Russian);
         _localization.Raise(x => x.LanguageChanged += null, EventArgs.Empty);
 
-        sut.AvailableSyncIntervals.Should().BeSameAs(availableSyncIntervals);
+        sut.AvailableSyncIntervals.Should().NotBeSameAs(availableSyncIntervals);
+        sut.AvailableSyncIntervals.Single(x => x.Code == RemoteSyncIntervalPresets.ThirtySeconds).DisplayName
+            .Should().Be(AppText.Get("Settings.SyncIntervalOption.ThirtySeconds", _culture));
         sut.SyncIntervalHint.Should().Contain(AppText.Get("Settings.SyncIntervalOption.ThirtySeconds", _culture));
         sut.RemoteSyncStatusLabel.Should().Be(AppText.Get("Settings.SyncStatus.Disabled", _culture));
         changedProperties.Should().Contain(nameof(SyncSettingsViewModel.AvailableSyncIntervals));
@@ -813,9 +827,15 @@ public class SettingsViewModelTests
 
         sut.SelectedTheme.Should().Be(ThemeKeys.Steel);
         _preferences.SelectedTheme.Should().Be(ThemeKeys.Steel);
-        sut.AvailableThemes.Should().BeSameAs(availableThemes);
-        sut.AvailableLanguages.Should().BeSameAs(availableLanguages);
-        sut.AvailableDateFormats.Should().BeSameAs(availableDateFormats);
+        sut.AvailableThemes.Should().NotBeSameAs(availableThemes);
+        sut.AvailableLanguages.Should().NotBeSameAs(availableLanguages);
+        sut.AvailableDateFormats.Should().NotBeSameAs(availableDateFormats);
+        sut.AvailableThemes.Single(x => x.Code == ThemeKeys.Steel).DisplayName
+            .Should().Be(AppText.Get("Settings.Theme.Steel", _culture));
+        sut.AvailableLanguages.Single(x => x.Code == AppLanguages.English).DisplayName
+            .Should().Be(AppText.Get("Language.English", _culture));
+        sut.AvailableDateFormats.Single(x => x.Code == DateDisplayFormats.DayMonthYear).DisplayName
+            .Should().Be(AppText.Get("Settings.DateFormat.DayMonthYear", _culture));
         changedProperties.Should().Contain(nameof(AppearanceSettingsViewModel.AvailableThemes));
         changedProperties.Should().Contain(nameof(AppearanceSettingsViewModel.AvailableLanguages));
         changedProperties.Should().Contain(nameof(AppearanceSettingsViewModel.AvailableDateFormats));

@@ -386,6 +386,8 @@ public class BirdListViewModelTests
         localization = new Mock<ILocalizationService>();
         localization.SetupGet(x => x.CurrentCulture).Returns(() => getCulture());
         localization.SetupGet(x => x.CurrentDateFormat).Returns(dateFormat);
+        localization.Setup(x => x.GetString(It.IsAny<string>()))
+            .Returns((string key) => AppText.Get(key, getCulture()));
         localization.Setup(x => x.FormatDate(It.IsAny<DateOnly>(), It.IsAny<DateDisplayStyle>()))
             .Returns((DateOnly value, DateDisplayStyle style) =>
                 DateDisplayFormats.FormatDate(value, getCulture(), dateFormat, style));

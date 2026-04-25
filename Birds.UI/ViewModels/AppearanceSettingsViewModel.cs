@@ -280,41 +280,32 @@ public partial class AppearanceSettingsViewModel : ObservableObject, IDisposable
 
     private void BuildAvailableLanguages()
     {
-        RefreshLocalizedOptions(
-            ref _availableLanguages,
+        AvailableLanguages = CreateLocalizedOptions(
             [
                 (AppLanguages.Russian, _localization.GetString("Language.Russian")),
                 (AppLanguages.English, _localization.GetString("Language.English"))
             ],
-            static (code, displayName) => new LanguageOption(code, displayName),
-            static (option, displayName) => option.DisplayName = displayName,
-            value => AvailableLanguages = value);
+            static (code, displayName) => new LanguageOption(code, displayName));
     }
 
     private void BuildAvailableThemes()
     {
-        RefreshLocalizedOptions(
-            ref _availableThemes,
+        AvailableThemes = CreateLocalizedOptions(
             _themeService.AvailableThemes
                 .Select(theme => (theme, _localization.GetString($"Settings.Theme.{theme}")))
                 .ToArray(),
-            static (code, displayName) => new ThemeOption(code, displayName),
-            static (option, displayName) => option.DisplayName = displayName,
-            value => AvailableThemes = value);
+            static (code, displayName) => new ThemeOption(code, displayName));
     }
 
     private void BuildAvailableDateFormats()
     {
-        RefreshLocalizedOptions(
-            ref _availableDateFormats,
+        AvailableDateFormats = CreateLocalizedOptions(
             [
                 (DateDisplayFormats.DayMonthYear, _localization.GetString("Settings.DateFormat.DayMonthYear")),
                 (DateDisplayFormats.MonthDayYear, _localization.GetString("Settings.DateFormat.MonthDayYear")),
                 (DateDisplayFormats.YearMonthDay, _localization.GetString("Settings.DateFormat.YearMonthDay"))
             ],
-            static (code, displayName) => new DateFormatOption(code, displayName),
-            static (option, displayName) => option.DisplayName = displayName,
-            value => AvailableDateFormats = value);
+            static (code, displayName) => new DateFormatOption(code, displayName));
     }
 
     private void ReloadFromPreferences(bool reapplyTheme = false)
@@ -347,24 +338,12 @@ public partial class AppearanceSettingsViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(SyncIndicatorHint));
     }
 
-    private static void RefreshLocalizedOptions<TOption>(
-        ref ReadOnlyCollection<TOption> current,
+    private static ReadOnlyCollection<TOption> CreateLocalizedOptions<TOption>(
         IReadOnlyList<(string Code, string DisplayName)> entries,
-        Func<string, string, TOption> factory,
-        Action<TOption, string> updateDisplayName,
-        Action<ReadOnlyCollection<TOption>> assign)
+        Func<string, string, TOption> factory)
         where TOption : class
     {
-        if (current.Count == entries.Count)
-        {
-            for (var index = 0; index < entries.Count; index++)
-                updateDisplayName(current[index], entries[index].DisplayName);
-
-            return;
-        }
-
-        current = new ReadOnlyCollection<TOption>(
+        return new ReadOnlyCollection<TOption>(
             entries.Select(entry => factory(entry.Code, entry.DisplayName)).ToList());
-        assign(current);
     }
 }

@@ -431,17 +431,14 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
 
     private void BuildAvailableSyncIntervals()
     {
-        RefreshLocalizedOptions(
-            ref _availableSyncIntervals,
+        AvailableSyncIntervals = CreateLocalizedOptions(
             [
                 (RemoteSyncIntervalPresets.FiveSeconds, _localization.GetString("Settings.SyncIntervalOption.FiveSeconds")),
                 (RemoteSyncIntervalPresets.TenSeconds, _localization.GetString("Settings.SyncIntervalOption.TenSeconds")),
                 (RemoteSyncIntervalPresets.ThirtySeconds, _localization.GetString("Settings.SyncIntervalOption.ThirtySeconds")),
                 (RemoteSyncIntervalPresets.OneMinute, _localization.GetString("Settings.SyncIntervalOption.OneMinute"))
             ],
-            static (code, displayName) => new SyncIntervalOption(code, displayName),
-            static (option, displayName) => option.DisplayName = displayName,
-            value => AvailableSyncIntervals = value);
+            static (code, displayName) => new SyncIntervalOption(code, displayName));
     }
 
     private void ReloadFromPreferences()
@@ -611,24 +608,12 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
         _notificationService.ShowWarning(RemoteSyncConfigurationErrorMessage);
     }
 
-    private static void RefreshLocalizedOptions<TOption>(
-        ref ReadOnlyCollection<TOption> current,
+    private static ReadOnlyCollection<TOption> CreateLocalizedOptions<TOption>(
         IReadOnlyList<(string Code, string DisplayName)> entries,
-        Func<string, string, TOption> factory,
-        Action<TOption, string> updateDisplayName,
-        Action<ReadOnlyCollection<TOption>> assign)
+        Func<string, string, TOption> factory)
         where TOption : class
     {
-        if (current.Count == entries.Count)
-        {
-            for (var index = 0; index < entries.Count; index++)
-                updateDisplayName(current[index], entries[index].DisplayName);
-
-            return;
-        }
-
-        current = new ReadOnlyCollection<TOption>(
+        return new ReadOnlyCollection<TOption>(
             entries.Select(entry => factory(entry.Code, entry.DisplayName)).ToList());
-        assign(current);
     }
 }
