@@ -41,6 +41,7 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
     [NotifyCanExecuteChangedFor(nameof(ConfirmRedownloadRemoteSnapshotCommand))]
     [NotifyCanExecuteChangedFor(nameof(BeginUploadLocalSnapshotToRemoteCommand))]
     [NotifyCanExecuteChangedFor(nameof(ConfirmUploadLocalSnapshotToRemoteCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ApplyRemoteSyncEnabledCommand))]
     private bool isExternalBusy;
 
     [ObservableProperty]
@@ -77,11 +78,13 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveRemoteSyncConfigurationCommand))]
     [NotifyCanExecuteChangedFor(nameof(TestRemoteSyncConnectionCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ApplyRemoteSyncEnabledCommand))]
     private bool isRemoteSyncSettingsBusy;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveRemoteSyncConfigurationCommand))]
     [NotifyCanExecuteChangedFor(nameof(TestRemoteSyncConnectionCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ApplyRemoteSyncEnabledCommand))]
     private bool remoteSyncSettingsEnabled;
 
     [ObservableProperty] private string remoteSyncHost = string.Empty;
@@ -334,9 +337,30 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
     [RelayCommand(CanExecute = nameof(CanSaveRemoteSyncConfiguration))]
     private async Task SaveRemoteSyncConfigurationAsync(CancellationToken cancellationToken)
     {
+        await SaveRemoteSyncConfigurationCoreAsync(cancellationToken, restoreSnapshotOnFailure: false);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanApplyRemoteSyncEnabled))]
+    private async Task ApplyRemoteSyncEnabledAsync(CancellationToken cancellationToken)
+    {
+        await SaveRemoteSyncConfigurationCoreAsync(cancellationToken, restoreSnapshotOnFailure: true);
+    }
+
+    private async Task SaveRemoteSyncConfigurationCoreAsync(
+        CancellationToken cancellationToken,
+        bool restoreSnapshotOnFailure)
+    {
         var update = TryCreateRemoteSyncSettingsUpdate();
         if (update is null)
+        {
+            if (restoreSnapshotOnFailure)
+            {
+                ReloadRemoteSyncConfiguration();
+                RaiseRemoteSyncConfigurationProperties();
+            }
+
             return;
+        }
 
         var operationCancellation = CreateSyncControlCancellation(cancellationToken);
         IsRemoteSyncSettingsBusy = true;
@@ -353,6 +377,9 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
             }
             else
             {
+                if (restoreSnapshotOnFailure)
+                    ReloadRemoteSyncConfiguration();
+
                 _notificationService.ShowWarning(result.Message);
             }
 
@@ -706,6 +733,12 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
     }
 
     private bool CanSaveRemoteSyncConfiguration()
+    {
+        return !IsExternalBusy
+               && !IsRemoteSyncSettingsBusy;
+    }
+
+    private bool CanApplyRemoteSyncEnabled()
     {
         return !IsExternalBusy
                && !IsRemoteSyncSettingsBusy;

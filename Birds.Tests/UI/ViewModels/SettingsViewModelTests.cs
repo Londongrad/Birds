@@ -21,6 +21,7 @@ using Birds.UI.Services.Preferences;
 using Birds.UI.Services.Preferences.Interfaces;
 using Birds.UI.Services.Shell.Interfaces;
 using Birds.UI.Services.Stores.BirdStore;
+using Birds.UI.Services.Sync;
 using Birds.UI.Services.Theming;
 using Birds.UI.Services.Theming.Interfaces;
 using Birds.UI.ViewModels;
@@ -630,6 +631,78 @@ public class SettingsViewModelTests
         sut.IsRemoteSyncEnabled.Should().BeFalse();
         sut.IsRemoteSyncConfigured.Should().BeFalse();
         sut.SyncNowCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RemoteSyncEnabledToggle_WhenDisabled_Should_SaveAndRefreshRuntimeState()
+    {
+        var isRemoteSyncEnabled = true;
+        var isRemoteSyncConfigured = true;
+        _remoteSyncController.SetupGet(x => x.IsEnabled).Returns(() => isRemoteSyncEnabled);
+        _remoteSyncController.SetupGet(x => x.IsConfigured).Returns(() => isRemoteSyncConfigured);
+        _remoteSyncController.Setup(x => x.RefreshConfigurationAsync(It.IsAny<CancellationToken>()))
+            .Callback(() =>
+            {
+                isRemoteSyncEnabled = false;
+                isRemoteSyncConfigured = false;
+            })
+            .Returns(Task.CompletedTask);
+        var remoteSyncSettings = new TestRemoteSyncSettingsService(
+            new RemoteSyncSettingsSnapshot(true, true, "db.example", 5432, "birds", "user", true));
+        var sut = CreateSyncSut(remoteSyncSettings);
+
+        sut.RemoteSyncSettingsEnabled.Should().BeTrue();
+        sut.SyncNowCommand.CanExecute(null).Should().BeTrue();
+
+        sut.RemoteSyncSettingsEnabled = false;
+        await sut.ApplyRemoteSyncEnabledCommand.ExecuteAsync(null);
+
+        remoteSyncSettings.LastSavedUpdate.Should().NotBeNull();
+        remoteSyncSettings.LastSavedUpdate!.IsEnabled.Should().BeFalse();
+        _remoteSyncController.Verify(x => x.RefreshConfigurationAsync(It.IsAny<CancellationToken>()), Times.Once);
+        sut.IsRemoteSyncEnabled.Should().BeFalse();
+        sut.IsRemoteSyncConfigured.Should().BeFalse();
+        sut.SyncNowCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RemoteSyncEnabledToggle_WhenSaveFails_Should_RestoreSavedState()
+    {
+        const string saveFailure = "Remote sync settings are incomplete.";
+        var remoteSyncSettings = new TestRemoteSyncSettingsService(
+            new RemoteSyncSettingsSnapshot(true, false, string.Empty, 5432, string.Empty, string.Empty, false))
+        {
+            SaveResult = RemoteSyncSettingsResult.Failure(saveFailure)
+        };
+        var sut = CreateSyncSut(remoteSyncSettings);
+
+        sut.RemoteSyncSettingsEnabled.Should().BeFalse();
+
+        sut.RemoteSyncSettingsEnabled = true;
+        await sut.ApplyRemoteSyncEnabledCommand.ExecuteAsync(null);
+
+        remoteSyncSettings.LastSavedUpdate.Should().NotBeNull();
+        remoteSyncSettings.LastSavedUpdate!.IsEnabled.Should().BeTrue();
+        sut.RemoteSyncSettingsEnabled.Should().BeFalse();
+        _remoteSyncController.Verify(x => x.RefreshConfigurationAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _notificationService.Verify(x => x.ShowWarning(saveFailure), Times.Once);
+    }
+
+    [Fact]
+    public async Task RemoteSyncEnabledToggle_WhenPortIsInvalid_Should_RestoreSavedState()
+    {
+        var remoteSyncSettings = new TestRemoteSyncSettingsService(
+            new RemoteSyncSettingsSnapshot(true, false, string.Empty, 5432, string.Empty, string.Empty, false));
+        var sut = CreateSyncSut(remoteSyncSettings);
+
+        sut.RemoteSyncSettingsEnabled = true;
+        sut.RemoteSyncPort = "not-a-port";
+        await sut.ApplyRemoteSyncEnabledCommand.ExecuteAsync(null);
+
+        remoteSyncSettings.LastSavedUpdate.Should().BeNull();
+        sut.RemoteSyncSettingsEnabled.Should().BeFalse();
+        sut.RemoteSyncPort.Should().Be("5432");
+        _remoteSyncController.Verify(x => x.RefreshConfigurationAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -1284,7 +1357,7 @@ public class SettingsViewModelTests
             _mediator.Object);
     }
 
-    private SyncSettingsViewModel CreateSyncSut()
+    private SyncSettingsViewModel CreateSyncSut(IRemoteSyncSettingsService? remoteSyncSettingsService = null)
     {
         return new SyncSettingsViewModel(
             _preferences,
@@ -1293,7 +1366,9 @@ public class SettingsViewModelTests
             _autoExportCoordinator.Object,
             _notificationService.Object,
             _remoteSyncStatus,
-            _remoteSyncController.Object);
+            _remoteSyncController.Object,
+            remoteSyncSettingsService ?? new TestRemoteSyncSettingsService(
+                new RemoteSyncSettingsSnapshot(false, false, string.Empty, AppPreferencesState.DefaultRemoteSyncPort, string.Empty, string.Empty, false)));
     }
 
     private DangerZoneSettingsViewModel CreateDangerZoneSut()
@@ -1509,6 +1584,50 @@ public class SettingsViewModelTests
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LastProcessedCount)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PendingOperationCount)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RecentActivity)));
+        }
+    }
+
+    private sealed class TestRemoteSyncSettingsService(RemoteSyncSettingsSnapshot snapshot) : IRemoteSyncSettingsService
+    {
+        private RemoteSyncSettingsSnapshot _snapshot = snapshot;
+
+        public RemoteSyncSettingsUpdate? LastSavedUpdate { get; private set; }
+
+        public RemoteSyncSettingsResult SaveResult { get; set; } =
+            RemoteSyncSettingsResult.Success("Remote sync settings saved.");
+
+        public RemoteSyncSettingsSnapshot GetSnapshot()
+        {
+            return _snapshot;
+        }
+
+        public Task<RemoteSyncSettingsResult> SaveAsync(
+            RemoteSyncSettingsUpdate update,
+            CancellationToken cancellationToken)
+        {
+            LastSavedUpdate = update;
+            if (SaveResult.IsSuccess)
+            {
+                _snapshot = _snapshot with
+                {
+                    IsUserConfigured = true,
+                    IsEnabled = update.IsEnabled,
+                    Host = update.Host,
+                    Port = update.Port,
+                    Database = update.Database,
+                    Username = update.Username,
+                    HasSavedPassword = _snapshot.HasSavedPassword || !string.IsNullOrWhiteSpace(update.Password)
+                };
+            }
+
+            return Task.FromResult(SaveResult);
+        }
+
+        public Task<RemoteSyncSettingsResult> TestConnectionAsync(
+            RemoteSyncSettingsUpdate update,
+            CancellationToken cancellationToken)
+        {
+            return Task.FromResult(RemoteSyncSettingsResult.Success("Connection succeeded."));
         }
     }
 }

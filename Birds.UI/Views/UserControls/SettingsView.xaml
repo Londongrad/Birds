@@ -578,6 +578,7 @@
                                                     Text="{loc:Loc Key=Settings.RemoteSyncConfig.Enable}" />
                                                 <CheckBox
                                                     VerticalAlignment="Center"
+                                                    Command="{Binding ApplyRemoteSyncEnabledCommand}"
                                                     IsChecked="{Binding RemoteSyncSettingsEnabled, Mode=TwoWay}"
                                                     Style="{StaticResource ToggleSwitchStyle}" />
                                             </StackPanel>
