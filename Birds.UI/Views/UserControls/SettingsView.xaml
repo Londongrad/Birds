@@ -546,7 +546,6 @@
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
                                             </Grid.RowDefinitions>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
@@ -565,63 +564,64 @@
                                                     TextWrapping="Wrap" />
                                             </StackPanel>
 
-                                            <CheckBox
+                                            <StackPanel
                                                 Grid.Column="1"
-                                                Margin="12,4,0,0"
+                                                Margin="20,2,0,0"
                                                 HorizontalAlignment="Right"
                                                 VerticalAlignment="Top"
-                                                IsChecked="{Binding RemoteSyncSettingsEnabled, Mode=TwoWay}"
-                                                Style="{StaticResource ToggleSwitchStyle}" />
-
-                                            <TextBlock
-                                                Grid.Row="1"
-                                                Grid.ColumnSpan="2"
-                                                Margin="0,12,0,0"
-                                                FontSize="12"
-                                                Foreground="{StaticResource MutedTextBrush}"
-                                                Text="{loc:Loc Key=Settings.RemoteSyncConfig.Enable}"
-                                                TextWrapping="Wrap" />
+                                                Orientation="Horizontal">
+                                                <TextBlock
+                                                    Margin="0,0,12,0"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="12"
+                                                    Foreground="{StaticResource MutedTextBrush}"
+                                                    Text="{loc:Loc Key=Settings.RemoteSyncConfig.Enable}" />
+                                                <CheckBox
+                                                    VerticalAlignment="Center"
+                                                    IsChecked="{Binding RemoteSyncSettingsEnabled, Mode=TwoWay}"
+                                                    Style="{StaticResource ToggleSwitchStyle}" />
+                                            </StackPanel>
 
                                             <Grid
-                                                Grid.Row="2"
+                                                Grid.Row="1"
                                                 Grid.ColumnSpan="2"
-                                                Margin="0,14,0,0">
+                                                Margin="0,18,0,0">
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
                                                     <RowDefinition Height="Auto" />
                                                 </Grid.RowDefinitions>
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="2*" />
+                                                    <ColumnDefinition Width="1.8*" MinWidth="180" />
                                                     <ColumnDefinition Width="12" />
-                                                    <ColumnDefinition Width="120" />
+                                                    <ColumnDefinition Width="100" />
                                                     <ColumnDefinition Width="12" />
-                                                    <ColumnDefinition Width="2*" />
+                                                    <ColumnDefinition Width="1.35*" MinWidth="150" />
                                                     <ColumnDefinition Width="12" />
-                                                    <ColumnDefinition Width="2*" />
+                                                    <ColumnDefinition Width="1.55*" MinWidth="160" />
                                                 </Grid.ColumnDefinitions>
 
-                                                <StackPanel Grid.Column="0">
+                                                <StackPanel Grid.Column="0" HorizontalAlignment="Stretch">
                                                     <TextBlock Style="{StaticResource FieldLabelStyle}" Text="{loc:Loc Key=Settings.RemoteSyncConfig.Host}" />
                                                     <TextBox
                                                         Text="{Binding RemoteSyncHost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                         Style="{StaticResource SettingsTextBoxStyle}" />
                                                 </StackPanel>
 
-                                                <StackPanel Grid.Column="2">
+                                                <StackPanel Grid.Column="2" HorizontalAlignment="Stretch">
                                                     <TextBlock Style="{StaticResource FieldLabelStyle}" Text="{loc:Loc Key=Settings.RemoteSyncConfig.Port}" />
                                                     <TextBox
                                                         Text="{Binding RemoteSyncPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                         Style="{StaticResource SettingsTextBoxStyle}" />
                                                 </StackPanel>
 
-                                                <StackPanel Grid.Column="4">
+                                                <StackPanel Grid.Column="4" HorizontalAlignment="Stretch">
                                                     <TextBlock Style="{StaticResource FieldLabelStyle}" Text="{loc:Loc Key=Settings.RemoteSyncConfig.Database}" />
                                                     <TextBox
                                                         Text="{Binding RemoteSyncDatabase, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                         Style="{StaticResource SettingsTextBoxStyle}" />
                                                 </StackPanel>
 
-                                                <StackPanel Grid.Column="6">
+                                                <StackPanel Grid.Column="6" HorizontalAlignment="Stretch">
                                                     <TextBlock Style="{StaticResource FieldLabelStyle}" Text="{loc:Loc Key=Settings.RemoteSyncConfig.Username}" />
                                                     <TextBox
                                                         Text="{Binding RemoteSyncUsername, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -631,8 +631,10 @@
                                                 <StackPanel
                                                     Grid.Row="1"
                                                     Grid.Column="0"
-                                                    Grid.ColumnSpan="7"
-                                                    Margin="0,12,0,0">
+                                                    Grid.ColumnSpan="3"
+                                                    Width="292"
+                                                    Margin="0,12,0,0"
+                                                    HorizontalAlignment="Left">
                                                     <TextBlock Style="{StaticResource FieldLabelStyle}" Text="{loc:Loc Key=Settings.RemoteSyncConfig.Password}" />
                                                     <PasswordBox
                                                         helpers:PasswordBoxBinding.BindPassword="True"
@@ -645,9 +647,9 @@
                                             </Grid>
 
                                             <Grid
-                                                Grid.Row="3"
+                                                Grid.Row="2"
                                                 Grid.ColumnSpan="2"
-                                                Margin="0,14,0,0">
+                                                Margin="0,16,0,0">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" />
