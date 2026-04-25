@@ -22,6 +22,7 @@ public sealed class AutoExportCoordinatorTests
     {
         var store = new BirdStore();
         var exportService = new Mock<IExportService>();
+        var exportCompleted = CaptureNextExport(exportService);
         var exportPathProvider = new Mock<IExportPathProvider>();
         var preferences = new TestPreferencesService
         {
@@ -52,14 +53,14 @@ public sealed class AutoExportCoordinatorTests
         });
         sut.MarkDirty();
 
-        await Task.Delay(120);
+        var exportCall = await WaitForExportAsync(exportCompleted);
 
-        exportService.Verify(
-            x => x.ExportAsync(
-                It.Is<IEnumerable<BirdDTO>>(items => items.Count() == 2),
-                "C:\\exports\\birds-auto.json",
-                It.IsAny<CancellationToken>()),
-            Times.Once);
+        Assert.Equal(2, exportCall.Birds.Count);
+        Assert.Equal("C:\\exports\\birds-auto.json", exportCall.Path);
+        exportService.Verify(x => x.ExportAsync(
+            It.IsAny<IEnumerable<BirdDTO>>(),
+            It.IsAny<string>(),
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -67,6 +68,7 @@ public sealed class AutoExportCoordinatorTests
     {
         var store = new BirdStore();
         var exportService = new Mock<IExportService>();
+        var exportCompleted = CaptureNextExport(exportService);
         var exportPathProvider = new Mock<IExportPathProvider>();
         exportPathProvider.Setup(x => x.GetLatestPath("birds", It.IsAny<string>()))
             .Returns("C:\\exports\\birds.json");
@@ -88,14 +90,14 @@ public sealed class AutoExportCoordinatorTests
 
         sut.MarkDirty();
         await sut.FlushAsync(CancellationToken.None);
-        await Task.Delay(100);
+        var exportCall = await WaitForExportAsync(exportCompleted);
 
-        exportService.Verify(
-            x => x.ExportAsync(
-                It.IsAny<IEnumerable<BirdDTO>>(),
-                "C:\\exports\\birds.json",
-                It.IsAny<CancellationToken>()),
-            Times.Once);
+        Assert.Single(exportCall.Birds);
+        Assert.Equal("C:\\exports\\birds.json", exportCall.Path);
+        exportService.Verify(x => x.ExportAsync(
+            It.IsAny<IEnumerable<BirdDTO>>(),
+            It.IsAny<string>(),
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -103,6 +105,7 @@ public sealed class AutoExportCoordinatorTests
     {
         var store = new BirdStore();
         var exportService = new Mock<IExportService>();
+        var exportCompleted = CaptureNextExport(exportService);
         var exportPathProvider = new Mock<IExportPathProvider>();
         exportPathProvider.Setup(x => x.GetLatestPath("birds", It.IsAny<string>()))
             .Returns("C:\\exports\\birds.json");
@@ -128,7 +131,6 @@ public sealed class AutoExportCoordinatorTests
             TimeSpan.FromMilliseconds(40));
 
         sut.MarkDirty();
-        await Task.Delay(120);
 
         exportService.Verify(
             x => x.ExportAsync(
@@ -138,14 +140,39 @@ public sealed class AutoExportCoordinatorTests
             Times.Never);
 
         preferences.AutoExportEnabled = true;
-        await Task.Delay(120);
+        var exportCall = await WaitForExportAsync(exportCompleted);
 
-        exportService.Verify(
-            x => x.ExportAsync(
-                It.Is<IEnumerable<BirdDTO>>(items => items.Count() == 1),
-                "C:\\exports\\birds.json",
-                It.IsAny<CancellationToken>()),
-            Times.Once);
+        Assert.Single(exportCall.Birds);
+        Assert.Equal("C:\\exports\\birds.json", exportCall.Path);
+        exportService.Verify(x => x.ExportAsync(
+            It.IsAny<IEnumerable<BirdDTO>>(),
+            It.IsAny<string>(),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    private sealed record ExportCall(IReadOnlyList<BirdDTO> Birds, string Path);
+
+    private static TaskCompletionSource<ExportCall> CaptureNextExport(Mock<IExportService> exportService)
+    {
+        var exportCompleted = new TaskCompletionSource<ExportCall>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        exportService
+            .Setup(x => x.ExportAsync(
+                It.IsAny<IEnumerable<BirdDTO>>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<IEnumerable<BirdDTO>, string, CancellationToken>((birds, path, _) =>
+            {
+                exportCompleted.TrySetResult(new ExportCall(birds.ToArray(), path));
+            })
+            .Returns(Task.CompletedTask);
+
+        return exportCompleted;
+    }
+
+    private static async Task<ExportCall> WaitForExportAsync(TaskCompletionSource<ExportCall> exportCompleted)
+    {
+        return await exportCompleted.Task.WaitAsync(TimeSpan.FromSeconds(3));
     }
 
     private sealed class TestPreferencesService : IAppPreferencesService
