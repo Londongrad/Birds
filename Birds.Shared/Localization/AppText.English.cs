@@ -256,6 +256,7 @@ public static partial class AppText
             ["Settings.SyncMeta.LastSuccessLabel"] = "Last success",
             ["Settings.SyncMeta.Never"] = "Never",
             ["Settings.SyncMeta.RemoteStateLabel"] = "Remote data",
+            ["Settings.SyncMeta.RemoteStateLoading"] = "Loading...",
             ["Settings.SyncMeta.RemoteStateUnknown"] = "Unknown",
             ["Settings.SyncMeta.RemoteStateEmpty"] = "Empty",
             ["Settings.SyncMeta.RemoteStateHasData"] = "Contains data",

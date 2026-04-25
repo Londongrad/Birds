@@ -146,14 +146,20 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
 
     public string RemoteSnapshotStateLabel => _localization.GetString("Settings.SyncMeta.RemoteStateLabel");
 
-    public string RemoteSnapshotStateValue => _remoteSyncStatus.RemoteSnapshotState switch
-    {
-        RemoteSyncSnapshotState.Empty => _localization.GetString("Settings.SyncMeta.RemoteStateEmpty"),
-        RemoteSyncSnapshotState.HasData when _remoteSyncStatus.RemoteBirdCount.HasValue
-            => _localization.GetString("Settings.SyncMeta.RemoteStateHasDataCount", _remoteSyncStatus.RemoteBirdCount.Value),
-        RemoteSyncSnapshotState.HasData => _localization.GetString("Settings.SyncMeta.RemoteStateHasData"),
-        _ => _localization.GetString("Settings.SyncMeta.RemoteStateUnknown")
-    };
+    public bool IsRemoteSnapshotStateLoading => IsRemoteSyncConfigured
+                                                && IsRemoteSyncSyncing
+                                                && _remoteSyncStatus.RemoteSnapshotState == RemoteSyncSnapshotState.Unknown;
+
+    public string RemoteSnapshotStateValue => IsRemoteSnapshotStateLoading
+        ? _localization.GetString("Settings.SyncMeta.RemoteStateLoading")
+        : _remoteSyncStatus.RemoteSnapshotState switch
+        {
+            RemoteSyncSnapshotState.Empty => _localization.GetString("Settings.SyncMeta.RemoteStateEmpty"),
+            RemoteSyncSnapshotState.HasData when _remoteSyncStatus.RemoteBirdCount.HasValue
+                => _localization.GetString("Settings.SyncMeta.RemoteStateHasDataCount", _remoteSyncStatus.RemoteBirdCount.Value),
+            RemoteSyncSnapshotState.HasData => _localization.GetString("Settings.SyncMeta.RemoteStateHasData"),
+            _ => _localization.GetString("Settings.SyncMeta.RemoteStateUnknown")
+        };
 
     public bool IsRemoteSnapshotEmptyWarningVisible => IsRemoteSyncConfigured
                                                        && _remoteSyncStatus.RemoteSnapshotState == RemoteSyncSnapshotState.Empty
@@ -443,6 +449,7 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(RemoteSyncLastSuccessfulSyncLabel));
         OnPropertyChanged(nameof(RemoteSyncLastSuccessfulSyncValue));
         OnPropertyChanged(nameof(RemoteSnapshotStateLabel));
+        OnPropertyChanged(nameof(IsRemoteSnapshotStateLoading));
         OnPropertyChanged(nameof(RemoteSnapshotStateValue));
         OnPropertyChanged(nameof(IsRemoteSnapshotEmptyWarningVisible));
         OnPropertyChanged(nameof(RemoteSyncRecentActivityLabel));
@@ -589,6 +596,7 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(RemoteSyncPendingOperationCount));
             OnPropertyChanged(nameof(RemoteSyncPendingCountValue));
             OnPropertyChanged(nameof(RemoteSyncLastSuccessfulSyncValue));
+            OnPropertyChanged(nameof(IsRemoteSnapshotStateLoading));
             OnPropertyChanged(nameof(RemoteSnapshotStateValue));
             OnPropertyChanged(nameof(IsRemoteSnapshotEmptyWarningVisible));
             OnPropertyChanged(nameof(HasRemoteSyncRecentActivity));

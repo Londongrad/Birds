@@ -253,6 +253,7 @@ public static partial class AppText
             ["Settings.SyncMeta.LastSuccessLabel"] = "Последний успех",
             ["Settings.SyncMeta.Never"] = "Ещё не было",
             ["Settings.SyncMeta.RemoteStateLabel"] = "Remote-данные",
+            ["Settings.SyncMeta.RemoteStateLoading"] = "Загрузка...",
             ["Settings.SyncMeta.RemoteStateUnknown"] = "Неизвестно",
             ["Settings.SyncMeta.RemoteStateEmpty"] = "Пусто",
             ["Settings.SyncMeta.RemoteStateHasData"] = "Есть данные",

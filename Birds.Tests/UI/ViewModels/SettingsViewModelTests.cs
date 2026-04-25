@@ -489,6 +489,33 @@ public class SettingsViewModelTests
     }
 
     [Fact]
+    public void RemoteSnapshotState_Should_ShowLoading_WhenSyncingAndRemoteStateIsUnknown()
+    {
+        _remoteSyncStatus.SetState(
+            RemoteSyncDisplayState.Syncing,
+            remoteSnapshotState: RemoteSyncSnapshotState.Unknown);
+
+        var sut = CreateSyncSut();
+
+        sut.IsRemoteSnapshotStateLoading.Should().BeTrue();
+        sut.RemoteSnapshotStateValue.Should().Be(AppText.Get("Settings.SyncMeta.RemoteStateLoading", _culture));
+    }
+
+    [Fact]
+    public void RemoteSnapshotState_Should_KeepKnownCount_WhenSyncingAndRemoteStateIsKnown()
+    {
+        _remoteSyncStatus.SetState(
+            RemoteSyncDisplayState.Syncing,
+            remoteSnapshotState: RemoteSyncSnapshotState.HasData,
+            remoteBirdCount: 12);
+
+        var sut = CreateSyncSut();
+
+        sut.IsRemoteSnapshotStateLoading.Should().BeFalse();
+        sut.RemoteSnapshotStateValue.Should().Be(AppText.Format(_culture, "Settings.SyncMeta.RemoteStateHasDataCount", 12));
+    }
+
+    [Fact]
     public void RemoteSyncRecentActivity_Should_Project_Localized_Items()
     {
         _remoteSyncStatus.SetState(
