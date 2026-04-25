@@ -1,3 +1,4 @@
+using System.IO;
 using System.Configuration;
 using Birds.Infrastructure.Configuration;
 using Birds.Shared.Constants;
@@ -8,6 +9,9 @@ namespace Birds.App.Services;
 
 internal static class DatabaseConfigurationResolver
 {
+    private const string DefaultRemotePostgresConnectionString =
+        "Host=${DB_HOST};Port=${DB_PORT};Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}";
+
     internal static DatabaseStartupConfiguration Resolve(IConfiguration configuration)
     {
         var legacyProvider = ResolveLegacyProvider(configuration);
@@ -38,7 +42,16 @@ internal static class DatabaseConfigurationResolver
         if (string.IsNullOrWhiteSpace(configuredConnectionName) && legacyProvider != DatabaseProvider.Postgres)
             configuredConnectionName = configuration["Database:ConnectionStringName"];
 
-        return ResolveConnectionString(configuration, configuredConnectionName, "Sqlite", "DefaultConnection");
+        var resolvedConnection = TryResolveConnectionString(configuration, configuredConnectionName, "Sqlite",
+            "DefaultConnection");
+        if (resolvedConnection.ConnectionString is not null)
+            return resolvedConnection.ConnectionString;
+
+        if (string.IsNullOrWhiteSpace(configuredConnectionName))
+            return CreateDefaultLocalStoreConnectionString();
+
+        throw new ConfigurationErrorsException(
+            ErrorMessages.ConnectionStringNotFoundFor(resolvedConnection.Names.ToArray()));
     }
 
     private static RemoteSyncRuntimeOptions ResolveRemoteSyncOptions(IConfiguration configuration,
@@ -58,6 +71,14 @@ internal static class DatabaseConfigurationResolver
 
         var resolvedConnection =
             TryResolveConnectionString(configuration, configuredConnectionName, "Postgres", "DefaultConnection");
+        if (resolvedConnection.ConnectionString is null && string.IsNullOrWhiteSpace(configuredConnectionName))
+        {
+            resolvedConnection = new ResolvedConnectionString(
+                App.ReplaceEnvPlaceholders(DefaultRemotePostgresConnectionString),
+                "Postgres environment defaults",
+                resolvedConnection.Names);
+        }
+
         if (resolvedConnection.ConnectionString is null)
         {
             Log.Warning("Remote PostgreSQL sync is enabled, but no remote connection string was found.");
@@ -89,6 +110,16 @@ internal static class DatabaseConfigurationResolver
 
         throw new ConfigurationErrorsException(
             ErrorMessages.ConnectionStringNotFoundFor(resolvedConnection.Names.ToArray()));
+    }
+
+    private static string CreateDefaultLocalStoreConnectionString()
+    {
+        var databasePath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Birds",
+            "birds.db");
+
+        return $"Data Source={databasePath}";
     }
 
     private static ResolvedConnectionString TryResolveConnectionString(IConfiguration configuration,

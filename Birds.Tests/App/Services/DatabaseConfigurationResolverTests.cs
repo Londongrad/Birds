@@ -29,6 +29,22 @@ public sealed class DatabaseConfigurationResolverTests
     }
 
     [Fact]
+    public void Resolve_WhenNoAppsettingsAreAvailable_UsesDefaultLocalSqliteStore()
+    {
+        var configuration = BuildConfiguration(new Dictionary<string, string?>());
+        var expectedPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Birds",
+            "birds.db");
+
+        var result = DatabaseConfigurationResolver.Resolve(configuration);
+
+        result.LocalStoreConnectionString.Should().Be($"Data Source={expectedPath}");
+        result.RemoteSync.IsEnabled.Should().BeFalse();
+        result.RemoteSync.IsConfigured.Should().BeFalse();
+    }
+
+    [Fact]
     public void Resolve_WhenAppsettingsAreUsed_DisablesRemoteSyncByDefault()
     {
         var appSettingsPath = FindAppSettingsPath();
@@ -76,6 +92,44 @@ public sealed class DatabaseConfigurationResolverTests
         result.LocalStoreConnectionString.Should().Be("Data Source=offline.db");
         result.RemoteSync.IsConfigured.Should().BeTrue();
         result.RemoteSync.ConnectionString.Should().Be("Host=sync;Database=birds_sync;Username=user;Password=secret");
+    }
+
+    [Fact]
+    public void Resolve_WhenRemoteSyncEnabledWithoutConnectionString_UsesDefaultEnvironmentConnection()
+    {
+        var previousHost = Environment.GetEnvironmentVariable("DB_HOST");
+        var previousPort = Environment.GetEnvironmentVariable("DB_PORT");
+        var previousName = Environment.GetEnvironmentVariable("DB_NAME");
+        var previousUser = Environment.GetEnvironmentVariable("DB_USER");
+        var previousPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
+
+        try
+        {
+            Environment.SetEnvironmentVariable("DB_HOST", "sync.example");
+            Environment.SetEnvironmentVariable("DB_PORT", "5432");
+            Environment.SetEnvironmentVariable("DB_NAME", "birds_sync");
+            Environment.SetEnvironmentVariable("DB_USER", "birds_user");
+            Environment.SetEnvironmentVariable("DB_PASSWORD", "secret");
+            var configuration = BuildConfiguration(new Dictionary<string, string?>
+            {
+                ["REMOTE_SYNC_ENABLED"] = "true"
+            });
+
+            var result = DatabaseConfigurationResolver.Resolve(configuration);
+
+            result.RemoteSync.IsEnabled.Should().BeTrue();
+            result.RemoteSync.IsConfigured.Should().BeTrue();
+            result.RemoteSync.ConnectionString.Should()
+                .Be("Host=sync.example;Port=5432;Database=birds_sync;Username=birds_user;Password=secret");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("DB_HOST", previousHost);
+            Environment.SetEnvironmentVariable("DB_PORT", previousPort);
+            Environment.SetEnvironmentVariable("DB_NAME", previousName);
+            Environment.SetEnvironmentVariable("DB_USER", previousUser);
+            Environment.SetEnvironmentVariable("DB_PASSWORD", previousPassword);
+        }
     }
 
     [Fact]
@@ -229,11 +283,26 @@ public sealed class DatabaseConfigurationResolverTests
 
     private sealed class CollectingLogEventSink : ILogEventSink
     {
-        public List<LogEvent> Events { get; } = [];
+        private readonly List<LogEvent> _events = [];
+        private readonly object _gate = new();
+
+        public IReadOnlyList<LogEvent> Events
+        {
+            get
+            {
+                lock (_gate)
+                {
+                    return _events.ToArray();
+                }
+            }
+        }
 
         public void Emit(LogEvent logEvent)
         {
-            Events.Add(logEvent);
+            lock (_gate)
+            {
+                _events.Add(logEvent);
+            }
         }
     }
 }
