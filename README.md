@@ -57,10 +57,10 @@ and opt-in, so the application can run safely as a local-only archive unless rem
 > cards.
 > As the user scrolls, view models are created on demand, which keeps memory usage lower even for very large archives.
 >
-> This optimization comes with a deliberate tradeoff: the archive stays on the current `ListBox` virtualization path
-> with coarse item-based scrolling instead of smooth pixel scrolling. In practice, the list advances in larger card
-> steps. That behavior is what keeps on-demand view model materialization working. If the scrolling mode is changed,
-> the current memory-saving approach stops working as intended.
+> This is a deliberate performance tradeoff for large archives, not a blanket rule for every list. The archive stays on
+> the current `ListBox` virtualization path with coarse item-based scrolling instead of smooth pixel scrolling. In
+> practice, the list advances in larger card steps. That behavior is what keeps on-demand view model materialization
+> working. If the scrolling mode is changed, the current memory-saving approach stops working as intended.
 
 #### Statistics
 
@@ -180,10 +180,10 @@ Birds — это WPF-приложение для учёта птиц: посту
 > По мере прокрутки view model материализуются на лету, поэтому даже на больших архивах расход памяти остаётся заметно
 > ниже.
 >
-> У этой оптимизации есть сознательный компромисс: архив остаётся на текущем пути виртуализации `ListBox` с
-> пошаговой прокруткой по элементам вместо плавной пиксельной прокрутки. На практике список листается более крупными
-> шагами. Именно это и сохраняет материализацию `BirdViewModel` на лету. Если менять режим прокрутки, текущая схема
-> экономии памяти перестаёт работать как задумано.
+> Это осознанный performance tradeoff для больших архивов, а не универсальное правило для любого списка. Архив
+> остаётся на текущем пути виртуализации `ListBox` с пошаговой прокруткой по элементам вместо плавной пиксельной
+> прокрутки. На практике список листается более крупными шагами. Именно это и сохраняет материализацию
+> `BirdViewModel` на лету. Если менять режим прокрутки, текущая схема экономии памяти перестаёт работать как задумано.
 
 #### Статистика
 
