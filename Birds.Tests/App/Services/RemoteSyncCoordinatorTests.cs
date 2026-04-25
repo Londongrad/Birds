@@ -24,7 +24,7 @@ public sealed class RemoteSyncCoordinatorTests
 
         var sut = new RemoteSyncCoordinator(
             remoteSyncService.Object,
-            RemoteSyncRuntimeOptions.Disabled,
+            CreateRemoteSyncOptionsProvider(RemoteSyncRuntimeOptions.Disabled),
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
@@ -51,7 +51,7 @@ public sealed class RemoteSyncCoordinatorTests
 
         var sut = new RemoteSyncCoordinator(
             remoteSyncService.Object,
-            RemoteSyncRuntimeOptions.EnabledButNotConfigured(configurationError),
+            CreateRemoteSyncOptionsProvider(RemoteSyncRuntimeOptions.EnabledButNotConfigured(configurationError)),
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
@@ -89,7 +89,7 @@ public sealed class RemoteSyncCoordinatorTests
 
         var sut = new RemoteSyncCoordinator(
             remoteSyncService.Object,
-            new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+            CreateRemoteSyncOptionsProvider(new RemoteSyncRuntimeOptions(true, "Host=remote.example")),
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
@@ -127,7 +127,7 @@ public sealed class RemoteSyncCoordinatorTests
 
         var sut = new RemoteSyncCoordinator(
             remoteSyncService.Object,
-            new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+            CreateRemoteSyncOptionsProvider(new RemoteSyncRuntimeOptions(true, "Host=remote.example")),
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
@@ -171,7 +171,7 @@ public sealed class RemoteSyncCoordinatorTests
 
         var sut = new RemoteSyncCoordinator(
             remoteSyncService.Object,
-            new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+            CreateRemoteSyncOptionsProvider(new RemoteSyncRuntimeOptions(true, "Host=remote.example")),
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
@@ -207,7 +207,7 @@ public sealed class RemoteSyncCoordinatorTests
 
         var sut = new RemoteSyncCoordinator(
             remoteSyncService.Object,
-            new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+            CreateRemoteSyncOptionsProvider(new RemoteSyncRuntimeOptions(true, "Host=remote.example")),
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
@@ -237,7 +237,7 @@ public sealed class RemoteSyncCoordinatorTests
 
         var sut = new RemoteSyncCoordinator(
             remoteSyncService.Object,
-            new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+            CreateRemoteSyncOptionsProvider(new RemoteSyncRuntimeOptions(true, "Host=remote.example")),
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
@@ -273,7 +273,7 @@ public sealed class RemoteSyncCoordinatorTests
 
         var sut = new RemoteSyncCoordinator(
             remoteSyncService.Object,
-            new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+            CreateRemoteSyncOptionsProvider(new RemoteSyncRuntimeOptions(true, "Host=remote.example")),
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
@@ -297,7 +297,7 @@ public sealed class RemoteSyncCoordinatorTests
 
         var sut = new RemoteSyncCoordinator(
             remoteSyncService.Object,
-            new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+            CreateRemoteSyncOptionsProvider(new RemoteSyncRuntimeOptions(true, "Host=remote.example")),
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
@@ -332,7 +332,7 @@ public sealed class RemoteSyncCoordinatorTests
 
         var sut = new RemoteSyncCoordinator(
             remoteSyncService.Object,
-            new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+            CreateRemoteSyncOptionsProvider(new RemoteSyncRuntimeOptions(true, "Host=remote.example")),
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
@@ -377,7 +377,7 @@ public sealed class RemoteSyncCoordinatorTests
 
         var sut = new RemoteSyncCoordinator(
             remoteSyncService.Object,
-            new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+            CreateRemoteSyncOptionsProvider(new RemoteSyncRuntimeOptions(true, "Host=remote.example")),
             statusReporter.Object,
             localStoreStateService.Object,
             databaseMaintenanceService.Object,
@@ -420,7 +420,7 @@ public sealed class RemoteSyncCoordinatorTests
 
         var sut = new RemoteSyncCoordinator(
             remoteSyncService.Object,
-            new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+            CreateRemoteSyncOptionsProvider(new RemoteSyncRuntimeOptions(true, "Host=remote.example")),
             statusReporter.Object,
             localStoreStateService.Object,
             databaseMaintenanceService.Object,
@@ -464,7 +464,7 @@ public sealed class RemoteSyncCoordinatorTests
 
         var sut = new RemoteSyncCoordinator(
             remoteSyncService.Object,
-            new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+            CreateRemoteSyncOptionsProvider(new RemoteSyncRuntimeOptions(true, "Host=remote.example")),
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
@@ -502,7 +502,7 @@ public sealed class RemoteSyncCoordinatorTests
 
         var sut = new RemoteSyncCoordinator(
             remoteSyncService.Object,
-            new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+            CreateRemoteSyncOptionsProvider(new RemoteSyncRuntimeOptions(true, "Host=remote.example")),
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
@@ -537,7 +537,7 @@ public sealed class RemoteSyncCoordinatorTests
 
         var sut = new RemoteSyncCoordinator(
             remoteSyncService.Object,
-            new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+            CreateRemoteSyncOptionsProvider(new RemoteSyncRuntimeOptions(true, "Host=remote.example")),
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
@@ -579,7 +579,7 @@ public sealed class RemoteSyncCoordinatorTests
 
         var sut = new RemoteSyncCoordinator(
             remoteSyncService.Object,
-            new RemoteSyncRuntimeOptions(true, "Host=remote.example"),
+            CreateRemoteSyncOptionsProvider(new RemoteSyncRuntimeOptions(true, "Host=remote.example")),
             statusReporter.Object,
             localStoreStateService.Object,
             CreateDatabaseMaintenanceService().Object,
@@ -611,6 +611,12 @@ public sealed class RemoteSyncCoordinatorTests
         mock.Setup(x => x.ResetLocalDatabaseAsync(It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         return mock;
+    }
+
+    private static IRemoteSyncRuntimeOptionsProvider CreateRemoteSyncOptionsProvider(
+        RemoteSyncRuntimeOptions options)
+    {
+        return new StaticRemoteSyncRuntimeOptionsProvider(options);
     }
 
     private static Mock<IAppPreferencesService> CreatePreferencesService(string selectedSyncInterval =

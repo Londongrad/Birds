@@ -6,12 +6,10 @@ using Birds.Shared.Sync;
 using Birds.UI.Services.Background;
 using Birds.UI.Services.Preferences.Interfaces;
 using Birds.UI.Services.Notification.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
 namespace Birds.App.Services;
 
-[method: ActivatorUtilitiesConstructor]
 internal sealed class RemoteSyncCoordinator(
     IRemoteSyncService remoteSyncService,
     IRemoteSyncRuntimeOptionsProvider remoteSyncOptionsProvider,
@@ -36,27 +34,6 @@ internal sealed class RemoteSyncCoordinator(
     private readonly SemaphoreSlim _wakeSignal = new(0, int.MaxValue);
     private volatile bool _isPaused;
     private int _started;
-
-    public RemoteSyncCoordinator(
-        IRemoteSyncService remoteSyncService,
-        RemoteSyncRuntimeOptions remoteSyncOptions,
-        IRemoteSyncStatusReporter remoteSyncStatusReporter,
-        ILocalStoreStateService localStoreStateService,
-        IDatabaseMaintenanceService databaseMaintenanceService,
-        IAppPreferencesService preferences,
-        INotificationService notificationService,
-        IBackgroundTaskRunner backgroundTaskRunner)
-        : this(
-            remoteSyncService,
-            new StaticRemoteSyncRuntimeOptionsProvider(remoteSyncOptions),
-            remoteSyncStatusReporter,
-            localStoreStateService,
-            databaseMaintenanceService,
-            preferences,
-            notificationService,
-            backgroundTaskRunner)
-    {
-    }
 
     public bool IsEnabled => RemoteSyncOptions.IsEnabled;
 

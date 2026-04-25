@@ -3,12 +3,10 @@ using Birds.Infrastructure.Configuration;
 using Birds.Infrastructure.Persistence;
 using Birds.Infrastructure.Seeding;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Birds.Infrastructure.Services;
 
-[method: ActivatorUtilitiesConstructor]
 public sealed class DatabaseInitializerService(
     IDbContextFactory<BirdDbContext> contextFactory,
     DatabaseRuntimeOptions options,
@@ -23,23 +21,6 @@ public sealed class DatabaseInitializerService(
     private readonly DatabaseRuntimeOptions _options = options;
     private readonly IRemoteSyncRuntimeOptionsProvider _remoteSyncOptionsProvider = remoteSyncOptionsProvider;
     private readonly DatabaseSeedingOptions _seedingOptions = seedingOptions;
-
-    public DatabaseInitializerService(
-        IDbContextFactory<BirdDbContext> contextFactory,
-        DatabaseRuntimeOptions options,
-        RemoteSyncRuntimeOptions remoteSyncOptions,
-        DatabaseSeedingOptions seedingOptions,
-        BirdSeeder birdSeeder,
-        ILogger<DatabaseInitializerService> logger)
-        : this(
-            contextFactory,
-            options,
-            new StaticRemoteSyncRuntimeOptionsProvider(remoteSyncOptions),
-            seedingOptions,
-            birdSeeder,
-            logger)
-    {
-    }
 
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {

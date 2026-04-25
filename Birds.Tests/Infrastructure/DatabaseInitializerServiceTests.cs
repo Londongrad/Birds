@@ -117,7 +117,7 @@ public sealed class DatabaseInitializerServiceTests
         var initializer = new DatabaseInitializerService(
             failingFactory,
             new DatabaseRuntimeOptions(DatabaseProvider.Sqlite, "Data Source=failing.db"),
-            RemoteSyncRuntimeOptions.Disabled,
+            new StaticRemoteSyncRuntimeOptionsProvider(RemoteSyncRuntimeOptions.Disabled),
             new DatabaseSeedingOptions(DatabaseSeedingMode.None, 0, 1, 0),
             new BirdSeeder(failingFactory, NullLogger<BirdSeeder>.Instance),
             logger);
@@ -142,7 +142,7 @@ public sealed class DatabaseInitializerServiceTests
         return new DatabaseInitializerService(
             contextFactory,
             new DatabaseRuntimeOptions(DatabaseProvider.Sqlite, $"Data Source={databasePath}"),
-            RemoteSyncRuntimeOptions.Disabled,
+            new StaticRemoteSyncRuntimeOptionsProvider(RemoteSyncRuntimeOptions.Disabled),
             new DatabaseSeedingOptions(DatabaseSeedingMode.None, 0, 1, 0),
             new BirdSeeder(contextFactory, NullLogger<BirdSeeder>.Instance),
             NullLogger<DatabaseInitializerService>.Instance);

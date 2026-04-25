@@ -4,28 +4,15 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Birds.Infrastructure.Configuration;
 using Birds.Shared.Constants;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Birds.App.Services;
 
-[method: ActivatorUtilitiesConstructor]
 internal sealed class DiagnosticsService(
     ILogger<DiagnosticsService> logger,
     DatabaseRuntimeOptions databaseOptions,
     IRemoteSyncRuntimeOptionsProvider remoteSyncOptionsProvider) : IDiagnosticsService
 {
-    public DiagnosticsService(
-        ILogger<DiagnosticsService> logger,
-        DatabaseRuntimeOptions databaseOptions,
-        RemoteSyncRuntimeOptions remoteSyncOptions)
-        : this(
-            logger,
-            databaseOptions,
-            new StaticRemoteSyncRuntimeOptionsProvider(remoteSyncOptions))
-    {
-    }
-
     public string LogDirectory
     {
         get

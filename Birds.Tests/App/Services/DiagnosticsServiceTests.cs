@@ -1,12 +1,29 @@
 using Birds.App.Services;
 using Birds.Infrastructure.Configuration;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Birds.Tests.App.Services;
 
 public sealed class DiagnosticsServiceTests
 {
+    [Fact]
+    public void ServiceProvider_ShouldResolveDiagnosticsService_WhenStartupAndRuntimeRemoteOptionsAreRegistered()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new DatabaseRuntimeOptions(DatabaseProvider.Sqlite, "Data Source=birds.db"));
+        services.AddSingleton(new RemoteSyncRuntimeOptions(true, "Host=db;Database=birds;Username=user;Password=secret"));
+        services.AddSingleton<IRemoteSyncRuntimeOptionsProvider>(
+            sp => new StaticRemoteSyncRuntimeOptionsProvider(sp.GetRequiredService<RemoteSyncRuntimeOptions>()));
+        services.AddSingleton<IDiagnosticsService, DiagnosticsService>();
+
+        using var provider = services.BuildServiceProvider();
+
+        provider.GetRequiredService<IDiagnosticsService>().Should().BeOfType<DiagnosticsService>();
+    }
+
     [Fact]
     public void CaptureStartupDiagnostics_Should_Resolve_Development_Log_Path_Under_Repository()
     {
@@ -41,7 +58,7 @@ public sealed class DiagnosticsServiceTests
         var sut = new DiagnosticsService(
             logger,
             new DatabaseRuntimeOptions(DatabaseProvider.Sqlite, "Data Source=birds.db"),
-            remoteOptions);
+            new StaticRemoteSyncRuntimeOptionsProvider(remoteOptions));
 
         sut.LogStartupDiagnostics();
 
@@ -59,7 +76,7 @@ public sealed class DiagnosticsServiceTests
         return new DiagnosticsService(
             new TestLogger<DiagnosticsService>(),
             new DatabaseRuntimeOptions(DatabaseProvider.Sqlite, localConnectionString),
-            RemoteSyncRuntimeOptions.Disabled);
+            new StaticRemoteSyncRuntimeOptionsProvider(RemoteSyncRuntimeOptions.Disabled));
     }
 
     private static string FindRepositoryRoot()
