@@ -210,6 +210,20 @@ public static partial class AppText
                 "Controls how often the app performs regular background sync checks when the remote backend is healthy. Current preset: {0}.",
             ["Settings.SyncIntervalFixedHint"] =
                 "Safety intervals remain fixed: after successful changes — 3 sec, paused — 15 sec, backend unavailable — 20 sec, retry after error — 30 sec.",
+            ["Settings.RemoteSyncConfig.Title"] = "Remote PostgreSQL connection",
+            ["Settings.RemoteSyncConfig.Description"] =
+                "Configure the optional PostgreSQL backend used for cloud synchronization. The password is stored in the current Windows user profile, not in preferences.json.",
+            ["Settings.RemoteSyncConfig.Enable"] = "Enable remote sync",
+            ["Settings.RemoteSyncConfig.Host"] = "Host",
+            ["Settings.RemoteSyncConfig.Port"] = "Port",
+            ["Settings.RemoteSyncConfig.Database"] = "Database",
+            ["Settings.RemoteSyncConfig.Username"] = "Username",
+            ["Settings.RemoteSyncConfig.Password"] = "Password",
+            ["Settings.RemoteSyncConfig.PasswordSaved"] = "A saved password will be reused if this field is left empty.",
+            ["Settings.RemoteSyncConfig.Save"] = "Save connection",
+            ["Settings.RemoteSyncConfig.Test"] = "Test connection",
+            ["Settings.RemoteSyncConfig.DisabledHint"] =
+                "Remote sync is disabled. Saved connection details are kept so you can enable it later.",
             ["Settings.NotificationsHint.Enabled"] =
                 "The unread badge will be shown next to the notification center button.",
             ["Settings.NotificationsHint.Disabled"] =
@@ -350,6 +364,8 @@ public static partial class AppText
             ["Info.RemoteSnapshotUploaded"] = "The remote backend snapshot was replaced with the current local SQLite data.",
             ["Info.RemoteSnapshotRedownloaded"] = "The local SQLite snapshot was restored from the remote backend.",
             ["Info.SyncConflictResolved"] = "Cloud sync resolved {0} conflict(s) using the newer remote version.",
+            ["Info.RemoteSyncSettingsSaved"] = "Remote sync settings were saved.",
+            ["Info.RemoteSyncConnectionSucceeded"] = "Remote PostgreSQL connection succeeded.",
 
             ["Error.BirdLoadFailed"] =
                 "Failed to load bird data from the database.\nPlease check your connection or restart the application.",
@@ -368,6 +384,14 @@ public static partial class AppText
                 "Remote synchronization is enabled, but the PostgreSQL connection string is not configured.",
             ["Error.RemoteSyncMissingEnvironmentVariables"] =
                 "Remote synchronization is enabled, but required environment variables are missing: {0}.",
+            ["Error.RemoteSyncHostMissing"] = "Remote sync host is required.",
+            ["Error.RemoteSyncPortInvalid"] = "Remote sync port must be between 1 and 65535.",
+            ["Error.RemoteSyncDatabaseMissing"] = "Remote sync database name is required.",
+            ["Error.RemoteSyncUsernameMissing"] = "Remote sync username is required.",
+            ["Error.RemoteSyncPasswordMissing"] = "Remote sync password is required.",
+            ["Error.RemoteSyncConnectionTestFailed"] =
+                "Unable to connect to the remote PostgreSQL backend. Check the connection settings.",
+            ["Error.RemoteSyncSettingsSaveFailed"] = "Unable to save remote sync settings.",
             ["Error.InvalidDatabaseProvider"] = "Unsupported database provider '{0}'. Use 'Sqlite' or 'Postgres'.",
             ["Error.InvalidDatabaseSeedingMode"] =
                 "Unsupported database seeding mode '{0}'. Use 'None', 'SeedIfEmpty' or 'RecreateAndSeed'.",

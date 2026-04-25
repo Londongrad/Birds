@@ -33,6 +33,18 @@ public sealed partial class JsonAppPreferencesService : ObservableObject, IAppPr
 
     [ObservableProperty] private string selectedSyncInterval = AppPreferencesState.DefaultSyncInterval;
 
+    [ObservableProperty] private bool remoteSyncConfigurationSaved = AppPreferencesState.DefaultRemoteSyncConfigurationSaved;
+
+    [ObservableProperty] private bool remoteSyncEnabled = AppPreferencesState.DefaultRemoteSyncEnabled;
+
+    [ObservableProperty] private string remoteSyncHost = string.Empty;
+
+    [ObservableProperty] private int remoteSyncPort = AppPreferencesState.DefaultRemoteSyncPort;
+
+    [ObservableProperty] private string remoteSyncDatabase = string.Empty;
+
+    [ObservableProperty] private string remoteSyncUsername = string.Empty;
+
     [ObservableProperty] private string selectedLanguage = AppPreferencesState.DefaultLanguage;
 
     [ObservableProperty] private string selectedTheme = AppPreferencesState.DefaultTheme;
@@ -54,6 +66,14 @@ public sealed partial class JsonAppPreferencesService : ObservableObject, IAppPr
         selectedDateFormat = DateDisplayFormats.Normalize(state.SelectedDateFormat);
         selectedImportMode = BirdImportModes.Normalize(state.SelectedImportMode);
         selectedSyncInterval = RemoteSyncIntervalPresets.Normalize(state.SelectedSyncInterval);
+        remoteSyncConfigurationSaved = state.RemoteSyncConfigurationSaved;
+        remoteSyncEnabled = state.RemoteSyncEnabled;
+        remoteSyncHost = state.RemoteSyncHost?.Trim() ?? string.Empty;
+        remoteSyncPort = state.RemoteSyncPort > 0
+            ? state.RemoteSyncPort
+            : AppPreferencesState.DefaultRemoteSyncPort;
+        remoteSyncDatabase = state.RemoteSyncDatabase?.Trim() ?? string.Empty;
+        remoteSyncUsername = state.RemoteSyncUsername?.Trim() ?? string.Empty;
         customExportPath = state.CustomExportPath?.Trim() ?? string.Empty;
         autoExportEnabled = state.AutoExportEnabled;
         showNotificationBadge = state.ShowNotificationBadge;
@@ -70,6 +90,12 @@ public sealed partial class JsonAppPreferencesService : ObservableObject, IAppPr
         SelectedDateFormat = AppPreferencesState.DefaultDateFormat;
         SelectedImportMode = AppPreferencesState.DefaultImportMode;
         SelectedSyncInterval = AppPreferencesState.DefaultSyncInterval;
+        RemoteSyncConfigurationSaved = AppPreferencesState.DefaultRemoteSyncConfigurationSaved;
+        RemoteSyncEnabled = AppPreferencesState.DefaultRemoteSyncEnabled;
+        RemoteSyncHost = string.Empty;
+        RemoteSyncPort = AppPreferencesState.DefaultRemoteSyncPort;
+        RemoteSyncDatabase = string.Empty;
+        RemoteSyncUsername = string.Empty;
         CustomExportPath = string.Empty;
         AutoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
         ShowNotificationBadge = true;
@@ -102,6 +128,42 @@ public sealed partial class JsonAppPreferencesService : ObservableObject, IAppPr
     partial void OnSelectedSyncIntervalChanged(string value)
     {
         selectedSyncInterval = RemoteSyncIntervalPresets.Normalize(value);
+        SaveState();
+    }
+
+    partial void OnRemoteSyncConfigurationSavedChanged(bool value)
+    {
+        SaveState();
+    }
+
+    partial void OnRemoteSyncEnabledChanged(bool value)
+    {
+        SaveState();
+    }
+
+    partial void OnRemoteSyncHostChanged(string value)
+    {
+        remoteSyncHost = value?.Trim() ?? string.Empty;
+        SaveState();
+    }
+
+    partial void OnRemoteSyncPortChanged(int value)
+    {
+        remoteSyncPort = value > 0
+            ? value
+            : AppPreferencesState.DefaultRemoteSyncPort;
+        SaveState();
+    }
+
+    partial void OnRemoteSyncDatabaseChanged(string value)
+    {
+        remoteSyncDatabase = value?.Trim() ?? string.Empty;
+        SaveState();
+    }
+
+    partial void OnRemoteSyncUsernameChanged(string value)
+    {
+        remoteSyncUsername = value?.Trim() ?? string.Empty;
         SaveState();
     }
 
@@ -187,6 +249,14 @@ public sealed partial class JsonAppPreferencesService : ObservableObject, IAppPr
                     SelectedDateFormat = DateDisplayFormats.Normalize(SelectedDateFormat),
                     SelectedImportMode = BirdImportModes.Normalize(SelectedImportMode),
                     SelectedSyncInterval = RemoteSyncIntervalPresets.Normalize(SelectedSyncInterval),
+                    RemoteSyncConfigurationSaved = RemoteSyncConfigurationSaved,
+                    RemoteSyncEnabled = RemoteSyncEnabled,
+                    RemoteSyncHost = RemoteSyncHost?.Trim() ?? string.Empty,
+                    RemoteSyncPort = RemoteSyncPort > 0
+                        ? RemoteSyncPort
+                        : AppPreferencesState.DefaultRemoteSyncPort,
+                    RemoteSyncDatabase = RemoteSyncDatabase?.Trim() ?? string.Empty,
+                    RemoteSyncUsername = RemoteSyncUsername?.Trim() ?? string.Empty,
                     CustomExportPath = CustomExportPath?.Trim() ?? string.Empty,
                     AutoExportEnabled = AutoExportEnabled,
                     ShowNotificationBadge = ShowNotificationBadge,

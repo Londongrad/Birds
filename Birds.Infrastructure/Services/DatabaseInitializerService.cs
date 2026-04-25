@@ -3,14 +3,16 @@ using Birds.Infrastructure.Configuration;
 using Birds.Infrastructure.Persistence;
 using Birds.Infrastructure.Seeding;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Birds.Infrastructure.Services;
 
+[method: ActivatorUtilitiesConstructor]
 public sealed class DatabaseInitializerService(
     IDbContextFactory<BirdDbContext> contextFactory,
     DatabaseRuntimeOptions options,
-    RemoteSyncRuntimeOptions remoteSyncOptions,
+    IRemoteSyncRuntimeOptionsProvider remoteSyncOptionsProvider,
     DatabaseSeedingOptions seedingOptions,
     BirdSeeder birdSeeder,
     ILogger<DatabaseInitializerService> logger) : IDatabaseInitializer
@@ -19,8 +21,25 @@ public sealed class DatabaseInitializerService(
     private readonly IDbContextFactory<BirdDbContext> _contextFactory = contextFactory;
     private readonly ILogger<DatabaseInitializerService> _logger = logger;
     private readonly DatabaseRuntimeOptions _options = options;
-    private readonly RemoteSyncRuntimeOptions _remoteSyncOptions = remoteSyncOptions;
+    private readonly IRemoteSyncRuntimeOptionsProvider _remoteSyncOptionsProvider = remoteSyncOptionsProvider;
     private readonly DatabaseSeedingOptions _seedingOptions = seedingOptions;
+
+    public DatabaseInitializerService(
+        IDbContextFactory<BirdDbContext> contextFactory,
+        DatabaseRuntimeOptions options,
+        RemoteSyncRuntimeOptions remoteSyncOptions,
+        DatabaseSeedingOptions seedingOptions,
+        BirdSeeder birdSeeder,
+        ILogger<DatabaseInitializerService> logger)
+        : this(
+            contextFactory,
+            options,
+            new StaticRemoteSyncRuntimeOptionsProvider(remoteSyncOptions),
+            seedingOptions,
+            birdSeeder,
+            logger)
+    {
+    }
 
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
@@ -36,7 +55,7 @@ public sealed class DatabaseInitializerService(
 
             _logger.LogInformation("Local SQLite store is ready at {ConnectionString}.", _options.ConnectionString);
 
-            if (_remoteSyncOptions.IsConfigured)
+            if (_remoteSyncOptionsProvider.Current.IsConfigured)
                 _logger.LogInformation(
                     "Remote PostgreSQL sync backend is configured for future synchronization.");
         }

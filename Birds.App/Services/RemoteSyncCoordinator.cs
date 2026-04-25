@@ -6,13 +6,15 @@ using Birds.Shared.Sync;
 using Birds.UI.Services.Background;
 using Birds.UI.Services.Preferences.Interfaces;
 using Birds.UI.Services.Notification.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
 namespace Birds.App.Services;
 
+[method: ActivatorUtilitiesConstructor]
 internal sealed class RemoteSyncCoordinator(
     IRemoteSyncService remoteSyncService,
-    RemoteSyncRuntimeOptions remoteSyncOptions,
+    IRemoteSyncRuntimeOptionsProvider remoteSyncOptionsProvider,
     IRemoteSyncStatusReporter remoteSyncStatusReporter,
     ILocalStoreStateService localStoreStateService,
     IDatabaseMaintenanceService databaseMaintenanceService,
@@ -26,7 +28,7 @@ internal sealed class RemoteSyncCoordinator(
     private readonly INotificationService _notificationService = notificationService;
     private readonly IAppPreferencesService _preferences = preferences;
     private readonly IBackgroundTaskRunner _backgroundTaskRunner = backgroundTaskRunner;
-    private readonly RemoteSyncRuntimeOptions _remoteSyncOptions = remoteSyncOptions;
+    private readonly IRemoteSyncRuntimeOptionsProvider _remoteSyncOptionsProvider = remoteSyncOptionsProvider;
 
     private readonly IRemoteSyncService _remoteSyncService = remoteSyncService;
     private readonly IRemoteSyncStatusReporter _remoteSyncStatusReporter = remoteSyncStatusReporter;
@@ -35,23 +37,37 @@ internal sealed class RemoteSyncCoordinator(
     private volatile bool _isPaused;
     private int _started;
 
-    public bool IsEnabled => _remoteSyncOptions.IsEnabled;
+    public RemoteSyncCoordinator(
+        IRemoteSyncService remoteSyncService,
+        RemoteSyncRuntimeOptions remoteSyncOptions,
+        IRemoteSyncStatusReporter remoteSyncStatusReporter,
+        ILocalStoreStateService localStoreStateService,
+        IDatabaseMaintenanceService databaseMaintenanceService,
+        IAppPreferencesService preferences,
+        INotificationService notificationService,
+        IBackgroundTaskRunner backgroundTaskRunner)
+        : this(
+            remoteSyncService,
+            new StaticRemoteSyncRuntimeOptionsProvider(remoteSyncOptions),
+            remoteSyncStatusReporter,
+            localStoreStateService,
+            databaseMaintenanceService,
+            preferences,
+            notificationService,
+            backgroundTaskRunner)
+    {
+    }
 
-    public bool IsConfigured => _remoteSyncOptions.IsConfigured;
+    public bool IsEnabled => RemoteSyncOptions.IsEnabled;
 
-    public string? ConfigurationErrorMessage => _remoteSyncOptions.ConfigurationErrorMessage;
+    public bool IsConfigured => RemoteSyncOptions.IsConfigured;
+
+    public string? ConfigurationErrorMessage => RemoteSyncOptions.ConfigurationErrorMessage;
+
+    private RemoteSyncRuntimeOptions RemoteSyncOptions => _remoteSyncOptionsProvider.Current;
 
     public void Start(CancellationToken stoppingToken)
     {
-        if (!_remoteSyncOptions.IsConfigured)
-        {
-            _backgroundTaskRunner.Run(
-                _ => PublishDisabledStateAsync(stoppingToken),
-                new BackgroundTaskOptions("Publish disabled remote sync state"),
-                stoppingToken);
-            return;
-        }
-
         if (Interlocked.Exchange(ref _started, 1) == 1)
             return;
 
@@ -63,7 +79,7 @@ internal sealed class RemoteSyncCoordinator(
 
     public async Task BootstrapLocalStoreAsync(CancellationToken cancellationToken)
     {
-        if (!_remoteSyncOptions.IsConfigured)
+        if (!RemoteSyncOptions.IsConfigured)
         {
             await PublishDisabledStateAsync(cancellationToken);
             return;
@@ -82,7 +98,7 @@ internal sealed class RemoteSyncCoordinator(
 
     public async Task<bool> RedownloadRemoteSnapshotAsync(CancellationToken cancellationToken)
     {
-        if (!_remoteSyncOptions.IsConfigured)
+        if (!RemoteSyncOptions.IsConfigured)
         {
             await PublishDisabledStateAsync(cancellationToken);
             return false;
@@ -130,7 +146,7 @@ internal sealed class RemoteSyncCoordinator(
 
     public async Task<bool> UploadLocalSnapshotToRemoteAsync(CancellationToken cancellationToken)
     {
-        if (!_remoteSyncOptions.IsConfigured)
+        if (!RemoteSyncOptions.IsConfigured)
         {
             await PublishDisabledStateAsync(cancellationToken);
             return false;
@@ -165,7 +181,7 @@ internal sealed class RemoteSyncCoordinator(
 
     public async Task SyncNowAsync(CancellationToken cancellationToken)
     {
-        if (!_remoteSyncOptions.IsConfigured)
+        if (!RemoteSyncOptions.IsConfigured)
         {
             await PublishDisabledStateAsync(cancellationToken);
             return;
@@ -182,7 +198,7 @@ internal sealed class RemoteSyncCoordinator(
 
     public async Task PauseAsync(CancellationToken cancellationToken)
     {
-        if (!_remoteSyncOptions.IsConfigured)
+        if (!RemoteSyncOptions.IsConfigured)
         {
             await PublishDisabledStateAsync(cancellationToken);
             return;
@@ -193,9 +209,21 @@ internal sealed class RemoteSyncCoordinator(
         await _remoteSyncStatusReporter.SetPausedAsync(localState.PendingOperationCount, cancellationToken);
     }
 
+    public async Task RefreshConfigurationAsync(CancellationToken cancellationToken)
+    {
+        if (!RemoteSyncOptions.IsConfigured)
+        {
+            await PublishDisabledStateAsync(cancellationToken);
+            return;
+        }
+
+        RequestWake();
+        await PublishSyncingStateAsync(cancellationToken);
+    }
+
     public Task ResumeAsync(CancellationToken cancellationToken)
     {
-        if (!_remoteSyncOptions.IsConfigured)
+        if (!RemoteSyncOptions.IsConfigured)
             return PublishDisabledStateAsync(cancellationToken);
 
         _isPaused = false;
@@ -312,7 +340,7 @@ internal sealed class RemoteSyncCoordinator(
 
     internal async Task<TimeSpan> RunSingleIterationAsync(CancellationToken stoppingToken)
     {
-        if (!_remoteSyncOptions.IsConfigured)
+        if (!RemoteSyncOptions.IsConfigured)
         {
             await PublishDisabledStateAsync(stoppingToken);
             return TimeSpan.FromSeconds(15);
@@ -388,7 +416,7 @@ internal sealed class RemoteSyncCoordinator(
         var localState = await TryGetLocalStateAsync(cancellationToken);
         await _remoteSyncStatusReporter.SetDisabledAsync(
             localState.PendingOperationCount,
-            _remoteSyncOptions.ConfigurationErrorMessage,
+            RemoteSyncOptions.ConfigurationErrorMessage,
             cancellationToken);
     }
 

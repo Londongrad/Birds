@@ -209,6 +209,21 @@ public static partial class AppText
                 "Управляет тем, как часто приложение выполняет обычные фоновые проверки синхронизации, когда remote backend доступен и работает штатно. Текущий пресет: {0}.",
             ["Settings.SyncIntervalFixedHint"] =
                 "Защитные интервалы остаются фиксированными: после успешных изменений — 3 сек, на паузе — 15 сек, backend недоступен — 20 сек, повтор после ошибки — 30 сек.",
+            ["Settings.RemoteSyncConfig.Title"] = "Подключение к PostgreSQL",
+            ["Settings.RemoteSyncConfig.Description"] =
+                "Настройте необязательный PostgreSQL backend для облачной синхронизации. Пароль хранится в профиле текущего пользователя Windows, а не в preferences.json.",
+            ["Settings.RemoteSyncConfig.Enable"] = "Включить remote sync",
+            ["Settings.RemoteSyncConfig.Host"] = "Host",
+            ["Settings.RemoteSyncConfig.Port"] = "Порт",
+            ["Settings.RemoteSyncConfig.Database"] = "База данных",
+            ["Settings.RemoteSyncConfig.Username"] = "Пользователь",
+            ["Settings.RemoteSyncConfig.Password"] = "Пароль",
+            ["Settings.RemoteSyncConfig.PasswordSaved"] =
+                "Если оставить поле пустым, будет использован сохранённый пароль.",
+            ["Settings.RemoteSyncConfig.Save"] = "Сохранить подключение",
+            ["Settings.RemoteSyncConfig.Test"] = "Проверить подключение",
+            ["Settings.RemoteSyncConfig.DisabledHint"] =
+                "Remote sync выключен. Сохранённые параметры подключения останутся на месте, чтобы его можно было включить позже.",
             ["Settings.NotificationsHint.Enabled"] =
                 "Индикатор новых уведомлений будет показываться рядом с кнопкой центра уведомлений.",
             ["Settings.NotificationsHint.Disabled"] =
@@ -347,6 +362,8 @@ public static partial class AppText
             ["Info.RemoteSnapshotRedownloaded"] = "Локальный SQLite-снимок восстановлен из удалённого backend.",
             ["Info.SyncConflictResolved"] =
                 "\u0421\u0438\u043D\u0445\u0440\u043E\u043D\u0438\u0437\u0430\u0446\u0438\u044F \u0440\u0430\u0437\u0440\u0435\u0448\u0438\u043B\u0430 {0} \u043A\u043E\u043D\u0444\u043B\u0438\u043A\u0442(\u043E\u0432) \u0432 \u043F\u043E\u043B\u044C\u0437\u0443 \u0431\u043E\u043B\u0435\u0435 \u043D\u043E\u0432\u043E\u0439 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0439 \u0432\u0435\u0440\u0441\u0438\u0438.",
+            ["Info.RemoteSyncSettingsSaved"] = "Настройки remote sync сохранены.",
+            ["Info.RemoteSyncConnectionSucceeded"] = "Подключение к PostgreSQL успешно проверено.",
 
             ["Error.BirdLoadFailed"] =
                 "Не удалось загрузить данные о птицах из базы данных.\nПроверьте подключение или перезапустите приложение.",
@@ -366,6 +383,14 @@ public static partial class AppText
                 "Удалённая синхронизация включена, но строка подключения PostgreSQL не настроена.",
             ["Error.RemoteSyncMissingEnvironmentVariables"] =
                 "Удалённая синхронизация включена, но не заданы обязательные переменные окружения: {0}.",
+            ["Error.RemoteSyncHostMissing"] = "Укажите host для remote sync.",
+            ["Error.RemoteSyncPortInvalid"] = "Порт remote sync должен быть от 1 до 65535.",
+            ["Error.RemoteSyncDatabaseMissing"] = "Укажите имя базы данных для remote sync.",
+            ["Error.RemoteSyncUsernameMissing"] = "Укажите пользователя для remote sync.",
+            ["Error.RemoteSyncPasswordMissing"] = "Укажите пароль для remote sync.",
+            ["Error.RemoteSyncConnectionTestFailed"] =
+                "Не удалось подключиться к удалённому PostgreSQL backend. Проверьте параметры подключения.",
+            ["Error.RemoteSyncSettingsSaveFailed"] = "Не удалось сохранить настройки remote sync.",
             ["Error.InvalidDatabaseProvider"] =
                 "Неподдерживаемый провайдер базы данных '{0}'. Используйте 'Sqlite' или 'Postgres'.",
             ["Error.InvalidDatabaseSeedingMode"] =

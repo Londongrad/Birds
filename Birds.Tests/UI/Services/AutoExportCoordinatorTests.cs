@@ -199,6 +199,18 @@ public sealed class AutoExportCoordinatorTests
             set => SetField(ref _selectedSyncInterval, value, nameof(SelectedSyncInterval));
         }
 
+        public bool RemoteSyncConfigurationSaved { get; set; } = AppPreferencesState.DefaultRemoteSyncConfigurationSaved;
+
+        public bool RemoteSyncEnabled { get; set; } = AppPreferencesState.DefaultRemoteSyncEnabled;
+
+        public string RemoteSyncHost { get; set; } = string.Empty;
+
+        public int RemoteSyncPort { get; set; } = AppPreferencesState.DefaultRemoteSyncPort;
+
+        public string RemoteSyncDatabase { get; set; } = string.Empty;
+
+        public string RemoteSyncUsername { get; set; } = string.Empty;
+
         public string CustomExportPath
         {
             get => _customExportPath;

@@ -14,6 +14,8 @@ public interface IRemoteSyncController
 
     Task<bool> UploadLocalSnapshotToRemoteAsync(CancellationToken cancellationToken);
 
+    Task RefreshConfigurationAsync(CancellationToken cancellationToken);
+
     Task PauseAsync(CancellationToken cancellationToken);
 
     Task ResumeAsync(CancellationToken cancellationToken);

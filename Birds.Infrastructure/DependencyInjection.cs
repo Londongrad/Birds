@@ -7,6 +7,7 @@ using Birds.Infrastructure.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Birds.Infrastructure;
 
@@ -22,6 +23,8 @@ public static class DependencyInjection
         services.AddSingleton(new DatabaseRuntimeOptions(DatabaseProvider.Sqlite, normalizedConnectionString));
         services.AddSingleton(seedingOptions);
         services.AddSingleton(remoteSyncOptions);
+        services.TryAddSingleton<IRemoteSyncRuntimeOptionsProvider>(
+            _ => new StaticRemoteSyncRuntimeOptionsProvider(remoteSyncOptions));
 
         // Register a factory so each repository call can create its own short-lived DbContext.
         services.AddDbContextFactory<BirdDbContext>(options =>
@@ -32,18 +35,9 @@ public static class DependencyInjection
         services.AddSingleton<IDatabaseMaintenanceService, DatabaseMaintenanceService>();
         services.AddSingleton<ILocalStoreStateService, LocalStoreStateService>();
         services.AddSingleton<IBirdRepository, BirdRepository>();
-
-        if (remoteSyncOptions.IsConfigured)
-        {
-            services.AddDbContextFactory<RemoteBirdDbContext>(options =>
-                options.UseNpgsql(remoteSyncOptions.ConnectionString!, n => n.EnableRetryOnFailure(0)));
-            services.AddSingleton<IRemoteSyncSchemaInitializer, RemoteSyncSchemaInitializer>();
-            services.AddSingleton<IRemoteSyncService, RemoteSyncService>();
-        }
-        else
-        {
-            services.AddSingleton<IRemoteSyncService, DisabledRemoteSyncService>();
-        }
+        services.AddSingleton<IDbContextFactory<RemoteBirdDbContext>, RuntimeRemoteBirdDbContextFactory>();
+        services.AddSingleton<IRemoteSyncSchemaInitializer, RemoteSyncSchemaInitializer>();
+        services.AddSingleton<IRemoteSyncService, RemoteSyncService>();
     }
 
     private static string NormalizeSqliteConnectionString(string connectionString)

@@ -24,6 +24,7 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
     private readonly INotificationService _notificationService;
     private readonly IAppPreferencesService _preferences;
     private readonly IRemoteSyncController _remoteSyncController;
+    private readonly IRemoteSyncSettingsService _remoteSyncSettingsService;
     private readonly IRemoteSyncStatusSource _remoteSyncStatus;
     private readonly CancellationTokenSource _lifetimeCancellation = new();
     private bool _disposed;
@@ -73,6 +74,32 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
 
     [ObservableProperty] private SyncIntervalOption? selectedSyncIntervalOption;
 
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveRemoteSyncConfigurationCommand))]
+    [NotifyCanExecuteChangedFor(nameof(TestRemoteSyncConnectionCommand))]
+    private bool isRemoteSyncSettingsBusy;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveRemoteSyncConfigurationCommand))]
+    [NotifyCanExecuteChangedFor(nameof(TestRemoteSyncConnectionCommand))]
+    private bool remoteSyncSettingsEnabled;
+
+    [ObservableProperty] private string remoteSyncHost = string.Empty;
+
+    [ObservableProperty] private string remoteSyncPort = AppPreferencesState.DefaultRemoteSyncPort.ToString();
+
+    [ObservableProperty] private string remoteSyncDatabase = string.Empty;
+
+    [ObservableProperty] private string remoteSyncUsername = string.Empty;
+
+    [ObservableProperty] private string remoteSyncPassword = string.Empty;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasRemoteSyncConfigurationStatus))]
+    private string remoteSyncConfigurationStatus = string.Empty;
+
+    [ObservableProperty] private bool hasSavedRemoteSyncPassword;
+
     public SyncSettingsViewModel(
         IAppPreferencesService preferences,
         ILocalizationService localization,
@@ -81,6 +108,27 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
         INotificationService notificationService,
         IRemoteSyncStatusSource remoteSyncStatus,
         IRemoteSyncController remoteSyncController)
+        : this(
+            preferences,
+            localization,
+            birdManager,
+            autoExportCoordinator,
+            notificationService,
+            remoteSyncStatus,
+            remoteSyncController,
+            new NullRemoteSyncSettingsService())
+    {
+    }
+
+    public SyncSettingsViewModel(
+        IAppPreferencesService preferences,
+        ILocalizationService localization,
+        IBirdManager birdManager,
+        IAutoExportCoordinator autoExportCoordinator,
+        INotificationService notificationService,
+        IRemoteSyncStatusSource remoteSyncStatus,
+        IRemoteSyncController remoteSyncController,
+        IRemoteSyncSettingsService remoteSyncSettingsService)
     {
         _preferences = preferences;
         _localization = localization;
@@ -89,9 +137,11 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
         _notificationService = notificationService;
         _remoteSyncStatus = remoteSyncStatus;
         _remoteSyncController = remoteSyncController;
+        _remoteSyncSettingsService = remoteSyncSettingsService;
 
         BuildAvailableSyncIntervals();
         ReloadFromPreferences();
+        ReloadRemoteSyncConfiguration();
 
         _preferences.PropertyChanged += OnPreferencesChanged;
         _localization.LanguageChanged += OnLanguageChanged;
@@ -111,6 +161,15 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
         "Settings.SyncIntervalHint",
         AvailableSyncIntervals.FirstOrDefault(x => x.Code == SelectedSyncInterval)?.DisplayName
         ?? _localization.GetString("Settings.SyncIntervalOption.TenSeconds"));
+
+    public string RemoteSyncPasswordHint => HasSavedRemoteSyncPassword
+        ? _localization.GetString("Settings.RemoteSyncConfig.PasswordSaved")
+        : string.Empty;
+
+    public string RemoteSyncDisabledConfigurationHint => _localization.GetString(
+        "Settings.RemoteSyncConfig.DisabledHint");
+
+    public bool HasRemoteSyncConfigurationStatus => !string.IsNullOrWhiteSpace(RemoteSyncConfigurationStatus);
 
     public RemoteSyncDisplayState RemoteSyncStatus => _remoteSyncStatus.Status;
 
@@ -267,6 +326,77 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
         {
             if (!_disposed)
                 IsSyncControlBusy = false;
+
+            ClearSyncControlCancellation(operationCancellation);
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanSaveRemoteSyncConfiguration))]
+    private async Task SaveRemoteSyncConfigurationAsync(CancellationToken cancellationToken)
+    {
+        var update = TryCreateRemoteSyncSettingsUpdate();
+        if (update is null)
+            return;
+
+        var operationCancellation = CreateSyncControlCancellation(cancellationToken);
+        IsRemoteSyncSettingsBusy = true;
+        try
+        {
+            var result = await _remoteSyncSettingsService.SaveAsync(update, operationCancellation.Token);
+            RemoteSyncConfigurationStatus = result.Message;
+            if (result.IsSuccess)
+            {
+                RemoteSyncPassword = string.Empty;
+                ReloadRemoteSyncConfiguration();
+                await _remoteSyncController.RefreshConfigurationAsync(operationCancellation.Token);
+                _notificationService.ShowSuccess(result.Message);
+            }
+            else
+            {
+                _notificationService.ShowWarning(result.Message);
+            }
+
+            RaiseRemoteSyncConfigurationProperties();
+        }
+        catch (OperationCanceledException) when (operationCancellation.IsCancellationRequested)
+        {
+            // User canceled or application is shutting down.
+        }
+        finally
+        {
+            if (!_disposed)
+                IsRemoteSyncSettingsBusy = false;
+
+            ClearSyncControlCancellation(operationCancellation);
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanTestRemoteSyncConnection))]
+    private async Task TestRemoteSyncConnectionAsync(CancellationToken cancellationToken)
+    {
+        var update = TryCreateRemoteSyncSettingsUpdate();
+        if (update is null)
+            return;
+
+        var operationCancellation = CreateSyncControlCancellation(cancellationToken);
+        IsRemoteSyncSettingsBusy = true;
+        try
+        {
+            var result = await _remoteSyncSettingsService.TestConnectionAsync(update, operationCancellation.Token);
+            RemoteSyncConfigurationStatus = result.Message;
+            if (result.IsSuccess)
+                _notificationService.ShowSuccess(result.Message);
+            else
+                _notificationService.ShowWarning(result.Message);
+        }
+        catch (OperationCanceledException) when (operationCancellation.IsCancellationRequested)
+        {
+            // User canceled or application is shutting down.
+        }
+        finally
+        {
+            if (!_disposed)
+                IsRemoteSyncSettingsBusy = false;
 
             ClearSyncControlCancellation(operationCancellation);
         }
@@ -432,6 +562,14 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
     {
         if (e.PropertyName == nameof(IAppPreferencesService.SelectedSyncInterval))
             ReloadFromPreferences();
+
+        if (e.PropertyName is nameof(IAppPreferencesService.RemoteSyncConfigurationSaved)
+            or nameof(IAppPreferencesService.RemoteSyncEnabled)
+            or nameof(IAppPreferencesService.RemoteSyncHost)
+            or nameof(IAppPreferencesService.RemoteSyncPort)
+            or nameof(IAppPreferencesService.RemoteSyncDatabase)
+            or nameof(IAppPreferencesService.RemoteSyncUsername))
+            ReloadRemoteSyncConfiguration();
     }
 
     private void OnLanguageChanged(object? sender, EventArgs e)
@@ -442,6 +580,9 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(SelectedSyncInterval));
         OnPropertyChanged(nameof(SelectedSyncIntervalOption));
         OnPropertyChanged(nameof(SyncIntervalHint));
+        OnPropertyChanged(nameof(RemoteSyncPasswordHint));
+        OnPropertyChanged(nameof(RemoteSyncDisabledConfigurationHint));
+        OnPropertyChanged(nameof(RemoteSyncConfigurationStatus));
         OnPropertyChanged(nameof(RemoteSyncStatusLabel));
         OnPropertyChanged(nameof(RemoteSyncStatusHint));
         OnPropertyChanged(nameof(RemoteSyncPendingCountLabel));
@@ -489,6 +630,20 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
         }
 
         OnPropertyChanged(nameof(SyncIntervalHint));
+    }
+
+    private void ReloadRemoteSyncConfiguration()
+    {
+        var snapshot = _remoteSyncSettingsService.GetSnapshot();
+        RemoteSyncSettingsEnabled = snapshot.IsEnabled;
+        RemoteSyncHost = snapshot.Host;
+        RemoteSyncPort = snapshot.Port.ToString(_localization.CurrentCulture);
+        RemoteSyncDatabase = snapshot.Database;
+        RemoteSyncUsername = snapshot.Username;
+        HasSavedRemoteSyncPassword = snapshot.HasSavedPassword;
+
+        OnPropertyChanged(nameof(RemoteSyncPasswordHint));
+        RaiseRemoteSyncConfigurationProperties();
     }
 
     private void RestoreSelectedSyncIntervalFromPreferences()
@@ -548,6 +703,50 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
     private bool CanConfirmUploadLocalSnapshotToRemote()
     {
         return IsConfirmingUploadLocalSnapshotToRemote && CanBeginUploadLocalSnapshotToRemote();
+    }
+
+    private bool CanSaveRemoteSyncConfiguration()
+    {
+        return !IsExternalBusy
+               && !IsRemoteSyncSettingsBusy;
+    }
+
+    private bool CanTestRemoteSyncConnection()
+    {
+        return RemoteSyncSettingsEnabled
+               && !IsExternalBusy
+               && !IsRemoteSyncSettingsBusy;
+    }
+
+    private RemoteSyncSettingsUpdate? TryCreateRemoteSyncSettingsUpdate()
+    {
+        if (!int.TryParse(RemoteSyncPort, out var port))
+        {
+            RemoteSyncConfigurationStatus = _localization.GetString("Error.RemoteSyncPortInvalid");
+            _notificationService.ShowWarning(RemoteSyncConfigurationStatus);
+            return null;
+        }
+
+        return new RemoteSyncSettingsUpdate(
+            RemoteSyncSettingsEnabled,
+            RemoteSyncHost,
+            port,
+            RemoteSyncDatabase,
+            RemoteSyncUsername,
+            RemoteSyncPassword);
+    }
+
+    private void RaiseRemoteSyncConfigurationProperties()
+    {
+        OnPropertyChanged(nameof(IsRemoteSyncEnabled));
+        OnPropertyChanged(nameof(IsRemoteSyncConfigured));
+        OnPropertyChanged(nameof(RemoteSyncConfigurationErrorMessage));
+        SyncNowCommand.NotifyCanExecuteChanged();
+        ToggleRemoteSyncPauseCommand.NotifyCanExecuteChanged();
+        BeginRedownloadRemoteSnapshotCommand.NotifyCanExecuteChanged();
+        ConfirmRedownloadRemoteSnapshotCommand.NotifyCanExecuteChanged();
+        BeginUploadLocalSnapshotToRemoteCommand.NotifyCanExecuteChanged();
+        ConfirmUploadLocalSnapshotToRemoteCommand.NotifyCanExecuteChanged();
     }
 
     private CancellationTokenSource CreateSyncControlCancellation(CancellationToken cancellationToken)
@@ -669,5 +868,32 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
     {
         return new ReadOnlyCollection<TOption>(
             entries.Select(entry => factory(entry.Code, entry.DisplayName)).ToList());
+    }
+
+    private sealed class NullRemoteSyncSettingsService : IRemoteSyncSettingsService
+    {
+        public RemoteSyncSettingsSnapshot GetSnapshot()
+        {
+            return new RemoteSyncSettingsSnapshot(
+                false,
+                false,
+                string.Empty,
+                AppPreferencesState.DefaultRemoteSyncPort,
+                string.Empty,
+                string.Empty,
+                false);
+        }
+
+        public Task<RemoteSyncSettingsResult> SaveAsync(RemoteSyncSettingsUpdate update,
+            CancellationToken cancellationToken)
+        {
+            return Task.FromResult(RemoteSyncSettingsResult.Failure(string.Empty));
+        }
+
+        public Task<RemoteSyncSettingsResult> TestConnectionAsync(RemoteSyncSettingsUpdate update,
+            CancellationToken cancellationToken)
+        {
+            return Task.FromResult(RemoteSyncSettingsResult.Failure(string.Empty));
+        }
     }
 }

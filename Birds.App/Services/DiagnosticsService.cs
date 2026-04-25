@@ -4,15 +4,28 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Birds.Infrastructure.Configuration;
 using Birds.Shared.Constants;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Birds.App.Services;
 
+[method: ActivatorUtilitiesConstructor]
 internal sealed class DiagnosticsService(
     ILogger<DiagnosticsService> logger,
     DatabaseRuntimeOptions databaseOptions,
-    RemoteSyncRuntimeOptions remoteSyncOptions) : IDiagnosticsService
+    IRemoteSyncRuntimeOptionsProvider remoteSyncOptionsProvider) : IDiagnosticsService
 {
+    public DiagnosticsService(
+        ILogger<DiagnosticsService> logger,
+        DatabaseRuntimeOptions databaseOptions,
+        RemoteSyncRuntimeOptions remoteSyncOptions)
+        : this(
+            logger,
+            databaseOptions,
+            new StaticRemoteSyncRuntimeOptionsProvider(remoteSyncOptions))
+    {
+    }
+
     public string LogDirectory
     {
         get
@@ -42,10 +55,12 @@ internal sealed class DiagnosticsService(
             FormatUtcOffset(offset),
             databaseOptions.Provider.ToString(),
             ResolveSafeDatabasePath(),
-            remoteSyncOptions.IsEnabled,
-            remoteSyncOptions.IsConfigured,
-            remoteSyncOptions.HasConfigurationError,
-            remoteSyncOptions.HasConfigurationError ? remoteSyncOptions.ConfigurationErrorMessage : null,
+            remoteSyncOptionsProvider.Current.IsEnabled,
+            remoteSyncOptionsProvider.Current.IsConfigured,
+            remoteSyncOptionsProvider.Current.HasConfigurationError,
+            remoteSyncOptionsProvider.Current.HasConfigurationError
+                ? remoteSyncOptionsProvider.Current.ConfigurationErrorMessage
+                : null,
             LogDirectory,
             CurrentLogFilePath);
     }

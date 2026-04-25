@@ -11,7 +11,7 @@ namespace Birds.Tests.Infrastructure;
 public sealed class DependencyInjectionTests
 {
     [Fact]
-    public void AddInfrastructure_WhenRemoteSyncIsDisabled_Should_NotRegisterRemotePostgresContext()
+    public void AddInfrastructure_WhenRemoteSyncIsDisabled_Should_RegisterRuntimeRemoteServices()
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -23,13 +23,16 @@ public sealed class DependencyInjectionTests
 
         using var provider = services.BuildServiceProvider();
 
-        provider.GetRequiredService<IRemoteSyncService>().Should().BeOfType<DisabledRemoteSyncService>();
-        provider.GetService<IRemoteSyncSchemaInitializer>().Should().BeNull();
-        provider.GetService<IDbContextFactory<RemoteBirdDbContext>>().Should().BeNull();
+        provider.GetRequiredService<IRemoteSyncService>().Should().BeOfType<RemoteSyncService>();
+        provider.GetRequiredService<IRemoteSyncSchemaInitializer>().Should().BeOfType<RemoteSyncSchemaInitializer>();
+        provider.GetRequiredService<IDbContextFactory<RemoteBirdDbContext>>()
+            .Should()
+            .BeOfType<RuntimeRemoteBirdDbContextFactory>();
+        provider.GetRequiredService<IRemoteSyncRuntimeOptionsProvider>().Current.IsConfigured.Should().BeFalse();
     }
 
     [Fact]
-    public void AddInfrastructure_WhenRemoteSyncIsMisconfigured_Should_NotRegisterRemotePostgresContext()
+    public void AddInfrastructure_WhenRemoteSyncIsMisconfigured_Should_RegisterRuntimeRemoteServices()
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -41,9 +44,12 @@ public sealed class DependencyInjectionTests
 
         using var provider = services.BuildServiceProvider();
 
-        provider.GetRequiredService<IRemoteSyncService>().Should().BeOfType<DisabledRemoteSyncService>();
-        provider.GetService<IRemoteSyncSchemaInitializer>().Should().BeNull();
-        provider.GetService<IDbContextFactory<RemoteBirdDbContext>>().Should().BeNull();
+        provider.GetRequiredService<IRemoteSyncService>().Should().BeOfType<RemoteSyncService>();
+        provider.GetRequiredService<IRemoteSyncSchemaInitializer>().Should().BeOfType<RemoteSyncSchemaInitializer>();
+        provider.GetRequiredService<IDbContextFactory<RemoteBirdDbContext>>()
+            .Should()
+            .BeOfType<RuntimeRemoteBirdDbContextFactory>();
+        provider.GetRequiredService<IRemoteSyncRuntimeOptionsProvider>().Current.IsConfigured.Should().BeFalse();
     }
 
     [Fact]
@@ -65,5 +71,6 @@ public sealed class DependencyInjectionTests
             .Should()
             .BeOfType<RemoteSyncSchemaInitializer>();
         provider.GetRequiredService<IRemoteSyncService>().Should().BeOfType<RemoteSyncService>();
+        provider.GetRequiredService<IRemoteSyncRuntimeOptionsProvider>().Current.IsConfigured.Should().BeTrue();
     }
 }

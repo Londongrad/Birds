@@ -14,6 +14,18 @@ public interface IAppPreferencesService : INotifyPropertyChanged
 
     string SelectedSyncInterval { get; set; }
 
+    bool RemoteSyncConfigurationSaved { get; set; }
+
+    bool RemoteSyncEnabled { get; set; }
+
+    string RemoteSyncHost { get; set; }
+
+    int RemoteSyncPort { get; set; }
+
+    string RemoteSyncDatabase { get; set; }
+
+    string RemoteSyncUsername { get; set; }
+
     string CustomExportPath { get; set; }
 
     bool AutoExportEnabled { get; set; }

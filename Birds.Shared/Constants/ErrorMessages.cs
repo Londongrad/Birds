@@ -21,6 +21,20 @@ public static class ErrorMessages
 
     public static string RemoteSyncConfigurationMissing => AppText.Get("Error.RemoteSyncConfigurationMissing");
 
+    public static string RemoteSyncHostMissing => AppText.Get("Error.RemoteSyncHostMissing");
+
+    public static string RemoteSyncPortInvalid => AppText.Get("Error.RemoteSyncPortInvalid");
+
+    public static string RemoteSyncDatabaseMissing => AppText.Get("Error.RemoteSyncDatabaseMissing");
+
+    public static string RemoteSyncUsernameMissing => AppText.Get("Error.RemoteSyncUsernameMissing");
+
+    public static string RemoteSyncPasswordMissing => AppText.Get("Error.RemoteSyncPasswordMissing");
+
+    public static string RemoteSyncConnectionTestFailed => AppText.Get("Error.RemoteSyncConnectionTestFailed");
+
+    public static string RemoteSyncSettingsSaveFailed => AppText.Get("Error.RemoteSyncSettingsSaveFailed");
+
     public static string ImportPathCannotBeEmpty
         => AppText.Get("Error.ImportPathCannotBeEmpty");
 

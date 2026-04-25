@@ -2,9 +2,11 @@ using System.Configuration;
 using Birds.App.Services;
 using Birds.Application;
 using Birds.Infrastructure;
+using Birds.Infrastructure.Configuration;
 using Birds.Shared.Sync;
 using Birds.UI;
 using Birds.UI.Services.Export.Interfaces;
+using Birds.UI.Services.Sync;
 using DotNetEnv;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -54,6 +56,9 @@ public partial class App
                 services.AddInfrastructure(databaseConfiguration.LocalStoreConnectionString,
                     databaseConfiguration.SeedingOptions,
                     databaseConfiguration.RemoteSync);
+                services.AddSingleton<IRemoteSyncCredentialStore, DpapiRemoteSyncCredentialStore>();
+                services.AddSingleton<IRemoteSyncRuntimeOptionsProvider, RemoteSyncRuntimeOptionsProvider>();
+                services.AddSingleton<IRemoteSyncSettingsService, RemoteSyncSettingsService>();
                 services.AddSingleton<IDiagnosticsService, DiagnosticsService>();
                 services.AddSingleton<IGlobalExceptionHandler, GlobalExceptionHandler>();
 
