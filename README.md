@@ -7,9 +7,9 @@ statistics, and running in an offline-first mode with optional remote synchroniz
 
 ### Overview
 
-Birds is a WPF application for recording bird arrivals, departures, statuses, notes, and long-term archive data.  
-The app is designed around a local SQLite database as the primary data store, with optional PostgreSQL synchronization
-in the background.
+Birds is a WPF application for recording bird arrivals, departures, statuses, notes, and long-term archive data.
+The app is designed around a local SQLite database as the primary data store. PostgreSQL synchronization is optional
+and opt-in, so the application can run safely as a local-only archive unless remote sync is explicitly configured.
 
 ### ✨ What the application can do
 
@@ -19,26 +19,27 @@ in the background.
 - Search the archive by species, date, or text.
 - Filter archive records by lifecycle state.
 - Show rich statistics for overview, distribution, and keeping duration.
-- Export data to JSON manually.
-- Import data from JSON in merge mode or replace mode.
+- Export versioned JSON archives manually through atomic file writes.
+- Import current and legacy JSON archives in merge mode or replace mode.
 - Remember a custom export file path.
 - Open the export folder or the export file directly from settings.
 - Run auto-export in the background after data changes.
 - Work offline on local SQLite even when the remote database is unavailable.
-- Synchronize local changes with a remote PostgreSQL backend when sync is enabled.
+- Synchronize local changes with a remote PostgreSQL backend when sync is enabled and configured.
 - Pull remote changes back into the local database.
 - Re-download a full remote snapshot into the local database from settings.
-- Show notifications, recent sync activity, and short-lived operation status indicators.
+- Show notifications, recent sync activity, remote data loading state, and short-lived operation status indicators.
 - Switch application language between English and Russian.
 - Switch theme and keep UI preferences between launches.
 
 ### 🔄 Offline-first behavior
 
 - SQLite is the main working database for the UI.
-- PostgreSQL is used as an optional synchronization backend.
+- PostgreSQL is used as an optional synchronization backend and is disabled by default.
 - Local changes are stored first and synchronized later.
 - If the remote backend is unavailable, the application continues working locally.
 - When connectivity returns, the sync layer pushes pending changes and pulls remote updates.
+- Remote sync is treated as not configured when required connection string environment variables are missing.
 
 ### 🧭 Main feature areas
 
@@ -76,6 +77,29 @@ in the background.
 - Sync controls and recent sync activity.
 - Safe destructive actions for local data maintenance.
 
+#### Data safety and diagnostics
+
+- Local SQLite schema upgrades are managed by EF Core migrations.
+- Bird records keep local user-facing timestamps and separate UTC sync stamps for remote ordering.
+- Bird updates use optimistic concurrency protection to avoid silently overwriting newer local changes.
+- Archive exports include format metadata and stable bird species identifiers while keeping display names readable.
+- Archive imports validate the full file before database mutation and apply changes transactionally.
+- Preferences are saved through a temporary file and corrupted preference files are backed up before defaults are used.
+- Local diagnostics are written to log files only; the app does not send telemetry or crash reports externally.
+- Development/repository runs write logs under `logs`; installed production runs write under `%LOCALAPPDATA%\Birds\Logs`.
+- `BIRDS_LOG_DIR` can override the log directory when needed.
+
+### ⚙️ Configuration notes
+
+- The local SQLite connection string defaults to `%LOCALAPPDATA%\Birds\birds.db`.
+- Remote sync is disabled by default through `Database:RemoteSync:Enabled = false` / `REMOTE_SYNC_ENABLED=false`.
+- To enable remote PostgreSQL sync, set `REMOTE_SYNC_ENABLED=true` and provide `DB_HOST`, `DB_PORT`, `DB_NAME`,
+  `DB_USER`, and `DB_PASSWORD`.
+- Unresolved placeholders such as `${DB_HOST}` are detected before connecting, and the UI reports remote sync as
+  missing configuration instead of attempting a broken PostgreSQL connection.
+- When remote sync is configured, the remote schema initializer prepares required tables, indexes, and schema version
+  metadata idempotently.
+
 ### 🛠 Technology
 
 - .NET 9
@@ -106,9 +130,9 @@ in the background.
 
 ### Обзор
 
-Birds — это WPF-приложение для учёта птиц: поступлений, выбытия, статусов, описаний и работы с архивом.  
+Birds — это WPF-приложение для учёта птиц: поступлений, выбытия, статусов, описаний и работы с архивом.
 Приложение построено по модели offline-first: локальная SQLite используется как основное хранилище, а PostgreSQL может
-работать как удалённый бэкенд синхронизации.
+работать как удалённый бэкенд синхронизации только после явного включения и настройки.
 
 ### ✨ Что приложение умеет
 
@@ -118,26 +142,27 @@ Birds — это WPF-приложение для учёта птиц: посту
 - Искать по архиву по виду, дате и тексту.
 - Фильтровать архив по состоянию жизненного цикла.
 - Показывать статистику по обзору, распределению и длительности содержания.
-- Делать ручной экспорт данных в JSON.
-- Импортировать данные из JSON в режиме merge или replace.
+- Делать ручной экспорт версионированных JSON-архивов через атомарную запись файла.
+- Импортировать текущие и старые JSON-архивы в режиме merge или replace.
 - Запоминать пользовательский путь для файла экспорта.
 - Открывать папку экспорта и сам файл экспорта из настроек.
 - Выполнять автоэкспорт после изменений данных.
 - Работать локально на SQLite даже при недоступной удалённой базе.
-- Синхронизировать локальные изменения с удалённым PostgreSQL, если sync включён.
+- Синхронизировать локальные изменения с удалённым PostgreSQL, если sync включён и настроен.
 - Подтягивать удалённые изменения обратно в локальную базу.
 - Повторно скачивать удалённый снимок в локальную базу из настроек.
-- Показывать уведомления, недавнюю sync-активность и краткие индикаторы статуса операций.
+- Показывать уведомления, недавнюю sync-активность, загрузку remote-данных и краткие индикаторы статуса операций.
 - Переключать язык приложения между английским и русским.
 - Переключать тему и сохранять пользовательские настройки между запусками.
 
 ### 🔄 Как работает offline-first
 
 - Основная рабочая база для UI — SQLite.
-- PostgreSQL используется как опциональный удалённый бэкенд синхронизации.
+- PostgreSQL используется как опциональный удалённый бэкенд синхронизации и по умолчанию выключен.
 - Локальные изменения сначала сохраняются локально, а потом синхронизируются.
 - Если удалённый бэкенд недоступен, приложение продолжает работать локально.
 - Когда соединение возвращается, слой синхронизации отправляет pending-изменения и подтягивает удалённые обновления.
+- Если обязательные переменные окружения для remote connection string не заданы, sync считается ненастроенным.
 
 ### 🧭 Основные зоны функциональности
 
@@ -173,7 +198,32 @@ Birds — это WPF-приложение для учёта птиц: посту
 - Инструменты импорта и экспорта.
 - Управление автоэкспортом.
 - Управление синхронизацией и просмотр недавней sync-активности.
-- Безопасные destructive-действия для обслуживания локальных данных.
+- Защищённые операции обслуживания локальных данных с обязательным подтверждением.
+
+#### Безопасность данных и диагностика
+
+- Обновления локальной SQLite-схемы выполняются через EF Core migrations.
+- Записи птиц сохраняют локальные пользовательские даты и отдельные UTC sync stamps для удалённого порядка изменений.
+- Обновления птиц защищены оптимистичной конкуренцией, чтобы устаревшие изменения не затирали более свежие локальные
+  данные.
+- Экспорт архива включает метаданные формата и стабильные идентификаторы видов, сохраняя отображаемые имена читаемыми.
+- Импорт архива валидирует весь файл до изменения базы и применяет изменения транзакционно.
+- Preferences сохраняются через временный файл, а повреждённые preference-файлы сначала копируются в backup.
+- Локальная диагностика пишется только в файлы логов; приложение не отправляет телеметрию или crash reports наружу.
+- При запуске из репозитория логи пишутся в `logs`; в установленном production-приложении — в
+  `%LOCALAPPDATA%\Birds\Logs`.
+- `BIRDS_LOG_DIR` можно использовать для явного переопределения папки логов.
+
+### ⚙️ Заметки по конфигурации
+
+- Локальная SQLite connection string по умолчанию указывает на `%LOCALAPPDATA%\Birds\birds.db`.
+- Remote sync по умолчанию выключен через `Database:RemoteSync:Enabled = false` / `REMOTE_SYNC_ENABLED=false`.
+- Чтобы включить удалённую PostgreSQL-синхронизацию, нужно задать `REMOTE_SYNC_ENABLED=true` и переменные `DB_HOST`,
+  `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`.
+- Неразрешённые placeholders вроде `${DB_HOST}` обнаруживаются до подключения, а UI показывает, что remote sync не
+  настроен, вместо попытки подключиться с битой PostgreSQL connection string.
+- Если remote sync настроен, remote schema initializer идемпотентно готовит нужные таблицы, индексы и метаданные версии
+  схемы.
 
 ### 🛠 Технологии
 
