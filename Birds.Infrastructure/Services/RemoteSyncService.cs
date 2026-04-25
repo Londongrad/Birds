@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Birds.Domain.Entities;
 using Birds.Domain.Enums;
 using Birds.Infrastructure.Persistence;
@@ -35,10 +36,14 @@ public sealed class RemoteSyncService(
             try
             {
                 await using var remoteContext = await _remoteContextFactory.CreateDbContextAsync(cancellationToken);
-                if (!await remoteContext.Database.CanConnectAsync(cancellationToken))
+                var connectionCheck = await TryOpenRemoteConnectionAsync(remoteContext, cancellationToken);
+                if (!connectionCheck.IsConnected)
+                {
+                    _logger.LogWarning(connectionCheck.Exception, LogMessages.RemoteSyncFailed, 0);
                     return new RemoteSyncBackendCheckResult(
                         RemoteSyncRunStatus.BackendUnavailable,
-                        "Remote sync backend is unavailable.");
+                        connectionCheck.ErrorMessage);
+                }
 
                 await _remoteSchemaInitializer.InitializeAsync(remoteContext, cancellationToken);
                 var remoteBirdCount = await remoteContext.Birds.CountAsync(cancellationToken);
@@ -72,17 +77,15 @@ public sealed class RemoteSyncService(
             try
             {
                 await using var remoteContext = await _remoteContextFactory.CreateDbContextAsync(cancellationToken);
-                if (!await remoteContext.Database.CanConnectAsync(cancellationToken))
-                {
-                    const string backendUnavailableMessage = "Remote sync backend is unavailable.";
+                var connectionCheck = await TryOpenRemoteConnectionAsync(remoteContext, cancellationToken);
+                if (!connectionCheck.IsConnected)
                     return await HandleRemoteFailureAsync(
                         localContext,
                         pendingOperations,
                         RemoteSyncRunStatus.BackendUnavailable,
-                        backendUnavailableMessage,
-                        null,
+                        connectionCheck.ErrorMessage ?? ErrorMessages.RemoteSyncConnectionTestFailed,
+                        connectionCheck.Exception,
                         cancellationToken);
-                }
 
                 var processedCount = 0;
                 var remoteWinsCount = 0;
@@ -142,14 +145,12 @@ public sealed class RemoteSyncService(
             try
             {
                 await using var remoteContext = await _remoteContextFactory.CreateDbContextAsync(cancellationToken);
-                if (!await remoteContext.Database.CanConnectAsync(cancellationToken))
-                {
-                    const string backendUnavailableMessage = "Remote sync backend is unavailable.";
+                var connectionCheck = await TryOpenRemoteConnectionAsync(remoteContext, cancellationToken);
+                if (!connectionCheck.IsConnected)
                     return new RemoteSyncRunResult(
                         RemoteSyncRunStatus.BackendUnavailable,
                         0,
-                        backendUnavailableMessage);
-                }
+                        connectionCheck.ErrorMessage);
 
                 await _remoteSchemaInitializer.InitializeAsync(remoteContext, cancellationToken);
 
@@ -727,10 +728,47 @@ public sealed class RemoteSyncService(
             : RemoteSyncRunStatus.Failed;
     }
 
+    private static async Task<RemoteConnectionCheck> TryOpenRemoteConnectionAsync(
+        RemoteBirdDbContext remoteContext,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await remoteContext.Database.OpenConnectionAsync(cancellationToken);
+            return RemoteConnectionCheck.Connected;
+        }
+        catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            return new RemoteConnectionCheck(
+                false,
+                ErrorMessages.RemoteSyncConnectionFailed(GetSafeConnectionErrorDetail(ex)),
+                ex);
+        }
+    }
+
+    private static string GetSafeConnectionErrorDetail(Exception exception)
+    {
+        var message = exception.GetBaseException().Message;
+        if (string.IsNullOrWhiteSpace(message))
+            return ErrorMessages.RemoteSyncConnectionTestFailed;
+
+        message = message.ReplaceLineEndings(" ").Trim();
+        return Regex.Replace(
+            message,
+            @"(?<key>password|pwd|secret|token|access\s*token|api\s*key)\s*=\s*[^;\s]+",
+            match => $"{match.Groups["key"].Value}=***REDACTED***",
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    }
+
     private static void MarkBatchFailed(IEnumerable<SyncOperation> operations, string errorMessage, DateTime attemptUtc)
     {
         foreach (var operation in operations)
             operation.MarkFailed(errorMessage, attemptUtc);
+    }
+
+    private sealed record RemoteConnectionCheck(bool IsConnected, string? ErrorMessage = null, Exception? Exception = null)
+    {
+        public static RemoteConnectionCheck Connected { get; } = new(true);
     }
 
     private sealed class LocalOutboxCleanupException(string message, Exception innerException)

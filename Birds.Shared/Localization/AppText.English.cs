@@ -265,6 +265,7 @@ public static partial class AppText
                 "The latest synchronization attempt failed. Local changes will stay queued until the next successful attempt.",
             ["Settings.SyncStatusHint.PendingCount"] = "Queued local changes: {0}.",
             ["Settings.SyncStatusHint.LastError"] = "Latest detail: {0}",
+            ["Settings.SyncStatus.ErrorDetailTitle"] = "Connection problem",
             ["Settings.SyncMeta.PendingLabel"] = "Pending",
             ["Settings.SyncMeta.PendingNone"] = "None",
             ["Settings.SyncMeta.LastSuccessLabel"] = "Last success",
@@ -391,6 +392,8 @@ public static partial class AppText
             ["Error.RemoteSyncPasswordMissing"] = "Remote sync password is required.",
             ["Error.RemoteSyncConnectionTestFailed"] =
                 "Unable to connect to the remote PostgreSQL backend. Check the connection settings.",
+            ["Error.RemoteSyncConnectionFailedWithDetail"] =
+                "Unable to connect to the remote PostgreSQL backend. Check the connection settings. Detail: {0}",
             ["Error.RemoteSyncSettingsSaveFailed"] = "Unable to save remote sync settings.",
             ["Error.InvalidDatabaseProvider"] = "Unsupported database provider '{0}'. Use 'Sqlite' or 'Postgres'.",
             ["Error.InvalidDatabaseSeedingMode"] =

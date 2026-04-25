@@ -405,6 +405,7 @@
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="10">
                         <ContentPresenter
+                            Margin="{TemplateBinding Padding}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center" />
                     </Border>

@@ -263,6 +263,7 @@ public static partial class AppText
                 "Последняя попытка синхронизации завершилась ошибкой. Локальные изменения останутся в очереди до следующей успешной попытки.",
             ["Settings.SyncStatusHint.PendingCount"] = "В локальной очереди: {0}.",
             ["Settings.SyncStatusHint.LastError"] = "Последняя деталь: {0}",
+            ["Settings.SyncStatus.ErrorDetailTitle"] = "Проблема с подключением",
             ["Settings.SyncMeta.PendingLabel"] = "В очереди",
             ["Settings.SyncMeta.PendingNone"] = "Нет",
             ["Settings.SyncMeta.LastSuccessLabel"] = "Последний успех",
@@ -390,6 +391,8 @@ public static partial class AppText
             ["Error.RemoteSyncPasswordMissing"] = "Укажите пароль для remote sync.",
             ["Error.RemoteSyncConnectionTestFailed"] =
                 "Не удалось подключиться к удалённому PostgreSQL backend. Проверьте параметры подключения.",
+            ["Error.RemoteSyncConnectionFailedWithDetail"] =
+                "Не удалось подключиться к удалённому PostgreSQL backend. Проверьте параметры подключения. Детали: {0}",
             ["Error.RemoteSyncSettingsSaveFailed"] = "Не удалось сохранить настройки remote sync.",
             ["Error.InvalidDatabaseProvider"] =
                 "Неподдерживаемый провайдер базы данных '{0}'. Используйте 'Sqlite' или 'Postgres'.",

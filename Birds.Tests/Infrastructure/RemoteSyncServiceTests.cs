@@ -856,6 +856,28 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task SyncPendingAsync_WhenRemoteConnectionCannotOpen_Should_ReturnConnectionFailureDetail()
+    {
+        var repository = new BirdRepository(_localDb.CreateFactory());
+        var bird = Bird.Create(
+            Enum.GetValues<BirdSpecies>()[0],
+            "connection failure",
+            DateOnly.FromDateTime(DateTime.Now.AddDays(-1)));
+        await repository.AddAsync(bird);
+        var sut = CreateSut(CreateUnavailableRemoteFactory());
+
+        var result = await sut.SyncPendingAsync(CancellationToken.None);
+
+        result.Status.Should().Be(RemoteSyncRunStatus.BackendUnavailable);
+        result.ErrorMessage.Should().Contain("PostgreSQL");
+        result.ErrorMessage.Should().NotBe("Remote sync backend is unavailable.");
+
+        await using var localContext = _localDb.CreateContext();
+        var operation = await localContext.SyncOperations.SingleAsync();
+        operation.LastError.Should().Be(result.ErrorMessage);
+    }
+
+    [Fact]
     public async Task UploadLocalSnapshotAsync_Should_ReplaceRemoteBirds_And_ClearLocalSyncState()
     {
         var repository = new BirdRepository(_localDb.CreateFactory());
@@ -1001,6 +1023,16 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
         return Guid.Parse($"00000000-0000-0000-0000-{value:000000000000}");
     }
 
+    private static IDbContextFactory<RemoteBirdDbContext> CreateUnavailableRemoteFactory()
+    {
+        var missingDirectory = Path.Combine(Path.GetTempPath(), $"birds-missing-remote-{Guid.NewGuid():N}");
+        var options = new DbContextOptionsBuilder<RemoteBirdDbContext>()
+            .UseSqlite($"Data Source={Path.Combine(missingDirectory, "remote.db")}")
+            .Options;
+
+        return new UnavailableRemoteBirdDbContextFactory(options);
+    }
+
     private sealed class RemoteSqliteInMemoryDb : IAsyncDisposable
     {
         private readonly SqliteConnection _connection;
@@ -1049,6 +1081,20 @@ public sealed class RemoteSyncServiceTests : IAsyncLifetime
             {
                 return ValueTask.FromResult(CreateDbContext());
             }
+        }
+    }
+
+    private sealed class UnavailableRemoteBirdDbContextFactory(DbContextOptions<RemoteBirdDbContext> options)
+        : IDbContextFactory<RemoteBirdDbContext>
+    {
+        public RemoteBirdDbContext CreateDbContext()
+        {
+            return new RemoteBirdDbContext(options);
+        }
+
+        public ValueTask<RemoteBirdDbContext> CreateDbContextAsync(CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(CreateDbContext());
         }
     }
 }

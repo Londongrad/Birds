@@ -399,11 +399,32 @@
                                         </StackPanel>
                                     </Border>
 
-                                    <TextBlock
+                                    <StackPanel
                                         Grid.Row="1"
-                                        Grid.ColumnSpan="2"
-                                        Style="{StaticResource FieldHintStyle}"
-                                        Text="{Binding RemoteSyncStatusHint}" />
+                                        Grid.ColumnSpan="2">
+                                        <TextBlock
+                                            Style="{StaticResource FieldHintStyle}"
+                                            Text="{Binding RemoteSyncStatusHint}" />
+                                        <Border
+                                            Margin="0,10,0,0"
+                                            Padding="12,10"
+                                            Style="{StaticResource SyncWarningPanelStyle}"
+                                            Visibility="{Binding HasRemoteSyncErrorDetail, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <StackPanel>
+                                                <TextBlock
+                                                    FontSize="12.5"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="{StaticResource DangerButtonForegroundBrush}"
+                                                    Text="{loc:Loc Key=Settings.SyncStatus.ErrorDetailTitle}" />
+                                                <TextBlock
+                                                    Margin="0,5,0,0"
+                                                    FontSize="12"
+                                                    Foreground="{StaticResource SecondaryTextBrush}"
+                                                    Text="{Binding RemoteSyncErrorDetail}"
+                                                    TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
 
                                     <Grid
                                         Grid.Row="2"

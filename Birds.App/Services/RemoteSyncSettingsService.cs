@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Birds.Infrastructure.Configuration;
 using Birds.Shared.Constants;
 using Birds.Shared.Localization;
@@ -110,8 +111,24 @@ internal sealed class RemoteSyncSettingsService(
                 ex,
                 "Remote sync connection test failed for {ConnectionString}.",
                 DiagnosticRedactor.RedactConnectionString(connectionString));
-            return RemoteSyncSettingsResult.Failure(ErrorMessages.RemoteSyncConnectionTestFailed);
+            return RemoteSyncSettingsResult.Failure(BuildConnectionFailureMessage(ex));
         }
+    }
+
+    private static string BuildConnectionFailureMessage(Exception exception)
+    {
+        var message = exception.GetBaseException().Message;
+        if (string.IsNullOrWhiteSpace(message))
+            return ErrorMessages.RemoteSyncConnectionTestFailed;
+
+        message = message.ReplaceLineEndings(" ").Trim();
+        var safeMessage = Regex.Replace(
+            message,
+            @"(?<key>password|pwd|secret|token|access\s*token|api\s*key)\s*=\s*[^;\s]+",
+            match => $"{match.Groups["key"].Value}={DiagnosticRedactor.RedactedValue}",
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+        return ErrorMessages.RemoteSyncConnectionFailed(safeMessage);
     }
 
     private RemoteSyncSettingsResult? ValidateUpdate(RemoteSyncSettingsUpdate update, bool requirePassword)

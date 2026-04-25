@@ -467,6 +467,8 @@ public class SettingsViewModelTests
         sut.RemoteSyncStatusLabel.Should().Be(AppText.Get("Settings.SyncStatus.Offline", _culture));
         sut.RemoteSyncStatusHint.Should().Contain(AppText.Get("Settings.SyncStatusHint.Offline", _culture));
         sut.RemoteSyncStatusHint.Should().Contain("backend unavailable");
+        sut.HasRemoteSyncErrorDetail.Should().BeTrue();
+        sut.RemoteSyncErrorDetail.Should().Be("backend unavailable");
         sut.RemoteSyncPendingCountValue.Should().Be("3");
     }
 

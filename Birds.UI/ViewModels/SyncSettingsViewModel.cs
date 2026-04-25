@@ -180,6 +180,11 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
 
     public string RemoteSyncStatusHint => RemoteSyncStatusTextFormatter.GetHint(_localization, _remoteSyncStatus);
 
+    public bool HasRemoteSyncErrorDetail => RemoteSyncStatus is RemoteSyncDisplayState.Offline or RemoteSyncDisplayState.Error
+                                            && !string.IsNullOrWhiteSpace(_remoteSyncStatus.LastErrorMessage);
+
+    public string RemoteSyncErrorDetail => _remoteSyncStatus.LastErrorMessage ?? string.Empty;
+
     public bool IsRemoteSyncEnabled => _remoteSyncController.IsEnabled;
 
     public bool IsRemoteSyncConfigured => _remoteSyncController.IsConfigured;
@@ -612,6 +617,8 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(RemoteSyncConfigurationStatus));
         OnPropertyChanged(nameof(RemoteSyncStatusLabel));
         OnPropertyChanged(nameof(RemoteSyncStatusHint));
+        OnPropertyChanged(nameof(HasRemoteSyncErrorDetail));
+        OnPropertyChanged(nameof(RemoteSyncErrorDetail));
         OnPropertyChanged(nameof(RemoteSyncPendingCountLabel));
         OnPropertyChanged(nameof(RemoteSyncPendingCountValue));
         OnPropertyChanged(nameof(RemoteSyncLastSuccessfulSyncLabel));
@@ -819,6 +826,8 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(RemoteSyncStatus));
             OnPropertyChanged(nameof(RemoteSyncStatusLabel));
             OnPropertyChanged(nameof(RemoteSyncStatusHint));
+            OnPropertyChanged(nameof(HasRemoteSyncErrorDetail));
+            OnPropertyChanged(nameof(RemoteSyncErrorDetail));
             OnPropertyChanged(nameof(IsRemoteSyncEnabled));
             OnPropertyChanged(nameof(IsRemoteSyncConfigured));
             OnPropertyChanged(nameof(RemoteSyncConfigurationErrorMessage));

@@ -33,6 +33,11 @@ public static class ErrorMessages
 
     public static string RemoteSyncConnectionTestFailed => AppText.Get("Error.RemoteSyncConnectionTestFailed");
 
+    public static string RemoteSyncConnectionFailed(string detail)
+    {
+        return AppText.Format("Error.RemoteSyncConnectionFailedWithDetail", detail);
+    }
+
     public static string RemoteSyncSettingsSaveFailed => AppText.Get("Error.RemoteSyncSettingsSaveFailed");
 
     public static string ImportPathCannotBeEmpty
