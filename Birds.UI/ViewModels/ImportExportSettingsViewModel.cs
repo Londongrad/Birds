@@ -331,6 +331,7 @@ public partial class ImportExportSettingsViewModel : ObservableObject, IDisposab
         BuildAvailableImportModes();
         ReloadFromPreferences();
         OnPropertyChanged(nameof(AvailableImportModes));
+        OnPropertyChanged(nameof(SelectedImportMode));
         OnPropertyChanged(nameof(ImportModeHint));
         OnPropertyChanged(nameof(AutoExportHint));
         OnPropertyChanged(nameof(ExportPathHint));

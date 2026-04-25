@@ -411,6 +411,7 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
         BuildAvailableSyncIntervals();
         ReloadFromPreferences();
         OnPropertyChanged(nameof(AvailableSyncIntervals));
+        OnPropertyChanged(nameof(SelectedSyncInterval));
         OnPropertyChanged(nameof(SyncIntervalHint));
         OnPropertyChanged(nameof(RemoteSyncStatusLabel));
         OnPropertyChanged(nameof(RemoteSyncStatusHint));

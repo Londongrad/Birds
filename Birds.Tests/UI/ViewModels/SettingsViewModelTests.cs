@@ -186,6 +186,7 @@ public class SettingsViewModelTests
         sut.ImportModeHint.Should().Be(AppText.Get("Settings.ImportModeHint.Replace", _culture));
         sut.AutoExportHint.Should().Be(AppText.Get("Settings.AutoExportHint.Disabled", _culture));
         changedProperties.Should().Contain(nameof(ImportExportSettingsViewModel.AvailableImportModes));
+        changedProperties.Should().Contain(nameof(ImportExportSettingsViewModel.SelectedImportMode));
         changedProperties.Should().Contain(nameof(ImportExportSettingsViewModel.ImportModeHint));
         changedProperties.Should().Contain(nameof(ImportExportSettingsViewModel.AutoExportHint));
     }
@@ -656,6 +657,7 @@ public class SettingsViewModelTests
         sut.SyncIntervalHint.Should().Contain(AppText.Get("Settings.SyncIntervalOption.ThirtySeconds", _culture));
         sut.RemoteSyncStatusLabel.Should().Be(AppText.Get("Settings.SyncStatus.Disabled", _culture));
         changedProperties.Should().Contain(nameof(SyncSettingsViewModel.AvailableSyncIntervals));
+        changedProperties.Should().Contain(nameof(SyncSettingsViewModel.SelectedSyncInterval));
         changedProperties.Should().Contain(nameof(SyncSettingsViewModel.SyncIntervalHint));
         changedProperties.Should().Contain(nameof(SyncSettingsViewModel.RemoteSyncStatusLabel));
     }
@@ -839,6 +841,9 @@ public class SettingsViewModelTests
         changedProperties.Should().Contain(nameof(AppearanceSettingsViewModel.AvailableThemes));
         changedProperties.Should().Contain(nameof(AppearanceSettingsViewModel.AvailableLanguages));
         changedProperties.Should().Contain(nameof(AppearanceSettingsViewModel.AvailableDateFormats));
+        changedProperties.Should().Contain(nameof(AppearanceSettingsViewModel.SelectedTheme));
+        changedProperties.Should().Contain(nameof(AppearanceSettingsViewModel.SelectedLanguage));
+        changedProperties.Should().Contain(nameof(AppearanceSettingsViewModel.SelectedDateFormat));
         _themeService.Verify(x => x.ApplyTheme(ThemeKeys.Steel), Times.AtLeastOnce);
     }
 

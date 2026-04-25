@@ -231,6 +231,9 @@ public partial class AppearanceSettingsViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(AvailableLanguages));
         OnPropertyChanged(nameof(AvailableThemes));
         OnPropertyChanged(nameof(AvailableDateFormats));
+        OnPropertyChanged(nameof(SelectedLanguage));
+        OnPropertyChanged(nameof(SelectedTheme));
+        OnPropertyChanged(nameof(SelectedDateFormat));
         OnPropertyChanged(nameof(LanguageHint));
         OnPropertyChanged(nameof(ThemeHint));
         OnPropertyChanged(nameof(DateFormatHint));
