@@ -63,6 +63,8 @@ public partial class ImportExportSettingsViewModel : ObservableObject, IDisposab
     [NotifyPropertyChangedFor(nameof(ImportHint))]
     private string selectedImportMode = AppPreferencesState.DefaultImportMode;
 
+    [ObservableProperty] private ImportModeOption? selectedImportModeOption;
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(AutoExportHint))]
     private bool autoExportEnabled = AppPreferencesState.DefaultAutoExportEnabled;
@@ -310,6 +312,20 @@ public partial class ImportExportSettingsViewModel : ObservableObject, IDisposab
         OnPropertyChanged(nameof(ImportHint));
     }
 
+    partial void OnSelectedImportModeOptionChanged(ImportModeOption? value)
+    {
+        if (_isSynchronizingSelections)
+            return;
+
+        if (value is null)
+        {
+            RestoreSelectedImportModeFromPreferences();
+            return;
+        }
+
+        SelectedImportMode = value.Code;
+    }
+
     partial void OnAutoExportEnabledChanged(bool value)
     {
         if (_isSynchronizingSelections)
@@ -338,6 +354,7 @@ public partial class ImportExportSettingsViewModel : ObservableObject, IDisposab
         ReloadFromPreferences();
         OnPropertyChanged(nameof(AvailableImportModes));
         OnPropertyChanged(nameof(SelectedImportMode));
+        OnPropertyChanged(nameof(SelectedImportModeOption));
         OnPropertyChanged(nameof(ImportModeHint));
         OnPropertyChanged(nameof(AutoExportHint));
         OnPropertyChanged(nameof(ExportPathHint));
@@ -362,6 +379,8 @@ public partial class ImportExportSettingsViewModel : ObservableObject, IDisposab
         try
         {
             SelectedImportMode = normalizedImportMode;
+            SelectedImportModeOption = AvailableImportModes.FirstOrDefault(
+                option => string.Equals(option.Code, normalizedImportMode, StringComparison.Ordinal));
             AutoExportEnabled = _preferences.AutoExportEnabled;
         }
         finally
@@ -377,10 +396,13 @@ public partial class ImportExportSettingsViewModel : ObservableObject, IDisposab
 
     private void RestoreSelectedImportModeFromPreferences()
     {
+        var normalized = BirdImportModes.Normalize(_preferences.SelectedImportMode);
         _isSynchronizingSelections = true;
         try
         {
-            SelectedImportMode = BirdImportModes.Normalize(_preferences.SelectedImportMode);
+            SelectedImportMode = normalized;
+            SelectedImportModeOption = AvailableImportModes.FirstOrDefault(
+                option => string.Equals(option.Code, normalized, StringComparison.Ordinal));
         }
         finally
         {
@@ -388,6 +410,7 @@ public partial class ImportExportSettingsViewModel : ObservableObject, IDisposab
         }
 
         OnPropertyChanged(nameof(SelectedImportMode));
+        OnPropertyChanged(nameof(SelectedImportModeOption));
         OnPropertyChanged(nameof(ImportModeHint));
         OnPropertyChanged(nameof(ImportHint));
     }

@@ -76,8 +76,7 @@
                                         Grid.Row="1"
                                         DisplayMemberPath="DisplayName"
                                         ItemsSource="{Binding AvailableLanguages}"
-                                        SelectedValue="{Binding SelectedLanguage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                        SelectedValuePath="Code"
+                                        SelectedItem="{Binding SelectedLanguageOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                         Style="{StaticResource SettingsComboBoxStyle}" />
                                     <TextBlock
                                         Grid.Row="2"
@@ -101,8 +100,7 @@
                                         Grid.Row="1"
                                         DisplayMemberPath="DisplayName"
                                         ItemsSource="{Binding AvailableThemes}"
-                                        SelectedValue="{Binding SelectedTheme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                        SelectedValuePath="Code"
+                                        SelectedItem="{Binding SelectedThemeOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                         Style="{StaticResource SettingsComboBoxStyle}" />
                                     <TextBlock
                                         Grid.Row="2"
@@ -129,8 +127,7 @@
                                         Grid.Row="1"
                                         DisplayMemberPath="DisplayName"
                                         ItemsSource="{Binding AvailableDateFormats}"
-                                        SelectedValue="{Binding SelectedDateFormat, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                        SelectedValuePath="Code"
+                                        SelectedItem="{Binding SelectedDateFormatOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                         Style="{StaticResource SettingsComboBoxStyle}" />
                                     <TextBlock
                                         Grid.Row="2"
@@ -557,8 +554,7 @@
                                                 HorizontalAlignment="Right"
                                                 ItemsSource="{Binding AvailableSyncIntervals}"
                                                 TextSearch.TextPath="DisplayName"
-                                                SelectedValue="{Binding SelectedSyncInterval, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                SelectedValuePath="Code"
+                                                SelectedItem="{Binding SelectedSyncIntervalOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Style="{StaticResource CompactDataComboBoxStyle}"
                                                 VerticalAlignment="Center">
                                                 <ComboBox.ItemTemplate>
@@ -877,8 +873,7 @@
                                             HorizontalAlignment="Left"
                                             DisplayMemberPath="DisplayName"
                                             ItemsSource="{Binding AvailableImportModes}"
-                                            SelectedValue="{Binding SelectedImportMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                            SelectedValuePath="Code"
+                                            SelectedItem="{Binding SelectedImportModeOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                             Style="{StaticResource CompactDataComboBoxStyle}" />
                                         <TextBlock
                                             Style="{StaticResource FieldHintStyle}"

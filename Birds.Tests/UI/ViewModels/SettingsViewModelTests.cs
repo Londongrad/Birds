@@ -144,6 +144,9 @@ public class SettingsViewModelTests
             .Should().Be(AppText.Get("Settings.Theme.Steel", _culture));
         sut.AvailableDateFormats.Single(x => x.Code == DateDisplayFormats.YearMonthDay).DisplayName
             .Should().Be(AppText.Get("Settings.DateFormat.YearMonthDay", _culture));
+        sut.SelectedLanguageOption.Should().NotBeNull();
+        sut.SelectedThemeOption.Should().NotBeNull();
+        sut.SelectedDateFormatOption.Should().NotBeNull();
         sut.ThemeHint.Should().Be(AppText.Get("Settings.ThemeHint.Steel", _culture));
         sut.DateFormatHint.Should().Be(AppText.Get("Settings.DateFormatHint.YearMonthDay", _culture));
         sut.NotificationsHint.Should().Be(AppText.Get("Settings.NotificationsHint.Disabled", _culture));
@@ -170,8 +173,10 @@ public class SettingsViewModelTests
         var sut = CreateImportExportSut();
 
         sut.SelectedImportMode = null!;
+        sut.SelectedImportModeOption = null!;
 
         sut.SelectedImportMode.Should().Be(BirdImportModes.Replace);
+        sut.SelectedImportModeOption.Should().NotBeNull();
         _preferences.SelectedImportMode.Should().Be(BirdImportModes.Replace);
         sut.ImportModeHint.Should().Be(AppText.Get("Settings.ImportModeHint.Replace", _culture));
     }
@@ -196,10 +201,13 @@ public class SettingsViewModelTests
         sut.AvailableImportModes.Should().NotBeSameAs(availableImportModes);
         sut.AvailableImportModes.Single(x => x.Code == BirdImportModes.Replace).DisplayName
             .Should().Be(AppText.Get("Settings.ImportMode.Replace", _culture));
+        sut.SelectedImportModeOption.Should().NotBeNull();
+        sut.SelectedImportModeOption!.DisplayName.Should().Be(AppText.Get("Settings.ImportMode.Replace", _culture));
         sut.ImportModeHint.Should().Be(AppText.Get("Settings.ImportModeHint.Replace", _culture));
         sut.AutoExportHint.Should().Be(AppText.Get("Settings.AutoExportHint.Disabled", _culture));
         changedProperties.Should().Contain(nameof(ImportExportSettingsViewModel.AvailableImportModes));
         changedProperties.Should().Contain(nameof(ImportExportSettingsViewModel.SelectedImportMode));
+        changedProperties.Should().Contain(nameof(ImportExportSettingsViewModel.SelectedImportModeOption));
         changedProperties.Should().Contain(nameof(ImportExportSettingsViewModel.ImportModeHint));
         changedProperties.Should().Contain(nameof(ImportExportSettingsViewModel.AutoExportHint));
     }
@@ -345,10 +353,16 @@ public class SettingsViewModelTests
         sut.SelectedLanguage = null!;
         sut.SelectedTheme = null!;
         sut.SelectedDateFormat = null!;
+        sut.SelectedLanguageOption = null!;
+        sut.SelectedThemeOption = null!;
+        sut.SelectedDateFormatOption = null!;
 
         sut.SelectedLanguage.Should().Be(AppLanguages.English);
         sut.SelectedTheme.Should().Be(ThemeKeys.Steel);
         sut.SelectedDateFormat.Should().Be(DateDisplayFormats.YearMonthDay);
+        sut.SelectedLanguageOption.Should().NotBeNull();
+        sut.SelectedThemeOption.Should().NotBeNull();
+        sut.SelectedDateFormatOption.Should().NotBeNull();
         _preferences.SelectedLanguage.Should().Be(AppLanguages.English);
         _preferences.SelectedTheme.Should().Be(ThemeKeys.Steel);
         _preferences.SelectedDateFormat.Should().Be(DateDisplayFormats.YearMonthDay);
@@ -428,8 +442,10 @@ public class SettingsViewModelTests
         var sut = CreateSyncSut();
 
         sut.SelectedSyncInterval = null!;
+        sut.SelectedSyncIntervalOption = null!;
 
         sut.SelectedSyncInterval.Should().Be(RemoteSyncIntervalPresets.OneMinute);
+        sut.SelectedSyncIntervalOption.Should().NotBeNull();
         _preferences.SelectedSyncInterval.Should().Be(RemoteSyncIntervalPresets.OneMinute);
         sut.SyncIntervalHint.Should().Contain(AppText.Get("Settings.SyncIntervalOption.OneMinute", _culture));
     }
@@ -707,10 +723,14 @@ public class SettingsViewModelTests
         sut.AvailableSyncIntervals.Should().NotBeSameAs(availableSyncIntervals);
         sut.AvailableSyncIntervals.Single(x => x.Code == RemoteSyncIntervalPresets.ThirtySeconds).DisplayName
             .Should().Be(AppText.Get("Settings.SyncIntervalOption.ThirtySeconds", _culture));
+        sut.SelectedSyncIntervalOption.Should().NotBeNull();
+        sut.SelectedSyncIntervalOption!.DisplayName
+            .Should().Be(AppText.Get("Settings.SyncIntervalOption.ThirtySeconds", _culture));
         sut.SyncIntervalHint.Should().Contain(AppText.Get("Settings.SyncIntervalOption.ThirtySeconds", _culture));
         sut.RemoteSyncStatusLabel.Should().Be(AppText.Get("Settings.SyncStatus.Disabled", _culture));
         changedProperties.Should().Contain(nameof(SyncSettingsViewModel.AvailableSyncIntervals));
         changedProperties.Should().Contain(nameof(SyncSettingsViewModel.SelectedSyncInterval));
+        changedProperties.Should().Contain(nameof(SyncSettingsViewModel.SelectedSyncIntervalOption));
         changedProperties.Should().Contain(nameof(SyncSettingsViewModel.SyncIntervalHint));
         changedProperties.Should().Contain(nameof(SyncSettingsViewModel.RemoteSyncStatusLabel));
     }
@@ -891,12 +911,22 @@ public class SettingsViewModelTests
             .Should().Be(AppText.Get("Language.English", _culture));
         sut.AvailableDateFormats.Single(x => x.Code == DateDisplayFormats.DayMonthYear).DisplayName
             .Should().Be(AppText.Get("Settings.DateFormat.DayMonthYear", _culture));
+        sut.SelectedThemeOption.Should().NotBeNull();
+        sut.SelectedThemeOption!.DisplayName.Should().Be(AppText.Get("Settings.Theme.Steel", _culture));
+        sut.SelectedLanguageOption.Should().NotBeNull();
+        sut.SelectedLanguageOption!.DisplayName.Should().Be(AppText.Get("Language.Russian", _culture));
+        sut.SelectedDateFormatOption.Should().NotBeNull();
+        sut.SelectedDateFormatOption!.DisplayName.Should()
+            .Be(AppText.Get("Settings.DateFormat.DayMonthYear", _culture));
         changedProperties.Should().Contain(nameof(AppearanceSettingsViewModel.AvailableThemes));
         changedProperties.Should().Contain(nameof(AppearanceSettingsViewModel.AvailableLanguages));
         changedProperties.Should().Contain(nameof(AppearanceSettingsViewModel.AvailableDateFormats));
         changedProperties.Should().Contain(nameof(AppearanceSettingsViewModel.SelectedTheme));
         changedProperties.Should().Contain(nameof(AppearanceSettingsViewModel.SelectedLanguage));
         changedProperties.Should().Contain(nameof(AppearanceSettingsViewModel.SelectedDateFormat));
+        changedProperties.Should().Contain(nameof(AppearanceSettingsViewModel.SelectedThemeOption));
+        changedProperties.Should().Contain(nameof(AppearanceSettingsViewModel.SelectedLanguageOption));
+        changedProperties.Should().Contain(nameof(AppearanceSettingsViewModel.SelectedDateFormatOption));
         _themeService.Verify(x => x.ApplyTheme(ThemeKeys.Steel), Times.AtLeastOnce);
     }
 

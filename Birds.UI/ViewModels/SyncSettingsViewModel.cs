@@ -71,6 +71,8 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
     [NotifyPropertyChangedFor(nameof(SyncIntervalHint))]
     private string selectedSyncInterval = AppPreferencesState.DefaultSyncInterval;
 
+    [ObservableProperty] private SyncIntervalOption? selectedSyncIntervalOption;
+
     public SyncSettingsViewModel(
         IAppPreferencesService preferences,
         ILocalizationService localization,
@@ -406,6 +408,20 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(SyncIntervalHint));
     }
 
+    partial void OnSelectedSyncIntervalOptionChanged(SyncIntervalOption? value)
+    {
+        if (_isSynchronizingSelections)
+            return;
+
+        if (value is null)
+        {
+            RestoreSelectedSyncIntervalFromPreferences();
+            return;
+        }
+
+        SelectedSyncInterval = value.Code;
+    }
+
     private void OnPreferencesChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(IAppPreferencesService.SelectedSyncInterval))
@@ -418,6 +434,7 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
         ReloadFromPreferences();
         OnPropertyChanged(nameof(AvailableSyncIntervals));
         OnPropertyChanged(nameof(SelectedSyncInterval));
+        OnPropertyChanged(nameof(SelectedSyncIntervalOption));
         OnPropertyChanged(nameof(SyncIntervalHint));
         OnPropertyChanged(nameof(RemoteSyncStatusLabel));
         OnPropertyChanged(nameof(RemoteSyncStatusHint));
@@ -456,6 +473,8 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
         try
         {
             SelectedSyncInterval = normalizedSyncInterval;
+            SelectedSyncIntervalOption = AvailableSyncIntervals.FirstOrDefault(
+                option => string.Equals(option.Code, normalizedSyncInterval, StringComparison.Ordinal));
         }
         finally
         {
@@ -467,10 +486,13 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
 
     private void RestoreSelectedSyncIntervalFromPreferences()
     {
+        var normalized = RemoteSyncIntervalPresets.Normalize(_preferences.SelectedSyncInterval);
         _isSynchronizingSelections = true;
         try
         {
-            SelectedSyncInterval = RemoteSyncIntervalPresets.Normalize(_preferences.SelectedSyncInterval);
+            SelectedSyncInterval = normalized;
+            SelectedSyncIntervalOption = AvailableSyncIntervals.FirstOrDefault(
+                option => string.Equals(option.Code, normalized, StringComparison.Ordinal));
         }
         finally
         {
@@ -478,6 +500,7 @@ public partial class SyncSettingsViewModel : ObservableObject, IDisposable
         }
 
         OnPropertyChanged(nameof(SelectedSyncInterval));
+        OnPropertyChanged(nameof(SelectedSyncIntervalOption));
         OnPropertyChanged(nameof(SyncIntervalHint));
     }
 
